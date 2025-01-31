@@ -1,0 +1,25 @@
+{
+  "name": "bomber-app",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "start:web": "npm run dev --workspace=@bomber-app/web",
+    "start:mobile": "npm run start --workspace=@bomber-app/mobile",
+    "start:server": "npm run dev --workspace=@bomber-app/server",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "nodemon": "^3.1.9",
+    "prettier": "^3.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@types/node": "^22.13.0"
+  }
+}
