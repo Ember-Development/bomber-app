@@ -9,7 +9,13 @@
     },
     "license": "ISC",
     "devDependencies": {
-        "eslint": "^9.19.0",
+        "eslint": "^8.57.1",
         "prettier": "^3.5.0"
+    },
+    "dependencies": {
+        "eslint-config-standard": "^17.1.0",
+        "eslint-plugin-import": "^2.31.0",
+        "eslint-plugin-n": "^16.6.2",
+        "eslint-plugin-promise": "^6.6.0"
     }
 }
