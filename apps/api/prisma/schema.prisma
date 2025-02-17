@@ -13,7 +13,7 @@ datasource db {
   url      = env("DB_URI")
 }
 
-model Users {
+model User {
   id      Int      @id @default(autoincrement())
   email   String   @unique //TODO: figure out how to make this mandatory for all except <=12U
   phone   String //TODO: similarly, make this include all except players...
@@ -22,30 +22,30 @@ model Users {
   lname   String
 
   //TODO: for all the following add appropriate relations
-  admin   Admins
-  coach   Coaches
-  regCoach RegCoaches
-  player  Players
-  fan     Fans
+  admin   Admin
+  coach   Coach
+  regCoach RegCoach
+  player  Player
+  fan     Fan
   primaryRole enum //TODO: primary_role enum
 }
 
-model Admins {
+model Admin {
     id  Int @id @default(autoincrement())
 }
 
-model Fans {
+model Fan {
     id  Int @id @default(autoincrement())
 }
 
-model Coaches {
+model Coach {
     id  Int @id @default(autoincrement())
     
     teams Team[]
     phone String //TODO: phone string constraints?
 }
 
-model RegCoaches {
+model RegCoach {
     id  Int  @id @default(autoincrement())
 
     teams Team[] //TODO: enforce region matched teams
@@ -53,26 +53,26 @@ model RegCoaches {
     phone String
 }
 
-model Teams {
+model Team {
     id  Int @id @default(autoincrement())
     
     name String 
     ageGroup enum //TODO: age_group enum
     region enum //TODO: region enum
 
-    headCoach Coaches @relation(fields: [headCoachID], references: [id])
+    headCoach Coach @relation(fields: [headCoachID], references: [id])
     headCoachID Int
-    trophyCase[] Trophies
+    trophyCase[] Trophy
 }
 
-model Trophies {
+model Trophy {
     id  @id @default(@autoincrement())
     
     title String
     imageURL String
 }
 
-model Players {
+model Player {
     id  @id @default(@autoincrement())
     
     team @relation(fields: [teamID], references: [id])
@@ -92,7 +92,7 @@ model Players {
     ageGroup enum //TODO: ageGroup enum
 
     //8-14u
-    parents Parents[]
+    parents Parent[]
 
     //14u only
     isTrusted bool 
@@ -104,15 +104,15 @@ model Players {
     addressID Int
 }
 
-model Parents {
+model Parent {
     id  @id @default(@autoincrement())
 
-    children Players[]
+    children Player[]
 
     phone String
 }
 
-model Addresses {
+model Address {
     id  @id @default(@autoincrement())
 
     //TODO: see if we can get location enums, if not no worries
