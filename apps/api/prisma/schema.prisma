@@ -119,8 +119,8 @@ enum StateCodes {
 
 model User {
   id      Int      @id @default(autoincrement())
-  email   String?   @unique //TODO: figure out how to make this mandatory for all except <=12U
-  phone String  @pattern("^\+?[1-9]\d{1,14}$") // E.164 format
+  email   String?  @unique //TODO: figure out how to make this mandatory for all except <=12U
+  phone   String   @pattern("^\+?[1-9]\d{1,14}$") // E.164 format
   pass    String
   fname   String
   lname   String
@@ -215,11 +215,37 @@ model Player {
     isTrusted Boolean? 
 
     //14u to alumn
-    college String? //TODO: think about populating this with enums perhaps
     address Address? @relation(fields: [addressID], references:id])
     addressID Int?
+    college String? //TODO: think about populating this with enums perhaps //NOTE: is truly optional
 
-    //TODO: enforce age specific constraints with manual @@schema syntax
+    // constraints for each age group
+    @@schema("""
+        ALTER TABLE "Player" ADD CONSTRAINT "parents_required_14_under"
+        CHECK (
+            (ageGroup IN('U8', 'U12', 'U14') AND EXISTS (
+                SELECT 1 FROM "_ParentToPlayer" // TODO: touch this up and be careful about join tables
+                WHERE "B" = "Player"."id"
+                LIMIT 1
+            ))
+            OR
+            (ageGroup NOT IN ('U8', 'U12', 'U14'))
+        );
+
+        ALTER TABLE "Player" ADD CONSTRAINT "is_trusted_14u"
+        CHECK (
+            (ageGroup = 'U14' AND "isTrusted" IS NOT NULL)
+            OR
+            (ageGroup != 'U14')
+        );
+
+        ALTER TABLE "Player" ADD CONSTRAINT "address_14_over"
+        CHECK (
+            (ageGroup IN ('U14', 'U16', 'U18') AND "addressID" IS NOT NULL)
+            OR
+            (ageGroup NOT IN  ('U14','U16', 'U18'))
+        );
+    """)
 }
 
 model Parent {
