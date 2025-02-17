@@ -13,6 +13,110 @@ datasource db {
   url      = env("DB_URI")
 }
 
+enum UserRole {
+    ADMIN
+    COACH
+    REGIONAL_COACH
+    PLAYER
+    FAN
+}
+
+enum Regions {
+ NORTHWEST
+ SOUTHWEST
+ SOUTH
+ SOUTHEAST
+ NORTHEAST
+ MIDWEST
+}
+
+enum AgeGroup {
+    U8
+    U10
+    U12
+    U14
+    U16
+    U18
+    ALUMNI
+}
+
+enum Position {
+    PITCHER
+    CATCHER
+    FIRST_BASE
+    SECOND_BASE
+    THIRD_BASE
+    SHORTSTOP
+    LEFT_FIELD
+    CENTER_FIELD
+    RIGHT_FIELD
+    DESIGNATED_HITTER
+}
+
+enum UniformSize {
+    YS
+    YM
+    YL
+    AS
+    AM
+    AL
+    AXL
+    A2XL
+}
+
+enum StateCodes {
+        AK
+        AL
+        AZ
+        AR
+        CA
+        CO
+        CT
+        DE
+        FL
+        GA
+        HI
+        ID
+        IL
+        IN
+        IA
+        KS
+        KY
+        LA
+        ME
+        MD
+        MA
+        MI
+        MN
+        MS
+        MO
+        MT
+        NE
+        NV
+        NH
+        NJ
+        NM
+        NY
+        NC
+        ND
+        OH
+        OK
+        OR
+        PA
+        RI
+        SC
+        SD
+        TN
+        TX
+        UT
+        VT
+        VA
+        WA
+        WV
+        WI
+        WY
+}
+
 model User {
   id      Int      @id @default(autoincrement())
   email   String   @unique //TODO: figure out how to make this mandatory for all except <=12U
