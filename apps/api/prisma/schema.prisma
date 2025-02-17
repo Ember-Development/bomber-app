@@ -119,54 +119,64 @@ enum StateCodes {
 
 model User {
   id      Int      @id @default(autoincrement())
-  email   String   @unique //TODO: figure out how to make this mandatory for all except <=12U
-  phone   String //TODO: similarly, make this include all except players...
+  email   String?   @unique //TODO: figure out how to make this mandatory for all except <=12U
+  phone String  @pattern("^\+?[1-9]\d{1,14}$") // E.164 format
   pass    String
   fname   String
   lname   String
 
   //TODO: for all the following add appropriate relations
-  admin   Admin
-  coach   Coach
-  regCoach RegCoach
-  player  Player
-  fan     Fan
   primaryRole enum //TODO: primary_role enum
+  admin   Admin?
+  coach   Coach?
+  regCoach RegCoach?
+  player  Player?
+  fan     Fan?
 }
 
 model Admin {
     id  Int @id @default(autoincrement())
+    user Users @relation(fields: [userID], references: [id])
+    userID Int @unique
 }
 
 model Fan {
     id  Int @id @default(autoincrement())
+    user Users @relation(fields: [userID], references: [id])
+    userID Int @unique
 }
 
 model Coach {
     id  Int @id @default(autoincrement())
     
+    user Users @relation(fields: [userID], references: [id])
+    userID Int @unique
+
+    phone String  @pattern("^\+?[1-9]\d{1,14}$") // E.164 format
     teams Team[]
-    phone String //TODO: phone string constraints?
 }
 
 model RegCoach {
     id  Int  @id @default(autoincrement())
+    user Users @relation(fields: [userID], references: [id])
+    userID Int @unique
 
     teams Team[] //TODO: enforce region matched teams
-    region enum //TODO: region enum
-    phone String
+    region Region
+    phone String  @pattern("^\+?[1-9]\d{1,14}$") // E.164 format
 }
 
 model Team {
     id  Int @id @default(autoincrement())
     
     name String 
-    ageGroup enum //TODO: age_group enum
-    region enum //TODO: region enum
+    ageGroup AgeGroup
+    region Region
 
     headCoach Coach @relation(fields: [headCoachID], references: [id])
     headCoachID Int
-    trophyCase[] Trophy
+
+    trophyCase Trophy[]
 }
 
 model Trophy {
@@ -174,6 +184,9 @@ model Trophy {
     
     title String
     imageURL String
+
+    team Team? @relation(fields: [teamID], references: [id])
+    teamID Int
 }
 
 model Player {
@@ -182,30 +195,31 @@ model Player {
     team @relation(fields: [teamID], references: [id])
     teamID Int
 
-    pos1 enum //TODO: pos enum
-    pos2 enum //TODO: pos enum
-    jerseyNum string //TODO: jersey constraints
-    gradYear string //TODO: grad year constraints
+    pos1 Position
+    pos2 Position
+    jerseyNum @pattern("^[0-9]{1,2}$")
+    gradYear @pattern("^20[2-9][0-9]$") 
 
-    jerseySize enum //TODO: jersey size enum
-    pantSize enum //TODO: pant size enum
-    stirrupSize enum //TODO: stirrup size enum
-    shortSize enum //TODO: short size enum
-    practiceShortSize enum //TODO: practice short size
+    jerseySize UniformSize
+    pantSize UniformSize
+    stirrupSize UniformSize
+    shortSize UniformSize 
+    practiceShortSize UniformSize
 
-    ageGroup enum //TODO: ageGroup enum
+    ageGroup AgeGroup
 
     //8-14u
     parents Parent[]
 
     //14u only
-    isTrusted bool 
+    isTrusted Boolean? 
 
     //14u to alumn
-    college enum //TODO: colleges enum & populate
-    address @relation(fields: [addressID], references:id])
+    college String? //TODO: think about populating this with enums perhaps
+    address Address? @relation(fields: [addressID], references:id])
+    addressID Int?
 
-    addressID Int
+    //TODO: enforce age specific constraints with manual @@schema syntax
 }
 
 model Parent {
@@ -213,7 +227,7 @@ model Parent {
 
     children Player[]
 
-    phone String
+    phone String  @pattern("^\+?[1-9]\d{1,14}$") // E.164 format
 }
 
 model Address {
