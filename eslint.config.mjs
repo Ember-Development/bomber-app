@@ -23,8 +23,23 @@ export default [
 
   {
     rules: {
-      'react/react-in-jsx-scope': 'off', // seems to be an outdated rule... smh... read more [here](https://www.reddit.com/r/react/comments/11d8xjk/srcappjs_line_2_react_must_be_in_scope_when_using/)
+      // deprecated rule read [here](https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/react-in-jsx-scope.md)
+      'react/react-in-jsx-scope': 'off',
+      // i understand the rule but i dont respect it [here](https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/no-unescaped-entities.md)
       'react/no-unescaped-entities': 'warn',
+    },
+  },
+
+  {
+    files: [
+      'apps/mobile/**/*.ts',
+      'apps/mobile/**/*.tsx',
+      'apps/mobile/**/*.js',
+      'apps/mobile/**/*.jsx',
+    ],
+    rules: {
+      // expo needs require() imports to get assets like images
+      '@typescript-eslint/no-require-imports': 'off',
     },
   },
 
