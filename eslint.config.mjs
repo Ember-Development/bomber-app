@@ -4,6 +4,8 @@ import tseslint from 'typescript-eslint';
 import pluginReact from 'eslint-plugin-react';
 import eslintConfigPrettier from 'eslint-config-prettier';
 
+//NOTE: it might be better to cover exceptions at project level but should be fine for now
+
 /** @type {import('eslint').Linter.Config[]} */
 export default [
   { files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'] },
@@ -44,5 +46,5 @@ export default [
   },
 
   //WARNING: do not move this! it has to be last for prettier to work!
-  eslintConfigPrettier,
+  { ...eslintConfigPrettier },
 ];
