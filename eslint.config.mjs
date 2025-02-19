@@ -3,8 +3,8 @@ import pluginJs from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import pluginReact from 'eslint-plugin-react';
 import eslintConfigPrettier from 'eslint-config-prettier';
-
-//NOTE: it might be better to cover exceptions at project level but should be fine for now
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -13,6 +13,27 @@ export default [
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   pluginReact.configs.flat.recommended,
+
+  //for whatever reason these two are special
+  {
+    plugins: {
+      'react-hooks': reactHooks,
+    },
+
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+    },
+  },
+  {
+    plugins: {
+      'react-refresh': reactRefresh,
+    },
+
+    rules: {
+      ...reactRefresh.configs.recommended.rules,
+    },
+  },
+
   {
     ignores: [
       'coverage',
@@ -42,6 +63,14 @@ export default [
     rules: {
       // expo needs require() imports to get assets like images
       '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
+
+  {
+    settings: {
+      react: {
+        version: 'detect',
+      },
     },
   },
 
