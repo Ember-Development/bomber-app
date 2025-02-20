@@ -66,8 +66,8 @@ enum UniformSize {
 
 model User {
     id    Int     @id @default(autoincrement())
-    email String? @unique //TODO: figure out how to make this mandatory for all except <=12U
-    phone String //@pattern("^\+?[1-9]\d{1,14}$") // E.164 format
+    email String? @unique // constrain: all 12u and under players
+    phone String? //@pattern("^\+?[1-9]\d{1,14}$") // constrain: all but player, fan, and admin
     pass  String
     fname String
     lname String
@@ -133,8 +133,6 @@ model Coach {
     user   User @relation(fields: [userID], references: [id])
     userID Int  @unique
 
-    phone String //@pattern("^\+?[1-9]\d{1,14}$") // E.164 format
-
     headTeams Team[]
     teams     Team[] @relation("CoachTeams")
 }
@@ -145,7 +143,6 @@ model RegCoach {
     userID Int  @unique
 
     region Regions @unique //one regCoach per region, allows queries for team by regional coach
-    phone  String //@pattern("^\+?[1-9]\d{1,14}$") // E.164 format
 }
 
 model Team {
@@ -181,8 +178,6 @@ model Parent {
 
     address   Address @relation(fields: [addressID], references: [id])
     addressID Int
-
-    phone String //@pattern("^\+?[1-9]\d{1,14}$") // E.164 format
 }
 
 model Address {
@@ -191,7 +186,7 @@ model Address {
     //TODO: see if we can get location enums, if not no worries
     state     String
     city      String
-    zip       String // TODO: constrain string?
+    zip       String
     address_1 String
     address_2 String
 
