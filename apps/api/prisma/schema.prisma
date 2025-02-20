@@ -13,6 +13,19 @@ datasource db {
     url      = env("DB_URI")
 }
 
+enum AttendanceStatus {
+    PENDING
+    ATTENDING
+    MAYBE
+    DECLINED
+}
+
+enum EventType {
+    TOURNAMENT
+    PRACTICE
+    GLOBAL
+}
+
 enum UserRole {
     ADMIN
     COACH
@@ -72,14 +85,18 @@ model User {
     fname String
     lname String
 
-    //TODO: for all the following add appropriate relations
-    primaryRole UserRole //TODO: primary_role enum
+    primaryRole UserRole 
     admin       Admin?
     coach       Coach?
     regCoach    RegCoach?
     player      Player?
     parent      Parent?
     fan         Fan?
+
+    messages     Message[]
+    chat         Chat[]
+    events       EventAttendance[]
+    notification Notification[]
 }
 
 model Player {
@@ -155,7 +172,7 @@ model Team {
 
     trophyCase Trophy[]
 
-    player Player[]
+    players Player[]
 
     coaches     Coach[] @relation("CoachTeams")
     headCoach   Coach   @relation(fields: [headCoachID], references: [id])
@@ -192,8 +209,79 @@ model Address {
     city     String
     zip      String
     address1 String
-    address2 String
+    address2 String?
 
-    player Player[]
-    parent Parent[]
+    players Player[]
+    parents Parent[]
+}
+
+model Chat {
+    id Int @id @default(autoincrement())
+
+    title String
+
+    users   User[]
+    message Message[]
+}
+
+model Message {
+    id Int @id @default(autoincrement())
+
+    text      String
+    createdAt DateTime
+
+    sender User @relation(fields: [userID], references: [id])
+    userID Int
+    chat   Chat @relation(fields: [chatID], references: [id])
+    chatID Int
+}
+
+model Notification {
+    id Int @id @default(autoincrement())
+
+    user   User @relation(fields: [userID], references: [id])
+    userID Int
+
+    isRead    Boolean
+    title     String
+    body      String
+    createdAt DateTime
+}
+
+model Event {
+    id Int @id @default(autoincrement())
+
+    tournament   Tournament? @relation(fields: [tournamentID], references: [id])
+    tournamentID Int?
+
+    eventType EventType
+
+    start DateTime
+    end   DateTime
+
+    attendees EventAttendance[] // constraint: DO NOT fill this for global events
+}
+
+model EventAttendance {
+    id Int @id @default(autoincrement())
+
+    user    User  @relation(fields: [userID], references: [id])
+    userID  Int
+    event   Event @relation(fields: [eventID], references: [id])
+    eventID Int
+
+    status AttendanceStatus @default(PENDING)
+
+    @@unique([userID, eventID])
+}
+
+model Tournament {
+    id Int @id @default(autoincrement())
+
+    title String
+    body  String
+
+    imageURL String
+
+    events Event[]
 }
