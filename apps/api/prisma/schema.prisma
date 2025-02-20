@@ -78,6 +78,7 @@ model User {
     coach       Coach?
     regCoach    RegCoach?
     player      Player?
+    parent      Parent?
     fan         Fan?
 }
 
@@ -178,17 +179,20 @@ model Parent {
 
     address   Address @relation(fields: [addressID], references: [id])
     addressID Int
+
+    user   User @relation(fields: [userID], references: [id])
+    userID Int  @unique
 }
 
 model Address {
     id Int @id @default(autoincrement())
 
     //TODO: see if we can get location enums, if not no worries
-    state     String
-    city      String
-    zip       String
-    address_1 String
-    address_2 String
+    state    String
+    city     String
+    zip      String
+    address1 String
+    address2 String
 
     player Player[]
     parent Parent[]
