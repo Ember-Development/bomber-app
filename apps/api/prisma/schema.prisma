@@ -5,12 +5,12 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DB_URI")
+    provider = "postgresql"
+    url      = env("DB_URI")
 }
 
 enum UserRole {
@@ -22,12 +22,12 @@ enum UserRole {
 }
 
 enum Regions {
- NORTHWEST
- SOUTHWEST
- SOUTH
- SOUTHEAST
- NORTHEAST
- MIDWEST
+    NORTHWEST
+    SOUTHWEST
+    SOUTH
+    SOUTHEAST
+    NORTHEAST
+    MIDWEST
 }
 
 enum AgeGroup {
@@ -64,232 +64,137 @@ enum UniformSize {
     A2XL
 }
 
-enum StateCodes {
-        AK
-        AL
-        AZ
-        AR
-        CA
-        CO
-        CT
-        DE
-        FL
-        GA
-        HI
-        ID
-        IL
-        IN
-        IA
-        KS
-        KY
-        LA
-        ME
-        MD
-        MA
-        MI
-        MN
-        MS
-        MO
-        MT
-        NE
-        NV
-        NH
-        NJ
-        NM
-        NY
-        NC
-        ND
-        OH
-        OK
-        OR
-        PA
-        RI
-        SC
-        SD
-        TN
-        TX
-        UT
-        VT
-        VA
-        WA
-        WV
-        WI
-        WY
-}
-
 model User {
-  id      Int      @id @default(autoincrement())
-  email   String?  @unique //TODO: figure out how to make this mandatory for all except <=12U
-  phone   String   @pattern("^\+?[1-9]\d{1,14}$") // E.164 format
-  pass    String
-  fname   String
-  lname   String
+    id    Int     @id @default(autoincrement())
+    email String? @unique //TODO: figure out how to make this mandatory for all except <=12U
+    phone String //@pattern("^\+?[1-9]\d{1,14}$") // E.164 format
+    pass  String
+    fname String
+    lname String
 
-  //TODO: for all the following add appropriate relations
-  primaryRole enum //TODO: primary_role enum
-  admin   Admin?
-  coach   Coach?
-  regCoach RegCoach?
-  player  Player?
-  fan     Fan?
-}
-
-model Admin {
-    id  Int @id @default(autoincrement())
-    user Users @relation(fields: [userID], references: [id])
-    userID Int @unique
-}
-
-model Fan {
-    id  Int @id @default(autoincrement())
-    user Users @relation(fields: [userID], references: [id])
-    userID Int @unique
-}
-
-model Coach {
-    id  Int @id @default(autoincrement())
-    
-    user Users @relation(fields: [userID], references: [id])
-    userID Int @unique
-
-    phone String  @pattern("^\+?[1-9]\d{1,14}$") // E.164 format
-    teams Team[]
-}
-
-model RegCoach {
-    id  Int  @id @default(autoincrement())
-    user Users @relation(fields: [userID], references: [id])
-    userID Int @unique
-
-    teams Team[] //TODO: enforce region matched teams
-    region Region
-    phone String  @pattern("^\+?[1-9]\d{1,14}$") // E.164 format
-}
-
-model Team {
-    id  Int @id @default(autoincrement())
-    
-    name String 
-    ageGroup AgeGroup
-    region Region
-
-    headCoach Coach @relation(fields: [headCoachID], references: [id])
-    headCoachID Int
-
-    trophyCase Trophy[]
-}
-
-model Trophy {
-    id  @id @default(@autoincrement())
-    
-    title String
-    imageURL String
-
-    team Team? @relation(fields: [teamID], references: [id])
-    teamID Int
+    //TODO: for all the following add appropriate relations
+    primaryRole UserRole //TODO: primary_role enum
+    admin       Admin?
+    coach       Coach?
+    regCoach    RegCoach?
+    player      Player?
+    fan         Fan?
 }
 
 model Player {
-    id  @id @default(@autoincrement())
-    
-    team @relation(fields: [teamID], references: [id])
-    teamID Int
+    id Int @id @default(autoincrement())
 
-    pos1 Position
-    pos2 Position
-    jerseyNum @pattern("^[0-9]{1,2}$")
-    gradYear @pattern("^20[2-9][0-9]$") 
+    pos1      Position
+    pos2      Position
+    jerseyNum String //@pattern("^[0-9]{1,2}$")
+    gradYear  String //@pattern("^20[2-9][0-9]$")
 
-    jerseySize UniformSize
-    pantSize UniformSize
-    stirrupSize UniformSize
-    shortSize UniformSize 
+    jerseySize        UniformSize
+    pantSize          UniformSize
+    stirrupSize       UniformSize
+    shortSize         UniformSize
     practiceShortSize UniformSize
 
     ageGroup AgeGroup
+
+    user   User @relation(fields: [userID], references: [id])
+    userID Int  @unique
+
+    team   Team @relation(fields: [teamID], references: [id])
+    teamID Int
 
     //8-14u
     parents Parent[]
 
     //14u only
-    isTrusted Boolean? 
+    isTrusted Boolean?
 
     //14u to alumn
-    address Address? @relation(fields: [addressID], references:id])
+    address   Address? @relation(fields: [addressID], references: [id])
     addressID Int?
-    college String? //TODO: think about populating this with enums perhaps //NOTE: is truly optional
+    college   String?
+}
 
-    // constraints for each age group
-    @@schema("""
-        ALTER TABLE "Player" ADD CONSTRAINT "parents_required_14_under"
-        CHECK (
-            (ageGroup IN('U8', 'U12', 'U14') AND EXISTS (
-                SELECT 1 FROM "_ParentToPlayer" // TODO: touch this up and be careful about join tables
-                WHERE "B" = "Player"."id"
-                LIMIT 1
-            ))
-            OR
-            (ageGroup NOT IN ('U8', 'U12', 'U14'))
-        );
+model Admin {
+    id     Int  @id @default(autoincrement())
+    user   User @relation(fields: [userID], references: [id])
+    userID Int  @unique
+}
 
-        ALTER TABLE "Player" ADD CONSTRAINT "is_trusted_14u"
-        CHECK (
-            (ageGroup = 'U14' AND "isTrusted" IS NOT NULL)
-            OR
-            (ageGroup != 'U14')
-        );
+model Fan {
+    id     Int  @id @default(autoincrement())
+    user   User @relation(fields: [userID], references: [id])
+    userID Int  @unique
+}
 
-        ALTER TABLE "Player" ADD CONSTRAINT "address_14_over"
-        CHECK (
-            (ageGroup IN ('U14', 'U16', 'U18') AND "addressID" IS NOT NULL)
-            OR
-            (ageGroup NOT IN  ('U14','U16', 'U18'))
-        );
-    """)
+model Coach {
+    id Int @id @default(autoincrement())
+
+    user   User @relation(fields: [userID], references: [id])
+    userID Int  @unique
+
+    phone String //@pattern("^\+?[1-9]\d{1,14}$") // E.164 format
+
+    headTeams Team[]
+    teams     Team[] @relation("CoachTeams")
+}
+
+model RegCoach {
+    id     Int  @id @default(autoincrement())
+    user   User @relation(fields: [userID], references: [id])
+    userID Int  @unique
+
+    region Regions @unique //one regCoach per region, allows queries for team by regional coach
+    phone  String //@pattern("^\+?[1-9]\d{1,14}$") // E.164 format
+}
+
+model Team {
+    id Int @id @default(autoincrement())
+
+    name     String
+    ageGroup AgeGroup
+    region   Regions
+
+    trophyCase Trophy[]
+
+    player Player[]
+
+    coaches     Coach[] @relation("CoachTeams")
+    headCoach   Coach   @relation(fields: [headCoachID], references: [id])
+    headCoachID Int
+}
+
+model Trophy {
+    id Int @id @default(autoincrement())
+
+    title    String
+    imageURL String
+
+    team   Team? @relation(fields: [teamID], references: [id])
+    teamID Int
 }
 
 model Parent {
-    id  @id @default(@autoincrement())
+    id Int @id @default(autoincrement())
 
     children Player[]
 
-    phone String  @pattern("^\+?[1-9]\d{1,14}$") // E.164 format
+    address   Address @relation(fields: [addressID], references: [id])
+    addressID Int
+
+    phone String //@pattern("^\+?[1-9]\d{1,14}$") // E.164 format
 }
 
 model Address {
-    id  @id @default(@autoincrement())
+    id Int @id @default(autoincrement())
 
     //TODO: see if we can get location enums, if not no worries
-    state enum
-    city enum
-    zip string // TODO: constrain string?
-    address_1 string
-    address_2 string
-}
+    state     String
+    city      String
+    zip       String // TODO: constrain string?
+    address_1 String
+    address_2 String
 
-//NOTE: The following is only test data
-model Post {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  title     String   @db.VarChar(255)
-  content   String?
-  published Boolean  @default(false)
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  Int
-}
-
-model Profile {
-  id     Int     @id @default(autoincrement())
-  bio    String?
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId Int     @unique
-}
-
-model User {
-  id      Int      @id @default(autoincrement())
-  email   String   @unique
-  name    String?
-  posts   Post[]
-  profile Profile?
+    player Player[]
+    parent Parent[]
 }
