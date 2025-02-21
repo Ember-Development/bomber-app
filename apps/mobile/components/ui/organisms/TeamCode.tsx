@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
-import { View, TextInput, StyleSheet, Text } from "react-native";
+import { View, TextInput, StyleSheet } from "react-native";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 interface CodeInputProps {
   length?: number;
@@ -9,6 +10,11 @@ interface CodeInputProps {
 export default function CodeInput({ length = 6, onComplete }: CodeInputProps) {
   const [code, setCode] = useState<string[]>(new Array(length).fill(""));
   const inputRefs = useRef<TextInput[]>([]);
+
+  // **Apply Theme Colors**
+  const borderColor = useThemeColor({}, "border");
+  const backgroundColor = useThemeColor({}, "component");
+  const textColor = useThemeColor({}, "text");
 
   const handleChange = (text: string, index: number) => {
     if (!/^\d?$/.test(text)) return;
@@ -37,7 +43,14 @@ export default function CodeInput({ length = 6, onComplete }: CodeInputProps) {
         <TextInput
           key={index}
           ref={(ref) => (inputRefs.current[index] = ref!)}
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              borderColor: borderColor,
+              backgroundColor: backgroundColor,
+              color: textColor,
+            },
+          ]}
           keyboardType="numeric"
           maxLength={1}
           value={digit}
@@ -59,11 +72,9 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderWidth: 1,
-    borderColor: "#000",
     borderRadius: 8,
     fontSize: 24,
     textAlign: "center",
     marginHorizontal: 5,
-    color: "#000",
   },
 });

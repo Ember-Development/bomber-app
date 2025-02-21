@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 interface SelectOption {
   label: string;
@@ -28,6 +29,13 @@ export default function CustomSelect({
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
   const [isModalVisible, setModalVisible] = useState(false);
 
+  // **Apply Theme Colors**
+  const borderColor = useThemeColor({}, "border");
+  const backgroundColor = useThemeColor({}, "component");
+  const textColor = useThemeColor({}, "text");
+  const placeholderColor = useThemeColor({}, "secondaryText");
+  const modalBackground = useThemeColor({}, "background");
+
   const handleSelect = (value: string) => {
     setSelectedValue(value);
     if (onSelect) onSelect(value);
@@ -37,18 +45,24 @@ export default function CustomSelect({
   return (
     <View style={styles.container}>
       <Pressable
-        style={styles.inputWrapper}
+        style={[
+          styles.inputWrapper,
+          { borderColor: borderColor, backgroundColor: backgroundColor },
+        ]}
         onPress={() => setModalVisible(true)}
       >
         <Text
-          style={selectedValue ? styles.selectedText : styles.placeholderText}
+          style={[
+            styles.text,
+            { color: selectedValue ? textColor : placeholderColor },
+          ]}
         >
           {selectedValue || label}
         </Text>
         <Ionicons
           name="chevron-down"
           size={20}
-          color="#000"
+          color={textColor}
           style={styles.icon}
         />
       </Pressable>
@@ -58,7 +72,9 @@ export default function CustomSelect({
           style={styles.modalOverlay}
           onPress={() => setModalVisible(false)}
         >
-          <View style={styles.modalContent}>
+          <View
+            style={[styles.modalContent, { backgroundColor: modalBackground }]}
+          >
             <FlatList
               data={options}
               keyExtractor={(item) => item.value}
@@ -67,7 +83,9 @@ export default function CustomSelect({
                   style={styles.option}
                   onPress={() => handleSelect(item.value)}
                 >
-                  <Text style={styles.optionText}>{item.label}</Text>
+                  <Text style={[styles.optionText, { color: textColor }]}>
+                    {item.label}
+                  </Text>
                 </Pressable>
               )}
             />
@@ -86,20 +104,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#000",
     borderRadius: 8,
     paddingHorizontal: 10,
-    backgroundColor: "transparent",
     height: 50,
     justifyContent: "space-between",
   },
-  selectedText: {
+  text: {
     fontSize: 16,
-    color: "#000",
-  },
-  placeholderText: {
-    fontSize: 16,
-    color: "#000",
   },
   icon: {
     position: "absolute",
@@ -112,7 +123,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalContent: {
-    backgroundColor: "white",
     width: 300,
     borderRadius: 10,
     padding: 15,
@@ -120,7 +130,6 @@ const styles = StyleSheet.create({
   option: {
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
   },
   optionText: {
     fontSize: 16,

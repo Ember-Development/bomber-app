@@ -1,3 +1,4 @@
+import { useThemeColor } from "@/hooks/useThemeColor";
 import React from "react";
 import { View, StyleSheet, ViewStyle } from "react-native";
 
@@ -11,9 +12,10 @@ interface SeparatorProps {
 export default function Separator({
   width = "100%",
   height = 1,
-  color = "#EAEAEA",
+  color,
   marginVertical = 10,
 }: SeparatorProps) {
+  const seperatorColor = useThemeColor({}, "buttonText");
   return (
     <View
       style={[
@@ -21,7 +23,7 @@ export default function Separator({
         {
           width: typeof width === "number" ? width : undefined,
           height,
-          backgroundColor: color,
+          backgroundColor: color ?? seperatorColor,
           marginVertical,
         },
         typeof width === "string" ? { alignSelf: "stretch" } : {},

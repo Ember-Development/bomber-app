@@ -1,13 +1,6 @@
 import React, { useState, useRef } from "react";
-import {
-  TextInput,
-  View,
-  StyleSheet,
-  Animated,
-  Text,
-  Pressable,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { TextInput, View, StyleSheet, Animated, Pressable } from "react-native";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 interface PhoneInputProps {
   onChangeText?: (text: string) => void;
@@ -17,6 +10,12 @@ export default function PhoneInput({ onChangeText }: PhoneInputProps) {
   const [phone, setPhone] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const animatedLabel = useRef(new Animated.Value(0)).current;
+
+  // **Apply Theme Colors**
+  const borderColor = useThemeColor({}, "border");
+  const backgroundColor = useThemeColor({}, "component");
+  const textColor = useThemeColor({}, "text");
+  const labelColor = useThemeColor({}, "secondaryText");
 
   const formatPhoneNumber = (text: string) => {
     const cleaned = text.replace(/\D/g, "").slice(0, 10);
@@ -51,6 +50,7 @@ export default function PhoneInput({ onChangeText }: PhoneInputProps) {
     }
   };
 
+  // **Animated Floating Label Styles**
   const labelStyle = {
     top: animatedLabel.interpolate({
       inputRange: [0, 1],
@@ -60,17 +60,22 @@ export default function PhoneInput({ onChangeText }: PhoneInputProps) {
       inputRange: [0, 1],
       outputRange: [16, 12], // Shrinks label
     }),
-    color: isFocused ? "#d5d5d5" : "#000",
+    color: isFocused ? textColor : textColor, // Label color based on focus
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.inputWrapper}>
+      <View
+        style={[
+          styles.inputWrapper,
+          { borderColor: borderColor, backgroundColor: backgroundColor },
+        ]}
+      >
         <Animated.Text style={[styles.label, labelStyle]}>
           Phone Number
         </Animated.Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { color: textColor }]}
           keyboardType="phone-pad"
           placeholder={isFocused ? "" : "(123) 456-7890"}
           placeholderTextColor="transparent"
@@ -92,11 +97,9 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "transparent",
     borderRadius: 8,
     paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: "#000",
+    borderWidth: 0.5,
     position: "relative",
     height: 50,
   },
@@ -109,7 +112,6 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 45,
     fontSize: 16,
-    color: "#000",
     paddingTop: 10,
   },
 });

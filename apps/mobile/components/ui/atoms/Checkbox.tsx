@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Pressable, Text, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 interface CheckboxProps {
   label: string;
@@ -9,6 +10,8 @@ interface CheckboxProps {
 
 export default function Checkbox({ label, onChange }: CheckboxProps) {
   const [checked, setChecked] = useState(false);
+  const checkBoxColor = useThemeColor({}, "border");
+  const textColor = useThemeColor({}, "secondaryText");
 
   const toggleCheckbox = () => {
     setChecked(!checked);
@@ -20,9 +23,9 @@ export default function Checkbox({ label, onChange }: CheckboxProps) {
       <Ionicons
         name={checked ? "checkbox" : "square-outline"}
         size={24}
-        color="#007BFF"
+        color={checkBoxColor}
       />
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, { color: textColor }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -36,6 +39,5 @@ const styles = StyleSheet.create({
   label: {
     marginLeft: 8,
     fontSize: 16,
-    color: "#333",
   },
 });

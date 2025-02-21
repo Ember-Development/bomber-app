@@ -1,3 +1,5 @@
+import { ThemedText } from "@/components/ThemedText";
+import { useThemeColor } from "@/hooks/useThemeColor";
 import React from "react";
 import { View, Text, Image, Pressable, StyleSheet } from "react-native";
 
@@ -20,19 +22,34 @@ export default function Card({
   onPress,
   additionalInfo,
 }: CardProps) {
+  const component = useThemeColor({}, "component");
+  const textColor = useThemeColor({}, "text");
+  const secondaryTextColor = useThemeColor({}, "secondaryText");
   return (
     <Pressable
-      style={[styles.card, type === "quickAction" && styles.quickAction]}
+      style={[
+        styles.card,
+        { backgroundColor: component },
+        type === "quickAction" && styles.quickAction,
+      ]}
       onPress={onPress}
     >
       {image && <Image source={image} style={styles.image} />}
       {icon && <Image source={icon} style={styles.icon} />}
 
       <View style={styles.textContainer}>
-        <Text style={styles.title}>{title}</Text>
-        {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+        <ThemedText style={[styles.title, { color: textColor }]}>
+          {title}
+        </ThemedText>
+        {subtitle && (
+          <Text style={[styles.subtitle, { color: secondaryTextColor }]}>
+            {subtitle}
+          </Text>
+        )}
         {additionalInfo && (
-          <Text style={styles.additionalInfo}>{additionalInfo}</Text>
+          <Text style={[styles.additionalInfo, { color: secondaryTextColor }]}>
+            {additionalInfo}
+          </Text>
         )}
       </View>
     </Pressable>

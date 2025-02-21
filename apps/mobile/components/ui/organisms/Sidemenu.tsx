@@ -6,9 +6,15 @@ import {
   Pressable,
   Modal,
   TouchableOpacity,
+  Switch,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Separator from "../atoms/Seperator";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { GlobalColors } from "@/constants/Colors";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 interface UserAvatarProps {
   firstName: string;
@@ -17,33 +23,47 @@ interface UserAvatarProps {
 
 export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
   const [menuVisible, setMenuVisible] = useState(false);
+  const { theme, toggleTheme } = useColorScheme();
 
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+
+  // theme
+  const backgroundColor = useThemeColor({}, "background");
+  const textColor = useThemeColor({}, "text");
+  const icons = useThemeColor({}, "icon");
 
   return (
     <>
       <Pressable onPress={() => setMenuVisible(true)} style={styles.avatar}>
-        <Text style={styles.avatarText}>{initials}</Text>
+        <Text style={[styles.avatarText, { color: textColor }]}>
+          {initials}
+        </Text>
       </Pressable>
 
       <Modal visible={menuVisible} animationType="fade" transparent>
         <View style={styles.modalContainer}>
-          <View style={styles.sidebar}>
+          <ThemedView style={[styles.sidebar, { backgroundColor }]}>
             <View style={styles.profileHeader}>
               <View style={styles.profileDetails}>
                 <View style={styles.avatarLarge}>
-                  <Text style={styles.avatarTextLarge}>{initials}</Text>
+                  <ThemedText
+                    style={[styles.avatarTextLarge, { color: textColor }]}
+                  >
+                    {initials}
+                  </ThemedText>
                 </View>
                 <View>
-                  <Text style={styles.nameText}>
+                  <ThemedText style={[styles.nameText, { color: textColor }]}>
                     {firstName} {lastName}
-                  </Text>
-                  <Text style={styles.roleText}>Coach</Text>
+                  </ThemedText>
+                  <ThemedText style={[styles.roleText, { color: textColor }]}>
+                    Coach
+                  </ThemedText>
                 </View>
               </View>
 
               <TouchableOpacity onPress={() => setMenuVisible(false)}>
-                <Ionicons name="close" size={26} color="black" />
+                <Ionicons name="close" size={26} color={textColor} />
               </TouchableOpacity>
             </View>
 
@@ -77,30 +97,46 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
                 },
               ].map((item, index) => (
                 <Pressable key={index} style={styles.menuItem}>
-                  <Ionicons name={item.icon} size={24} color="black" />
-                  <Text style={styles.menuText}>{item.name}</Text>
+                  <Ionicons name={item.icon} size={24} color={icons} />
+                  <ThemedText style={[styles.menuText, { color: textColor }]}>
+                    {item.name}
+                  </ThemedText>
                 </Pressable>
               ))}
               <Separator />
               <View style={styles.footer}>
                 <Pressable style={styles.footerItem}>
-                  <Text style={styles.footerText}>Profile</Text>
+                  <Text style={[styles.footerText, { color: textColor }]}>
+                    Profile
+                  </Text>
                 </Pressable>
                 <Pressable style={styles.footerItem}>
-                  <Text style={styles.footerText}>Settings</Text>
+                  <Text style={[styles.footerText, { color: textColor }]}>
+                    Settings
+                  </Text>
                 </Pressable>
                 <Pressable style={styles.footerItem}>
-                  <Text style={styles.footerText}>Contact</Text>
+                  <Text style={[styles.footerText, { color: textColor }]}>
+                    Contact
+                  </Text>
                 </Pressable>
                 <Pressable style={styles.footerItem}>
-                  <Text style={styles.footerText}>Payment</Text>
+                  <Text style={[styles.footerText, { color: textColor }]}>
+                    Payment
+                  </Text>
                 </Pressable>
               </View>
             </View>
+
+            <View style={styles.themeToggleContainer}>
+              <ThemedText>Dark Mode</ThemedText>
+              <Switch value={theme === "dark"} onValueChange={toggleTheme} />
+            </View>
+
             <Pressable style={styles.logoutButton}>
               <Text style={styles.logoutText}>Logout</Text>
             </Pressable>
-          </View>
+          </ThemedView>
         </View>
       </Modal>
     </>
@@ -119,7 +155,6 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#000",
   },
   modalContainer: {
     flex: 1,
@@ -128,7 +163,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   sidebar: {
-    backgroundColor: "#fff",
     width: "100%",
     height: "100%",
     paddingTop: 50,
@@ -157,7 +191,6 @@ const styles = StyleSheet.create({
   avatarTextLarge: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#000",
   },
   nameText: {
     fontSize: 20,
@@ -165,7 +198,6 @@ const styles = StyleSheet.create({
   },
   roleText: {
     fontSize: 16,
-    color: "#6D6D6D",
   },
   menuItems: {
     marginBottom: 0,
@@ -192,12 +224,21 @@ const styles = StyleSheet.create({
     fontWeight: "semibold",
     color: "#6D6D6D",
   },
+  themeToggleContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderColor: "#EAEAEA",
+    marginTop: 10,
+  },
   logoutButton: {
-    backgroundColor: "red",
+    backgroundColor: GlobalColors.red,
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
-    marginTop: 60,
+    marginTop: 10,
   },
   logoutText: {
     color: "white",

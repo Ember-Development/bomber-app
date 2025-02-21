@@ -8,6 +8,7 @@ import {
   Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 interface CustomInputProps extends TextInputProps {
   label: string;
@@ -27,6 +28,12 @@ export default function CustomInput({
   const [isFocused, setIsFocused] = useState(false);
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const animatedLabel = useRef(new Animated.Value(0)).current;
+
+  // **Apply Theme Colors**
+  const borderColor = useThemeColor({}, "border");
+  const backgroundColor = useThemeColor({}, "component");
+  const textColor = useThemeColor({}, "text");
+  const iconColor = useThemeColor({}, "icon");
 
   const handleFocus = () => {
     setIsFocused(true);
@@ -58,20 +65,37 @@ export default function CustomInput({
       inputRange: [0, 1],
       outputRange: [16, 12], // Shrinks label
     }),
-    color: isFocused ? "#5d5d5d" : "#000",
+    color: isFocused ? textColor : iconColor, // Adjust label color dynamically
   };
 
   return (
     <View style={[styles.container, fullWidth && styles.fullWidth]}>
-      <View style={styles.inputWrapper}>
-        {iconName && <Ionicons name={iconName} size={20} style={styles.icon} />}
+      <View
+        style={[
+          styles.inputWrapper,
+          { borderColor: borderColor, backgroundColor: backgroundColor },
+        ]}
+      >
+        {iconName && (
+          <Ionicons
+            name={iconName}
+            size={20}
+            style={[styles.icon, { color: iconColor }]}
+          />
+        )}
 
         <Animated.Text style={[styles.label, labelStyle]}>
           {label}
         </Animated.Text>
 
         <TextInput
-          style={[styles.input, iconName && styles.withIcon]}
+          style={[
+            styles.input,
+            iconName && styles.withIcon,
+            {
+              color: textColor,
+            },
+          ]}
           placeholder={isFocused ? "" : label}
           placeholderTextColor="transparent"
           onFocus={handleFocus}
@@ -85,7 +109,7 @@ export default function CustomInput({
             <Ionicons
               name={isPasswordVisible ? "eye" : "eye-off"}
               size={20}
-              style={styles.icon}
+              style={[styles.icon, { color: iconColor }]}
             />
           </Pressable>
         )}
@@ -104,11 +128,9 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "transparent",
     borderRadius: 8,
     paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: "#000",
+    borderWidth: 0.5,
     position: "relative",
     height: 50,
   },
@@ -121,14 +143,12 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 45,
     fontSize: 16,
-    color: "#000",
     paddingTop: 10,
   },
   withIcon: {
     marginLeft: 5,
   },
   icon: {
-    color: "#000",
     marginHorizontal: 5,
   },
 });

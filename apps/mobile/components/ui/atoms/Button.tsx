@@ -6,6 +6,8 @@ import {
   GestureResponderEvent,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { GlobalColors } from "@/constants/Colors";
 
 interface CustomButtonProps {
   title?: string;
@@ -22,11 +24,17 @@ export default function CustomButton({
   iconName,
   fullWidth = false,
 }: CustomButtonProps) {
+  const backgroundColor = useThemeColor({}, "button");
+  const textColor = useThemeColor({}, "buttonText");
+  const componentButton = useThemeColor({}, "component");
+
   return (
     <Pressable
       style={[
         styles.button,
+        variant === "primary" && { backgroundColor: backgroundColor },
         variant === "secondary" && styles.secondary,
+        variant === "secondary" && { backgroundColor: componentButton },
         variant === "danger" && styles.danger,
         variant === "icon" && styles.iconButton,
         fullWidth && styles.fullWidth,
@@ -39,8 +47,8 @@ export default function CustomButton({
         <Text
           style={[
             styles.buttonText,
+            { color: textColor },
             variant === "secondary" && styles.secondaryText,
-            variant === "danger" && styles.dangerText,
           ]}
         >
           {title}
@@ -52,7 +60,6 @@ export default function CustomButton({
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: "black",
     padding: 12,
     borderRadius: 8,
     marginVertical: 10,
@@ -61,12 +68,12 @@ const styles = StyleSheet.create({
     minWidth: 120,
   },
   secondary: {
-    backgroundColor: "white",
+    backgroundColor: GlobalColors.white,
     borderWidth: 1,
     borderColor: "black",
   },
   danger: {
-    backgroundColor: "red",
+    backgroundColor: GlobalColors.red,
   },
   iconButton: {
     backgroundColor: "transparent",
@@ -74,7 +81,6 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   buttonText: {
-    color: "white",
     fontWeight: "light",
     textAlign: "center",
   },
@@ -82,10 +88,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   secondaryText: {
-    color: "black",
-  },
-  dangerText: {
-    color: "white",
+    color: GlobalColors.black,
   },
   icon: {
     color: "black",

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Pressable, Text, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 interface RadioButtonProps {
   options: { label: string; value: string }[];
@@ -9,6 +10,10 @@ interface RadioButtonProps {
 
 export default function RadioButtons({ options, onSelect }: RadioButtonProps) {
   const [selected, setSelected] = useState<string | null>(null);
+
+  // **Apply Theme Colors**
+  const textColor = useThemeColor({}, "text");
+  const iconColor = useThemeColor({}, "tint");
 
   return (
     <View>
@@ -26,9 +31,11 @@ export default function RadioButtons({ options, onSelect }: RadioButtonProps) {
               selected === option.value ? "radio-button-on" : "radio-button-off"
             }
             size={24}
-            color="#007BFF"
+            color={iconColor}
           />
-          <Text style={styles.label}>{option.label}</Text>
+          <Text style={[styles.label, { color: textColor }]}>
+            {option.label}
+          </Text>
         </Pressable>
       ))}
     </View>
@@ -44,6 +51,5 @@ const styles = StyleSheet.create({
   label: {
     marginLeft: 8,
     fontSize: 16,
-    color: "#333",
   },
 });

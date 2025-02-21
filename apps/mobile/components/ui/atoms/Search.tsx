@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { TextInput, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 interface SearchFieldProps {
   placeholder?: string;
@@ -13,13 +14,20 @@ export default function SearchField({
 }: SearchFieldProps) {
   const [query, setQuery] = useState("");
 
+  // **Apply Theme Colors**
+  const borderColor = useThemeColor({}, "border");
+  const backgroundColor = useThemeColor({}, "component");
+  const textColor = useThemeColor({}, "text");
+  const iconColor = useThemeColor({}, "icon");
+  const placeholderColor = useThemeColor({}, "secondaryText");
+
   return (
-    <View style={styles.container}>
-      <Ionicons name="search" size={20} color="#888" />
+    <View style={[styles.container, { borderColor, backgroundColor }]}>
+      <Ionicons name="search" size={20} color={iconColor} />
       <TextInput
-        style={styles.input}
+        style={[styles.input, { color: textColor }]}
         placeholder={placeholder}
-        placeholderTextColor="#888"
+        placeholderTextColor={placeholderColor}
         value={query}
         onChangeText={(text) => {
           setQuery(text);
@@ -34,17 +42,14 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
     borderRadius: 8,
     paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: "#ccc",
+    borderWidth: 0.5,
   },
   input: {
     flex: 1,
     height: 40,
     fontSize: 16,
-    color: "#000",
     marginLeft: 5,
   },
 });

@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { View, StyleSheet, Pressable, Animated } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { Ionicons } from "@expo/vector-icons";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { GlobalColors } from "@/constants/Colors";
 
 interface Event {
   date: string;
@@ -23,6 +25,14 @@ export default function EventCardContainer() {
   );
   const animatedValue = useRef(new Animated.Value(0)).current;
   const [countdown, setCountdown] = useState("");
+
+  // **Apply Theme Colors**
+  const cardBackground = useThemeColor({}, "component");
+  const toggleBackground = useThemeColor({}, "background");
+  const activeIndicatorColor = useThemeColor({}, "background");
+  const textColor = useThemeColor({}, "text");
+  const secondaryColor = useThemeColor({}, "component");
+  const eventTitleColor = useThemeColor({}, "buttonText");
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -70,9 +80,17 @@ export default function EventCardContainer() {
   };
 
   return (
-    <View style={styles.eventCard}>
-      <View style={styles.toggleContainer}>
-        <Animated.View style={[styles.activeIndicator, slideStyle]} />
+    <View style={[styles.eventCard, { backgroundColor: cardBackground }]}>
+      <View
+        style={[styles.toggleContainer, { backgroundColor: toggleBackground }]}
+      >
+        <Animated.View
+          style={[
+            styles.activeIndicator,
+            slideStyle,
+            { backgroundColor: secondaryColor },
+          ]}
+        />
         <Pressable style={styles.tab} onPress={() => toggleTab("Upcoming")}>
           <ThemedText
             style={[
@@ -97,20 +115,30 @@ export default function EventCardContainer() {
 
       <View style={styles.dateContainer}>
         <View style={styles.iconContainer}>
-          <Ionicons name="ticket-outline" size={20} color="#000" />
-          <ThemedText type="subtitle" style={styles.titleText}>
+          <Ionicons name="ticket-outline" size={20} color={textColor} />
+          <ThemedText
+            type="subtitle"
+            style={[styles.titleText, { color: textColor }]}
+          >
             {eventData.date.split("T")[0]}
           </ThemedText>
         </View>
-        <ThemedText style={styles.countdownText}>{countdown}</ThemedText>
+        <ThemedText style={[styles.countdownText]}>{countdown}</ThemedText>
       </View>
 
-      <View style={styles.detailContainer}>
-        <ThemedText type="title" style={styles.eventTitle}>
+      <View style={[styles.detailContainer]}>
+        <ThemedText
+          type="title"
+          style={[styles.eventTitle, { color: eventTitleColor }]}
+        >
           {eventData.title}
         </ThemedText>
-        <ThemedText style={styles.eventText}>{eventData.location}</ThemedText>
-        <ThemedText style={styles.eventText}>{eventData.time}</ThemedText>
+        <ThemedText style={[styles.eventText, { color: eventTitleColor }]}>
+          {eventData.location}
+        </ThemedText>
+        <ThemedText style={[styles.eventText, { color: eventTitleColor }]}>
+          {eventData.time}
+        </ThemedText>
       </View>
     </View>
   );
@@ -118,7 +146,6 @@ export default function EventCardContainer() {
 
 const styles = StyleSheet.create({
   eventCard: {
-    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
     marginVertical: 10,
@@ -130,12 +157,13 @@ const styles = StyleSheet.create({
   },
   toggleContainer: {
     flexDirection: "row",
-    backgroundColor: "#EAEAEA",
     borderRadius: 12,
     position: "relative",
     overflow: "hidden",
     height: 40,
     marginBottom: 12,
+    paddingRight: 4,
+    paddingBottom: 4,
   },
   dateContainer: {
     flexDirection: "row",
@@ -147,14 +175,16 @@ const styles = StyleSheet.create({
   countdownText: {
     fontSize: 12,
     fontWeight: "bold",
-    color: "#5AA5FF",
+    color: GlobalColors.blue,
   },
   activeIndicator: {
     position: "absolute",
     width: "50%",
     height: "100%",
-    backgroundColor: "#000",
     borderRadius: 12,
+    marginTop: 2,
+    marginRight: 2,
+    marginLeft: 2,
   },
   tab: {
     flex: 1,
@@ -164,37 +194,28 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 12,
-    color: "#6D6D6D",
     fontWeight: "500",
+    marginTop: 2,
   },
   titleText: {
     fontSize: 16,
-    color: "#000",
     fontWeight: "bold",
     marginLeft: 8,
   },
   activeText: {
-    color: "#fff",
     fontWeight: "bold",
-  },
-  dateText: {
-    marginLeft: 8,
-    fontWeight: "bold",
-    fontSize: 12,
   },
   detailContainer: {
     marginTop: 12,
     padding: 12,
-    backgroundColor: "#000",
     borderRadius: 8,
+    backgroundColor: GlobalColors.dark,
   },
   eventTitle: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
   },
   eventText: {
-    color: "#fff",
     fontSize: 14,
   },
   iconContainer: {

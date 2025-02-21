@@ -3,6 +3,8 @@ import { View, StyleSheet, Modal, Pressable, FlatList } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { Ionicons } from "@expo/vector-icons";
 import Separator from "../atoms/Seperator";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { GlobalColors } from "@/constants/Colors";
 
 interface Notification {
   id: string;
@@ -37,36 +39,56 @@ const notifications: Notification[] = [
 export default function NotificationCard() {
   const [modalVisible, setModalVisible] = useState(false);
 
+  // **Apply Theme Colors**
+  const cardBackground = useThemeColor({}, "component");
+  const modalBackground = useThemeColor({}, "background");
+  const textColor = useThemeColor({}, "text");
+  const iconColor = useThemeColor({}, "icon");
+  const borderColor = useThemeColor({}, "border");
+
   return (
     <View>
-      <Pressable style={styles.card} onPress={() => setModalVisible(true)}>
+      <Pressable
+        style={[styles.card, { backgroundColor: cardBackground }]}
+        onPress={() => setModalVisible(true)}
+      >
         <View style={styles.cardHeader}>
-          <ThemedText type="subtitle" style={styles.title}>
+          <ThemedText
+            type="subtitle"
+            style={[styles.title, { color: textColor }]}
+          >
             Recent Notifications
           </ThemedText>
           <Ionicons
             name="expand-outline"
             size={20}
-            color="#000"
+            color={iconColor}
             onPress={() => setModalVisible(true)}
           />
         </View>
         <Separator />
-        <ThemedText numberOfLines={2} style={styles.notificationText}>
+        <ThemedText
+          numberOfLines={2}
+          style={[styles.notificationText, { color: textColor }]}
+        >
           {notifications[0].message}
         </ThemedText>
-        <ThemedText style={styles.timeAgo}>
+        <ThemedText style={[styles.timeAgo]}>
           {notifications[0].timeAgo}
         </ThemedText>
       </Pressable>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
+          <View
+            style={[styles.modalContent, { backgroundColor: modalBackground }]}
+          >
             <View style={styles.modalHeader}>
-              <ThemedText type="title">Notifications</ThemedText>
+              <ThemedText type="title" style={{ color: textColor }}>
+                Notifications
+              </ThemedText>
               <Pressable onPress={() => setModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#000" />
+                <Ionicons name="close" size={24} color={iconColor} />
               </Pressable>
             </View>
 
@@ -76,12 +98,21 @@ export default function NotificationCard() {
               data={notifications}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
-                <View style={styles.notificationItem}>
-                  {item.isNew && <View style={styles.newDot} />}
+                <View
+                  style={[
+                    styles.notificationItem,
+                    { borderBottomColor: borderColor },
+                  ]}
+                >
                   <View style={styles.notificationMessage}>
-                    <ThemedText numberOfLines={2}>{item.message}</ThemedText>
+                    {item.isNew && <View style={[styles.newDot]} />}
+                    <ThemedText numberOfLines={2} style={{ color: textColor }}>
+                      {item.message}
+                    </ThemedText>
                   </View>
-                  <ThemedText style={styles.timeAgo}>{item.timeAgo}</ThemedText>
+                  <ThemedText style={[styles.timeAgo]}>
+                    {item.timeAgo}
+                  </ThemedText>
                 </View>
               )}
             />
@@ -94,7 +125,6 @@ export default function NotificationCard() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
     shadowColor: "#000",
@@ -118,7 +148,7 @@ const styles = StyleSheet.create({
   },
   timeAgo: {
     fontSize: 12,
-    color: "#007BFF",
+    color: GlobalColors.blue,
   },
   modalContainer: {
     flex: 1,
@@ -127,7 +157,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    backgroundColor: "#fff",
     height: "70%",
     width: "100%",
     borderRadius: 12,
@@ -145,20 +174,21 @@ const styles = StyleSheet.create({
   },
   notificationItem: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#EAEAEA",
   },
   notificationMessage: {
     flex: 1,
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
   },
   newDot: {
     width: 8,
     height: 8,
-    backgroundColor: "#007BFF",
     borderRadius: 4,
     marginRight: 8,
+    marginBottom: 8,
+    backgroundColor: GlobalColors.blue,
   },
 });
