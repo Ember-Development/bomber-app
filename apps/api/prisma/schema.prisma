@@ -85,7 +85,7 @@ model User {
     fname String
     lname String
 
-    primaryRole UserRole 
+    primaryRole UserRole
     admin       Admin?
     coach       Coach?
     regCoach    RegCoach?
@@ -93,10 +93,10 @@ model User {
     parent      Parent?
     fan         Fan?
 
-    messages     Message[]
-    chat         Chat[]
-    events       EventAttendance[]
-    notification Notification[]
+    sentMessages  Message[]
+    chats         Chat[]
+    events        EventAttendance[]
+    notifications UserNotification[]
 }
 
 model Player {
@@ -130,7 +130,8 @@ model Player {
     //14u to alumn
     address   Address? @relation(fields: [addressID], references: [id])
     addressID Int?
-    college   String?
+
+    college String?
 }
 
 model Admin {
@@ -232,6 +233,7 @@ model Message {
 
     sender User @relation(fields: [userID], references: [id])
     userID Int
+
     chat   Chat @relation(fields: [chatID], references: [id])
     chatID Int
 }
@@ -239,13 +241,22 @@ model Message {
 model Notification {
     id Int @id @default(autoincrement())
 
-    user   User @relation(fields: [userID], references: [id])
-    userID Int
+    users UserNotification[]
 
-    isRead    Boolean
     title     String
     body      String
     createdAt DateTime
+}
+
+model UserNotification {
+    user           User         @relation(fields: [userID], references: [id])
+    userID         Int
+    notification   Notification @relation(fields: [notificationID], references: [id])
+    notificationID Int
+
+    isRead Boolean @default(false)
+
+    @@id([userID, notificationID])
 }
 
 model Event {
