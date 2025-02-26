@@ -2,16 +2,15 @@
   "compilerOptions": {
     "composite": true,
     "declaration": true,
-    "declarationMap": true, 
-    "sourceMap": true, 
-    "outDir": "./dist", 
-    "rootDir": "./src", 
-    "module": "ESNext", 
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "module": "ESNext",
     "target": "ESNext",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "strict": true 
+    "strict": true
   },
   "include": ["src/**/*"]
 }
-
