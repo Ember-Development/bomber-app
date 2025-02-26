@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "api.ts",
-  "scripts": { 
-      "dev": "ts-node api.ts" 
+  "scripts": {
+    "dev": "ts-node api.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@bomber-app/utils":"workspace:*",
+    "@bomber-app/utils": "workspace:*",
     "@types/express": "^5.0.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
