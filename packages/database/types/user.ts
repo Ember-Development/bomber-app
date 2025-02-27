@@ -1,6 +1,6 @@
 import { Prisma } from '../generated/client';
 
-type UserRelations = {
+type Relations = {
   admin: { admin: true };
   coach: { coach: true };
   regCoach: { regCoach: true };
@@ -13,10 +13,9 @@ type UserRelations = {
   notifications: { notifications: true };
 };
 
-export type UserDynamic<R extends (keyof UserRelations)[]> =
-  Prisma.UserGetPayload<{
-    include: { [K in R[number]]: true };
-  }>;
+export type UserDynamic<R extends (keyof Relations)[]> = Prisma.UserGetPayload<{
+  include: { [K in R[number]]: true };
+}>;
 
 export type User = UserDynamic<
   [
