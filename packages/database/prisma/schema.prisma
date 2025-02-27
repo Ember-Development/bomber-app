@@ -224,8 +224,8 @@ model Chat {
 
     title String
 
-    users   User[]
-    message Message[]
+    users    User[]
+    messages Message[]
 }
 
 model Message {
