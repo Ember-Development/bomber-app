@@ -12,5 +12,5 @@ export type PlayerDynamic<R extends (keyof Relations)[]> =
     include: { [K in R[number]]: true };
   }>;
 
-export type Player = PlayerDynamic<['user', 'team', 'parents', 'address']>;
+export type PlayerFE = PlayerDynamic<['user', 'team', 'parents', 'address']>;
 export type PlayerDB = PlayerDynamic<[]>;

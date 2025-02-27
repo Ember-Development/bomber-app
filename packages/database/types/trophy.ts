@@ -9,5 +9,5 @@ export type TrophyDynamic<R extends (keyof Relations)[]> =
     include: { [K in R[number]]: true };
   }>;
 
-export type Trophy = TrophyDynamic<['team']>;
+export type TrophyFE = TrophyDynamic<['team']>;
 export type TrophyDB = TrophyDynamic<[]>;

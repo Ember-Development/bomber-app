@@ -9,5 +9,5 @@ export type ChatDynamic<R extends (keyof Relations)[]> = Prisma.ChatGetPayload<{
   include: { [K in R[number]]: true };
 }>;
 
-export type Chat = ChatDynamic<['users', 'messages']>;
+export type ChatFE = ChatDynamic<['users', 'messages']>;
 export type ChatDB = ChatDynamic<[]>;

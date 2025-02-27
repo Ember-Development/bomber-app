@@ -11,5 +11,5 @@ export type ParentDynamic<R extends (keyof Relations)[]> =
     include: { [K in R[number]]: true };
   }>;
 
-export type Admin = ParentDynamic<['user', 'address', 'children']>;
+export type AdminFE = ParentDynamic<['user', 'address', 'children']>;
 export type AdminDB = ParentDynamic<[]>;

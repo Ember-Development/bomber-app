@@ -17,7 +17,7 @@ export type UserDynamic<R extends (keyof Relations)[]> = Prisma.UserGetPayload<{
   include: { [K in R[number]]: true };
 }>;
 
-export type User = UserDynamic<
+export type UserFE = UserDynamic<
   [
     'admin',
     'coach',

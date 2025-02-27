@@ -8,6 +8,6 @@ export type FanDynamic<R extends (keyof Relations)[]> = Prisma.FanGetPayload<{
   include: { [K in R[number]]: true };
 }>;
 
-export type User = FanDynamic<['user']>;
+export type UserFE = FanDynamic<['user']>;
 
 export type UserDB = FanDynamic<[]>;
