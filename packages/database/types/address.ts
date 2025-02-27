@@ -10,5 +10,5 @@ export type AddressDynamic<R extends (keyof Relations)[]> =
     include: { [K in R[number]]: true };
   }>;
 
-export type Address = AddressDynamic<['players', 'parents']>;
+export type AddressFE = AddressDynamic<['players', 'parents']>;
 export type AddressDB = AddressDynamic<[]>;

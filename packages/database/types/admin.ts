@@ -9,5 +9,5 @@ export type AdminDynamic<R extends (keyof Relations)[]> =
     include: { [K in R[number]]: true };
   }>;
 
-export type Admin = AdminDynamic<['user']>;
+export type AdminFE = AdminDynamic<['user']>;
 export type AdminDB = AdminDynamic<[]>;

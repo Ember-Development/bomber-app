@@ -10,5 +10,5 @@ export type MessageDynamic<R extends (keyof Relations)[]> =
     include: { [K in R[number]]: true };
   }>;
 
-export type Message = MessageDynamic<['sender', 'chat']>;
+export type MessageFE = MessageDynamic<['sender', 'chat']>;
 export type MessageDB = MessageDynamic<[]>;

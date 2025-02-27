@@ -12,7 +12,7 @@ export type TeamDynamic<R extends (keyof Relations)[]> = Prisma.TeamGetPayload<{
   include: { [K in R[number]]: true };
 }>;
 
-export type Team = TeamDynamic<
+export type TeamFE = TeamDynamic<
   ['trophyCase', 'players', 'regCoaches', 'coaches', 'headCoach']
 >;
 export type TeamDB = TeamDynamic<[]>;

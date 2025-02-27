@@ -9,5 +9,5 @@ export type NotificationDynamic<R extends (keyof Relations)[]> =
     include: { [K in R[number]]: true };
   }>;
 
-export type Notification = NotificationDynamic<['users']>;
+export type NotificationFE = NotificationDynamic<['users']>;
 export type NotificationDB = NotificationDynamic<[]>;

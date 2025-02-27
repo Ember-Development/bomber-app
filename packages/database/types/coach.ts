@@ -11,5 +11,5 @@ export type CoachDynamic<R extends (keyof Relations)[]> =
     include: { [K in R[number]]: true };
   }>;
 
-export type Admin = CoachDynamic<['user', 'headTeams', 'teams']>;
+export type AdminFE = CoachDynamic<['user', 'headTeams', 'teams']>;
 export type AdminDB = CoachDynamic<[]>;

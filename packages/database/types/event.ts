@@ -10,5 +10,5 @@ export type EventDynamic<R extends (keyof Relations)[]> =
     include: { [K in R[number]]: true };
   }>;
 
-export type Event = EventDynamic<['attendees']>;
+export type EventFE = EventDynamic<['attendees']>;
 export type EventDB = EventDynamic<[]>;

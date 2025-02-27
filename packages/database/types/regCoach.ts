@@ -10,5 +10,5 @@ export type RegCoachDynamic<R extends (keyof Relations)[]> =
     include: { [K in R[number]]: true };
   }>;
 
-export type Admin = RegCoachDynamic<['user', 'teams']>;
+export type AdminFE = RegCoachDynamic<['user', 'teams']>;
 export type AdminDB = RegCoachDynamic<[]>;

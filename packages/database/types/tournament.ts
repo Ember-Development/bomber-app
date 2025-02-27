@@ -9,5 +9,5 @@ export type TournamentDynamic<R extends (keyof Relations)[]> =
     include: { [K in R[number]]: true };
   }>;
 
-export type Tournament = TournamentDynamic<['events']>;
+export type TournamentFE = TournamentDynamic<['events']>;
 export type TournamentDB = TournamentDynamic<[]>;
