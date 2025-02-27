@@ -203,6 +203,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@bomber-app/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@bomber-app/utils':
         specifier: workspace:*
         version: link:../../packages/utils
