@@ -1,0 +1,298 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DB_URI")
+}
+
+enum AttendanceStatus {
+    PENDING
+    ATTENDING
+    MAYBE
+    DECLINED
+}
+
+enum EventType {
+    TOURNAMENT
+    PRACTICE
+    GLOBAL
+}
+
+enum UserRole {
+    ADMIN
+    COACH
+    REGIONAL_COACH
+    PLAYER
+    FAN
+}
+
+enum Regions {
+    NORTHWEST
+    SOUTHWEST
+    SOUTH
+    SOUTHEAST
+    NORTHEAST
+    MIDWEST
+}
+
+enum AgeGroup {
+    U8
+    U10
+    U12
+    U14
+    U16
+    U18
+    ALUMNI
+}
+
+enum Position {
+    PITCHER
+    CATCHER
+    FIRST_BASE
+    SECOND_BASE
+    THIRD_BASE
+    SHORTSTOP
+    LEFT_FIELD
+    CENTER_FIELD
+    RIGHT_FIELD
+    DESIGNATED_HITTER
+}
+
+enum UniformSize {
+    YS
+    YM
+    YL
+    AS
+    AM
+    AL
+    AXL
+    A2XL
+}
+
+model User {
+    id    Int     @id @default(autoincrement())
+    email String? @unique // constrain: all 12u and under players
+    phone String? //@pattern("^\+?[1-9]\d{1,14}$") // constrain: all but player, fan, and admin
+    pass  String
+    fname String
+    lname String
+
+    primaryRole UserRole
+    admin       Admin?
+    coach       Coach?
+    regCoach    RegCoach?
+    player      Player?
+    parent      Parent?
+    fan         Fan?
+
+    sentMessages  Message[]
+    chats         Chat[]
+    events        EventAttendance[]
+    notifications UserNotification[]
+}
+
+model Player {
+    id Int @id @default(autoincrement())
+
+    pos1      Position
+    pos2      Position
+    jerseyNum String //@pattern("^[0-9]{1,2}$")
+    gradYear  String //@pattern("^20[2-9][0-9]$")
+
+    jerseySize        UniformSize
+    pantSize          UniformSize
+    stirrupSize       UniformSize
+    shortSize         UniformSize
+    practiceShortSize UniformSize
+
+    ageGroup AgeGroup
+
+    user   User @relation(fields: [userID], references: [id])
+    userID Int  @unique
+
+    team   Team @relation(fields: [teamID], references: [id])
+    teamID Int
+
+    //8-14u
+    parents Parent[]
+
+    //14u only
+    isTrusted Boolean?
+
+    //14u to alumn
+    address   Address? @relation(fields: [addressID], references: [id])
+    addressID Int?
+
+    college String?
+}
+
+model Admin {
+    id     Int  @id @default(autoincrement())
+    user   User @relation(fields: [userID], references: [id])
+    userID Int  @unique
+}
+
+model Fan {
+    id     Int  @id @default(autoincrement())
+    user   User @relation(fields: [userID], references: [id])
+    userID Int  @unique
+}
+
+model Coach {
+    id Int @id @default(autoincrement())
+
+    user   User @relation(fields: [userID], references: [id])
+    userID Int  @unique
+
+    headTeams Team[]
+    teams     Team[] @relation("CoachTeams")
+}
+
+model RegCoach {
+    id     Int  @id @default(autoincrement())
+    user   User @relation(fields: [userID], references: [id])
+    userID Int  @unique
+
+    region Regions @unique //one regCoach per region, allows queries for team by regional coach
+}
+
+model Team {
+    id Int @id @default(autoincrement())
+
+    name     String
+    ageGroup AgeGroup
+    region   Regions
+
+    trophyCase Trophy[]
+
+    players Player[]
+
+    coaches     Coach[] @relation("CoachTeams")
+    headCoach   Coach   @relation(fields: [headCoachID], references: [id])
+    headCoachID Int
+}
+
+model Trophy {
+    id Int @id @default(autoincrement())
+
+    title    String
+    imageURL String
+
+    team   Team? @relation(fields: [teamID], references: [id])
+    teamID Int
+}
+
+model Parent {
+    id Int @id @default(autoincrement())
+
+    children Player[]
+
+    address   Address @relation(fields: [addressID], references: [id])
+    addressID Int
+
+    user   User @relation(fields: [userID], references: [id])
+    userID Int  @unique
+}
+
+model Address {
+    id Int @id @default(autoincrement())
+
+    //TODO: see if we can get location enums, if not no worries
+    state    String
+    city     String
+    zip      String
+    address1 String
+    address2 String?
+
+    players Player[]
+    parents Parent[]
+}
+
+model Chat {
+    id Int @id @default(autoincrement())
+
+    title String
+
+    users   User[]
+    message Message[]
+}
+
+model Message {
+    id Int @id @default(autoincrement())
+
+    text      String
+    createdAt DateTime
+
+    sender User @relation(fields: [userID], references: [id])
+    userID Int
+
+    chat   Chat @relation(fields: [chatID], references: [id])
+    chatID Int
+}
+
+model Notification {
+    id Int @id @default(autoincrement())
+
+    users UserNotification[]
+
+    title     String
+    body      String
+    createdAt DateTime
+}
+
+model UserNotification {
+    user           User         @relation(fields: [userID], references: [id])
+    userID         Int
+    notification   Notification @relation(fields: [notificationID], references: [id])
+    notificationID Int
+
+    isRead Boolean @default(false)
+
+    @@id([userID, notificationID])
+}
+
+model Event {
+    id Int @id @default(autoincrement())
+
+    tournament   Tournament? @relation(fields: [tournamentID], references: [id])
+    tournamentID Int?
+
+    eventType EventType
+
+    start DateTime
+    end   DateTime
+
+    attendees EventAttendance[] // constraint: DO NOT fill this for global events
+}
+
+model EventAttendance {
+    id Int @id @default(autoincrement())
+
+    user    User  @relation(fields: [userID], references: [id])
+    userID  Int
+    event   Event @relation(fields: [eventID], references: [id])
+    eventID Int
+
+    status AttendanceStatus @default(PENDING)
+
+    @@unique([userID, eventID])
+}
+
+model Tournament {
+    id Int @id @default(autoincrement())
+
+    title String
+    body  String
+
+    imageURL String
+
+    events Event[]
+}
