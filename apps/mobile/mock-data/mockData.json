@@ -1,0 +1,226 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "fname": "User1",
+      "lname": "Last1",
+      "email": "user1@example.com",
+      "phone": "+1234567891",
+      "primaryRole": "FAN"
+    },
+    {
+      "id": 2,
+      "fname": "User2",
+      "lname": "Last2",
+      "email": "user2@example.com",
+      "phone": "+1234567892",
+      "primaryRole": "COACH"
+    },
+    {
+      "id": 3,
+      "fname": "User3",
+      "lname": "Last3",
+      "email": "user3@example.com",
+      "phone": "+1234567893",
+      "primaryRole": "ADMIN"
+    },
+    {
+      "id": 4,
+      "fname": "User4",
+      "lname": "Last4",
+      "email": "user4@example.com",
+      "phone": "+1234567894",
+      "primaryRole": "FAN"
+    },
+    {
+      "id": 5,
+      "fname": "User5",
+      "lname": "Last5",
+      "email": "user5@example.com",
+      "phone": "+1234567895",
+      "primaryRole": "ADMIN"
+    }
+  ],
+  "chats": [
+    {
+      "id": 1,
+      "title": "Texas Bombers 16U",
+      "users": [
+        {
+          "id": 3,
+          "fname": "User3",
+          "lname": "Last3"
+        },
+        {
+          "id": 1,
+          "fname": "User1",
+          "lname": "Last1"
+        },
+        {
+          "id": 5,
+          "fname": "User5",
+          "lname": "Last5"
+        }
+      ],
+      "messages": [
+        {
+          "id": 1,
+          "text": "Message 1 in Group Chat 1",
+          "createdAt": "2025-03-01T09:51:02.358814",
+          "sender": {
+            "id": 4,
+            "fname": "User4",
+            "lname": "Last4"
+          },
+          "chat": 1
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "TX Bombers Pitchers",
+      "users": [
+        {
+          "id": 5,
+          "fname": "User5",
+          "lname": "Last5"
+        },
+        {
+          "id": 2,
+          "fname": "User2",
+          "lname": "Last2"
+        },
+        {
+          "id": 1,
+          "fname": "User1",
+          "lname": "Last1"
+        },
+        {
+          "id": 3,
+          "fname": "User3",
+          "lname": "Last3"
+        }
+      ],
+      "messages": [
+        {
+          "id": 2,
+          "text": "Message 2 in Group Chat 2",
+          "createdAt": "2025-03-01T16:49:02.358835",
+          "sender": {
+            "id": 3,
+            "fname": "User3",
+            "lname": "Last3"
+          },
+          "chat": 2
+        },
+        {
+          "id": 6,
+          "text": "Message 6 in Group Chat 2",
+          "createdAt": "2025-03-01T13:28:02.358863",
+          "sender": {
+            "id": 3,
+            "fname": "User3",
+            "lname": "Last3"
+          },
+          "chat": 2
+        },
+        {
+          "id": 7,
+          "text": "Message 7 in Group Chat 2",
+          "createdAt": "2025-03-01T08:25:02.358869",
+          "sender": {
+            "id": 3,
+            "fname": "User3",
+            "lname": "Last3"
+          },
+          "chat": 2
+        },
+        {
+          "id": 8,
+          "text": "Message 8 in Group Chat 2",
+          "createdAt": "2025-03-01T13:16:02.358877",
+          "sender": {
+            "id": 2,
+            "fname": "User2",
+            "lname": "Last2"
+          },
+          "chat": 2
+        },
+        {
+          "id": 9,
+          "text": "Message 9 in Group Chat 2",
+          "createdAt": "2025-03-01T05:18:02.358884",
+          "sender": {
+            "id": 5,
+            "fname": "User5",
+            "lname": "Last5"
+          },
+          "chat": 2
+        },
+        {
+          "id": 10,
+          "text": "Message 10 in Group Chat 2",
+          "createdAt": "2025-03-01T17:22:02.358890",
+          "sender": {
+            "id": 5,
+            "fname": "User5",
+            "lname": "Last5"
+          },
+          "chat": 2
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Bombers Global",
+      "users": [
+        {
+          "id": 4,
+          "fname": "User4",
+          "lname": "Last4"
+        },
+        {
+          "id": 5,
+          "fname": "User5",
+          "lname": "Last5"
+        }
+      ],
+      "messages": [
+        {
+          "id": 3,
+          "text": "Message 3 in Group Chat 3",
+          "createdAt": "2025-03-01T06:42:02.358842",
+          "sender": {
+            "id": 3,
+            "fname": "User3",
+            "lname": "Last3"
+          },
+          "chat": 3
+        },
+        {
+          "id": 4,
+          "text": "Message 4 in Group Chat 3",
+          "createdAt": "2025-03-01T15:11:02.358848",
+          "sender": {
+            "id": 1,
+            "fname": "User1",
+            "lname": "Last1"
+          },
+          "chat": 3
+        },
+        {
+          "id": 5,
+          "text": "Message 5 in Group Chat 3",
+          "createdAt": "2025-03-01T04:36:02.358854",
+          "sender": {
+            "id": 3,
+            "fname": "User3",
+            "lname": "Last3"
+          },
+          "chat": 3
+        }
+      ]
+    }
+  ],
+  "messages": []
+}
