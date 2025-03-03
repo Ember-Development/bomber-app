@@ -36,12 +36,25 @@ enum UserRole {
 }
 
 enum Regions {
-    NORTHWEST
-    SOUTHWEST
-    SOUTH
-    SOUTHEAST
-    NORTHEAST
-    MIDWEST
+    NW
+    SW
+    S
+    SE
+    NE
+    MW
+}
+
+enum PantsSize {
+    SIZE_20
+    SIZE_22
+    SIZE_24
+    SIZE_26
+    SIZE_30
+    SIZE_32
+    SIZE_33
+    SIZE_34
+    SIZE_36
+    SIZE_38
 }
 
 enum AgeGroup {
@@ -67,13 +80,30 @@ enum Position {
     DESIGNATED_HITTER
 }
 
-enum UniformSize {
+enum JerseySize {
+    YXS
     YS
     YM
     YL
+    YXL
     AS
     AM
     AL
+    AXL
+    A2XL
+}
+
+enum StirrupSize {
+    SM
+    LG
+    XL
+}
+
+enum ShortsSize {
+    YXL
+    ASM
+    AMD
+    ALG
     AXL
     A2XL
 }
@@ -108,11 +138,11 @@ model Player {
     jerseyNum String   @db.Uuid //@pattern("^[0-9]{1,2}$")
     gradYear  String   @db.Uuid //@pattern("^20[2-9][0-9]$")
 
-    jerseySize        UniformSize
-    pantSize          UniformSize
-    stirrupSize       UniformSize
-    shortSize         UniformSize
-    practiceShortSize UniformSize
+    jerseySize        JerseySize
+    pantSize          PantsSize
+    stirrupSize       StirrupSize
+    shortSize         ShortsSize
+    practiceShortSize ShortsSize
 
     ageGroup AgeGroup
 
