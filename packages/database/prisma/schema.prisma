@@ -6,6 +6,7 @@
 
 generator client {
     provider = "prisma-client-js"
+    output   = "../generated/client"
 }
 
 datasource db {
@@ -161,6 +162,7 @@ model RegCoach {
     user   User @relation(fields: [userID], references: [id])
     userID Int  @unique
 
+    teams  Team[]
     region Regions @unique //one regCoach per region, allows queries for team by regional coach
 }
 
@@ -175,8 +177,9 @@ model Team {
 
     players Player[]
 
-    coaches     Coach[] @relation("CoachTeams")
-    headCoach   Coach   @relation(fields: [headCoachID], references: [id])
+    regCoaches  RegCoach[]
+    coaches     Coach[]    @relation("CoachTeams")
+    headCoach   Coach      @relation(fields: [headCoachID], references: [id])
     headCoachID Int
 }
 
@@ -221,8 +224,8 @@ model Chat {
 
     title String
 
-    users   User[]
-    message Message[]
+    users    User[]
+    messages Message[]
 }
 
 model Message {
