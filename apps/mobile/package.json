@@ -16,6 +16,7 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "@bomber-app/database": "workspace:*",
     "@bomber-app/utils": "workspace:*",
     "@expo/ngrok": "^4.1.0",
     "@expo/vector-icons": "^14.0.2",
