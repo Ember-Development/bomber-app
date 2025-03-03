@@ -79,12 +79,12 @@ enum UniformSize {
 }
 
 model User {
-    id    Int     @id @default(autoincrement())
-    email String? @unique // constrain: all 12u and under players
-    phone String? //@pattern("^\+?[1-9]\d{1,14}$") // constrain: all but player, fan, and admin
-    pass  String
-    fname String
-    lname String
+    id    String  @id @default(uuid()) @db.Uuid
+    email String? @unique @db.Uuid // constrain: all 12u and under players
+    phone String? @db.Uuid //@pattern("^\+?[1-9]\d{1,14}$") // constrain: all but player, fan, and admin
+    pass  String  @db.Uuid
+    fname String  @db.Uuid
+    lname String  @db.Uuid
 
     primaryRole UserRole
     admin       Admin?
@@ -95,18 +95,18 @@ model User {
     fan         Fan?
 
     sentMessages  Message[]
-    chats         Chat[]
+    chats         UserChat[]
     events        EventAttendance[]
     notifications UserNotification[]
 }
 
 model Player {
-    id Int @id @default(autoincrement())
+    id String @id @default(uuid()) @db.Uuid
 
     pos1      Position
     pos2      Position
-    jerseyNum String //@pattern("^[0-9]{1,2}$")
-    gradYear  String //@pattern("^20[2-9][0-9]$")
+    jerseyNum String   @db.Uuid //@pattern("^[0-9]{1,2}$")
+    gradYear  String   @db.Uuid //@pattern("^20[2-9][0-9]$")
 
     jerseySize        UniformSize
     pantSize          UniformSize
@@ -116,11 +116,11 @@ model Player {
 
     ageGroup AgeGroup
 
-    user   User @relation(fields: [userID], references: [id])
-    userID Int  @unique
+    user   User   @relation(fields: [userID], references: [id])
+    userID String @unique @db.Uuid
 
-    team   Team @relation(fields: [teamID], references: [id])
-    teamID Int
+    team   Team   @relation(fields: [teamID], references: [id])
+    teamID String @db.Uuid
 
     //8-14u
     parents Parent[]
@@ -130,44 +130,44 @@ model Player {
 
     //14u to alumn
     address   Address? @relation(fields: [addressID], references: [id])
-    addressID Int?
+    addressID String?  @db.Uuid
 
     college String?
 }
 
 model Admin {
-    id     Int  @id @default(autoincrement())
-    user   User @relation(fields: [userID], references: [id])
-    userID Int  @unique
+    id     String @id @default(uuid()) @db.Uuid
+    user   User   @relation(fields: [userID], references: [id])
+    userID String @unique @db.Uuid
 }
 
 model Fan {
-    id     Int  @id @default(autoincrement())
-    user   User @relation(fields: [userID], references: [id])
-    userID Int  @unique
+    id     String @id @default(uuid()) @db.Uuid
+    user   User   @relation(fields: [userID], references: [id])
+    userID String @unique @db.Uuid
 }
 
 model Coach {
-    id Int @id @default(autoincrement())
+    id String @id @default(uuid()) @db.Uuid
 
-    user   User @relation(fields: [userID], references: [id])
-    userID Int  @unique
+    user   User   @relation(fields: [userID], references: [id])
+    userID String @unique @db.Uuid
 
     headTeams Team[]
     teams     Team[] @relation("CoachTeams")
 }
 
 model RegCoach {
-    id     Int  @id @default(autoincrement())
-    user   User @relation(fields: [userID], references: [id])
-    userID Int  @unique
+    id     String @id @default(uuid()) @db.Uuid
+    user   User   @relation(fields: [userID], references: [id])
+    userID String @unique @db.Uuid
 
     teams  Team[]
     region Regions @unique //one regCoach per region, allows queries for team by regional coach
 }
 
 model Team {
-    id Int @id @default(autoincrement())
+    id String @id @default(uuid()) @db.Uuid
 
     name     String
     ageGroup AgeGroup
@@ -180,33 +180,33 @@ model Team {
     regCoaches  RegCoach[]
     coaches     Coach[]    @relation("CoachTeams")
     headCoach   Coach      @relation(fields: [headCoachID], references: [id])
-    headCoachID Int
+    headCoachID String     @db.Uuid
 }
 
 model Trophy {
-    id Int @id @default(autoincrement())
+    id String @id @default(uuid()) @db.Uuid
 
     title    String
     imageURL String
 
-    team   Team? @relation(fields: [teamID], references: [id])
-    teamID Int
+    team   Team?  @relation(fields: [teamID], references: [id])
+    teamID String @db.Uuid
 }
 
 model Parent {
-    id Int @id @default(autoincrement())
+    id String @id @default(uuid()) @db.Uuid
 
     children Player[]
 
     address   Address @relation(fields: [addressID], references: [id])
-    addressID Int
+    addressID String  @db.Uuid
 
-    user   User @relation(fields: [userID], references: [id])
-    userID Int  @unique
+    user   User   @relation(fields: [userID], references: [id])
+    userID String @unique @db.Uuid
 }
 
 model Address {
-    id Int @id @default(autoincrement())
+    id String @id @default(uuid()) @db.Uuid
 
     //TODO: see if we can get location enums, if not no worries
     state    String
@@ -220,29 +220,40 @@ model Address {
 }
 
 model Chat {
-    id Int @id @default(autoincrement())
+    id String @id @default(uuid()) @db.Uuid
 
     title String
 
-    users    User[]
+    users    UserChat[]
     messages Message[]
 }
 
+model UserChat {
+    user   User   @relation(fields: [userID], references: [id])
+    userID String @db.Uuid
+    chat   Chat   @relation(fields: [chatID], references: [id])
+    chatID String @db.Uuid
+
+    joinedAt DateTime
+
+    @@id([userID, chatID])
+}
+
 model Message {
-    id Int @id @default(autoincrement())
+    id String @id @default(uuid()) @db.Uuid
 
     text      String
     createdAt DateTime
 
-    sender User @relation(fields: [userID], references: [id])
-    userID Int
+    sender User   @relation(fields: [userID], references: [id])
+    userID String @db.Uuid
 
-    chat   Chat @relation(fields: [chatID], references: [id])
-    chatID Int
+    chat   Chat   @relation(fields: [chatID], references: [id])
+    chatID String @db.Uuid
 }
 
 model Notification {
-    id Int @id @default(autoincrement())
+    id String @id @default(uuid()) @db.Uuid
 
     users UserNotification[]
 
@@ -253,9 +264,9 @@ model Notification {
 
 model UserNotification {
     user           User         @relation(fields: [userID], references: [id])
-    userID         Int
+    userID         String       @db.Uuid
     notification   Notification @relation(fields: [notificationID], references: [id])
-    notificationID Int
+    notificationID String       @db.Uuid
 
     isRead Boolean @default(false)
 
@@ -263,10 +274,10 @@ model UserNotification {
 }
 
 model Event {
-    id Int @id @default(autoincrement())
+    id String @id @default(uuid()) @db.Uuid
 
     tournament   Tournament? @relation(fields: [tournamentID], references: [id])
-    tournamentID Int?
+    tournamentID String?     @db.Uuid
 
     eventType EventType
 
@@ -277,12 +288,12 @@ model Event {
 }
 
 model EventAttendance {
-    id Int @id @default(autoincrement())
+    id String @id @default(uuid()) @db.Uuid
 
-    user    User  @relation(fields: [userID], references: [id])
-    userID  Int
-    event   Event @relation(fields: [eventID], references: [id])
-    eventID Int
+    user    User   @relation(fields: [userID], references: [id])
+    userID  String @db.Uuid
+    event   Event  @relation(fields: [eventID], references: [id])
+    eventID String @db.Uuid
 
     status AttendanceStatus @default(PENDING)
 
@@ -290,10 +301,10 @@ model EventAttendance {
 }
 
 model Tournament {
-    id Int @id @default(autoincrement())
+    id String @id @default(uuid()) @db.Uuid
 
-    title String
-    body  String
+    title String @db.Uuid
+    body  String @db.Uuid
 
     imageURL String
 
