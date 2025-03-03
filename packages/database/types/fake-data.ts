@@ -1,42 +1,133 @@
-import { AttendanceStatus, EventType, UserRole, Regions, AgeGroup, Position, UniformSize } from '/Users/braedon/ember/bomber-app/packages/database/generated/client';
+import {
+  AttendanceStatus,
+  EventType,
+  UserRole,
+  Regions,
+  PantsSize,
+  AgeGroup,
+  Position,
+  JerseySize,
+  StirrupSize,
+  ShortsSize,
+} from '/Users/braedon/ember/bomber-app/packages/database/generated/client';
 import { faker } from '@faker-js/faker';
 import Decimal from 'decimal.js';
 
-
-
 export function fakeUser() {
   return {
-    email: undefined,
+    email: faker.internet.email(),
     phone: undefined,
     pass: faker.lorem.words(5),
     fname: faker.lorem.words(5),
     lname: faker.lorem.words(5),
-    primaryRole: faker.helpers.arrayElement([UserRole.ADMIN, UserRole.COACH, UserRole.REGIONAL_COACH, UserRole.PLAYER, UserRole.FAN] as const),
+    primaryRole: faker.helpers.arrayElement([
+      UserRole.ADMIN,
+      UserRole.COACH,
+      UserRole.REGIONAL_COACH,
+      UserRole.PLAYER,
+      UserRole.FAN,
+    ] as const),
   };
 }
 export function fakeUserComplete() {
   return {
     id: faker.string.uuid(),
-    email: undefined,
+    email: faker.internet.email(),
     phone: undefined,
     pass: faker.lorem.words(5),
     fname: faker.lorem.words(5),
     lname: faker.lorem.words(5),
-    primaryRole: faker.helpers.arrayElement([UserRole.ADMIN, UserRole.COACH, UserRole.REGIONAL_COACH, UserRole.PLAYER, UserRole.FAN] as const),
+    primaryRole: faker.helpers.arrayElement([
+      UserRole.ADMIN,
+      UserRole.COACH,
+      UserRole.REGIONAL_COACH,
+      UserRole.PLAYER,
+      UserRole.FAN,
+    ] as const),
   };
 }
 export function fakePlayer() {
   return {
-    pos1: faker.helpers.arrayElement([Position.PITCHER, Position.CATCHER, Position.FIRST_BASE, Position.SECOND_BASE, Position.THIRD_BASE, Position.SHORTSTOP, Position.LEFT_FIELD, Position.CENTER_FIELD, Position.RIGHT_FIELD, Position.DESIGNATED_HITTER] as const),
-    pos2: faker.helpers.arrayElement([Position.PITCHER, Position.CATCHER, Position.FIRST_BASE, Position.SECOND_BASE, Position.THIRD_BASE, Position.SHORTSTOP, Position.LEFT_FIELD, Position.CENTER_FIELD, Position.RIGHT_FIELD, Position.DESIGNATED_HITTER] as const),
+    pos1: faker.helpers.arrayElement([
+      Position.PITCHER,
+      Position.CATCHER,
+      Position.FIRST_BASE,
+      Position.SECOND_BASE,
+      Position.THIRD_BASE,
+      Position.SHORTSTOP,
+      Position.LEFT_FIELD,
+      Position.CENTER_FIELD,
+      Position.RIGHT_FIELD,
+      Position.DESIGNATED_HITTER,
+    ] as const),
+    pos2: faker.helpers.arrayElement([
+      Position.PITCHER,
+      Position.CATCHER,
+      Position.FIRST_BASE,
+      Position.SECOND_BASE,
+      Position.THIRD_BASE,
+      Position.SHORTSTOP,
+      Position.LEFT_FIELD,
+      Position.CENTER_FIELD,
+      Position.RIGHT_FIELD,
+      Position.DESIGNATED_HITTER,
+    ] as const),
     jerseyNum: faker.lorem.words(5),
     gradYear: faker.lorem.words(5),
-    jerseySize: faker.helpers.arrayElement([UniformSize.YS, UniformSize.YM, UniformSize.YL, UniformSize.AS, UniformSize.AM, UniformSize.AL, UniformSize.AXL, UniformSize.A2XL] as const),
-    pantSize: faker.helpers.arrayElement([UniformSize.YS, UniformSize.YM, UniformSize.YL, UniformSize.AS, UniformSize.AM, UniformSize.AL, UniformSize.AXL, UniformSize.A2XL] as const),
-    stirrupSize: faker.helpers.arrayElement([UniformSize.YS, UniformSize.YM, UniformSize.YL, UniformSize.AS, UniformSize.AM, UniformSize.AL, UniformSize.AXL, UniformSize.A2XL] as const),
-    shortSize: faker.helpers.arrayElement([UniformSize.YS, UniformSize.YM, UniformSize.YL, UniformSize.AS, UniformSize.AM, UniformSize.AL, UniformSize.AXL, UniformSize.A2XL] as const),
-    practiceShortSize: faker.helpers.arrayElement([UniformSize.YS, UniformSize.YM, UniformSize.YL, UniformSize.AS, UniformSize.AM, UniformSize.AL, UniformSize.AXL, UniformSize.A2XL] as const),
-    ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
+    jerseySize: faker.helpers.arrayElement([
+      JerseySize.YXS,
+      JerseySize.YS,
+      JerseySize.YM,
+      JerseySize.YL,
+      JerseySize.YXL,
+      JerseySize.AS,
+      JerseySize.AM,
+      JerseySize.AL,
+      JerseySize.AXL,
+      JerseySize.A2XL,
+    ] as const),
+    pantSize: faker.helpers.arrayElement([
+      PantsSize.SIZE_20,
+      PantsSize.SIZE_22,
+      PantsSize.SIZE_24,
+      PantsSize.SIZE_26,
+      PantsSize.SIZE_30,
+      PantsSize.SIZE_32,
+      PantsSize.SIZE_33,
+      PantsSize.SIZE_34,
+      PantsSize.SIZE_36,
+      PantsSize.SIZE_38,
+    ] as const),
+    stirrupSize: faker.helpers.arrayElement([
+      StirrupSize.SM,
+      StirrupSize.LG,
+      StirrupSize.XL,
+    ] as const),
+    shortSize: faker.helpers.arrayElement([
+      ShortsSize.YXL,
+      ShortsSize.ASM,
+      ShortsSize.AMD,
+      ShortsSize.ALG,
+      ShortsSize.AXL,
+      ShortsSize.A2XL,
+    ] as const),
+    practiceShortSize: faker.helpers.arrayElement([
+      ShortsSize.YXL,
+      ShortsSize.ASM,
+      ShortsSize.AMD,
+      ShortsSize.ALG,
+      ShortsSize.AXL,
+      ShortsSize.A2XL,
+    ] as const),
+    ageGroup: faker.helpers.arrayElement([
+      AgeGroup.U8,
+      AgeGroup.U10,
+      AgeGroup.U12,
+      AgeGroup.U14,
+      AgeGroup.U16,
+      AgeGroup.U18,
+      AgeGroup.ALUMNI,
+    ] as const),
     isTrusted: undefined,
     college: undefined,
   };
@@ -44,17 +135,87 @@ export function fakePlayer() {
 export function fakePlayerComplete() {
   return {
     id: faker.string.uuid(),
-    pos1: faker.helpers.arrayElement([Position.PITCHER, Position.CATCHER, Position.FIRST_BASE, Position.SECOND_BASE, Position.THIRD_BASE, Position.SHORTSTOP, Position.LEFT_FIELD, Position.CENTER_FIELD, Position.RIGHT_FIELD, Position.DESIGNATED_HITTER] as const),
-    pos2: faker.helpers.arrayElement([Position.PITCHER, Position.CATCHER, Position.FIRST_BASE, Position.SECOND_BASE, Position.THIRD_BASE, Position.SHORTSTOP, Position.LEFT_FIELD, Position.CENTER_FIELD, Position.RIGHT_FIELD, Position.DESIGNATED_HITTER] as const),
+    pos1: faker.helpers.arrayElement([
+      Position.PITCHER,
+      Position.CATCHER,
+      Position.FIRST_BASE,
+      Position.SECOND_BASE,
+      Position.THIRD_BASE,
+      Position.SHORTSTOP,
+      Position.LEFT_FIELD,
+      Position.CENTER_FIELD,
+      Position.RIGHT_FIELD,
+      Position.DESIGNATED_HITTER,
+    ] as const),
+    pos2: faker.helpers.arrayElement([
+      Position.PITCHER,
+      Position.CATCHER,
+      Position.FIRST_BASE,
+      Position.SECOND_BASE,
+      Position.THIRD_BASE,
+      Position.SHORTSTOP,
+      Position.LEFT_FIELD,
+      Position.CENTER_FIELD,
+      Position.RIGHT_FIELD,
+      Position.DESIGNATED_HITTER,
+    ] as const),
     jerseyNum: faker.lorem.words(5),
     gradYear: faker.lorem.words(5),
-    jerseySize: faker.helpers.arrayElement([UniformSize.YS, UniformSize.YM, UniformSize.YL, UniformSize.AS, UniformSize.AM, UniformSize.AL, UniformSize.AXL, UniformSize.A2XL] as const),
-    pantSize: faker.helpers.arrayElement([UniformSize.YS, UniformSize.YM, UniformSize.YL, UniformSize.AS, UniformSize.AM, UniformSize.AL, UniformSize.AXL, UniformSize.A2XL] as const),
-    stirrupSize: faker.helpers.arrayElement([UniformSize.YS, UniformSize.YM, UniformSize.YL, UniformSize.AS, UniformSize.AM, UniformSize.AL, UniformSize.AXL, UniformSize.A2XL] as const),
-    shortSize: faker.helpers.arrayElement([UniformSize.YS, UniformSize.YM, UniformSize.YL, UniformSize.AS, UniformSize.AM, UniformSize.AL, UniformSize.AXL, UniformSize.A2XL] as const),
-    practiceShortSize: faker.helpers.arrayElement([UniformSize.YS, UniformSize.YM, UniformSize.YL, UniformSize.AS, UniformSize.AM, UniformSize.AL, UniformSize.AXL, UniformSize.A2XL] as const),
-    ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
-    userID: faker.string.uuid(),
+    jerseySize: faker.helpers.arrayElement([
+      JerseySize.YXS,
+      JerseySize.YS,
+      JerseySize.YM,
+      JerseySize.YL,
+      JerseySize.YXL,
+      JerseySize.AS,
+      JerseySize.AM,
+      JerseySize.AL,
+      JerseySize.AXL,
+      JerseySize.A2XL,
+    ] as const),
+    pantSize: faker.helpers.arrayElement([
+      PantsSize.SIZE_20,
+      PantsSize.SIZE_22,
+      PantsSize.SIZE_24,
+      PantsSize.SIZE_26,
+      PantsSize.SIZE_30,
+      PantsSize.SIZE_32,
+      PantsSize.SIZE_33,
+      PantsSize.SIZE_34,
+      PantsSize.SIZE_36,
+      PantsSize.SIZE_38,
+    ] as const),
+    stirrupSize: faker.helpers.arrayElement([
+      StirrupSize.SM,
+      StirrupSize.LG,
+      StirrupSize.XL,
+    ] as const),
+    shortSize: faker.helpers.arrayElement([
+      ShortsSize.YXL,
+      ShortsSize.ASM,
+      ShortsSize.AMD,
+      ShortsSize.ALG,
+      ShortsSize.AXL,
+      ShortsSize.A2XL,
+    ] as const),
+    practiceShortSize: faker.helpers.arrayElement([
+      ShortsSize.YXL,
+      ShortsSize.ASM,
+      ShortsSize.AMD,
+      ShortsSize.ALG,
+      ShortsSize.AXL,
+      ShortsSize.A2XL,
+    ] as const),
+    ageGroup: faker.helpers.arrayElement([
+      AgeGroup.U8,
+      AgeGroup.U10,
+      AgeGroup.U12,
+      AgeGroup.U14,
+      AgeGroup.U16,
+      AgeGroup.U18,
+      AgeGroup.ALUMNI,
+    ] as const),
+    userID: undefined,
     teamID: faker.string.uuid(),
     isTrusted: undefined,
     addressID: undefined,
@@ -81,29 +242,73 @@ export function fakeCoachComplete() {
 }
 export function fakeRegCoach() {
   return {
-    region: faker.helpers.arrayElement([Regions.NORTHWEST, Regions.SOUTHWEST, Regions.SOUTH, Regions.SOUTHEAST, Regions.NORTHEAST, Regions.MIDWEST] as const),
+    region: faker.helpers.arrayElement([
+      Regions.NW,
+      Regions.SW,
+      Regions.S,
+      Regions.SE,
+      Regions.NE,
+      Regions.MW,
+    ] as const),
   };
 }
 export function fakeRegCoachComplete() {
   return {
     id: faker.string.uuid(),
     userID: faker.string.uuid(),
-    region: faker.helpers.arrayElement([Regions.NORTHWEST, Regions.SOUTHWEST, Regions.SOUTH, Regions.SOUTHEAST, Regions.NORTHEAST, Regions.MIDWEST] as const),
+    region: faker.helpers.arrayElement([
+      Regions.NW,
+      Regions.SW,
+      Regions.S,
+      Regions.SE,
+      Regions.NE,
+      Regions.MW,
+    ] as const),
   };
 }
 export function fakeTeam() {
   return {
     name: faker.person.fullName(),
-    ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
-    region: faker.helpers.arrayElement([Regions.NORTHWEST, Regions.SOUTHWEST, Regions.SOUTH, Regions.SOUTHEAST, Regions.NORTHEAST, Regions.MIDWEST] as const),
+    ageGroup: faker.helpers.arrayElement([
+      AgeGroup.U8,
+      AgeGroup.U10,
+      AgeGroup.U12,
+      AgeGroup.U14,
+      AgeGroup.U16,
+      AgeGroup.U18,
+      AgeGroup.ALUMNI,
+    ] as const),
+    region: faker.helpers.arrayElement([
+      Regions.NW,
+      Regions.SW,
+      Regions.S,
+      Regions.SE,
+      Regions.NE,
+      Regions.MW,
+    ] as const),
   };
 }
 export function fakeTeamComplete() {
   return {
     id: faker.string.uuid(),
     name: faker.person.fullName(),
-    ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
-    region: faker.helpers.arrayElement([Regions.NORTHWEST, Regions.SOUTHWEST, Regions.SOUTH, Regions.SOUTHEAST, Regions.NORTHEAST, Regions.MIDWEST] as const),
+    ageGroup: faker.helpers.arrayElement([
+      AgeGroup.U8,
+      AgeGroup.U10,
+      AgeGroup.U12,
+      AgeGroup.U14,
+      AgeGroup.U16,
+      AgeGroup.U18,
+      AgeGroup.ALUMNI,
+    ] as const),
+    region: faker.helpers.arrayElement([
+      Regions.NW,
+      Regions.SW,
+      Regions.S,
+      Regions.SE,
+      Regions.NE,
+      Regions.MW,
+    ] as const),
     headCoachID: faker.string.uuid(),
   };
 }
@@ -209,7 +414,11 @@ export function fakeUserNotificationComplete() {
 }
 export function fakeEvent() {
   return {
-    eventType: faker.helpers.arrayElement([EventType.TOURNAMENT, EventType.PRACTICE, EventType.GLOBAL] as const),
+    eventType: faker.helpers.arrayElement([
+      EventType.TOURNAMENT,
+      EventType.PRACTICE,
+      EventType.GLOBAL,
+    ] as const),
     start: faker.date.anytime(),
     end: faker.date.anytime(),
   };
@@ -218,7 +427,11 @@ export function fakeEventComplete() {
   return {
     id: faker.string.uuid(),
     tournamentID: undefined,
-    eventType: faker.helpers.arrayElement([EventType.TOURNAMENT, EventType.PRACTICE, EventType.GLOBAL] as const),
+    eventType: faker.helpers.arrayElement([
+      EventType.TOURNAMENT,
+      EventType.PRACTICE,
+      EventType.GLOBAL,
+    ] as const),
     start: faker.date.anytime(),
     end: faker.date.anytime(),
   };
