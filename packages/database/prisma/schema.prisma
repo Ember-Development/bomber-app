@@ -95,7 +95,7 @@ model User {
     fan         Fan?
 
     sentMessages  Message[]
-    chats         Chat[]
+    chats         UserChat[]
     events        EventAttendance[]
     notifications UserNotification[]
 }
@@ -224,8 +224,19 @@ model Chat {
 
     title String
 
-    users    User[]
+    users    UserChat[]
     messages Message[]
+}
+
+model UserChat {
+    user   User @relation(fields: [userID], references: [id])
+    userID Int
+    chat   Chat @relation(fields: [chatID], references: [id])
+    chatID Int
+
+    joinedAt DateTime
+
+    @@id([userID, chatID])
 }
 
 model Message {
