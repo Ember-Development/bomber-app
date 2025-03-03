@@ -79,12 +79,12 @@ enum UniformSize {
 }
 
 model User {
-    id    String  @id @default(uuid()) @db.Uuid
-    email String? @unique @db.Uuid // constrain: all 12u and under players
+    id    String @id @default(uuid()) @db.Uuid
+    email String @unique @db.Uuid 
     phone String? @db.Uuid //@pattern("^\+?[1-9]\d{1,14}$") // constrain: all but player, fan, and admin
-    pass  String  @db.Uuid
-    fname String  @db.Uuid
-    lname String  @db.Uuid
+    pass  String @db.Uuid
+    fname String @db.Uuid
+    lname String @db.Uuid
 
     primaryRole UserRole
     admin       Admin?
@@ -116,8 +116,8 @@ model Player {
 
     ageGroup AgeGroup
 
-    user   User   @relation(fields: [userID], references: [id])
-    userID String @unique @db.Uuid
+    user   User?   @relation(fields: [userID], references: [id]) // constrain: all players > 12u have user login
+    userID String? @unique @db.Uuid
 
     team   Team   @relation(fields: [teamID], references: [id])
     teamID String @db.Uuid
