@@ -3,93 +3,46 @@ import {
   Text,
   SafeAreaView,
   FlatList,
-  TouchableOpacity,
   Alert,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { createGroupStyles } from '@/styles/groupsStyle';
-import mockData from '@/mock-data/mockData.json';
 import CustomButton from '@/components/ui/atoms/Button';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { formatRelativeTime } from '@/utils/DateTimeUtil';
-import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
-import type { SwipeableMethods } from 'react-native-gesture-handler';
-import Animated, {
-  interpolate,
-  SharedValue,
-  useAnimatedStyle,
-} from 'react-native-reanimated';
+import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useRouter } from 'expo-router';
 
-// types
-// import { ChatFE } from '../../../../packages/utils/src/'
-// temporary for ui building
-interface ChatFE {
-  id: number;
-  title: string;
-  users: { id: number; fname: string; lname: string }[];
-  messages: { id: number; text: string; createdAt: string }[];
-}
+// custom hooks
+import { useChats } from '@/hooks/useChats';
+import { useSwipeActions } from '@/hooks/useSwipeActions';
+import { GlobalColors } from '@/constants/Colors';
 
 export default function GroupsScreen() {
+  const {
+    chats,
+    mutedGroups,
+    unreadGroups,
+    isLoading,
+    refresh,
+    loadChats,
+    setMutedGroups,
+  } = useChats();
+  // Theming Variables
   const styles = createGroupStyles('light');
   const iconColor = useThemeColor({}, 'icon');
   const component = useThemeColor({}, 'component');
-  const [chats, setChats] = useState<ChatFE[]>([]);
-  const [mutedGroups, setMutedGroups] = useState<{ [key: number]: boolean }>(
-    {}
-  );
-  const [unreadGroups, setUnreadGroups] = useState<{ [key: number]: boolean }>(
-    {}
-  );
-  const [refresh, setRefresh] = useState(false);
-  const [isLoading, setIsloading] = useState(true);
+  // Router
   const router = useRouter();
 
   // swipe reference
-  const swipeableRefs = useRef<{ [key: number]: SwipeableMethods | null }>({});
+  const { swipeableRefs, renderRightActions } = useSwipeActions();
 
-  useEffect(() => {
-    loadChats();
-  }, []);
-
-  // TESTING USE ONLY
-  const loadChats = () => {
-    setIsloading(true);
-    setRefresh(true);
-    setTimeout(() => {
-      // Transform mock data to match ChatFE
-      const transformedChats = mockData.chats.map((chat) => ({
-        ...chat,
-        users: chat.users.map((user) => ({
-          id: user.id,
-          fname: user.fname,
-          lname: user.lname,
-        })),
-        messages: chat.messages.length > 0 ? chat.messages : [], // Ensure messages exist
-      }));
-
-      setChats(transformedChats);
-      setIsloading(false);
-      setRefresh(false);
-
-      // mock a unread message
-      const newUnreadGroups = transformedChats.reduce(
-        (acc, chat) => {
-          acc[chat.id] = chat.messages.length > 0;
-          return acc;
-        },
-        {} as { [key: number]: boolean }
-      );
-      setUnreadGroups(newUnreadGroups);
-    }, 2000);
-  };
-
-  // long press to leave group
   const handleLeaveGroup = () => {
     Alert.alert(
       `Leave Group`,
@@ -106,44 +59,28 @@ export default function GroupsScreen() {
     console.log('LEFT GROUP');
   };
 
-  // mute a group
   const handleMute = (groupId: number) => {
     setMutedGroups((prevMutedGroups) => ({
       ...prevMutedGroups,
       [groupId]: !prevMutedGroups[groupId],
     }));
 
-    // close on click
     swipeableRefs.current[groupId]?.close();
   };
 
   // Right Actions (on swipe)
-  const renderRightActions = (
-    progress: SharedValue<number>,
-    groupId: number
-  ) => {
-    const animatedStyle = useAnimatedStyle(() => ({
-      opacity: interpolate(progress.value, [0, 1], [0, 1]),
-      transform: [{ scale: interpolate(progress.value, [0, 1], [0.8, 1]) }],
-    }));
-
-    return (
-      <Animated.View style={[styles.actionContainer, animatedStyle]}>
-        <TouchableOpacity
-          onPress={() => handleMute(groupId)}
-          style={styles.muteButton}
-        >
-          <ThemedText style={styles.muteText}>
-            {mutedGroups[groupId] ? 'Unmute' : 'Mute'}
-          </ThemedText>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={handleLeaveGroup} style={styles.leaveButton}>
-          <ThemedText style={styles.leaveText}>Leave</ThemedText>
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  };
+  const actions = (groupId: number) => [
+    {
+      label: mutedGroups[groupId] ? 'Unmute' : 'Mute',
+      color: GlobalColors.dark,
+      onPress: () => handleMute(groupId),
+    },
+    {
+      label: 'Leave',
+      color: GlobalColors.red,
+      onPress: handleLeaveGroup,
+    },
+  ];
 
   return (
     <SafeAreaView style={styles.safeContainer}>
@@ -182,26 +119,26 @@ export default function GroupsScreen() {
         ) : (
           <FlatList
             data={chats}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item) => `chat-${item.id ?? Math.random()}`} // if item.id is ever null/undefined app wont crash
             renderItem={({ item }) => {
               const latestMessage =
                 item.messages.length > 0 ? item.messages[0] : null;
-              const latestMessageText = latestMessage
+              const latestMessageText = latestMessage?.text?.trim()
                 ? latestMessage.text
-                : 'No messages yet';
+                : 'No messages yet.';
               const latestMessageTime = latestMessage
-                ? formatRelativeTime(latestMessage.createdAt)
+                ? formatRelativeTime(latestMessage.createdAt.toISOString())
                 : '';
               const muted = mutedGroups[item.id];
               const unread = unreadGroups[item.id];
 
               return (
-                <Swipeable
+                <ReanimatedSwipeable
                   ref={(ref) => {
                     if (ref) swipeableRefs.current[item.id] = ref;
                   }}
                   renderRightActions={(progress) =>
-                    renderRightActions(progress, item.id)
+                    renderRightActions(progress, item.id, actions(item.id))
                   }
                 >
                   <TouchableOpacity
@@ -249,7 +186,7 @@ export default function GroupsScreen() {
                       </View>
                     </View>
                   </TouchableOpacity>
-                </Swipeable>
+                </ReanimatedSwipeable>
               );
             }}
             refreshing={refresh}

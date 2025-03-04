@@ -88,6 +88,7 @@ export const createGroupStyles = (theme: 'light' | 'dark') =>
     },
     muteText: {
       fontWeight: 'semibold',
+      color: GlobalColors.white,
     },
     mutedText: {
       color: GlobalColors.gray,
@@ -101,6 +102,7 @@ export const createGroupStyles = (theme: 'light' | 'dark') =>
     },
     leaveText: {
       fontWeight: 'semibold',
+      color: GlobalColors.white,
     },
     loadingContainer: {
       flex: 1,
