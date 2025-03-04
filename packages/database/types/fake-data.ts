@@ -1,3 +1,4 @@
+import { PlayerDB, PlayerFE } from './player';
 import {
   AttendanceStatus,
   EventType,
@@ -29,7 +30,26 @@ export function fakeUserComplete() {
     ] as const),
   };
 }
-export function fakePlayerComplete() {
+export function fakePlayerComplete(
+  teamID: string,
+  ageGroup: AgeGroup,
+  userID: string | undefined,
+  addressID: string | undefined
+) {
+  let isTrusted = false; //TODO: just set this as default and don't make the field nullable
+  let college;
+
+  switch (ageGroup) {
+    case 'U8':
+    case 'U10':
+    case 'U12':
+    case 'U14':
+    case 'U16':
+    case 'U18':
+    case 'ALUMNI':
+      isTrusted = true;
+      college = faker.helpers.fake(['University of {{location.city}}']);
+  }
   return {
     id: faker.string.uuid(),
     pos1: faker.helpers.arrayElement([
@@ -103,22 +123,50 @@ export function fakePlayerComplete() {
       ShortsSize.AXL,
       ShortsSize.A2XL,
     ] as const),
-    ageGroup: faker.helpers.arrayElement([
-      AgeGroup.U8,
-      AgeGroup.U10,
-      AgeGroup.U12,
-      AgeGroup.U14,
-      AgeGroup.U16,
-      AgeGroup.U18,
-      AgeGroup.ALUMNI,
-    ] as const),
-    userID: undefined,
-    teamID: faker.string.uuid(),
-    isTrusted: undefined,
-    addressID: undefined,
-    college: undefined,
+    ageGroup,
+    userID,
+    teamID,
+    isTrusted,
+    addressID,
+    college,
   };
 }
+
+// creates a player without agegroup opinionated fields
+export const createGenericPlayer = () => {
+  return {
+    id: faker.string.uuid(),
+    pos1: faker.helpers.enumValue(Position),
+    pos2: faker.helpers.enumValue(Position),
+    jerseyNum: faker.number.int(100).toString(),
+    gradYear: faker.date.future({ years: 10 }).getFullYear().toString(),
+    jerseySize: faker.helpers.enumValue(JerseySize),
+    pantSize: faker.helpers.enumValue(PantsSize),
+    stirrupSize: faker.helpers.enumValue(StirrupSize),
+    shortSize: faker.helpers.enumValue(ShortsSize),
+    practiceShortSize: faker.helpers.enumValue(ShortsSize),
+  };
+};
+
+export function fakeAlumniPlayerComplete(
+  userID: string,
+  teamID: string,
+  addressID: string,
+  ageGroup = AgeGroup.ALUMNI,
+  isTrusted = true,
+  college: string | null
+): PlayerDB {
+  return {
+    ...createGenericPlayer(),
+    userID,
+    teamID,
+    addressID,
+    ageGroup,
+    isTrusted,
+    college,
+  };
+}
+
 export function fakeAdminComplete() {
   return {
     id: faker.string.uuid(),
