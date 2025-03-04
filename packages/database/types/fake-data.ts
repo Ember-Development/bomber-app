@@ -10,6 +10,7 @@ import {
   JerseySize,
   StirrupSize,
   ShortsSize,
+  Parent,
 } from '/Users/braedon/ember/bomber-app/packages/database/generated/client';
 import { faker } from '@faker-js/faker';
 
@@ -148,14 +149,76 @@ export const createGenericPlayer = () => {
   };
 };
 
-export function fakeAlumniPlayerComplete(
+export function fake8UTo12UPlayer(
+  teamID: string,
+  ageGroup: AgeGroup
+): PlayerDB {
+  //This should never get triggered but just in case
+  if (
+    ageGroup != AgeGroup.U8 &&
+    ageGroup != AgeGroup.U10 &&
+    ageGroup != AgeGroup.U12
+  )
+    throw new Error('Error generating 8U to 12U player: wrong age group');
+
+  return {
+    ...createGenericPlayer(),
+    userID: null,
+    addressID: null,
+    college: null,
+    isTrusted: false,
+    teamID,
+    ageGroup,
+  };
+}
+
+export function fake14UPlayer(
+  userID: string | null,
+  teamID: string,
+  addressID: string,
+  isTrusted: boolean,
+  ageGroup = AgeGroup.U14,
+  college: string | null
+): PlayerDB {
+  //This should never get triggered but just in case
+  if (userID && !isTrusted) {
+    throw new Error(
+      'Error generating 14U player: untrusted player was given a user relation'
+    );
+  } else if (!userID && isTrusted) {
+    throw new Error(
+      'Error generating 14U player: trusted player was not given a user relation'
+    );
+  }
+
+  return {
+    ...createGenericPlayer(),
+    userID,
+    teamID,
+    addressID,
+    isTrusted,
+    ageGroup,
+    college,
+  };
+}
+
+export function fake16UToAlumniPlayer(
   userID: string,
   teamID: string,
   addressID: string,
-  ageGroup = AgeGroup.ALUMNI,
+  ageGroup: AgeGroup,
   isTrusted = true,
   college: string | null
 ): PlayerDB {
+  //This should never get triggered but just in case
+  if (
+    ageGroup !== AgeGroup.U16 &&
+    ageGroup !== AgeGroup.U18 &&
+    ageGroup !== AgeGroup.ALUMNI
+  )
+    throw new Error(
+      'Error generating user between 16U and ALUMNI, wrong AgeGroup'
+    );
   return {
     ...createGenericPlayer(),
     userID,
