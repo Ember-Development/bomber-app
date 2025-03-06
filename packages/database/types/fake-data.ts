@@ -226,19 +226,16 @@ export function fake16UToAlumniPlayer(
     college,
   };
 }
-
 export function fakeAdmin(userID: string) {
   return {
     userID,
   };
 }
-
 export function fakeFan(userID: string) {
   return {
     userID,
   };
 }
-
 export function fakeCoach(userID: string) {
   return {
     userID,
@@ -250,11 +247,15 @@ export function fakeRegCoach(userID: string, region: Regions) {
     region,
   };
 }
-export function fakeTeam(headCoachID: string) {
+export function fakeTeam(
+  headCoachID: string,
+  ageGroup: string,
+  region: string
+) {
   return {
     name: faker.person.fullName(),
-    ageGroup: faker.helpers.enumValue(AgeGroup),
-    region: faker.helpers.enumValue(Regions),
+    region,
+    ageGroup,
     headCoachID,
   };
 }
@@ -282,7 +283,6 @@ export function fakeAddress() {
     address2: undefined,
   };
 }
-
 export function fakeChat() {
   return {
     title: faker.lorem.words(5),
