@@ -20,13 +20,7 @@ export function fakeUser() {
     pass: faker.internet.password(),
     fname: faker.person.firstName(),
     lname: faker.person.lastName(),
-    primaryRole: faker.helpers.arrayElement([
-      UserRole.ADMIN,
-      UserRole.COACH,
-      UserRole.REGIONAL_COACH,
-      UserRole.PLAYER,
-      UserRole.FAN,
-    ] as const),
+    primaryRole: faker.helpers.enumValue(UserRole),
   };
 }
 
@@ -67,7 +61,6 @@ export function fake8UTo12UPlayer(
     ageGroup,
   };
 }
-
 export function fake14UPlayer(
   userID: string | null,
   teamID: string,
