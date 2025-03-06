@@ -320,15 +320,78 @@ export function fakeUserNotification(userID: string, notificationID: string) {
   };
 }
 
-//TODO: complex STI to finish with event types
-export function fakeEvent(tournamentID: string) {
+export function createTournamentEvent(
+  tournamentID: string,
+  eventType = EventType.TOURNAMENT
+) {
+  const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
+
   const MAX_EVENT_DAYS = 14;
   const eventDays = Math.floor(Math.random() * MAX_EVENT_DAYS + 1);
-  const start = faker.date.soon();
   const end = new Date().setDate(start.getDate() + eventDays);
+
   return {
     tournamentID,
-    eventType: faker.helpers.enumValue(EventType),
+    eventType,
+    start,
+    end,
+  };
+}
+export function createPracticeEvent(eventType = EventType.PRACTICE) {
+  const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
+
+  const MAX_EVENT_HOURS = 8;
+  const eventHours = Math.floor(Math.random() * MAX_EVENT_HOURS + 1);
+  const end = new Date(start.getTime() + eventHours * 60 * 60 * 1000);
+
+  return {
+    eventType,
+    start,
+    end,
+  };
+}
+//TODO: enforce attendees in higher order function for global events
+export function createGlobalEvent(tournamentID: string) {
+  const eventType = faker.helpers.enumValue(EventType);
+  const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
+
+  const MAX_EVENT_HOURS = 8;
+  const eventHours = Math.floor(Math.random() * MAX_EVENT_HOURS + 1);
+  const end = new Date(start.getTime() + eventHours * 60 * 60 * 1000);
+
+  return {
+    tournamentID,
+    eventType,
+    start,
+    end,
+  };
+}
+export function fakeEvent(tournamentID: string) {
+  const eventType = faker.helpers.enumValue(EventType);
+  const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
+
+  const MAX_EVENT_DAYS = 14;
+  const MAX_EVENT_HOURS = 8;
+  const eventDays = Math.floor(Math.random() * MAX_EVENT_DAYS + 1);
+  const eventHours = Math.floor(Math.random() * MAX_EVENT_HOURS + 1);
+  let end;
+
+  switch (eventType) {
+    case 'TOURNAMENT':
+      end = new Date().setDate(start.getDate() + eventDays);
+      break;
+    case 'PRACTICE':
+      end = new Date(start.getTime() + eventHours * 60 * 60 * 1000);
+      break;
+    case 'GLOBAL':
+      end = new Date(start.getTime() + eventHours * 60 * 60 * 1000);
+      //TODO: how to enforce attendees
+      break;
+  }
+
+  return {
+    tournamentID,
+    eventType,
     start,
     end,
   };
@@ -344,6 +407,6 @@ export function fakeTournament() {
   return {
     title: faker.lorem.words(5),
     body: faker.lorem.words(5),
-    imageURL: faker.lorem.words(5),
+    imageURL: faker.image.url(),
   };
 }
