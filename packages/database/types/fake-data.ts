@@ -198,7 +198,6 @@ export function fake14UPlayer(
     college,
   };
 }
-
 export function fake16UToAlumniPlayer(
   userID: string,
   teamID: string,
@@ -274,13 +273,13 @@ export function fakeParent(userID: string, addressID: string) {
 }
 export function fakeAddress() {
   return {
-    state: faker.lorem.words(5),
-    city: faker.lorem.words(5),
-    zip: faker.lorem.words(5),
-    address1:
-      faker.number.int({ min: 0, max: 9999 }).toString() +
-      faker.location.street(),
-    address2: undefined,
+    state: faker.location.state(),
+    city: faker.location.city(),
+    zip: faker.location.zipCode(),
+    address1: `${faker.number.int({ min: 0, max: 9999 })} + ${' '}
+      ${faker.location.street()}`,
+    address2:
+      Math.random() < 0.5 ? faker.location.secondaryAddress() : undefined,
   };
 }
 export function fakeChat() {
