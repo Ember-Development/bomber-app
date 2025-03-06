@@ -299,7 +299,8 @@ export function fakeUserChat(userID: string, chatID: string) {
 export function fakeMessage(userID: string, chatID: string) {
   return {
     text: faker.lorem.words(5),
-    createdAt: faker.date.anytime(),
+    //TODO: make this dependent on chat creation
+    createdAt: faker.date.past(),
     userID,
     chatID,
   };
