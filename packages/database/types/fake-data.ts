@@ -1,4 +1,4 @@
-import { PlayerDB, PlayerFE } from './player';
+import { PlayerDB } from './player';
 import {
   AttendanceStatus,
   EventType,
@@ -10,7 +10,6 @@ import {
   JerseySize,
   StirrupSize,
   ShortsSize,
-  Parent,
 } from '/Users/braedon/ember/bomber-app/packages/database/generated/client';
 import { faker } from '@faker-js/faker';
 
@@ -18,9 +17,9 @@ export function fakeUser() {
   return {
     email: faker.internet.email(),
     phone: undefined,
-    pass: faker.lorem.words(5),
-    fname: faker.lorem.words(5),
-    lname: faker.lorem.words(5),
+    pass: faker.internet.password(),
+    fname: faker.person.firstName(),
+    lname: faker.person.lastName(),
     primaryRole: faker.helpers.arrayElement([
       UserRole.ADMIN,
       UserRole.COACH,
@@ -136,7 +135,7 @@ export const createGenericPlayer = () => {
   return {
     pos1: faker.helpers.enumValue(Position),
     pos2: faker.helpers.enumValue(Position),
-    jerseyNum: faker.number.int(100).toString(),
+    jerseyNum: faker.string.numeric(2),
     gradYear: faker.date.future({ years: 10 }).getFullYear().toString(),
     jerseySize: faker.helpers.enumValue(JerseySize),
     pantSize: faker.helpers.enumValue(PantsSize),
@@ -260,7 +259,7 @@ export function fakeTeam(
 }
 export function fakeTrophy(teamID: string) {
   return {
-    title: faker.lorem.words(5),
+    title: faker.lorem.words({ min: 1, max: 5 }),
     imageURL: faker.image.url(),
     teamID,
   };
@@ -284,7 +283,7 @@ export function fakeAddress() {
 }
 export function fakeChat() {
   return {
-    title: faker.lorem.words(5),
+    title: faker.lorem.words({ min: 1, max: 5 }),
     createdAt: faker.date.past(),
   };
 }
@@ -298,7 +297,7 @@ export function fakeUserChat(userID: string, chatID: string) {
 }
 export function fakeMessage(userID: string, chatID: string) {
   return {
-    text: faker.lorem.words(5),
+    text: faker.lorem.sentences({ min: 1, max: 5 }),
     //TODO: make this dependent on chat creation
     createdAt: faker.date.past(),
     userID,
@@ -307,9 +306,9 @@ export function fakeMessage(userID: string, chatID: string) {
 }
 export function fakeNotification() {
   return {
-    title: faker.lorem.words(5),
-    body: faker.lorem.words(5),
-    createdAt: faker.date.anytime(),
+    title: faker.lorem.words({ min: 1, max: 5 }),
+    body: faker.lorem.sentences({ min: 1, max: 5 }),
+    createdAt: faker.date.recent(),
   };
 }
 export function fakeUserNotification(userID: string, notificationID: string) {
@@ -405,8 +404,8 @@ export function fakeEventAttendance(userID: string, eventID: string) {
 }
 export function fakeTournament() {
   return {
-    title: faker.lorem.words(5),
-    body: faker.lorem.words(5),
+    title: faker.lorem.words({ min: 1, max: 5 }),
+    body: faker.lorem.sentences({ min: 1, max: 5 }),
     imageURL: faker.image.url(),
   };
 }
