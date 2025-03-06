@@ -14,9 +14,8 @@ import {
 } from '/Users/braedon/ember/bomber-app/packages/database/generated/client';
 import { faker } from '@faker-js/faker';
 
-export function fakeUserComplete() {
+export function fakeUser() {
   return {
-    id: faker.string.uuid(),
     email: faker.internet.email(),
     phone: undefined,
     pass: faker.lorem.words(5),
@@ -31,7 +30,7 @@ export function fakeUserComplete() {
     ] as const),
   };
 }
-export function fakePlayerComplete(
+export function fakePlayer(
   teamID: string,
   ageGroup: AgeGroup,
   userID: string | undefined,
@@ -52,7 +51,6 @@ export function fakePlayerComplete(
       college = faker.helpers.fake(['University of {{location.city}}']);
   }
   return {
-    id: faker.string.uuid(),
     pos1: faker.helpers.arrayElement([
       Position.PITCHER,
       Position.CATCHER,
@@ -136,7 +134,6 @@ export function fakePlayerComplete(
 // creates a player without agegroup opinionated fields
 export const createGenericPlayer = () => {
   return {
-    id: faker.string.uuid(),
     pos1: faker.helpers.enumValue(Position),
     pos2: faker.helpers.enumValue(Position),
     jerseyNum: faker.number.int(100).toString(),
@@ -152,7 +149,7 @@ export const createGenericPlayer = () => {
 export function fake8UTo12UPlayer(
   teamID: string,
   ageGroup: AgeGroup
-): PlayerDB {
+): Omit<PlayerDB, 'id'> {
   //This should never get triggered but just in case
   if (
     ageGroup != AgeGroup.U8 &&
@@ -179,7 +176,7 @@ export function fake14UPlayer(
   isTrusted: boolean,
   ageGroup = AgeGroup.U14,
   college: string | null
-): PlayerDB {
+): Omit<PlayerDB, 'id'> {
   //This should never get triggered but just in case
   if (userID && !isTrusted) {
     throw new Error(
@@ -209,7 +206,7 @@ export function fake16UToAlumniPlayer(
   ageGroup: AgeGroup,
   isTrusted = true,
   college: string | null
-): PlayerDB {
+): Omit<PlayerDB, 'id'> {
   //This should never get triggered but just in case
   if (
     ageGroup !== AgeGroup.U16 &&
@@ -230,148 +227,121 @@ export function fake16UToAlumniPlayer(
   };
 }
 
-export function fakeAdminComplete() {
+export function fakeAdmin(userID: string) {
   return {
-    id: faker.string.uuid(),
-    userID: faker.string.uuid(),
+    userID,
   };
 }
-export function fakeFanComplete() {
+
+export function fakeFan(userID: string) {
   return {
-    id: faker.string.uuid(),
-    userID: faker.string.uuid(),
+    userID,
   };
 }
-export function fakeCoachComplete() {
+
+export function fakeCoach(userID: string) {
   return {
-    id: faker.string.uuid(),
-    userID: faker.string.uuid(),
+    userID,
   };
 }
-export function fakeRegCoachComplete() {
+export function fakeRegCoach(userID: string, region: Regions) {
   return {
-    id: faker.string.uuid(),
-    userID: faker.string.uuid(),
-    region: faker.helpers.arrayElement([
-      Regions.NW,
-      Regions.SW,
-      Regions.S,
-      Regions.SE,
-      Regions.NE,
-      Regions.MW,
-    ] as const),
+    userID,
+    region,
   };
 }
-export function fakeTeamComplete() {
+export function fakeTeam(headCoachID: string) {
   return {
-    id: faker.string.uuid(),
     name: faker.person.fullName(),
-    ageGroup: faker.helpers.arrayElement([
-      AgeGroup.U8,
-      AgeGroup.U10,
-      AgeGroup.U12,
-      AgeGroup.U14,
-      AgeGroup.U16,
-      AgeGroup.U18,
-      AgeGroup.ALUMNI,
-    ] as const),
-    region: faker.helpers.arrayElement([
-      Regions.NW,
-      Regions.SW,
-      Regions.S,
-      Regions.SE,
-      Regions.NE,
-      Regions.MW,
-    ] as const),
-    headCoachID: faker.string.uuid(),
+    ageGroup: faker.helpers.enumValue(AgeGroup),
+    region: faker.helpers.enumValue(Regions),
+    headCoachID,
   };
 }
-export function fakeTrophyComplete() {
+export function fakeTrophy(teamID: string) {
   return {
-    id: faker.string.uuid(),
     title: faker.lorem.words(5),
-    imageURL: faker.lorem.words(5),
-    teamID: faker.string.uuid(),
+    imageURL: faker.image.url(),
+    teamID,
   };
 }
-export function fakeParentComplete() {
+export function fakeParent(userID: string, addressID: string) {
   return {
-    id: faker.string.uuid(),
-    addressID: faker.string.uuid(),
-    userID: faker.string.uuid(),
+    addressID,
+    userID,
   };
 }
-export function fakeAddressComplete() {
+export function fakeAddress() {
   return {
-    id: faker.string.uuid(),
     state: faker.lorem.words(5),
     city: faker.lorem.words(5),
     zip: faker.lorem.words(5),
-    address1: faker.lorem.words(5),
+    address1:
+      faker.number.int({ min: 0, max: 9999 }).toString() +
+      faker.location.street(),
     address2: undefined,
   };
 }
-export function fakeChatComplete() {
+
+export function fakeChat() {
   return {
-    id: faker.string.uuid(),
     title: faker.lorem.words(5),
+    createdAt: faker.date.past(),
   };
 }
-export function fakeUserChatComplete() {
+export function fakeUserChat(userID: string, chatID: string) {
   return {
-    userID: faker.string.uuid(),
-    chatID: faker.string.uuid(),
-    joinedAt: faker.date.anytime(),
+    userID,
+    chatID,
+    //TODO: maybe constrain this
+    joinedAt: faker.date.past(),
   };
 }
-export function fakeMessageComplete() {
+export function fakeMessage(userID: string, chatID: string) {
   return {
-    id: faker.string.uuid(),
     text: faker.lorem.words(5),
     createdAt: faker.date.anytime(),
-    userID: faker.string.uuid(),
-    chatID: faker.string.uuid(),
+    userID,
+    chatID,
   };
 }
-export function fakeNotificationComplete() {
+export function fakeNotification() {
   return {
-    id: faker.string.uuid(),
     title: faker.lorem.words(5),
     body: faker.lorem.words(5),
     createdAt: faker.date.anytime(),
   };
 }
-export function fakeUserNotificationComplete() {
+export function fakeUserNotification(userID: string, notificationID: string) {
   return {
-    userID: faker.string.uuid(),
-    notificationID: faker.string.uuid(),
-    isRead: false,
+    userID,
+    notificationID,
+    isRead: faker.datatype.boolean(),
   };
 }
-export function fakeEventComplete() {
+
+//TODO: complex STI to finish with event types
+export function fakeEvent(tournamentID: string) {
+  const MAX_EVENT_DAYS = 14;
+  const eventDays = Math.floor(Math.random() * MAX_EVENT_DAYS + 1);
+  const start = faker.date.soon();
+  const end = new Date().setDate(start.getDate() + eventDays);
   return {
-    id: faker.string.uuid(),
-    tournamentID: undefined,
-    eventType: faker.helpers.arrayElement([
-      EventType.TOURNAMENT,
-      EventType.PRACTICE,
-      EventType.GLOBAL,
-    ] as const),
-    start: faker.date.anytime(),
-    end: faker.date.anytime(),
+    tournamentID,
+    eventType: faker.helpers.enumValue(EventType),
+    start,
+    end,
   };
 }
-export function fakeEventAttendanceComplete() {
+export function fakeEventAttendance(userID: string, eventID: string) {
   return {
-    id: faker.string.uuid(),
-    userID: faker.string.uuid(),
-    eventID: faker.string.uuid(),
-    status: AttendanceStatus.PENDING,
+    userID,
+    eventID,
+    status: faker.helpers.enumValue(AttendanceStatus),
   };
 }
-export function fakeTournamentComplete() {
+export function fakeTournament() {
   return {
-    id: faker.string.uuid(),
     title: faker.lorem.words(5),
     body: faker.lorem.words(5),
     imageURL: faker.lorem.words(5),
