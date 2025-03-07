@@ -12,6 +12,7 @@ import {
   StirrupSize,
   ShortsSize,
   Admin,
+  User,
 } from '/Users/braedon/ember/bomber-app/packages/database/generated/client';
 import { faker } from '@faker-js/faker';
 
@@ -36,16 +37,20 @@ export const createUserFan = async () => {
   const mockUser = createMockUser([UserRole.FAN], UserRole.FAN);
 
   return await prisma.$transaction(async (prisma) => {
-    const user = await prisma.user.create({
+    let user: User | null = await prisma.user.create({
       data: mockUser,
     });
 
     const mockFan = createMockFan(user.id);
-    const fan = await prisma.fan.create({
+    await prisma.fan.create({
       data: mockFan,
     });
 
-    return fan;
+    user = await prisma.user.findUnique({ where: { id: user.id } });
+
+    return user;
+  });
+};
   });
 };
 
