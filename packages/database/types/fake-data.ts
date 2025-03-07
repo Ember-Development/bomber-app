@@ -40,7 +40,7 @@ export const mockUser = (roles: UserRole[], primaryRole: UserRole) => {
 };
 
 //USER ROLES
-export const mockGenericPlayer = () => {
+export const createMockGenericPlayer = () => {
   return {
     pos1: faker.helpers.enumValue(Position),
     pos2: faker.helpers.enumValue(Position),
@@ -53,7 +53,7 @@ export const mockGenericPlayer = () => {
     practiceShortSize: faker.helpers.enumValue(ShortsSize),
   };
 };
-export const mock8UTo12UPlayer = (
+export const createMock8UTo12UPlayer = (
   teamID: string,
   ageGroup: AgeGroup
 ): Omit<PlayerDB, 'id'> => {
@@ -66,7 +66,7 @@ export const mock8UTo12UPlayer = (
     throw new Error('Error generating 8U to 12U player: wrong age group');
 
   return {
-    ...createGenericPlayer(),
+    ...createMockGenericPlayer(),
     userID: null,
     addressID: null,
     college: null,
@@ -75,7 +75,7 @@ export const mock8UTo12UPlayer = (
     ageGroup,
   };
 };
-export const mock14UPlayer = (
+export const createMock14UPlayer = (
   userID: string | null,
   teamID: string,
   addressID: string,
@@ -95,7 +95,7 @@ export const mock14UPlayer = (
   }
 
   return {
-    ...createGenericPlayer(),
+    ...createMockGenericPlayer(),
     userID,
     teamID,
     addressID,
@@ -104,7 +104,7 @@ export const mock14UPlayer = (
     college,
   };
 };
-export const mock16UToAlumniPlayer = (
+export const createMock16UToAlumniPlayer = (
   userID: string,
   teamID: string,
   addressID: string,
@@ -122,7 +122,7 @@ export const mock16UToAlumniPlayer = (
       'Error generating user between 16U and ALUMNI, wrong AgeGroup'
     );
   return {
-    ...createGenericPlayer(),
+    ...createMockGenericPlayer(),
     userID,
     teamID,
     addressID,
@@ -132,28 +132,28 @@ export const mock16UToAlumniPlayer = (
   };
 };
 
-export const mockParent = (userID: string, addressID: string) => {
+export const createMockParent = (userID: string, addressID: string) => {
   return {
     addressID,
     userID,
   };
 };
-export const mockAdmin = (userID: string) => {
+export const createMockAdmin = (userID: string): Omit<Admin, 'id'> => {
   return {
     userID,
   };
 };
-export const mockFan = (userID: string) => {
+export const createMockFan = (userID: string) => {
   return {
     userID,
   };
 };
-export const mockCoach = (userID: string) => {
+export const createMockCoach = (userID: string) => {
   return {
     userID,
   };
 };
-export const mockRegCoach = (userID: string, region: Regions) => {
+export const createMockRegCoach = (userID: string, region: Regions) => {
   return {
     userID,
     region,
@@ -161,7 +161,7 @@ export const mockRegCoach = (userID: string, region: Regions) => {
 };
 
 //ROLE DEPENDENT TABLES
-export const mockTeam = (
+export const createMockTeam = (
   headCoachID: string,
   ageGroup: string,
   region: string
@@ -173,7 +173,7 @@ export const mockTeam = (
     headCoachID,
   };
 };
-export const mockTrophy = (teamID: string) => {
+export const createMockTrophy = (teamID: string) => {
   return {
     title: faker.lorem.words({ min: 1, max: 5 }),
     imageURL: faker.image.url(),
@@ -181,7 +181,7 @@ export const mockTrophy = (teamID: string) => {
   };
 };
 
-export const mockAddress = () => {
+export const createMockAddress = () => {
   return {
     state: faker.location.state(),
     city: faker.location.city(),
@@ -194,13 +194,13 @@ export const mockAddress = () => {
 };
 
 //CHATS, MESSAGES, NOTIFICATIONS
-export const mockChat = () => {
+export const createMockChat = () => {
   return {
     title: faker.lorem.words({ min: 1, max: 5 }),
     createdAt: faker.date.past(),
   };
 };
-export const mockUserChat = (userID: string, chatID: string) => {
+export const createMockUserChat = (userID: string, chatID: string) => {
   return {
     userID,
     chatID,
@@ -208,7 +208,7 @@ export const mockUserChat = (userID: string, chatID: string) => {
     joinedAt: faker.date.past(),
   };
 };
-export const mockMessage = (
+export const createMockMessage = (
   userID: string,
   chatID: string,
   chatCreationDate: Date
@@ -220,14 +220,14 @@ export const mockMessage = (
     chatID,
   };
 };
-export const mockNotification = () => {
+export const createMockNotification = () => {
   return {
     title: faker.lorem.words({ min: 1, max: 5 }),
     body: faker.lorem.sentences({ min: 1, max: 5 }),
     createdAt: faker.date.recent(),
   };
 };
-export const mockUserNotification = (
+export const createMockUserNotification = (
   userID: string,
   notificationID: string
 ) => {
@@ -239,7 +239,7 @@ export const mockUserNotification = (
 };
 
 //EVENTS
-export const mockTournamentEvent = (
+export const createMockTournamentEvent = (
   tournamentID: string,
   eventType = EventType.TOURNAMENT
 ) => {
@@ -256,7 +256,7 @@ export const mockTournamentEvent = (
     end,
   };
 };
-export const mockPracticeEvent = (eventType = EventType.PRACTICE) => {
+export const createMockPracticeEvent = (eventType = EventType.PRACTICE) => {
   const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
 
   const MAX_EVENT_HOURS = 8;
@@ -270,7 +270,7 @@ export const mockPracticeEvent = (eventType = EventType.PRACTICE) => {
     end,
   };
 };
-export const mockGlobalEvent = (eventType = EventType.GLOBAL) => {
+export const createMockGlobalEvent = (eventType = EventType.GLOBAL) => {
   const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
 
   const MAX_EVENT_HOURS = 8;
@@ -285,7 +285,7 @@ export const mockGlobalEvent = (eventType = EventType.GLOBAL) => {
   };
 };
 
-export const mockEvent = (tournamentID: string) => {
+export const createMockEvent = (tournamentID: string) => {
   const eventType = faker.helpers.enumValue(EventType);
   const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
 
@@ -315,14 +315,14 @@ export const mockEvent = (tournamentID: string) => {
     end,
   };
 };
-export const mockEventAttendance = (userID: string, eventID: string) => {
+export const createMockEventAttendance = (userID: string, eventID: string) => {
   return {
     userID,
     eventID,
     status: faker.helpers.enumValue(AttendanceStatus),
   };
 };
-export const mockTournament = () => {
+export const createMockTournament = () => {
   return {
     title: faker.lorem.words({ min: 1, max: 5 }),
     body: faker.lorem.sentences({ min: 1, max: 5 }),
