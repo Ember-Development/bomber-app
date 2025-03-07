@@ -13,18 +13,33 @@ import {
 } from '/Users/braedon/ember/bomber-app/packages/database/generated/client';
 import { faker } from '@faker-js/faker';
 
-export function fakeUser() {
+//USERS
+export const createUser = (roles: UserRole[], primaryRole: UserRole) => {
+  // this should never trigger but just in case
+  if (roles.length < 1) {
+    throw new Error('Every user should have at least one role');
+  }
+
+  let phone = undefined;
+  if (
+    roles.some((role) =>
+      ([UserRole.COACH, UserRole.REGIONAL_COACH] as UserRole[]).includes(role)
+    )
+  ) {
+    phone = faker.phone.number();
+  }
+
   return {
+    phone,
+    primaryRole,
     email: faker.internet.email(),
-    phone: undefined,
     pass: faker.internet.password(),
     fname: faker.person.firstName(),
     lname: faker.person.lastName(),
-    primaryRole: faker.helpers.enumValue(UserRole),
   };
-}
+};
 
-// creates a player without agegroup opinionated fields
+//USER ROLES
 export const createGenericPlayer = () => {
   return {
     pos1: faker.helpers.enumValue(Position),
