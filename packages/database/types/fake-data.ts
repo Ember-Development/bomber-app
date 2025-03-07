@@ -1,3 +1,4 @@
+import { prisma } from '../client';
 import { PlayerDB } from './player';
 import {
   AttendanceStatus,
@@ -10,11 +11,46 @@ import {
   JerseySize,
   StirrupSize,
   ShortsSize,
+  Admin,
 } from '/Users/braedon/ember/bomber-app/packages/database/generated/client';
 import { faker } from '@faker-js/faker';
 
+export const createUserAdmin = async () => {
+  //TODO: fill array with random other roles... think of how to do this... is there a faker native way to take advantage of seeding?
+  const mockUser = createMockUser([UserRole.ADMIN], UserRole.ADMIN);
+
+  return await prisma.$transaction(async (prisma) => {
+    const user = await prisma.user.create({
+      data: { ...mockUser },
+    });
+
+    const mockAdmin = createMockAdmin(user.id);
+    const admin = await prisma.admin.create({
+      data: mockAdmin,
+    });
+
+    return admin;
+  });
+};
+export const createUserFan = async () => {
+  const mockUser = createMockUser([UserRole.FAN], UserRole.FAN);
+
+  return await prisma.$transaction(async (prisma) => {
+    const user = await prisma.user.create({
+      data: mockUser,
+    });
+
+    const mockFan = createMockFan(user.id);
+    const fan = await prisma.fan.create({
+      data: mockFan,
+    });
+
+    return fan;
+  });
+};
+
 //USERS
-export const mockUser = (roles: UserRole[], primaryRole: UserRole) => {
+export const createMockUser = (roles: UserRole[], primaryRole: UserRole) => {
   // this should never trigger but just in case
   if (roles.length < 1) {
     throw new Error('Every user should have at least one role');
