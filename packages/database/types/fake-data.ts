@@ -53,8 +53,7 @@ export const createGenericPlayer = () => {
     practiceShortSize: faker.helpers.enumValue(ShortsSize),
   };
 };
-
-export function fake8UTo12UPlayer(
+export function create8UTo12UPlayer(
   teamID: string,
   ageGroup: AgeGroup
 ): Omit<PlayerDB, 'id'> {
@@ -76,7 +75,7 @@ export function fake8UTo12UPlayer(
     ageGroup,
   };
 }
-export function fake14UPlayer(
+export function create14UPlayer(
   userID: string | null,
   teamID: string,
   addressID: string,
@@ -105,7 +104,7 @@ export function fake14UPlayer(
     college,
   };
 }
-export function fake16UToAlumniPlayer(
+export function create16UToAlumniPlayer(
   userID: string,
   teamID: string,
   addressID: string,
@@ -132,28 +131,37 @@ export function fake16UToAlumniPlayer(
     college,
   };
 }
-export function fakeAdmin(userID: string) {
+
+export function createParent(userID: string, addressID: string) {
+  return {
+    addressID,
+    userID,
+  };
+}
+export function createAdmin(userID: string) {
   return {
     userID,
   };
 }
-export function fakeFan(userID: string) {
+export function createFan(userID: string) {
   return {
     userID,
   };
 }
-export function fakeCoach(userID: string) {
+export function createCoach(userID: string) {
   return {
     userID,
   };
 }
-export function fakeRegCoach(userID: string, region: Regions) {
+export function createRegCoach(userID: string, region: Regions) {
   return {
     userID,
     region,
   };
 }
-export function fakeTeam(
+
+//ROLE DEPENDENT TABLES
+export function createTeam(
   headCoachID: string,
   ageGroup: string,
   region: string
@@ -165,20 +173,15 @@ export function fakeTeam(
     headCoachID,
   };
 }
-export function fakeTrophy(teamID: string) {
+export function createTrophy(teamID: string) {
   return {
     title: faker.lorem.words({ min: 1, max: 5 }),
     imageURL: faker.image.url(),
     teamID,
   };
 }
-export function fakeParent(userID: string, addressID: string) {
-  return {
-    addressID,
-    userID,
-  };
-}
-export function fakeAddress() {
+
+export function createAddress() {
   return {
     state: faker.location.state(),
     city: faker.location.city(),
@@ -189,13 +192,15 @@ export function fakeAddress() {
       Math.random() < 0.5 ? faker.location.secondaryAddress() : undefined,
   };
 }
-export function fakeChat() {
+
+//CHATS, MESSAGES, NOTIFICATIONS
+export function createChat() {
   return {
     title: faker.lorem.words({ min: 1, max: 5 }),
     createdAt: faker.date.past(),
   };
 }
-export function fakeUserChat(userID: string, chatID: string) {
+export function createUserChat(userID: string, chatID: string) {
   return {
     userID,
     chatID,
@@ -203,23 +208,26 @@ export function fakeUserChat(userID: string, chatID: string) {
     joinedAt: faker.date.past(),
   };
 }
-export function fakeMessage(userID: string, chatID: string) {
+export function createMessage(
+  userID: string,
+  chatID: string,
+  chatCreationDate: Date
+) {
   return {
     text: faker.lorem.sentences({ min: 1, max: 5 }),
-    //TODO: make this dependent on chat creation
-    createdAt: faker.date.past(),
+    createdAt: faker.date.between({ from: chatCreationDate, to: Date.now() }),
     userID,
     chatID,
   };
 }
-export function fakeNotification() {
+export function createNotification() {
   return {
     title: faker.lorem.words({ min: 1, max: 5 }),
     body: faker.lorem.sentences({ min: 1, max: 5 }),
     createdAt: faker.date.recent(),
   };
 }
-export function fakeUserNotification(userID: string, notificationID: string) {
+export function createUserNotification(userID: string, notificationID: string) {
   return {
     userID,
     notificationID,
@@ -227,6 +235,7 @@ export function fakeUserNotification(userID: string, notificationID: string) {
   };
 }
 
+//EVENTS
 export function createTournamentEvent(
   tournamentID: string,
   eventType = EventType.TOURNAMENT
@@ -252,14 +261,13 @@ export function createPracticeEvent(eventType = EventType.PRACTICE) {
   const end = new Date(start.getTime() + eventHours * 60 * 60 * 1000);
 
   return {
+    tournamentID: undefined,
     eventType,
     start,
     end,
   };
 }
-//TODO: enforce attendees in higher order function for global events
-export function createGlobalEvent(tournamentID: string) {
-  const eventType = faker.helpers.enumValue(EventType);
+export function createGlobalEvent(eventType = EventType.GLOBAL) {
   const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
 
   const MAX_EVENT_HOURS = 8;
@@ -267,13 +275,14 @@ export function createGlobalEvent(tournamentID: string) {
   const end = new Date(start.getTime() + eventHours * 60 * 60 * 1000);
 
   return {
-    tournamentID,
+    tournamentID: undefined,
     eventType,
     start,
     end,
   };
 }
-export function fakeEvent(tournamentID: string) {
+
+export function createEvent(tournamentID: string) {
   const eventType = faker.helpers.enumValue(EventType);
   const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
 
@@ -303,14 +312,14 @@ export function fakeEvent(tournamentID: string) {
     end,
   };
 }
-export function fakeEventAttendance(userID: string, eventID: string) {
+export function createEventAttendance(userID: string, eventID: string) {
   return {
     userID,
     eventID,
     status: faker.helpers.enumValue(AttendanceStatus),
   };
 }
-export function fakeTournament() {
+export function createTournament() {
   return {
     title: faker.lorem.words({ min: 1, max: 5 }),
     body: faker.lorem.sentences({ min: 1, max: 5 }),
