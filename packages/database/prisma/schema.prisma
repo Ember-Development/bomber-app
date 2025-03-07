@@ -37,6 +37,7 @@ enum UserRole {
     COACH
     REGIONAL_COACH
     PLAYER
+    PARENT
     FAN
 }
 
