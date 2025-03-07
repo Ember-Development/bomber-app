@@ -53,10 +53,10 @@ export const createGenericPlayer = () => {
     practiceShortSize: faker.helpers.enumValue(ShortsSize),
   };
 };
-export function create8UTo12UPlayer(
+export const create8UTo12UPlayer = (
   teamID: string,
   ageGroup: AgeGroup
-): Omit<PlayerDB, 'id'> {
+): Omit<PlayerDB, 'id'> => {
   //This should never get triggered but just in case
   if (
     ageGroup != AgeGroup.U8 &&
@@ -74,15 +74,15 @@ export function create8UTo12UPlayer(
     teamID,
     ageGroup,
   };
-}
-export function create14UPlayer(
+};
+export const create14UPlayer = (
   userID: string | null,
   teamID: string,
   addressID: string,
   isTrusted: boolean,
   ageGroup = AgeGroup.U14,
   college: string | null
-): Omit<PlayerDB, 'id'> {
+): Omit<PlayerDB, 'id'> => {
   //This should never get triggered but just in case
   if (userID && !isTrusted) {
     throw new Error(
@@ -103,15 +103,15 @@ export function create14UPlayer(
     ageGroup,
     college,
   };
-}
-export function create16UToAlumniPlayer(
+};
+export const create16UToAlumniPlayer = (
   userID: string,
   teamID: string,
   addressID: string,
   ageGroup: AgeGroup,
   isTrusted = true,
   college: string | null
-): Omit<PlayerDB, 'id'> {
+): Omit<PlayerDB, 'id'> => {
   //This should never get triggered but just in case
   if (
     ageGroup !== AgeGroup.U16 &&
@@ -130,58 +130,58 @@ export function create16UToAlumniPlayer(
     isTrusted,
     college,
   };
-}
+};
 
-export function createParent(userID: string, addressID: string) {
+export const createParent = (userID: string, addressID: string) => {
   return {
     addressID,
     userID,
   };
-}
-export function createAdmin(userID: string) {
+};
+export const createAdmin = (userID: string) => {
   return {
     userID,
   };
-}
-export function createFan(userID: string) {
+};
+export const createFan = (userID: string) => {
   return {
     userID,
   };
-}
-export function createCoach(userID: string) {
+};
+export const createCoach = (userID: string) => {
   return {
     userID,
   };
-}
-export function createRegCoach(userID: string, region: Regions) {
+};
+export const createRegCoach = (userID: string, region: Regions) => {
   return {
     userID,
     region,
   };
-}
+};
 
 //ROLE DEPENDENT TABLES
-export function createTeam(
+export const createTeam = (
   headCoachID: string,
   ageGroup: string,
   region: string
-) {
+) => {
   return {
     name: faker.person.fullName(),
     region,
     ageGroup,
     headCoachID,
   };
-}
-export function createTrophy(teamID: string) {
+};
+export const createTrophy = (teamID: string) => {
   return {
     title: faker.lorem.words({ min: 1, max: 5 }),
     imageURL: faker.image.url(),
     teamID,
   };
-}
+};
 
-export function createAddress() {
+export const createAddress = () => {
   return {
     state: faker.location.state(),
     city: faker.location.city(),
@@ -191,55 +191,58 @@ export function createAddress() {
     address2:
       Math.random() < 0.5 ? faker.location.secondaryAddress() : undefined,
   };
-}
+};
 
 //CHATS, MESSAGES, NOTIFICATIONS
-export function createChat() {
+export const createChat = () => {
   return {
     title: faker.lorem.words({ min: 1, max: 5 }),
     createdAt: faker.date.past(),
   };
-}
-export function createUserChat(userID: string, chatID: string) {
+};
+export const createUserChat = (userID: string, chatID: string) => {
   return {
     userID,
     chatID,
     //TODO: maybe constrain this
     joinedAt: faker.date.past(),
   };
-}
-export function createMessage(
+};
+export const createMessage = (
   userID: string,
   chatID: string,
   chatCreationDate: Date
-) {
+) => {
   return {
     text: faker.lorem.sentences({ min: 1, max: 5 }),
     createdAt: faker.date.between({ from: chatCreationDate, to: Date.now() }),
     userID,
     chatID,
   };
-}
-export function createNotification() {
+};
+export const createNotification = () => {
   return {
     title: faker.lorem.words({ min: 1, max: 5 }),
     body: faker.lorem.sentences({ min: 1, max: 5 }),
     createdAt: faker.date.recent(),
   };
-}
-export function createUserNotification(userID: string, notificationID: string) {
+};
+export const createUserNotification = (
+  userID: string,
+  notificationID: string
+) => {
   return {
     userID,
     notificationID,
     isRead: faker.datatype.boolean(),
   };
-}
+};
 
 //EVENTS
-export function createTournamentEvent(
+export const createTournamentEvent = (
   tournamentID: string,
   eventType = EventType.TOURNAMENT
-) {
+) => {
   const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
 
   const MAX_EVENT_DAYS = 14;
@@ -252,8 +255,8 @@ export function createTournamentEvent(
     start,
     end,
   };
-}
-export function createPracticeEvent(eventType = EventType.PRACTICE) {
+};
+export const createPracticeEvent = (eventType = EventType.PRACTICE) => {
   const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
 
   const MAX_EVENT_HOURS = 8;
@@ -266,8 +269,8 @@ export function createPracticeEvent(eventType = EventType.PRACTICE) {
     start,
     end,
   };
-}
-export function createGlobalEvent(eventType = EventType.GLOBAL) {
+};
+export const createGlobalEvent = (eventType = EventType.GLOBAL) => {
   const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
 
   const MAX_EVENT_HOURS = 8;
@@ -280,9 +283,9 @@ export function createGlobalEvent(eventType = EventType.GLOBAL) {
     start,
     end,
   };
-}
+};
 
-export function createEvent(tournamentID: string) {
+export const createEvent = (tournamentID: string) => {
   const eventType = faker.helpers.enumValue(EventType);
   const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
 
@@ -311,18 +314,18 @@ export function createEvent(tournamentID: string) {
     start,
     end,
   };
-}
-export function createEventAttendance(userID: string, eventID: string) {
+};
+export const createEventAttendance = (userID: string, eventID: string) => {
   return {
     userID,
     eventID,
     status: faker.helpers.enumValue(AttendanceStatus),
   };
-}
-export function createTournament() {
+};
+export const createTournament = () => {
   return {
     title: faker.lorem.words({ min: 1, max: 5 }),
     body: faker.lorem.sentences({ min: 1, max: 5 }),
     imageURL: faker.image.url(),
   };
-}
+};
