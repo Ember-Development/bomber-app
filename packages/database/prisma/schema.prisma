@@ -152,7 +152,7 @@ model Player {
 
     ageGroup AgeGroup
 
-    user   User    @relation(fields: [userID], references: [id]) // constrain: all players > 12u have user login
+    user   User?   @relation(fields: [userID], references: [id]) // constrain: all players > 12u have user login
     userID String? @unique @db.Uuid
 
     team   Team   @relation(fields: [teamID], references: [id])
@@ -169,7 +169,6 @@ model Player {
     addressID String?  @db.Uuid
 
     college String?
-    userId  String  @db.Uuid
 }
 
 model Admin {
@@ -216,8 +215,8 @@ model Team {
 
     regCoaches  RegCoach[]
     coaches     Coach[]    @relation("CoachTeams")
-    headCoach   Coach      @relation(fields: [headCoachID], references: [id])
-    headCoachID String     @db.Uuid
+    headCoach   Coach?     @relation(fields: [headCoachID], references: [id])
+    headCoachID String?    @db.Uuid
 }
 
 model Trophy {
