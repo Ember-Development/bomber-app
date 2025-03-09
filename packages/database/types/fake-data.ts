@@ -51,7 +51,82 @@ export const createUserFan = async () => {
     return user;
   });
 };
+
+export const createUserCoach = async (
+  minHeadCoach = 1,
+  minTeams = 0,
+  maxTeams = 3,
+  minPlayersPerTeam = 0,
+  maxPlayersPerTeam = 20,
+  ageGroups = Object.values(AgeGroup),
+  regions = Object.values(Regions)
+) => {
+  const mockUser = createMockUser([UserRole.COACH], UserRole.COACH);
+
+  return await prisma.$transaction(async (prisma) => {
+    const user = await prisma.user.create({ data: mockUser });
+
+    const mockCoach = createMockCoach(user.id);
+    const coach = await prisma.coach.create({ data: mockCoach });
+
+    // get nums of team coach + team headCoach relations to generate w/ ageGroups
+    const numTeams = Math.floor(Math.random() * maxTeams) + minTeams;
+    const numHeadCoach = Math.floor(Math.random() * maxTeams) + minHeadCoach;
+    const teamsRegion = regions[Math.floor(Math.random() * regions.length)];
+    const teamAgeGroup = ageGroups[
+      Math.floor(Math.random() * ageGroups.length)
+    ] as AgeGroup;
+
+    // generate mock teams
+    const teams = [];
+
+    for (let i = 0; i < numTeams; i++) {
+      const mockTeam = createMockTeam(
+        i < numHeadCoach ? coach.id : null,
+        teamAgeGroup,
+        teamsRegion
+      );
+      teams.push(mockTeam);
+    }
+
+    // TODO: generate other coaches for the team
+    // for (let i = 0; i < numTeams; i++) {}
+
+    for (let i = 0; i < numTeams; i++) {
+      await prisma.team.create({ data: teams[i] });
+
+      const numPlayers =
+        Math.floor(Math.random() * maxPlayersPerTeam) + minPlayersPerTeam;
+      // const teamPlayers = [];
+      for (let j = 0; j < numPlayers; j++) {
+        // let mockPlayer;
+        //TODO: create util that breaks down these common groups
+        if (
+          teamAgeGroup == AgeGroup.ALUMNI ||
+          teamAgeGroup == AgeGroup.U18 ||
+          teamAgeGroup == AgeGroup.U16
+        ) {
+          // mockUser = createUserPlayer()
+          // mockPlayer = createMock16UToAlumniPlayer()
+        } else if (teamAgeGroup == AgeGroup.U14) {
+          // mockUser = createUserPlayer()
+          // mockPlayer = createMock14UPlayer()
+        } else {
+          // mockPlayer = createMock8UTo12UPlayer()
+        }
+      }
+
+      //TODO: generate players with age group related to team
+    }
+
+    return user;
   });
+};
+export const createTeamFromCoach = async () => {
+  //TODO: generate players with age group from the team
+  //TODO: if players are untrusted then create parents with user accounts
+  //TODO: if players are trusted then create user accounts for the players
+  //TODO: create trophy case for team
 };
 
 //USERS
@@ -203,12 +278,12 @@ export const createMockRegCoach = (userID: string, region: Regions) => {
 
 //ROLE DEPENDENT TABLES
 export const createMockTeam = (
-  headCoachID: string,
-  ageGroup: string,
-  region: string
+  headCoachID: string | null,
+  ageGroup: AgeGroup,
+  region: Regions
 ) => {
   return {
-    name: faker.person.fullName(),
+    name: faker.word.adjective() + ' ' + faker.animal.type() + 's', // assuming correct plural is adding an 's', if not it'll at least be funny
     region,
     ageGroup,
     headCoachID,
