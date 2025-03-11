@@ -56,6 +56,8 @@ export const createUserCoach = async (
   minTeams = 0,
   maxTeams = 3,
   minPlayersPerTeam = 0,
+  maxOtherCoaches = 4,
+  minOtherCoaches = 0,
   maxPlayersPerTeam = 20,
   ageGroups = Object.values(AgeGroup),
   regions = Object.values(Regions)
@@ -79,8 +81,24 @@ export const createUserCoach = async (
     // generate mock teams
     const teams = [];
 
-    //NOTE: assumes created coach is only coach... dont want to handle logic for other coach generation rn
     for (let i = 0; i < numTeams; i++) {
+      const numOtherCoaches =
+        Math.floor(Math.random() * maxOtherCoaches) + minOtherCoaches;
+      const otherCoaches = [];
+
+      for (let j = 0; j < numOtherCoaches; j++) {
+        const mockOtherCoachUser = createMockUser(
+          [UserRole.COACH],
+          UserRole.COACH
+        );
+        const otherUser = await prisma.user.create({
+          data: mockOtherCoachUser,
+        });
+        const mockOtherCoach = createMockCoach(otherUser.id);
+        const otherCoach = await prisma.coach.create({ data: mockOtherCoach });
+        otherCoaches.push(otherCoach);
+      }
+
       const mockTeam = createMockTeam(
         i < numHeadCoach ? coach.id : null,
         teamAgeGroup,
@@ -88,7 +106,17 @@ export const createUserCoach = async (
       );
 
       teams.push(mockTeam);
-      const curTeam = await prisma.team.create({ data: teams[i] });
+      const curTeam = await prisma.team.create({
+        data: {
+          ...teams[i],
+          coaches: {
+            connect: [
+              { id: coach.id },
+              ...otherCoaches.map((c) => ({ id: c.id })),
+            ],
+          },
+        },
+      });
 
       const numPlayers =
         Math.floor(Math.random() * maxPlayersPerTeam) + minPlayersPerTeam;
