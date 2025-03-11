@@ -51,7 +51,6 @@ export const createUserFan = async () => {
     return user;
   });
 };
-
 export const createUserCoach = async (
   minHeadCoach = 1,
   minTeams = 0,
@@ -80,54 +79,104 @@ export const createUserCoach = async (
     // generate mock teams
     const teams = [];
 
+    //NOTE: assumes created coach is only coach... dont want to handle logic for other coach generation rn
     for (let i = 0; i < numTeams; i++) {
       const mockTeam = createMockTeam(
         i < numHeadCoach ? coach.id : null,
         teamAgeGroup,
         teamsRegion
       );
+
       teams.push(mockTeam);
-    }
-
-    // TODO: generate other coaches for the team
-    // for (let i = 0; i < numTeams; i++) {}
-
-    for (let i = 0; i < numTeams; i++) {
-      await prisma.team.create({ data: teams[i] });
+      const curTeam = await prisma.team.create({ data: teams[i] });
 
       const numPlayers =
         Math.floor(Math.random() * maxPlayersPerTeam) + minPlayersPerTeam;
-      // const teamPlayers = [];
+      const teamPlayers = [];
+
       for (let j = 0; j < numPlayers; j++) {
-        // let mockPlayer;
-        //TODO: create util that breaks down these common groups
+        const mockUser = createMockUser([UserRole.PLAYER], UserRole.PLAYER);
+        const playerUser = await prisma.user.create({ data: mockUser });
+
+        // generate players based on age group
         if (
           teamAgeGroup == AgeGroup.ALUMNI ||
           teamAgeGroup == AgeGroup.U18 ||
           teamAgeGroup == AgeGroup.U16
         ) {
-          // mockUser = createUserPlayer()
-          // mockPlayer = createMock16UToAlumniPlayer()
+          const mockAddress = createMockAddress();
+          const playerAddress = await prisma.address.create({
+            data: mockAddress,
+          });
+          const mockPlayer = createMock16UToAlumniPlayer(
+            playerUser.id,
+            curTeam.id,
+            playerAddress.id,
+            teamAgeGroup,
+            true
+          );
+
+          const newPlayer = await prisma.player.create({ data: mockPlayer });
+          await prisma.user.update({
+            where: { id: playerUser.id },
+            data: { player: { connect: { id: newPlayer.id } } },
+          });
+
+          teamPlayers.push(newPlayer);
         } else if (teamAgeGroup == AgeGroup.U14) {
-          // mockUser = createUserPlayer()
-          // mockPlayer = createMock14UPlayer()
+          if (Math.random() < 0.5) {
+            // isTrusted == true
+            const mockAddress = createMockAddress();
+            const playerAddress = await prisma.address.create({
+              data: mockAddress,
+            });
+            const mockPlayer = createMock14UPlayer(
+              playerUser.id,
+              curTeam.id,
+              playerAddress.id,
+              true,
+              teamAgeGroup
+            );
+
+            const newPlayer = await prisma.player.create({ data: mockPlayer });
+            await prisma.user.update({
+              where: { id: playerUser.id },
+              data: { player: { connect: { id: newPlayer.id } } },
+            });
+          } else {
+            // isTrusted = false
+            const mockPlayer = createMock14UPlayer(
+              null,
+              curTeam.id,
+              null,
+              false,
+              teamAgeGroup
+            );
+
+            await prisma.player.create({ data: mockPlayer });
+          }
         } else {
-          // mockPlayer = createMock8UTo12UPlayer()
+          const mockPlayer = createMock8UTo12UPlayer(curTeam.id, teamAgeGroup);
+          await prisma.player.create({ data: mockPlayer });
         }
       }
 
-      //TODO: generate players with age group related to team
+      await prisma.team.update({
+        where: { id: curTeam.id },
+        data: {
+          players: {
+            connect: teamPlayers.map((p) => ({
+              id: p.id,
+            })),
+          },
+        },
+      });
     }
 
     return user;
   });
 };
-export const createTeamFromCoach = async () => {
-  //TODO: generate players with age group from the team
-  //TODO: if players are untrusted then create parents with user accounts
-  //TODO: if players are trusted then create user accounts for the players
-  //TODO: create trophy case for team
-};
+export const createUserPlayer = async () => {};
 
 //USERS
 export const createMockUser = (roles: UserRole[], primaryRole: UserRole) => {
@@ -194,10 +243,9 @@ export const createMock8UTo12UPlayer = (
 export const createMock14UPlayer = (
   userID: string | null,
   teamID: string,
-  addressID: string,
+  addressID: string | null,
   isTrusted: boolean,
-  ageGroup = AgeGroup.U14,
-  college: string | null
+  ageGroup = AgeGroup.U14
 ): Omit<PlayerDB, 'id'> => {
   //This should never get triggered but just in case
   if (userID && !isTrusted) {
@@ -209,6 +257,14 @@ export const createMock14UPlayer = (
       'Error generating 14U player: trusted player was not given a user relation'
     );
   }
+
+  const college =
+    Math.random() < 0.5
+      ? faker.helpers.arrayElement([
+          `University of ${faker.location.city()}`,
+          `${faker.location.city()} State University`,
+        ])
+      : null;
 
   return {
     ...createMockGenericPlayer(),
@@ -225,8 +281,7 @@ export const createMock16UToAlumniPlayer = (
   teamID: string,
   addressID: string,
   ageGroup: AgeGroup,
-  isTrusted = true,
-  college: string | null
+  isTrusted = true
 ): Omit<PlayerDB, 'id'> => {
   //This should never get triggered but just in case
   if (
@@ -237,6 +292,15 @@ export const createMock16UToAlumniPlayer = (
     throw new Error(
       'Error generating user between 16U and ALUMNI, wrong AgeGroup'
     );
+
+  const college =
+    Math.random() < 0.5
+      ? faker.helpers.arrayElement([
+          `University of ${faker.location.city()}`,
+          `${faker.location.city()} State University`,
+        ])
+      : null;
+
   return {
     ...createMockGenericPlayer(),
     userID,
