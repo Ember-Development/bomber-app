@@ -58,6 +58,8 @@ export const createUserCoach = async (
   minPlayersPerTeam = 0,
   maxOtherCoaches = 4,
   minOtherCoaches = 0,
+  maxRegionalCoaches = 4,
+  minRegionalCoaches = 1,
   maxPlayersPerTeam = 20,
   ageGroups = Object.values(AgeGroup),
   regions = Object.values(Regions)
@@ -99,6 +101,21 @@ export const createUserCoach = async (
         otherCoaches.push(otherCoach);
       }
 
+      const numRegCoaches =
+        Math.floor(Math.random() * maxRegionalCoaches) + minRegionalCoaches;
+      const regCoaches = [];
+      for (let j = 0; j < numRegCoaches; j++) {
+        const mockRegCoachUser = createMockUser(
+          [UserRole.REGIONAL_COACH],
+          UserRole.REGIONAL_COACH
+        );
+
+        const regUser = await prisma.user.create({ data: mockRegCoachUser });
+        const mockRegCoach = createMockRegCoach(regUser.id, teamsRegion);
+        const regCoach = await prisma.coach.create({ data: mockRegCoach });
+        regCoaches.push(regCoach);
+      }
+
       const mockTeam = createMockTeam(
         i < numHeadCoach ? coach.id : null,
         teamAgeGroup,
@@ -114,6 +131,9 @@ export const createUserCoach = async (
               { id: coach.id },
               ...otherCoaches.map((c) => ({ id: c.id })),
             ],
+          },
+          regCoaches: {
+            connect: [...regCoaches.map((c) => ({ id: c.id }))],
           },
         },
       });
