@@ -395,9 +395,44 @@ export const createUserRegCoach = async (
     return user;
   });
 };
-export const createUserPlayer = async () => {
-  //TODO: generate mock player and create in db
+export const createUserPlayer = async (ageGroup: AgeGroup) => {
+  const mockUser = createMockUser([UserRole.PLAYER], UserRole.PLAYER);
+  const playerUser = await prisma.user.create({ data: mockUser });
+
   //TODO: generate mock team
+  const mockteam = createMockTeam();
+
+  if (
+    ageGroup == AgeGroup.ALUMNI ||
+    ageGroup == AgeGroup.U18 ||
+    ageGroup == AgeGroup.U16
+  ) {
+    const mockAddress = createMockAddress();
+    const playerAddress = await prisma.address.create({
+      data: mockAddress,
+    });
+    const mockPlayer = createMock16UToAlumniPlayer(
+      playerUser.id,
+      curTeam.id,
+      playerAddress.id,
+      teamAgeGroup,
+      true
+    );
+
+    const newPlayer = await prisma.player.create({ data: mockPlayer });
+    await prisma.user.update({
+      where: { id: playerUser.id },
+      data: { player: { connect: { id: newPlayer.id } } },
+    });
+
+    teamPlayers.push(newPlayer);
+  } else if (ageGroup == AgeGroup.U14) {
+  } else if (
+    ageGroup == AgeGroup.U8 ||
+    ageGroup == AgeGroup.U10 ||
+    ageGroup == AgeGroup.U12
+  ) {
+  }
   //TODO: generate mock coach(es)
   //TODO: generate mock reg coach(es)
   //TODO: connect players, coaches, and reg coaches to team
