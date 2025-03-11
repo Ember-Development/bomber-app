@@ -395,7 +395,15 @@ export const createUserRegCoach = async (
     return user;
   });
 };
-export const createUserPlayer = async () => {};
+export const createUserPlayer = async () => {
+  //TODO: generate mock player and create in db
+  //TODO: generate mock team
+  //TODO: generate mock coach(es)
+  //TODO: generate mock reg coach(es)
+  //TODO: connect players, coaches, and reg coaches to team
+  //TODO: if player untrusted then create parent and return
+  //TODO: if player trusted then create user account and return
+};
 
 //USERS
 export const createMockUser = (roles: UserRole[], primaryRole: UserRole) => {
