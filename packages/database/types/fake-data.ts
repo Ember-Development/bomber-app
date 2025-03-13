@@ -171,7 +171,43 @@ export const mockDatabase = async (
               teamAgeGroup
             );
 
-            //TODO: loop this to create several parents for a single player
+            const parents = [];
+            for (let k = 0; k < numParents; k++) {
+              const mockParentUser = createMockUser(
+                [UserRole.PARENT],
+                UserRole.PARENT
+              );
+              const parentUser = await prisma.user.create({
+                data: mockParentUser,
+              });
+              const mockParentAddress = createMockAddress();
+              //TODO: make this a majority chance to just inherit from the player address
+              const parentAddress = await prisma.address.create({
+                data: mockParentAddress,
+              });
+              const mockParent = createMockParent(
+                parentAddress.id,
+                parentUser.id
+              );
+              const newParent = await prisma.parent.create({
+                data: mockParent,
+              });
+
+              parents.push(newParent);
+            }
+
+            await prisma.player.create({
+              data: {
+                ...mockPlayer,
+                parents: { connect: parents.map((p) => ({ id: p.id })) },
+              },
+            });
+          }
+        } else {
+          const mockPlayer = createMock8UTo12UPlayer(curTeam.id, teamAgeGroup);
+
+          const parents = [];
+          for (let k = 0; k < numParents; k++) {
             const mockParentUser = createMockUser(
               [UserRole.PARENT],
               UserRole.PARENT
@@ -188,38 +224,17 @@ export const mockDatabase = async (
               parentAddress.id,
               parentUser.id
             );
-            const newParent = await prisma.parent.create({ data: mockParent });
-
-            const newPlayer = await prisma.player.create({
-              data: {
-                ...mockPlayer,
-                parents: { connect: { id: newParent.id } },
-              },
+            const newParent = await prisma.parent.create({
+              data: mockParent,
             });
+
+            parents.push(newParent);
           }
-        } else {
-          const mockPlayer = createMock8UTo12UPlayer(curTeam.id, teamAgeGroup);
 
-          //TODO: loop this to create several parents for a single player
-          const mockParentUser = createMockUser(
-            [UserRole.PARENT],
-            UserRole.PARENT
-          );
-          const parentUser = await prisma.user.create({
-            data: mockParentUser,
-          });
-          const mockParentAddress = createMockAddress();
-          //TODO: make this a majority chance to just inherit from the player address
-          const parentAddress = await prisma.address.create({
-            data: mockParentAddress,
-          });
-          const mockParent = createMockParent(parentAddress.id, parentUser.id);
-          const newParent = await prisma.parent.create({ data: mockParent });
-
-          const newPlayer = await prisma.player.create({
+          await prisma.player.create({
             data: {
               ...mockPlayer,
-              parents: { connect: { id: newParent.id } },
+              parents: { connect: parents.map((p) => ({ id: p.id })) },
             },
           });
         }
