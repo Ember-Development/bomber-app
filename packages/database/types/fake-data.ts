@@ -37,7 +37,7 @@ export const createUserFan = async () => {
   const mockUser = createMockUser([UserRole.FAN], UserRole.FAN);
 
   return await prisma.$transaction(async (prisma) => {
-    let user: User | null = await prisma.user.create({
+    const user: User | null = await prisma.user.create({
       data: mockUser,
     });
 
@@ -46,48 +46,39 @@ export const createUserFan = async () => {
       data: mockFan,
     });
 
-    user = await prisma.user.findUnique({ where: { id: user.id } });
-
     return user;
   });
 };
-export const createUserCoach = async (
-  minHeadCoach = 1,
+
+export const mockDatabase = async (
   minTeams = 0,
   maxTeams = 3,
   minPlayersPerTeam = 0,
   maxOtherCoaches = 4,
-  minOtherCoaches = 0,
+  minOtherCoaches = 1,
   maxRegionalCoaches = 4,
   minRegionalCoaches = 1,
   maxPlayersPerTeam = 20,
   ageGroups = Object.values(AgeGroup),
   regions = Object.values(Regions)
 ) => {
-  const mockUser = createMockUser([UserRole.COACH], UserRole.COACH);
-
   return await prisma.$transaction(async (prisma) => {
-    const user = await prisma.user.create({ data: mockUser });
-
-    const mockCoach = createMockCoach(user.id);
-    const coach = await prisma.coach.create({ data: mockCoach });
-
     // get nums of team coach + team headCoach relations to generate w/ ageGroups
-    const numTeams = Math.floor(Math.random() * maxTeams) + minTeams;
-    const numHeadCoach = Math.floor(Math.random() * maxTeams) + minHeadCoach;
     const teamsRegion = regions[Math.floor(Math.random() * regions.length)];
     const teamAgeGroup = ageGroups[
       Math.floor(Math.random() * ageGroups.length)
     ] as AgeGroup;
 
-    // generate mock teams
+    // generate mock teams as center of db population
+    const numTeams = Math.floor(Math.random() * maxTeams) + minTeams;
     const teams = [];
-
     for (let i = 0; i < numTeams; i++) {
+      const mockTeam = createMockTeam(null, teamAgeGroup, teamsRegion);
+      const curTeam = await prisma.team.create({ data: mockTeam });
+
       const numOtherCoaches =
         Math.floor(Math.random() * maxOtherCoaches) + minOtherCoaches;
       const otherCoaches = [];
-
       for (let j = 0; j < numOtherCoaches; j++) {
         const mockOtherCoachUser = createMockUser(
           [UserRole.COACH],
@@ -116,328 +107,96 @@ export const createUserCoach = async (
         regCoaches.push(regCoach);
       }
 
-      const mockTeam = createMockTeam(
-        i < numHeadCoach ? coach.id : null,
-        teamAgeGroup,
-        teamsRegion
-      );
+      const numPlayers =
+        Math.floor(Math.random() * maxPlayersPerTeam) + minPlayersPerTeam;
+      const teamPlayers = [];
+      for (let j = 0; j < numPlayers; j++) {
+        const mockUser = createMockUser([UserRole.PLAYER], UserRole.PLAYER);
 
-      teams.push(mockTeam);
-      const curTeam = await prisma.team.create({
+        // generate players based on age group
+        if (
+          teamAgeGroup == AgeGroup.ALUMNI ||
+          teamAgeGroup == AgeGroup.U18 ||
+          teamAgeGroup == AgeGroup.U16
+        ) {
+          const playerUser = await prisma.user.create({ data: mockUser });
+          const mockAddress = createMockAddress();
+          const playerAddress = await prisma.address.create({
+            data: mockAddress,
+          });
+          const mockPlayer = createMock16UToAlumniPlayer(
+            playerUser.id,
+            curTeam.id,
+            playerAddress.id,
+            teamAgeGroup,
+            true
+          );
+
+          const newPlayer = await prisma.player.create({ data: mockPlayer });
+          await prisma.user.update({
+            where: { id: playerUser.id },
+            data: { player: { connect: { id: newPlayer.id } } },
+          });
+
+          teamPlayers.push(newPlayer);
+        } else if (teamAgeGroup == AgeGroup.U14) {
+          if (Math.random() < 0.5) {
+            // isTrusted == true
+            const playerUser = await prisma.user.create({ data: mockUser });
+            const mockAddress = createMockAddress();
+            const playerAddress = await prisma.address.create({
+              data: mockAddress,
+            });
+            const mockPlayer = createMock14UPlayer(
+              playerUser.id,
+              curTeam.id,
+              playerAddress.id,
+              true,
+              teamAgeGroup
+            );
+
+            const newPlayer = await prisma.player.create({ data: mockPlayer });
+            await prisma.user.update({
+              where: { id: playerUser.id },
+              data: { player: { connect: { id: newPlayer.id } } },
+            });
+          } else {
+            // isTrusted = false
+            const mockPlayer = createMock14UPlayer(
+              null,
+              curTeam.id,
+              null,
+              false,
+              teamAgeGroup
+            );
+
+            await prisma.player.create({ data: mockPlayer });
+          }
+        } else {
+          const mockPlayer = createMock8UTo12UPlayer(curTeam.id, teamAgeGroup);
+          await prisma.player.create({ data: mockPlayer });
+        }
+      }
+
+      await prisma.team.update({
+        where: { id: curTeam.id },
         data: {
-          ...teams[i],
+          ...mockTeam,
           coaches: {
-            connect: [
-              { id: coach.id },
-              ...otherCoaches.map((c) => ({ id: c.id })),
-            ],
+            connect: [...otherCoaches.map((c) => ({ id: c.id }))],
           },
           regCoaches: {
             connect: [...regCoaches.map((c) => ({ id: c.id }))],
           },
-        },
-      });
-
-      const numPlayers =
-        Math.floor(Math.random() * maxPlayersPerTeam) + minPlayersPerTeam;
-      const teamPlayers = [];
-
-      for (let j = 0; j < numPlayers; j++) {
-        const mockUser = createMockUser([UserRole.PLAYER], UserRole.PLAYER);
-        const playerUser = await prisma.user.create({ data: mockUser });
-
-        // generate players based on age group
-        if (
-          teamAgeGroup == AgeGroup.ALUMNI ||
-          teamAgeGroup == AgeGroup.U18 ||
-          teamAgeGroup == AgeGroup.U16
-        ) {
-          const mockAddress = createMockAddress();
-          const playerAddress = await prisma.address.create({
-            data: mockAddress,
-          });
-          const mockPlayer = createMock16UToAlumniPlayer(
-            playerUser.id,
-            curTeam.id,
-            playerAddress.id,
-            teamAgeGroup,
-            true
-          );
-
-          const newPlayer = await prisma.player.create({ data: mockPlayer });
-          await prisma.user.update({
-            where: { id: playerUser.id },
-            data: { player: { connect: { id: newPlayer.id } } },
-          });
-
-          teamPlayers.push(newPlayer);
-        } else if (teamAgeGroup == AgeGroup.U14) {
-          if (Math.random() < 0.5) {
-            // isTrusted == true
-            const mockAddress = createMockAddress();
-            const playerAddress = await prisma.address.create({
-              data: mockAddress,
-            });
-            const mockPlayer = createMock14UPlayer(
-              playerUser.id,
-              curTeam.id,
-              playerAddress.id,
-              true,
-              teamAgeGroup
-            );
-
-            const newPlayer = await prisma.player.create({ data: mockPlayer });
-            await prisma.user.update({
-              where: { id: playerUser.id },
-              data: { player: { connect: { id: newPlayer.id } } },
-            });
-          } else {
-            // isTrusted = false
-            const mockPlayer = createMock14UPlayer(
-              null,
-              curTeam.id,
-              null,
-              false,
-              teamAgeGroup
-            );
-
-            await prisma.player.create({ data: mockPlayer });
-          }
-        } else {
-          const mockPlayer = createMock8UTo12UPlayer(curTeam.id, teamAgeGroup);
-          await prisma.player.create({ data: mockPlayer });
-        }
-      }
-
-      await prisma.team.update({
-        where: { id: curTeam.id },
-        data: {
           players: {
-            connect: teamPlayers.map((p) => ({
-              id: p.id,
-            })),
+            connect: [...teamPlayers.map((p) => ({ id: p.id }))],
           },
         },
       });
+
+      teams.push(curTeam);
     }
-
-    return user;
   });
-};
-
-export const createUserRegCoach = async (
-  minHeadCoach = 1,
-  minTeams = 10,
-  maxTeams = 100,
-  minPlayersPerTeam = 0,
-  maxPlayersPerTeam = 20,
-  maxOtherRegCoaches = 4,
-  minOtherRegCoaches = 0,
-  maxCoaches = 4,
-  minCoaches = 1,
-  ageGroups = Object.values(AgeGroup),
-  region: Regions
-) => {
-  const mockUser = createMockUser([UserRole.COACH], UserRole.COACH);
-
-  return await prisma.$transaction(async (prisma) => {
-    const user = await prisma.user.create({ data: mockUser });
-
-    const mockCoach = createMockRegCoach(user.id, region);
-    const regCoach = await prisma.regCoach.create({ data: mockCoach });
-
-    // get nums of team coach + team headCoach relations to generate w/ ageGroups
-    const numTeams = Math.floor(Math.random() * maxTeams) + minTeams;
-    const numHeadCoach = Math.floor(Math.random() * maxTeams) + minHeadCoach;
-    const teamAgeGroup = ageGroups[
-      Math.floor(Math.random() * ageGroups.length)
-    ] as AgeGroup;
-
-    // generate mock teams
-    const teams = [];
-
-    for (let i = 0; i < numTeams; i++) {
-      const numOtherRegCoaches =
-        Math.floor(Math.random() * maxOtherRegCoaches) + minOtherRegCoaches;
-      const otherRegCoaches = [];
-
-      for (let j = 0; j < numOtherRegCoaches; j++) {
-        const mockOtherRegCoachUser = createMockUser(
-          [UserRole.REGIONAL_COACH],
-          UserRole.REGIONAL_COACH
-        );
-        const otherUser = await prisma.user.create({
-          data: mockOtherRegCoachUser,
-        });
-        const mockOtherRegCoach = createMockRegCoach(otherUser.id, region);
-        const otherRegCoach = await prisma.coach.create({
-          data: mockOtherRegCoach,
-        });
-        otherRegCoaches.push(otherRegCoach);
-      }
-
-      const numCoaches = Math.floor(Math.random() * maxCoaches) + minCoaches;
-      const coaches = [];
-      for (let j = 0; j < numCoaches; j++) {
-        const mockCoachUser = createMockUser([UserRole.COACH], UserRole.COACH);
-
-        const coachUser = await prisma.user.create({ data: mockCoachUser });
-        const mockCoach = createMockCoach(coachUser.id);
-        const coach = await prisma.coach.create({ data: mockCoach });
-        coaches.push(coach);
-      }
-
-      const mockTeam = createMockTeam(
-        i < numHeadCoach ? coaches[i].id : null,
-        teamAgeGroup,
-        region
-      );
-
-      teams.push(mockTeam);
-      const curTeam = await prisma.team.create({
-        data: {
-          ...teams[i],
-          coaches: {
-            connect: [...coaches.map((c) => ({ id: c.id }))],
-          },
-          regCoaches: {
-            connect: [
-              { id: regCoach.id },
-              ...otherRegCoaches.map((c) => ({ id: c.id })),
-            ],
-          },
-        },
-      });
-
-      const numPlayers =
-        Math.floor(Math.random() * maxPlayersPerTeam) + minPlayersPerTeam;
-      const teamPlayers = [];
-
-      for (let j = 0; j < numPlayers; j++) {
-        const mockUser = createMockUser([UserRole.PLAYER], UserRole.PLAYER);
-        const playerUser = await prisma.user.create({ data: mockUser });
-
-        // generate players based on age group
-        if (
-          teamAgeGroup == AgeGroup.ALUMNI ||
-          teamAgeGroup == AgeGroup.U18 ||
-          teamAgeGroup == AgeGroup.U16
-        ) {
-          const mockAddress = createMockAddress();
-          const playerAddress = await prisma.address.create({
-            data: mockAddress,
-          });
-          const mockPlayer = createMock16UToAlumniPlayer(
-            playerUser.id,
-            curTeam.id,
-            playerAddress.id,
-            teamAgeGroup,
-            true
-          );
-
-          const newPlayer = await prisma.player.create({ data: mockPlayer });
-          await prisma.user.update({
-            where: { id: playerUser.id },
-            data: { player: { connect: { id: newPlayer.id } } },
-          });
-
-          teamPlayers.push(newPlayer);
-        } else if (teamAgeGroup == AgeGroup.U14) {
-          if (Math.random() < 0.5) {
-            // isTrusted == true
-            const mockAddress = createMockAddress();
-            const playerAddress = await prisma.address.create({
-              data: mockAddress,
-            });
-            const mockPlayer = createMock14UPlayer(
-              playerUser.id,
-              curTeam.id,
-              playerAddress.id,
-              true,
-              teamAgeGroup
-            );
-
-            const newPlayer = await prisma.player.create({ data: mockPlayer });
-            await prisma.user.update({
-              where: { id: playerUser.id },
-              data: { player: { connect: { id: newPlayer.id } } },
-            });
-          } else {
-            // isTrusted = false
-            const mockPlayer = createMock14UPlayer(
-              null,
-              curTeam.id,
-              null,
-              false,
-              teamAgeGroup
-            );
-
-            await prisma.player.create({ data: mockPlayer });
-          }
-        } else {
-          const mockPlayer = createMock8UTo12UPlayer(curTeam.id, teamAgeGroup);
-          await prisma.player.create({ data: mockPlayer });
-        }
-      }
-
-      await prisma.team.update({
-        where: { id: curTeam.id },
-        data: {
-          players: {
-            connect: teamPlayers.map((p) => ({
-              id: p.id,
-            })),
-          },
-        },
-      });
-    }
-
-    return user;
-  });
-};
-export const createUserPlayer = async (ageGroup: AgeGroup) => {
-  const mockUser = createMockUser([UserRole.PLAYER], UserRole.PLAYER);
-  const playerUser = await prisma.user.create({ data: mockUser });
-
-  //TODO: generate mock team
-  const mockteam = createMockTeam();
-
-  if (
-    ageGroup == AgeGroup.ALUMNI ||
-    ageGroup == AgeGroup.U18 ||
-    ageGroup == AgeGroup.U16
-  ) {
-    const mockAddress = createMockAddress();
-    const playerAddress = await prisma.address.create({
-      data: mockAddress,
-    });
-    const mockPlayer = createMock16UToAlumniPlayer(
-      playerUser.id,
-      curTeam.id,
-      playerAddress.id,
-      teamAgeGroup,
-      true
-    );
-
-    const newPlayer = await prisma.player.create({ data: mockPlayer });
-    await prisma.user.update({
-      where: { id: playerUser.id },
-      data: { player: { connect: { id: newPlayer.id } } },
-    });
-
-    teamPlayers.push(newPlayer);
-  } else if (ageGroup == AgeGroup.U14) {
-  } else if (
-    ageGroup == AgeGroup.U8 ||
-    ageGroup == AgeGroup.U10 ||
-    ageGroup == AgeGroup.U12
-  ) {
-  }
-  //TODO: generate mock coach(es)
-  //TODO: generate mock reg coach(es)
-  //TODO: connect players, coaches, and reg coaches to team
-  //TODO: if player untrusted then create parent and return
-  //TODO: if player trusted then create user account and return
 };
 
 //USERS
