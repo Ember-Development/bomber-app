@@ -61,6 +61,14 @@ export const mockDatabase = async (
   maxPlayersPerTeam = 20,
   minParents = 1,
   maxParents = 3,
+  minGlobalEvents = 1,
+  maxGlobalEvents = 20,
+  minPracticeEvents = 1,
+  maxPracticeEvents = 20,
+  minTournaments = 1,
+  maxTournaments = 4,
+  minTournamentEvents = 1,
+  maxTournamentEvents = 4,
   ageGroups = Object.values(AgeGroup),
   regions = Object.values(Regions)
 ) => {
@@ -70,6 +78,14 @@ export const mockDatabase = async (
     const teamAgeGroup = ageGroups[
       Math.floor(Math.random() * ageGroups.length)
     ] as AgeGroup;
+
+    //generate global events
+    const numGlobalEvents =
+      Math.floor(Math.random() * maxGlobalEvents) + minGlobalEvents;
+    for (let i = 0; i < numGlobalEvents; i++) {
+      const mockGlobalEvent = createMockGlobalEvent();
+      await prisma.event.create({ data: mockGlobalEvent });
+    }
 
     // generate mock teams as center of db population
     const numTeams = Math.floor(Math.random() * maxTeams) + minTeams;
@@ -240,6 +256,56 @@ export const mockDatabase = async (
         }
       }
 
+      // generate practice events for team
+      const numPractices =
+        Math.floor(Math.random() * maxPracticeEvents) + minPracticeEvents;
+      for (let j = 0; j < numPractices; j++) {
+        const mockPracticeEvent = createMockPracticeEvent();
+        await prisma.event.create({
+          data: mockPracticeEvent,
+        });
+      }
+
+      // generate tournaments with their events
+      const numTournaments =
+        Math.floor(Math.random() * maxTournaments) + minTournaments;
+      for (let j = 0; j < numTournaments; j++) {
+        const numTournamentEvents =
+          Math.floor(Math.random() * maxTournamentEvents) + minTournamentEvents;
+        const mockTournament = createMockTournament();
+        const tournament = await prisma.tournament.create({
+          data: mockTournament,
+        });
+
+        for (let k = 0; k < numTournamentEvents; k++) {
+          const mockTournamentEvent = createMockTournamentEvent(tournament.id);
+          const tournamentEvent = await prisma.event.create({
+            data: {
+              ...mockTournamentEvent,
+            },
+          });
+
+          await prisma.eventAttendance.createMany({
+            data: [
+              ...teamPlayers.map((user) => ({
+                userID: user.id,
+                eventID: tournamentEvent.id,
+                status: AttendanceStatus.PENDING,
+              })),
+              ...otherCoaches.map((user) => ({
+                userID: user.id,
+                eventID: tournamentEvent.id,
+                status: AttendanceStatus.PENDING,
+              })),
+              ...regCoaches.map((user) => ({
+                userID: user.id,
+                eventID: tournamentEvent.id,
+                status: AttendanceStatus.PENDING,
+              })),
+            ],
+          });
+        }
+      }
       await prisma.team.update({
         where: { id: curTeam.id },
         data: {
@@ -510,7 +576,8 @@ export const createMockTournamentEvent = (
 
   const MAX_EVENT_DAYS = 14;
   const eventDays = Math.floor(Math.random() * MAX_EVENT_DAYS + 1);
-  const end = new Date().setDate(start.getDate() + eventDays);
+  const end = new Date();
+  end.setDate(start.getDate() + eventDays);
 
   return {
     tournamentID,
