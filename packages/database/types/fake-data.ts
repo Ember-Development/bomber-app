@@ -324,6 +324,8 @@ export const mockDatabase = async (
 
       teams.push(curTeam);
     }
+
+    //TODO: generate chats and connect to users
   });
 };
 
