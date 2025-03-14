@@ -167,6 +167,8 @@ export const mockDatabase = async (
         } else if (teamAgeGroup == AgeGroup.U14) {
           if (Math.random() < 0.5) {
             // isTrusted == true
+            //TODO: could simulate a chance that a trusted player still has parent connections...
+
             const playerUser = await prisma.user.create({ data: mockUser });
             const mockAddress = createMockAddress();
             const playerAddress = await prisma.address.create({
@@ -187,15 +189,9 @@ export const mockDatabase = async (
             });
           } else {
             // isTrusted = false
-            const mockPlayer = createMock14UPlayer(
-              null,
-              curTeam.id,
-              null,
-              false,
-              teamAgeGroup
-            );
 
             const parents = [];
+            const commonAddress = createMockAddress();
             for (let k = 0; k < numParents; k++) {
               const mockParentUser = createMockUser(
                 [UserRole.PARENT],
@@ -204,10 +200,10 @@ export const mockDatabase = async (
               const parentUser = await prisma.user.create({
                 data: mockParentUser,
               });
-              const mockParentAddress = createMockAddress();
-              //TODO: make this a majority chance to just inherit from the player address
+
+              // ~80% chance two parents have same address
               const parentAddress = await prisma.address.create({
-                data: mockParentAddress,
+                data: Math.random() < 0.9 ? commonAddress : createMockAddress(),
               });
               const mockParent = createMockParent(
                 parentAddress.id,
@@ -220,6 +216,14 @@ export const mockDatabase = async (
               parents.push(newParent);
             }
 
+            const mockPlayer = createMock14UPlayer(
+              null,
+              curTeam.id,
+              parents[0].addressID,
+              false,
+              teamAgeGroup
+            );
+
             await prisma.player.create({
               data: {
                 ...mockPlayer,
@@ -228,9 +232,8 @@ export const mockDatabase = async (
             });
           }
         } else {
-          const mockPlayer = createMock8UTo12UPlayer(curTeam.id, teamAgeGroup);
-
           const parents = [];
+          const commonAddress = createMockAddress();
           for (let k = 0; k < numParents; k++) {
             const mockParentUser = createMockUser(
               [UserRole.PARENT],
@@ -239,10 +242,9 @@ export const mockDatabase = async (
             const parentUser = await prisma.user.create({
               data: mockParentUser,
             });
-            const mockParentAddress = createMockAddress();
-            //TODO: make this a majority chance to just inherit from the player address
+            // ~80% chance two parents have same address
             const parentAddress = await prisma.address.create({
-              data: mockParentAddress,
+              data: Math.random() < 0.9 ? commonAddress : createMockAddress(),
             });
             const mockParent = createMockParent(
               parentAddress.id,
@@ -255,6 +257,11 @@ export const mockDatabase = async (
             parents.push(newParent);
           }
 
+          const mockPlayer = createMock8UTo12UPlayer(
+            curTeam.id,
+            teamAgeGroup,
+            parents[0].addressID
+          );
           await prisma.player.create({
             data: {
               ...mockPlayer,
@@ -457,7 +464,8 @@ export const createMockGenericPlayer = () => {
 };
 export const createMock8UTo12UPlayer = (
   teamID: string,
-  ageGroup: AgeGroup
+  ageGroup: AgeGroup,
+  addressID: string
 ): Omit<PlayerDB, 'id'> => {
   //This should never get triggered but just in case
   if (
@@ -470,9 +478,9 @@ export const createMock8UTo12UPlayer = (
   return {
     ...createMockGenericPlayer(),
     userID: null,
-    addressID: null,
     college: null,
     isTrusted: false,
+    addressID,
     teamID,
     ageGroup,
   };
