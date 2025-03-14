@@ -411,6 +411,7 @@ export const mockDatabase = async (
     }
 
     // generate non-team based chats and messages
+    // NOTE: it's good to do this after team gen to involve as many users as possible
     const numRandomChats =
       Math.floor(Math.random() * maxRandomChats) + minRandomChats;
     const numUsersRandomChat =
