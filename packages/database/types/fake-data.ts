@@ -18,7 +18,6 @@ import {
 import { faker } from '@faker-js/faker';
 
 export const createUserAdmin = async () => {
-  //TODO: fill array with random other roles... think of how to do this... is there a faker native way to take advantage of seeding?
   const mockUser = createMockUser([UserRole.ADMIN], UserRole.ADMIN);
 
   return await prisma.$transaction(async (prisma) => {
@@ -78,6 +77,10 @@ export const mockDatabase = async (
   maxTeamChats = 20,
   minMessagesPerUser = 0,
   maxMessagesPerUser = 20,
+  minAdmins = 1,
+  maxAdmins = 10,
+  minFans = 0,
+  maxFans = 50,
   ageGroups = Object.values(AgeGroup),
   regions = Object.values(Regions)
 ) => {
@@ -87,6 +90,16 @@ export const mockDatabase = async (
     const teamAgeGroup = ageGroups[
       Math.floor(Math.random() * ageGroups.length)
     ] as AgeGroup;
+
+    //create non-team roles
+    const numAdmins = Math.floor(Math.random() * maxAdmins) + minAdmins;
+    const numFans = Math.floor(Math.random() * maxFans) + minFans;
+    for (let i = 0; i < numAdmins; i++) {
+      createUserAdmin();
+    }
+    for (let i = 0; i < numFans; i++) {
+      createUserFan();
+    }
 
     //generate global events
     const numGlobalEvents =
