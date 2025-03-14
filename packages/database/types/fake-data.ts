@@ -1,4 +1,5 @@
 import { prisma } from '../client';
+import { UserDB } from './fan';
 import { PlayerDB } from './player';
 import {
   AttendanceStatus,
@@ -69,6 +70,14 @@ export const mockDatabase = async (
   maxTournaments = 4,
   minTournamentEvents = 1,
   maxTournamentEvents = 4,
+  minRandomChats = 1,
+  maxRandomChats = 4,
+  minUsersRandomChat = 1,
+  maxUsersRandomChat = 20,
+  minTeamChats = 1,
+  maxTeamChats = 20,
+  minMessagesPerUser = 0,
+  maxMessagesPerUser = 20,
   ageGroups = Object.values(AgeGroup),
   regions = Object.values(Regions)
 ) => {
@@ -89,7 +98,6 @@ export const mockDatabase = async (
 
     // generate mock teams as center of db population
     const numTeams = Math.floor(Math.random() * maxTeams) + minTeams;
-    const teams = [];
     for (let i = 0; i < numTeams; i++) {
       const mockTeam = createMockTeam(null, teamAgeGroup, teamsRegion);
       const curTeam = await prisma.team.create({ data: mockTeam });
@@ -323,12 +331,87 @@ export const mockDatabase = async (
         },
       });
 
-      teams.push(curTeam);
+      //generate team based chats and messages
+      const numTeamChats =
+        Math.floor(Math.random() * maxTeamChats) + minTeamChats;
+      for (let i = 0; i < numTeamChats; i++) {
+        const teamUsers = await prisma.user.findMany({
+          where: {
+            OR: [
+              // User is a player on the team
+              {
+                player: {
+                  team: { id: curTeam.id },
+                },
+              },
+              //  User is a coach on the team
+              {
+                OR: [
+                  { coach: { teams: { some: { id: curTeam.id } } } },
+                  { regCoach: { teams: { some: { id: curTeam.id } } } },
+                ],
+              },
+              //  User is a parent of a player on the team IF the player is untrusted
+              {
+                parent: {
+                  children: {
+                    some: {
+                      team: { id: curTeam.id },
+                      isTrusted: false,
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        });
+        const mockChat = createMockChat();
+        const chat = await prisma.chat.create({ data: mockChat });
+
+        // generate messages per user
+        for (let j = 0; j < teamUsers.length; j++) {
+          const numMessagesPerUser =
+            Math.floor(Math.random() * maxMessagesPerUser) + minMessagesPerUser;
+
+          for (let k = 0; k < numMessagesPerUser; k++) {
+            const mockMessage = createMockMessage(
+              teamUsers[i].id,
+              chat.id,
+              chat.createdAt
+            );
+            await prisma.message.create({ data: mockMessage });
+          }
+        }
+      }
     }
 
-    //TODO: generate team based chats and messages
+    // generate non-team based chats and messages
+    const numRandomChats =
+      Math.floor(Math.random() * maxRandomChats) + minRandomChats;
+    const numUsersRandomChat =
+      Math.floor(Math.random() * maxUsersRandomChat) + minUsersRandomChat;
+    for (let i = 0; i < numRandomChats; i++) {
+      const randomUsers = (await prisma.$queryRaw`
+  SELECT * FROM "User" ORDER BY RANDOM() LIMIT ${numUsersRandomChat}
+`) as UserDB[];
+      const mockChat = createMockChat();
+      const chat = await prisma.chat.create({ data: mockChat });
 
-    //TODO: generate non-team based chats and messages
+      // generate messages per user
+      for (let j = 0; j < randomUsers.length; j++) {
+        const numMessagesPerUser =
+          Math.floor(Math.random() * maxMessagesPerUser) + minMessagesPerUser;
+
+        for (let k = 0; k < numMessagesPerUser; k++) {
+          const mockMessage = createMockMessage(
+            randomUsers[i].id,
+            chat.id,
+            chat.createdAt
+          );
+          await prisma.message.create({ data: mockMessage });
+        }
+      }
+    }
   });
 };
 
