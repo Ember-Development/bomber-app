@@ -81,6 +81,10 @@ export const mockDatabase = async (
   maxAdmins = 10,
   minFans = 0,
   maxFans = 50,
+  minUsersNotified = 10,
+  maxUsersNotified = 100,
+  minNotificationsPerUser = 1,
+  maxNotificationsPerUser = 20,
   ageGroups = Object.values(AgeGroup),
   regions = Object.values(Regions)
 ) => {
@@ -411,7 +415,7 @@ export const mockDatabase = async (
     }
 
     // generate non-team based chats and messages
-    // NOTE: it's good to do this after team gen to involve as many users as possible
+    // NOTE: it's good to do these after team gen to involve as many users as possible
     const numRandomChats =
       Math.floor(Math.random() * maxRandomChats) + minRandomChats;
     const numUsersRandomChat =
@@ -441,6 +445,29 @@ export const mockDatabase = async (
           );
           await prisma.message.create({ data: mockMessage });
         }
+      }
+    }
+
+    const numUsersNotified =
+      Math.floor(Math.random() * maxUsersNotified) + minUsersNotified;
+    const randomUsers = (await prisma.$queryRaw`
+                         SELECT * FROM "User" ORDER BY RANDOM() LIMIT ${numUsersNotified}
+                         `) as UserDB[];
+    for (let i = 0; i < numUsersNotified; i++) {
+      const numNotificationsPerUser =
+        Math.floor(Math.random() * maxNotificationsPerUser) +
+        minNotificationsPerUser;
+      for (let j = 0; j < numNotificationsPerUser; j++) {
+        const mockNotification = createMockNotification();
+        const notification = await prisma.notification.create({
+          data: mockNotification,
+        });
+        const mockUserToNotification = createMockUserNotification(
+          randomUsers[i].id,
+          notification.id
+        );
+
+        await prisma.userNotification.create({ data: mockUserToNotification });
       }
     }
   });
