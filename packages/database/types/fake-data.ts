@@ -374,6 +374,11 @@ export const mockDatabase = async (
         });
         const mockChat = createMockChat();
         const chat = await prisma.chat.create({ data: mockChat });
+        await prisma.userChat.createMany({
+          data: teamUsers.map((u) =>
+            createMockUserChat(u.id, chat.id, chat.createdAt)
+          ),
+        });
 
         // generate messages per user
         for (let j = 0; j < teamUsers.length; j++) {
@@ -403,6 +408,11 @@ export const mockDatabase = async (
 `) as UserDB[];
       const mockChat = createMockChat();
       const chat = await prisma.chat.create({ data: mockChat });
+      await prisma.userChat.createMany({
+        data: randomUsers.map((u) =>
+          createMockUserChat(u.id, chat.id, chat.createdAt)
+        ),
+      });
 
       // generate messages per user
       for (let j = 0; j < randomUsers.length; j++) {
@@ -625,12 +635,15 @@ export const createMockChat = () => {
     createdAt: faker.date.past(),
   };
 };
-export const createMockUserChat = (userID: string, chatID: string) => {
+export const createMockUserChat = (
+  userID: string,
+  chatID: string,
+  chatCreatedAt: Date
+) => {
   return {
     userID,
     chatID,
-    //TODO: maybe constrain this
-    joinedAt: faker.date.past(),
+    joinedAt: faker.date.between({ from: chatCreatedAt, to: Date.now() }),
   };
 };
 export const createMockMessage = (
