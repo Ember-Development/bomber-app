@@ -743,7 +743,6 @@ export const createMockEvent = (tournamentID: string) => {
       break;
     case 'GLOBAL':
       end = new Date(start.getTime() + eventHours * 60 * 60 * 1000);
-      //TODO: how to enforce attendees
       break;
   }
 
