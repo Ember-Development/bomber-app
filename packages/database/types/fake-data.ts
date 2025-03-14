@@ -306,6 +306,7 @@ export const mockDatabase = async (
           });
         }
       }
+
       await prisma.team.update({
         where: { id: curTeam.id },
         data: {
@@ -325,7 +326,9 @@ export const mockDatabase = async (
       teams.push(curTeam);
     }
 
-    //TODO: generate chats and connect to users
+    //TODO: generate team based chats and messages
+
+    //TODO: generate non-team based chats and messages
   });
 };
 
