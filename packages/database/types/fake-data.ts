@@ -16,6 +16,11 @@ import {
   User,
 } from '/Users/braedon/ember/bomber-app/packages/database/generated/client';
 import { faker } from '@faker-js/faker';
+//NOTE: assumptions
+/*
+ * all users have one role
+ *
+ */
 
 //TODO: move this to a util
 const getRandomInt = (min = 0, max = 1) => {
@@ -94,6 +99,16 @@ export const mockDatabase = async (
   regions = Object.values(Regions)
 ) => {
   return await prisma.$transaction(async (prisma) => {
+    //TODO: fix this pattern, nothing wrong with it, it's just nasty
+    /*
+     * take random input min / max
+     * generate random num
+     * loop
+     * mock creation
+     * db creation
+     * then relational data
+     *
+     */
     // get nums of team coach + team headCoach relations to generate w/ ageGroups
     const teamsRegion = regions[getRandomInt(0, regions.length)];
     const teamAgeGroup = ageGroups[
@@ -447,7 +462,7 @@ export const mockDatabase = async (
 
         for (let k = 0; k < numMessagesPerUser; k++) {
           const mockMessage = createMockMessage(
-            randomUsers[i].id,
+            randomUsers[j].id,
             chat.id,
             chat.createdAt
           );
