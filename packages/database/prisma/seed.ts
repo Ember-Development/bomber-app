@@ -27,19 +27,6 @@ console.log(`Using seed: ${seed}`);
 
 faker.seed(seed); // hardcode this if you want a particular seed
 
-const main = async () => {
-  await mockDatabase();
-};
-main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
-
 const createAdminUsers = async () => {
   const mockUser = createMockUser([UserRole.ADMIN], UserRole.ADMIN);
 
@@ -71,6 +58,302 @@ const createUserFan = async () => {
 
     return user;
   });
+};
+
+//USERS
+const createMockUser = (roles: UserRole[], primaryRole: UserRole) => {
+  // this should never trigger but just in case
+  if (roles.length < 1) {
+    throw new Error('Every user should have at least one role');
+  }
+
+  let phone = undefined;
+  if (
+    roles.some((role) =>
+      ([UserRole.COACH, UserRole.REGIONAL_COACH] as UserRole[]).includes(role)
+    )
+  ) {
+    phone = faker.phone.number();
+  }
+
+  return {
+    phone,
+    primaryRole,
+    email: faker.internet.email(),
+    pass: faker.internet.password(),
+    fname: faker.person.firstName(),
+    lname: faker.person.lastName(),
+  };
+};
+
+//USER ROLES
+const createMockGenericPlayer = () => {
+  return {
+    pos1: faker.helpers.enumValue(Position),
+    pos2: faker.helpers.enumValue(Position),
+    jerseyNum: faker.string.numeric(2),
+    gradYear: faker.date.future({ years: 10 }).getFullYear().toString(),
+    jerseySize: faker.helpers.enumValue(JerseySize),
+    pantSize: faker.helpers.enumValue(PantsSize),
+    stirrupSize: faker.helpers.enumValue(StirrupSize),
+    shortSize: faker.helpers.enumValue(ShortsSize),
+    practiceShortSize: faker.helpers.enumValue(ShortsSize),
+  };
+};
+const createMock8UTo12UPlayer = (
+  teamID: string,
+  ageGroup: AgeGroup,
+  addressID: string
+): Omit<PlayerDB, 'id'> => {
+  //This should never get triggered but just in case
+  if (
+    ageGroup != AgeGroup.U8 &&
+    ageGroup != AgeGroup.U10 &&
+    ageGroup != AgeGroup.U12
+  )
+    throw new Error('Error generating 8U to 12U player: wrong age group');
+
+  return {
+    ...createMockGenericPlayer(),
+    userID: null,
+    college: null,
+    isTrusted: false,
+    addressID,
+    teamID,
+    ageGroup,
+  };
+};
+const createMock14UPlayer = (
+  userID: string | null,
+  teamID: string,
+  addressID: string | null,
+  isTrusted: boolean,
+  ageGroup = AgeGroup.U14
+): Omit<PlayerDB, 'id'> => {
+  //This should never get triggered but just in case
+  if (userID && !isTrusted) {
+    throw new Error(
+      'Error generating 14U player: untrusted player was given a user relation'
+    );
+  } else if (!userID && isTrusted) {
+    throw new Error(
+      'Error generating 14U player: trusted player was not given a user relation'
+    );
+  }
+
+  const college =
+    Math.random() < 0.5
+      ? faker.helpers.arrayElement([
+          `University of ${faker.location.city()}`,
+          `${faker.location.city()} State University`,
+        ])
+      : null;
+
+  return {
+    ...createMockGenericPlayer(),
+    userID,
+    teamID,
+    addressID,
+    isTrusted,
+    ageGroup,
+    college,
+  };
+};
+const createMock16UToAlumniPlayer = (
+  userID: string,
+  teamID: string,
+  addressID: string,
+  ageGroup: AgeGroup,
+  isTrusted = true
+): Omit<PlayerDB, 'id'> => {
+  //This should never get triggered but just in case
+  if (
+    ageGroup !== AgeGroup.U16 &&
+    ageGroup !== AgeGroup.U18 &&
+    ageGroup !== AgeGroup.ALUMNI
+  )
+    throw new Error(
+      'Error generating user between 16U and ALUMNI, wrong AgeGroup'
+    );
+
+  const college =
+    Math.random() < 0.5
+      ? faker.helpers.arrayElement([
+          `University of ${faker.location.city()}`,
+          `${faker.location.city()} State University`,
+        ])
+      : null;
+
+  return {
+    ...createMockGenericPlayer(),
+    userID,
+    teamID,
+    addressID,
+    ageGroup,
+    isTrusted,
+    college,
+  };
+};
+
+const createMockParent = (userID: string, addressID: string) => {
+  return {
+    addressID,
+    userID,
+  };
+};
+const createMockAdmin = (userID: string): Omit<Admin, 'id'> => {
+  return {
+    userID,
+  };
+};
+const createMockFan = (userID: string) => {
+  return {
+    userID,
+  };
+};
+const createMockCoach = (userID: string) => {
+  return {
+    userID,
+  };
+};
+const createMockRegCoach = (userID: string, region: Regions) => {
+  return {
+    userID,
+    region,
+  };
+};
+
+//ROLE DEPENDENT TABLES
+const createMockTeam = (
+  headCoachID: string | null,
+  ageGroup: AgeGroup,
+  region: Regions
+) => {
+  return {
+    name: faker.word.adjective() + ' ' + faker.animal.type() + 's', // assuming correct plural is adding an 's', if not it'll at least be funny
+    region,
+    ageGroup,
+    headCoachID,
+  };
+};
+const createMockTrophy = (teamID: string) => {
+  return {
+    title: faker.lorem.words({ min: 1, max: 5 }),
+    imageURL: faker.image.url(),
+    teamID,
+  };
+};
+
+const createMockAddress = () => {
+  return {
+    state: faker.location.state(),
+    city: faker.location.city(),
+    zip: faker.location.zipCode(),
+    address1: `${faker.number.int({ min: 0, max: 9999 })} + ${' '}
+      ${faker.location.street()}`,
+    address2:
+      Math.random() < 0.5 ? faker.location.secondaryAddress() : undefined,
+  };
+};
+
+//CHATS, MESSAGES, NOTIFICATIONS
+const createMockChat = () => {
+  return {
+    title: faker.lorem.words({ min: 1, max: 5 }),
+    createdAt: faker.date.past(),
+  };
+};
+const createMockUserChat = (
+  userID: string,
+  chatID: string,
+  chatCreatedAt: Date
+) => {
+  return {
+    userID,
+    chatID,
+    joinedAt: faker.date.between({ from: chatCreatedAt, to: Date.now() }),
+  };
+};
+const createMockMessage = (
+  userID: string,
+  chatID: string,
+  chatCreationDate: Date
+) => {
+  return {
+    text: faker.lorem.sentences({ min: 1, max: 5 }),
+    createdAt: faker.date.between({ from: chatCreationDate, to: Date.now() }),
+    userID,
+    chatID,
+  };
+};
+const createMockNotification = () => {
+  return {
+    title: faker.lorem.words({ min: 1, max: 5 }),
+    body: faker.lorem.sentences({ min: 1, max: 5 }),
+    createdAt: faker.date.recent(),
+  };
+};
+const createMockUserNotification = (userID: string, notificationID: string) => {
+  return {
+    userID,
+    notificationID,
+    isRead: faker.datatype.boolean(),
+  };
+};
+
+//EVENTS
+const createMockTournament = () => {
+  return {
+    title: faker.lorem.words({ min: 1, max: 5 }),
+    body: faker.lorem.sentences({ min: 1, max: 5 }),
+    imageURL: faker.image.url(),
+  };
+};
+const createMockTournamentEvent = (
+  tournamentID: string,
+  eventType = EventType.TOURNAMENT
+) => {
+  const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
+
+  const MAX_EVENT_DAYS = 14;
+  const eventDays = faker.number.int({ min: 1, max: MAX_EVENT_DAYS });
+  const end = new Date();
+  end.setDate(start.getDate() + eventDays);
+
+  return {
+    tournamentID,
+    eventType,
+    start,
+    end,
+  };
+};
+const createMockPracticeEvent = (eventType = EventType.PRACTICE) => {
+  const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
+
+  const MAX_EVENT_HOURS = 8;
+  const eventHours = faker.number.int({ min: 1, max: MAX_EVENT_HOURS });
+  const end = new Date(start.getTime() + eventHours * 60 * 60 * 1000);
+
+  return {
+    tournamentID: undefined,
+    eventType,
+    start,
+    end,
+  };
+};
+const createMockGlobalEvent = (eventType = EventType.GLOBAL) => {
+  const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
+
+  const MAX_EVENT_HOURS = 8;
+  const eventHours = faker.number.int({ min: 1, max: MAX_EVENT_HOURS });
+  const end = new Date(start.getTime() + eventHours * 60 * 60 * 1000);
+
+  return {
+    tournamentID: undefined,
+    eventType,
+    start,
+    end,
+  };
 };
 
 const mockDatabase = async (
@@ -548,298 +831,15 @@ const mockDatabase = async (
   });
 };
 
-//USERS
-const createMockUser = (roles: UserRole[], primaryRole: UserRole) => {
-  // this should never trigger but just in case
-  if (roles.length < 1) {
-    throw new Error('Every user should have at least one role');
-  }
-
-  let phone = undefined;
-  if (
-    roles.some((role) =>
-      ([UserRole.COACH, UserRole.REGIONAL_COACH] as UserRole[]).includes(role)
-    )
-  ) {
-    phone = faker.phone.number();
-  }
-
-  return {
-    phone,
-    primaryRole,
-    email: faker.internet.email(),
-    pass: faker.internet.password(),
-    fname: faker.person.firstName(),
-    lname: faker.person.lastName(),
-  };
+const main = async () => {
+  await mockDatabase();
 };
-
-//USER ROLES
-const createMockGenericPlayer = () => {
-  return {
-    pos1: faker.helpers.enumValue(Position),
-    pos2: faker.helpers.enumValue(Position),
-    jerseyNum: faker.string.numeric(2),
-    gradYear: faker.date.future({ years: 10 }).getFullYear().toString(),
-    jerseySize: faker.helpers.enumValue(JerseySize),
-    pantSize: faker.helpers.enumValue(PantsSize),
-    stirrupSize: faker.helpers.enumValue(StirrupSize),
-    shortSize: faker.helpers.enumValue(ShortsSize),
-    practiceShortSize: faker.helpers.enumValue(ShortsSize),
-  };
-};
-const createMock8UTo12UPlayer = (
-  teamID: string,
-  ageGroup: AgeGroup,
-  addressID: string
-): Omit<PlayerDB, 'id'> => {
-  //This should never get triggered but just in case
-  if (
-    ageGroup != AgeGroup.U8 &&
-    ageGroup != AgeGroup.U10 &&
-    ageGroup != AgeGroup.U12
-  )
-    throw new Error('Error generating 8U to 12U player: wrong age group');
-
-  return {
-    ...createMockGenericPlayer(),
-    userID: null,
-    college: null,
-    isTrusted: false,
-    addressID,
-    teamID,
-    ageGroup,
-  };
-};
-const createMock14UPlayer = (
-  userID: string | null,
-  teamID: string,
-  addressID: string | null,
-  isTrusted: boolean,
-  ageGroup = AgeGroup.U14
-): Omit<PlayerDB, 'id'> => {
-  //This should never get triggered but just in case
-  if (userID && !isTrusted) {
-    throw new Error(
-      'Error generating 14U player: untrusted player was given a user relation'
-    );
-  } else if (!userID && isTrusted) {
-    throw new Error(
-      'Error generating 14U player: trusted player was not given a user relation'
-    );
-  }
-
-  const college =
-    Math.random() < 0.5
-      ? faker.helpers.arrayElement([
-          `University of ${faker.location.city()}`,
-          `${faker.location.city()} State University`,
-        ])
-      : null;
-
-  return {
-    ...createMockGenericPlayer(),
-    userID,
-    teamID,
-    addressID,
-    isTrusted,
-    ageGroup,
-    college,
-  };
-};
-const createMock16UToAlumniPlayer = (
-  userID: string,
-  teamID: string,
-  addressID: string,
-  ageGroup: AgeGroup,
-  isTrusted = true
-): Omit<PlayerDB, 'id'> => {
-  //This should never get triggered but just in case
-  if (
-    ageGroup !== AgeGroup.U16 &&
-    ageGroup !== AgeGroup.U18 &&
-    ageGroup !== AgeGroup.ALUMNI
-  )
-    throw new Error(
-      'Error generating user between 16U and ALUMNI, wrong AgeGroup'
-    );
-
-  const college =
-    Math.random() < 0.5
-      ? faker.helpers.arrayElement([
-          `University of ${faker.location.city()}`,
-          `${faker.location.city()} State University`,
-        ])
-      : null;
-
-  return {
-    ...createMockGenericPlayer(),
-    userID,
-    teamID,
-    addressID,
-    ageGroup,
-    isTrusted,
-    college,
-  };
-};
-
-const createMockParent = (userID: string, addressID: string) => {
-  return {
-    addressID,
-    userID,
-  };
-};
-const createMockAdmin = (userID: string): Omit<Admin, 'id'> => {
-  return {
-    userID,
-  };
-};
-const createMockFan = (userID: string) => {
-  return {
-    userID,
-  };
-};
-const createMockCoach = (userID: string) => {
-  return {
-    userID,
-  };
-};
-const createMockRegCoach = (userID: string, region: Regions) => {
-  return {
-    userID,
-    region,
-  };
-};
-
-//ROLE DEPENDENT TABLES
-const createMockTeam = (
-  headCoachID: string | null,
-  ageGroup: AgeGroup,
-  region: Regions
-) => {
-  return {
-    name: faker.word.adjective() + ' ' + faker.animal.type() + 's', // assuming correct plural is adding an 's', if not it'll at least be funny
-    region,
-    ageGroup,
-    headCoachID,
-  };
-};
-const createMockTrophy = (teamID: string) => {
-  return {
-    title: faker.lorem.words({ min: 1, max: 5 }),
-    imageURL: faker.image.url(),
-    teamID,
-  };
-};
-
-const createMockAddress = () => {
-  return {
-    state: faker.location.state(),
-    city: faker.location.city(),
-    zip: faker.location.zipCode(),
-    address1: `${faker.number.int({ min: 0, max: 9999 })} + ${' '}
-      ${faker.location.street()}`,
-    address2:
-      Math.random() < 0.5 ? faker.location.secondaryAddress() : undefined,
-  };
-};
-
-//CHATS, MESSAGES, NOTIFICATIONS
-const createMockChat = () => {
-  return {
-    title: faker.lorem.words({ min: 1, max: 5 }),
-    createdAt: faker.date.past(),
-  };
-};
-const createMockUserChat = (
-  userID: string,
-  chatID: string,
-  chatCreatedAt: Date
-) => {
-  return {
-    userID,
-    chatID,
-    joinedAt: faker.date.between({ from: chatCreatedAt, to: Date.now() }),
-  };
-};
-const createMockMessage = (
-  userID: string,
-  chatID: string,
-  chatCreationDate: Date
-) => {
-  return {
-    text: faker.lorem.sentences({ min: 1, max: 5 }),
-    createdAt: faker.date.between({ from: chatCreationDate, to: Date.now() }),
-    userID,
-    chatID,
-  };
-};
-const createMockNotification = () => {
-  return {
-    title: faker.lorem.words({ min: 1, max: 5 }),
-    body: faker.lorem.sentences({ min: 1, max: 5 }),
-    createdAt: faker.date.recent(),
-  };
-};
-const createMockUserNotification = (userID: string, notificationID: string) => {
-  return {
-    userID,
-    notificationID,
-    isRead: faker.datatype.boolean(),
-  };
-};
-
-//EVENTS
-const createMockTournament = () => {
-  return {
-    title: faker.lorem.words({ min: 1, max: 5 }),
-    body: faker.lorem.sentences({ min: 1, max: 5 }),
-    imageURL: faker.image.url(),
-  };
-};
-const createMockTournamentEvent = (
-  tournamentID: string,
-  eventType = EventType.TOURNAMENT
-) => {
-  const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
-
-  const MAX_EVENT_DAYS = 14;
-  const eventDays = faker.number.int({ min: 1, max: MAX_EVENT_DAYS });
-  const end = new Date();
-  end.setDate(start.getDate() + eventDays);
-
-  return {
-    tournamentID,
-    eventType,
-    start,
-    end,
-  };
-};
-const createMockPracticeEvent = (eventType = EventType.PRACTICE) => {
-  const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
-
-  const MAX_EVENT_HOURS = 8;
-  const eventHours = faker.number.int({ min: 1, max: MAX_EVENT_HOURS });
-  const end = new Date(start.getTime() + eventHours * 60 * 60 * 1000);
-
-  return {
-    tournamentID: undefined,
-    eventType,
-    start,
-    end,
-  };
-};
-const createMockGlobalEvent = (eventType = EventType.GLOBAL) => {
-  const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
-
-  const MAX_EVENT_HOURS = 8;
-  const eventHours = faker.number.int({ min: 1, max: MAX_EVENT_HOURS });
-  const end = new Date(start.getTime() + eventHours * 60 * 60 * 1000);
-
-  return {
-    tournamentID: undefined,
-    eventType,
-    start,
-    end,
-  };
-};
+main()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
