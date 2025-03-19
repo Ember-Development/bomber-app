@@ -157,3 +157,5 @@ export const createMessageStyles = (theme: 'light' | 'dark') =>
       color: GlobalColors.black,
     },
   });
+
+export default createMessageStyles;

@@ -13,14 +13,14 @@ import CustomSelect from '../ui/atoms/dropdown';
 import SearchField from '../ui/atoms/Search';
 import Separator from '../ui/atoms/Seperator';
 
-interface CreateGroupScreenProps {
+interface CreateGroupModalProps {
   visible: boolean;
   groupName: string;
   onClose: () => void;
   onCreate: (selectedUsers: string[]) => void;
 }
 
-const CreateGroupScreen: React.FC<CreateGroupScreenProps> = ({
+const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   visible,
   groupName: initialGroupName,
   onClose,
@@ -113,7 +113,6 @@ const CreateGroupScreen: React.FC<CreateGroupScreenProps> = ({
       variant="full-screen"
     >
       <View style={styles.container}>
-        {/* Fixed Header */}
         <View style={styles.fixedHeader}>
           <View style={styles.topSection}>
             <Text style={styles.counter}>
@@ -343,4 +342,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CreateGroupScreen;
+export default CreateGroupModal;
