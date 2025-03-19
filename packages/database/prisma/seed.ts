@@ -1,6 +1,4 @@
 import { prisma } from '../client';
-import { UserDB } from './fan';
-import { PlayerDB } from './player';
 import {
   AttendanceStatus,
   EventType,
@@ -16,6 +14,8 @@ import {
   User,
 } from '../generated/client';
 import { faker } from '@faker-js/faker';
+import { UserDB } from '../types/fan';
+import { PlayerDB } from '../types/player';
 //NOTE: assumptions
 /*
  * all users have one role
