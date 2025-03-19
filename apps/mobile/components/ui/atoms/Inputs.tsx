@@ -1,75 +1,60 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from 'react';
 import {
   TextInput,
   View,
   StyleSheet,
-  Animated,
+  Text,
   TextInputProps,
   Pressable,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useThemeColor } from "@/hooks/useThemeColor";
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 interface CustomInputProps extends TextInputProps {
   label: string;
-  variant?: "default" | "password" | "email" | "name";
+  variant?: 'default' | 'password' | 'email' | 'name';
   iconName?: keyof typeof Ionicons.glyphMap;
   fullWidth?: boolean;
+  placeholder?: string;
 }
 
 export default function CustomInput({
   label,
-  variant = "default",
+  variant = 'default',
   iconName,
   fullWidth = false,
   secureTextEntry,
+  placeholder,
   ...props
 }: CustomInputProps) {
-  const [isFocused, setIsFocused] = useState(false);
   const [isPasswordVisible, setPasswordVisible] = useState(false);
-  const animatedLabel = useRef(new Animated.Value(0)).current;
 
   // **Apply Theme Colors**
-  const borderColor = useThemeColor({}, "border");
-  const backgroundColor = useThemeColor({}, "component");
-  const textColor = useThemeColor({}, "text");
-  const iconColor = useThemeColor({}, "icon");
+  const borderColor = useThemeColor({}, 'border');
+  const backgroundColor = useThemeColor({}, 'component');
+  const textColor = useThemeColor({}, 'text');
+  const iconColor = useThemeColor({}, 'icon');
 
-  const handleFocus = () => {
-    setIsFocused(true);
-    Animated.timing(animatedLabel, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
-  };
-
-  const handleBlur = (event: any) => {
-    if (!event.nativeEvent.text) {
-      setIsFocused(false);
-      Animated.timing(animatedLabel, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: false,
-      }).start();
+  // Determine Placeholder Based on Variant
+  const getPlaceholder = () => {
+    switch (variant) {
+      case 'password':
+        return 'Enter your password';
+      case 'email':
+        return 'Enter your email';
+      case 'name':
+        return 'Enter your name';
+      default:
+        return placeholder || 'Enter Your Value';
     }
-  };
-
-  // Animated styles for the floating label
-  const labelStyle = {
-    top: animatedLabel.interpolate({
-      inputRange: [0, 1],
-      outputRange: [16, 4], // Moves label up
-    }),
-    fontSize: animatedLabel.interpolate({
-      inputRange: [0, 1],
-      outputRange: [16, 12], // Shrinks label
-    }),
-    color: isFocused ? textColor : iconColor, // Adjust label color dynamically
   };
 
   return (
     <View style={[styles.container, fullWidth && styles.fullWidth]}>
+      {/* Static Label */}
+      <Text style={[styles.label, { color: textColor }]}>{label}</Text>
+
+      {/* Input Wrapper */}
       <View
         style={[
           styles.inputWrapper,
@@ -84,30 +69,22 @@ export default function CustomInput({
           />
         )}
 
-        <Animated.Text style={[styles.label, labelStyle]}>
-          {label}
-        </Animated.Text>
-
         <TextInput
           style={[
             styles.input,
             iconName && styles.withIcon,
-            {
-              color: textColor,
-            },
+            { color: textColor },
           ]}
-          placeholder={isFocused ? "" : label}
-          placeholderTextColor="transparent"
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          secureTextEntry={variant === "password" && !isPasswordVisible}
+          placeholder={getPlaceholder()}
+          placeholderTextColor="#888"
+          secureTextEntry={variant === 'password' && !isPasswordVisible}
           {...props}
         />
 
-        {variant === "password" && (
+        {variant === 'password' && (
           <Pressable onPress={() => setPasswordVisible(!isPasswordVisible)}>
             <Ionicons
-              name={isPasswordVisible ? "eye" : "eye-off"}
+              name={isPasswordVisible ? 'eye' : 'eye-off'}
               size={20}
               style={[styles.icon, { color: iconColor }]}
             />
@@ -123,27 +100,25 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   fullWidth: {
-    width: "100%",
+    width: '100%',
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 5, // Add spacing between label and input
   },
   inputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     borderRadius: 8,
     paddingHorizontal: 10,
     borderWidth: 0.5,
-    position: "relative",
     height: 50,
-  },
-  label: {
-    position: "absolute",
-    left: 10,
-    paddingHorizontal: 4,
   },
   input: {
     flex: 1,
     height: 45,
     fontSize: 16,
-    paddingTop: 10,
   },
   withIcon: {
     marginLeft: 5,

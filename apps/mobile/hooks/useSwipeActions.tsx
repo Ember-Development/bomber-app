@@ -14,11 +14,11 @@ interface SwipeAction {
 }
 
 export function useSwipeActions() {
-  const swipeableRefs = useRef<Record<number, any | null>>({});
+  const swipeableRefs = useRef<Record<string, any | null>>({});
 
   const renderRightActions = (
     progress: SharedValue<number>,
-    itemId: number,
+    itemId: string,
     actions: SwipeAction[]
   ) => {
     const animatedStyle = useAnimatedStyle(() => {

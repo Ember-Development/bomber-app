@@ -5,10 +5,10 @@ import { ChatFE, UserRole } from '@bomber-app/database';
 
 export function useChats() {
   const [chats, setChats] = useState<ChatFE[]>([]);
-  const [mutedGroups, setMutedGroups] = useState<{ [key: number]: boolean }>(
+  const [mutedGroups, setMutedGroups] = useState<{ [key: string]: boolean }>(
     {}
   );
-  const [unreadGroups, setUnreadGroups] = useState<{ [key: number]: boolean }>(
+  const [unreadGroups, setUnreadGroups] = useState<{ [key: string]: boolean }>(
     {}
   );
   const [refresh, setRefresh] = useState(false);
@@ -20,13 +20,18 @@ export function useChats() {
     setRefresh(true);
     // Transform mock data to match ChatFE
     const fixedChats: ChatFE[] = mockData.chats.map((chat) => ({
-      ...chat,
+      id: chat.id, // Ensure this is a string
+      title: chat.title,
       users: chat.users.map((user) => ({
-        ...user,
-        primaryRole: user.primaryRole as UserRole,
+        userID: user.id, // Convert `id` to `userID`
+        chatID: chat.id, // Assign chat ID to match expected type
+        joinedAt: new Date(), // Mocked, replace with actual date if available
       })),
       messages: chat.messages.map((message) => ({
-        ...message,
+        id: message.id,
+        userID: message.userID,
+        chatID: message.chatID,
+        text: message.text,
         createdAt: new Date(message.createdAt),
       })),
     }));
@@ -41,7 +46,7 @@ export function useChats() {
         acc[chat.id] = chat.messages.length > 0;
         return acc;
       },
-      {} as { [key: number]: boolean }
+      {} as { [key: string]: boolean }
     );
     setUnreadGroups(newUnreadGroups);
   };
