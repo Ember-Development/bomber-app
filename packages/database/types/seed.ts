@@ -14,7 +14,7 @@ import {
   ShortsSize,
   Admin,
   User,
-} from '/Users/braedon/ember/bomber-app/packages/database/generated/client';
+} from '../generated/client';
 import { faker } from '@faker-js/faker';
 //NOTE: assumptions
 /*
