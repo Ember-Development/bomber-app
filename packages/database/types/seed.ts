@@ -35,11 +35,6 @@ main()
     process.exit(1);
   });
 
-//TODO: move this to a util
-const getRandomInt = (min = 0, max = 1) => {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-};
-
 const createAdminUsers = async () => {
   const mockUser = createMockUser([UserRole.ADMIN], UserRole.ADMIN);
 
@@ -125,14 +120,15 @@ const mockDatabase = async (
      *
      */
     // get nums of team coach + team headCoach relations to generate w/ ageGroups
-    const teamsRegion = regions[getRandomInt(0, regions.length)];
+    const teamsRegion =
+      regions[faker.number.int({ min: 0, max: regions.length })];
     const teamAgeGroup = ageGroups[
-      getRandomInt(0, ageGroups.length)
+      faker.number.int({ min: 0, max: ageGroups.length })
     ] as AgeGroup;
 
     //create non-team roles
-    const numAdmins = getRandomInt(minAdmins, maxAdmins);
-    const numFans = getRandomInt(minFans, maxFans);
+    const numAdmins = faker.number.int({ min: minAdmins, max: maxAdmins });
+    const numFans = faker.number.int({ min: minFans, max: maxFans });
     for (let i = 0; i < numAdmins; i++) {
       createAdminUsers();
     }
@@ -141,19 +137,25 @@ const mockDatabase = async (
     }
 
     //generate global events
-    const numGlobalEvents = getRandomInt(minGlobalEvents, maxGlobalEvents);
+    const numGlobalEvents = faker.number.int({
+      min: minGlobalEvents,
+      max: maxGlobalEvents,
+    });
     for (let i = 0; i < numGlobalEvents; i++) {
       const mockGlobalEvent = createMockGlobalEvent();
       await prisma.event.create({ data: mockGlobalEvent });
     }
 
     // generate mock teams as center of db population
-    const numTeams = getRandomInt(minTeams, maxTeams);
+    const numTeams = faker.number.int({ min: minTeams, max: maxTeams });
     for (let i = 0; i < numTeams; i++) {
       const mockTeam = createMockTeam(null, teamAgeGroup, teamsRegion);
       const curTeam = await prisma.team.create({ data: mockTeam });
 
-      const numOtherCoaches = getRandomInt(minOtherCoaches, maxOtherCoaches);
+      const numOtherCoaches = faker.number.int({
+        min: minOtherCoaches,
+        max: maxOtherCoaches,
+      });
       const otherCoaches = [];
       for (let j = 0; j < numOtherCoaches; j++) {
         const mockOtherCoachUser = createMockUser(
@@ -168,10 +170,10 @@ const mockDatabase = async (
         otherCoaches.push(otherCoach);
       }
 
-      const numRegCoaches = getRandomInt(
-        minRegionalCoaches,
-        maxRegionalCoaches
-      );
+      const numRegCoaches = faker.number.int({
+        min: minRegionalCoaches,
+        max: maxRegionalCoaches,
+      });
       const regCoaches = [];
       for (let j = 0; j < numRegCoaches; j++) {
         const mockRegCoachUser = createMockUser(
@@ -185,11 +187,17 @@ const mockDatabase = async (
         regCoaches.push(regCoach);
       }
 
-      const numPlayers = getRandomInt(minPlayersPerTeam, maxPlayersPerTeam);
+      const numPlayers = faker.number.int({
+        min: minPlayersPerTeam,
+        max: maxPlayersPerTeam,
+      });
       const teamPlayers = [];
       for (let j = 0; j < numPlayers; j++) {
         const mockUser = createMockUser([UserRole.PLAYER], UserRole.PLAYER);
-        const numParents = getRandomInt(minParents, maxParents);
+        const numParents = faker.number.int({
+          min: minParents,
+          max: maxParents,
+        });
 
         // generate players based on age group
         if (
@@ -322,14 +330,20 @@ const mockDatabase = async (
         }
       }
 
-      const numTrophies = getRandomInt(minTrophiesPerTeam, maxTrophiesPerTeam);
+      const numTrophies = faker.number.int({
+        min: minTrophiesPerTeam,
+        max: maxTrophiesPerTeam,
+      });
       for (let j = 0; j < numTrophies; j++) {
         const mockTrophy = createMockTrophy(curTeam.id);
         await prisma.trophy.create({ data: mockTrophy });
       }
 
       // generate practice events for team
-      const numPractices = getRandomInt(minPracticeEvents, maxPracticeEvents);
+      const numPractices = faker.number.int({
+        min: minPracticeEvents,
+        max: maxPracticeEvents,
+      });
       for (let j = 0; j < numPractices; j++) {
         const mockPracticeEvent = createMockPracticeEvent();
         await prisma.event.create({
@@ -338,12 +352,15 @@ const mockDatabase = async (
       }
 
       // generate tournaments with their events
-      const numTournaments = getRandomInt(minTournaments, maxTournaments);
+      const numTournaments = faker.number.int({
+        min: minTournaments,
+        max: maxTournaments,
+      });
       for (let j = 0; j < numTournaments; j++) {
-        const numTournamentEvents = getRandomInt(
-          minTournamentEvents,
-          maxTournamentEvents
-        );
+        const numTournamentEvents = faker.number.int({
+          min: minTournamentEvents,
+          max: maxTournamentEvents,
+        });
         const mockTournament = createMockTournament();
         const tournament = await prisma.tournament.create({
           data: mockTournament,
@@ -396,7 +413,10 @@ const mockDatabase = async (
       });
 
       //generate team based chats and messages
-      const numTeamChats = getRandomInt(minTeamChats, maxTeamChats);
+      const numTeamChats = faker.number.int({
+        min: minTeamChats,
+        max: maxTeamChats,
+      });
       for (let i = 0; i < numTeamChats; i++) {
         const teamUsers = await prisma.user.findMany({
           where: {
@@ -438,10 +458,10 @@ const mockDatabase = async (
 
         // generate messages per user
         for (let j = 0; j < teamUsers.length; j++) {
-          const numMessagesPerUser = getRandomInt(
-            minMessagesPerUser,
-            maxMessagesPerUser
-          );
+          const numMessagesPerUser = faker.number.int({
+            min: minMessagesPerUser,
+            max: maxMessagesPerUser,
+          });
 
           for (let k = 0; k < numMessagesPerUser; k++) {
             const mockMessage = createMockMessage(
@@ -457,11 +477,14 @@ const mockDatabase = async (
 
     // generate non-team based chats and messages
     // NOTE: it's good to do these after team gen to involve as many users as possible
-    const numRandomChats = getRandomInt(minRandomChats, maxRandomChats);
-    const numUsersRandomChat = getRandomInt(
-      minUsersRandomChat,
-      maxUsersRandomChat
-    );
+    const numRandomChats = faker.number.int({
+      min: minRandomChats,
+      max: maxRandomChats,
+    });
+    const numUsersRandomChat = faker.number.int({
+      min: minUsersRandomChat,
+      max: maxUsersRandomChat,
+    });
     for (let i = 0; i < numRandomChats; i++) {
       const randomUsers = (await prisma.$queryRaw`
   SELECT * FROM "User" ORDER BY RANDOM() LIMIT ${numUsersRandomChat}
@@ -476,10 +499,10 @@ const mockDatabase = async (
 
       // generate messages per user
       for (let j = 0; j < randomUsers.length; j++) {
-        const numMessagesPerUser = getRandomInt(
-          minMessagesPerUser,
-          maxMessagesPerUser
-        );
+        const numMessagesPerUser = faker.number.int({
+          min: minMessagesPerUser,
+          max: maxMessagesPerUser,
+        });
 
         for (let k = 0; k < numMessagesPerUser; k++) {
           const mockMessage = createMockMessage(
@@ -492,15 +515,18 @@ const mockDatabase = async (
       }
     }
 
-    const numUsersNotified = getRandomInt(minUsersNotified, maxUsersNotified);
+    const numUsersNotified = faker.number.int({
+      min: minUsersNotified,
+      max: maxUsersNotified,
+    });
     const randomUsers = (await prisma.$queryRaw`
                          SELECT * FROM "User" ORDER BY RANDOM() LIMIT ${numUsersNotified}
                          `) as UserDB[];
     for (let i = 0; i < numUsersNotified; i++) {
-      const numNotificationsPerUser = getRandomInt(
-        minNotificationsPerUser,
-        maxNotificationsPerUser
-      );
+      const numNotificationsPerUser = faker.number.int({
+        min: minNotificationsPerUser,
+        max: maxNotificationsPerUser,
+      });
       for (let j = 0; j < numNotificationsPerUser; j++) {
         const mockNotification = createMockNotification();
         const notification = await prisma.notification.create({
@@ -773,7 +799,7 @@ const createMockTournamentEvent = (
   const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
 
   const MAX_EVENT_DAYS = 14;
-  const eventDays = getRandomInt(1, MAX_EVENT_DAYS);
+  const eventDays = faker.number.int({ min: 1, max: MAX_EVENT_DAYS });
   const end = new Date();
   end.setDate(start.getDate() + eventDays);
 
@@ -788,7 +814,7 @@ const createMockPracticeEvent = (eventType = EventType.PRACTICE) => {
   const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
 
   const MAX_EVENT_HOURS = 8;
-  const eventHours = getRandomInt(1, MAX_EVENT_HOURS);
+  const eventHours = faker.number.int({ min: 1, max: MAX_EVENT_HOURS });
   const end = new Date(start.getTime() + eventHours * 60 * 60 * 1000);
 
   return {
@@ -802,7 +828,7 @@ const createMockGlobalEvent = (eventType = EventType.GLOBAL) => {
   const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
 
   const MAX_EVENT_HOURS = 8;
-  const eventHours = getRandomInt(1, MAX_EVENT_HOURS);
+  const eventHours = faker.number.int({ min: 1, max: MAX_EVENT_HOURS });
   const end = new Date(start.getTime() + eventHours * 60 * 60 * 1000);
 
   return {
