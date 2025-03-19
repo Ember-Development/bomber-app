@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { createGroupStyles } from '@/styles/groupsStyle';
 import CustomButton from '@/components/ui/atoms/Button';
 import { ThemedView } from '@/components/ThemedView';
@@ -22,6 +22,8 @@ import { useRouter } from 'expo-router';
 import { useChats } from '@/hooks/useChats';
 import { useSwipeActions } from '@/hooks/useSwipeActions';
 import { GlobalColors } from '@/constants/Colors';
+import BottomInputModal from '@/components/groups/NameModal';
+import CreateGroupScreen from '@/components/groups/AddGroupModal';
 
 export default function GroupsScreen() {
   const {
@@ -33,6 +35,9 @@ export default function GroupsScreen() {
     loadChats,
     setMutedGroups,
   } = useChats();
+  const [isSwiping, setIsSwiping] = useState(false);
+  const [modalStep, setModalStep] = useState<'name' | 'group' | null>(null);
+  const [groupName, setGroupName] = useState('');
   // Theming Variables
   const styles = createGroupStyles('light');
   const iconColor = useThemeColor({}, 'icon');
@@ -59,7 +64,7 @@ export default function GroupsScreen() {
     console.log('LEFT GROUP');
   };
 
-  const handleMute = (groupId: number) => {
+  const handleMute = (groupId: string) => {
     setMutedGroups((prevMutedGroups) => ({
       ...prevMutedGroups,
       [groupId]: !prevMutedGroups[groupId],
@@ -69,7 +74,7 @@ export default function GroupsScreen() {
   };
 
   // Right Actions (on swipe)
-  const actions = (groupId: number) => [
+  const actions = (groupId: string) => [
     {
       label: mutedGroups[groupId] ? 'Unmute' : 'Mute',
       color: GlobalColors.dark,
@@ -82,29 +87,65 @@ export default function GroupsScreen() {
     },
   ];
 
+  const handleNext = (name: string) => {
+    setGroupName(name);
+    setModalStep('group'); // Move to next modal step
+  };
+
+  const handleCreateGroup = () => {
+    console.log('Group Created:', groupName);
+    setModalStep(null); // Close all modals
+  };
+
   return (
     <SafeAreaView style={styles.safeContainer}>
       <ThemedView style={styles.container}>
         <View style={styles.headerContainer}>
           <View style={styles.iconContainer}>
-            <CustomButton
-              variant="icon"
-              iconName="arrow-back"
-              onPress={() => alert('Searching!')}
-            />
             <ThemedText style={styles.headerText}>Groups</ThemedText>
           </View>
-          <View
-            style={[styles.buttonContainer, { backgroundColor: component }]}
-          >
-            {' '}
-            <CustomButton
-              variant="icon"
-              iconName="search"
-              onPress={() => alert('Searching!')}
-            />
+          <View style={styles.iconContainer}>
+            <View
+              style={[styles.buttonContainer, { backgroundColor: component }]}
+            >
+              {' '}
+              <CustomButton
+                variant="icon"
+                iconName="add"
+                onPress={() => setModalStep('name')}
+              />
+            </View>
+            <View
+              style={[styles.buttonContainer, { backgroundColor: component }]}
+            >
+              {' '}
+              <CustomButton
+                variant="icon"
+                iconName="search"
+                onPress={() => alert('Searching!')}
+              />
+            </View>
           </View>
         </View>
+
+        {/* Modals */}
+        {modalStep === 'name' && (
+          <BottomInputModal
+            isVisible
+            onClose={() => setModalStep(null)}
+            onNext={handleNext}
+          />
+        )}
+
+        {modalStep === 'group' && (
+          <CreateGroupScreen
+            visible
+            groupName={groupName}
+            onClose={() => setModalStep(null)}
+            onCreate={handleCreateGroup}
+          />
+        )}
+
         {isLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={iconColor} />
@@ -137,17 +178,21 @@ export default function GroupsScreen() {
                   ref={(ref) => {
                     if (ref) swipeableRefs.current[item.id] = ref;
                   }}
+                  onSwipeableOpen={() => setIsSwiping(true)}
+                  onSwipeableWillClose={() => setIsSwiping(false)}
                   renderRightActions={(progress) =>
                     renderRightActions(progress, item.id, actions(item.id))
                   }
                 >
                   <TouchableOpacity
-                    onPress={() =>
-                      router.push({
-                        pathname: '/groups/[id]',
-                        params: { id: item.id.toString() },
-                      })
-                    }
+                    onPress={() => {
+                      if (!isSwiping) {
+                        router.push({
+                          pathname: '/groups/[id]',
+                          params: { id: item.id.toString() },
+                        });
+                      }
+                    }}
                   >
                     <View style={styles.groupItem}>
                       {/* Left Column: Group Name & Last Message */}

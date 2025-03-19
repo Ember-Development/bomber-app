@@ -37,7 +37,8 @@ export const createGroupStyles = (theme: 'light' | 'dark') =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'flex-start',
-      gap: 4,
+      gap: 10,
+      marginLeft: 10,
     },
     groupItem: {
       flexDirection: 'row',

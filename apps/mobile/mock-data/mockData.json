@@ -1,7 +1,7 @@
 {
   "users": [
     {
-      "id": 1,
+      "id": "550e8400-e29b-41d4-a716-446655440000",
       "fname": "User1",
       "lname": "Last1",
       "email": "user1@example.com",
@@ -13,16 +13,14 @@
       "regCoach": null,
       "player": null,
       "parent": null,
-      "fan": {
-        "id": 1
-      },
+      "fan": { "id": "1" },
       "sentMessages": [],
       "chats": [],
       "events": [],
       "notifications": []
     },
     {
-      "id": 2,
+      "id": "4fd2b6f4-1347-463f-b5a9-6fba3c92e571",
       "fname": "User2",
       "lname": "Last2",
       "email": "user2@example.com",
@@ -30,9 +28,7 @@
       "pass": "defaultPassword",
       "primaryRole": "COACH",
       "admin": null,
-      "coach": {
-        "id": 2
-      },
+      "coach": { "id": "2" },
       "regCoach": null,
       "player": null,
       "parent": null,
@@ -43,58 +39,14 @@
       "notifications": []
     },
     {
-      "id": 3,
+      "id": "89d2d839-927b-48cb-a7d2-63f7dbf76825",
       "fname": "User3",
       "lname": "Last3",
       "email": "user3@example.com",
       "phone": "+1234567893",
       "pass": "defaultPassword",
       "primaryRole": "ADMIN",
-      "admin": {
-        "id": 3
-      },
-      "coach": null,
-      "regCoach": null,
-      "player": null,
-      "parent": null,
-      "fan": null,
-      "sentMessages": [],
-      "chats": [],
-      "events": [],
-      "notifications": []
-    },
-    {
-      "id": 4,
-      "fname": "User4",
-      "lname": "Last4",
-      "email": "user4@example.com",
-      "phone": "+1234567894",
-      "pass": "defaultPassword",
-      "primaryRole": "FAN",
-      "admin": null,
-      "coach": null,
-      "regCoach": null,
-      "player": null,
-      "parent": null,
-      "fan": {
-        "id": 4
-      },
-      "sentMessages": [],
-      "chats": [],
-      "events": [],
-      "notifications": []
-    },
-    {
-      "id": 5,
-      "fname": "User5",
-      "lname": "Last5",
-      "email": "user5@example.com",
-      "phone": "+1234567895",
-      "pass": "defaultPassword",
-      "primaryRole": "ADMIN",
-      "admin": {
-        "id": 5
-      },
+      "admin": { "id": "3" },
       "coach": null,
       "regCoach": null,
       "player": null,
@@ -108,97 +60,86 @@
   ],
   "chats": [
     {
-      "id": 1,
+      "id": "3c9c06a2-bf6b-4f78-a7a8-2f3bd98e5f3a",
       "title": "Texas Bombers 16U",
       "users": [
-        {
-          "id": 3,
-          "email": "user3@example.com",
-          "phone": "+1234567893",
-          "pass": "defaultPassword",
-          "fname": "User3",
-          "lname": "Last3",
-          "primaryRole": "PLAYER"
-        },
-        {
-          "id": 1,
-          "email": "user1@example.com",
-          "phone": "+1234567891",
-          "pass": "defaultPassword",
-          "fname": "User1",
-          "lname": "Last1",
-          "primaryRole": "PLAYER"
-        },
-        {
-          "id": 5,
-          "email": "user5@example.com",
-          "phone": "+1234567895",
-          "pass": "defaultPassword",
-          "fname": "User5",
-          "lname": "Last5",
-          "primaryRole": "PLAYER"
-        }
+        { "id": "550e8400-e29b-41d4-a716-446655440000" },
+        { "id": "89d2d839-927b-48cb-a7d2-63f7dbf76825" }
       ],
       "messages": [
         {
-          "id": 1,
-          "text": "Message 1 in Group Chat 1",
-          "createdAt": "2025-03-01T09:51:02.358814",
-          "userID": 4,
-          "chatID": 1
+          "id": "ecf89de6-834c-4b73-bf34-bf07f2db37b5",
+          "text": "Hey team! Ready for practice?",
+          "createdAt": "2025-03-01T09:51:02.358814Z",
+          "userID": "550e8400-e29b-41d4-a716-446655440000",
+          "chatID": "3c9c06a2-bf6b-4f78-a7a8-2f3bd98e5f3a"
+        },
+        {
+          "id": "b8a3c1e2-937a-4c89-b9e2-51a6e4fd45f8",
+          "text": "Yep! I think we are running drills today.",
+          "createdAt": "2025-03-01T09:52:10.123456Z",
+          "userID": "89d2d839-927b-48cb-a7d2-63f7dbf76825",
+          "chatID": "3c9c06a2-bf6b-4f78-a7a8-2f3bd98e5f3a"
+        },
+        {
+          "id": "c4f2e6d1-7891-4fbb-b8e2-55a3b6d312f7",
+          "text": "Coach said we might do batting practice too!",
+          "createdAt": "2025-03-01T09:53:45.678901Z",
+          "userID": "550e8400-e29b-41d4-a716-446655440000",
+          "chatID": "3c9c06a2-bf6b-4f78-a7a8-2f3bd98e5f3a"
+        },
+        {
+          "id": "a6d2f1c9-234a-4b76-98e3-71d3e4fbd5a4",
+          "text": "That sounds awesome! My swing needs work 😂",
+          "createdAt": "2025-03-01T09:54:30.987654Z",
+          "userID": "89d2d839-927b-48cb-a7d2-63f7dbf76825",
+          "chatID": "3c9c06a2-bf6b-4f78-a7a8-2f3bd98e5f3a"
+        },
+        {
+          "id": "d9f3b2e4-6781-43ba-9513-84a7c5d2b6e7",
+          "text": "Haha same! Let's try and get extra reps in.",
+          "createdAt": "2025-03-01T09:55:15.321987Z",
+          "userID": "550e8400-e29b-41d4-a716-446655440000",
+          "chatID": "3c9c06a2-bf6b-4f78-a7a8-2f3bd98e5f3a"
+        },
+        {
+          "id": "e3b4f6a8-945a-4e78-b1d2-62e3f8c7a4f9",
+          "text": "Deal! Gotta be game-ready this season! 🔥",
+          "createdAt": "2025-03-01T09:56:45.654321Z",
+          "userID": "89d2d839-927b-48cb-a7d2-63f7dbf76825",
+          "chatID": "3c9c06a2-bf6b-4f78-a7a8-2f3bd98e5f3a"
         }
       ]
     },
     {
-      "id": 2,
+      "id": "f0a1c3d5-1234-4b56-b789-d0123456789a",
       "title": "TX Bombers Pitchers",
       "users": [
-        {
-          "id": 5,
-          "email": "user5@example.com",
-          "phone": "+1234567895",
-          "pass": "defaultPassword",
-          "fname": "User5",
-          "lname": "Last5",
-          "primaryRole": "PLAYER"
-        },
-        {
-          "id": 2,
-          "email": "user2@example.com",
-          "phone": "+1234567892",
-          "pass": "defaultPassword",
-          "fname": "User2",
-          "lname": "Last2",
-          "primaryRole": "PLAYER"
-        },
-        {
-          "id": 1,
-          "email": "user1@example.com",
-          "phone": "+1234567891",
-          "pass": "defaultPassword",
-          "fname": "User1",
-          "lname": "Last1",
-          "primaryRole": "PLAYER"
-        },
-        {
-          "id": 3,
-          "email": "user3@example.com",
-          "phone": "+1234567893",
-          "pass": "defaultPassword",
-          "fname": "User3",
-          "lname": "Last3",
-          "primaryRole": "PLAYER"
-        }
+        { "id": "550e8400-e29b-41d4-a716-446655440000" },
+        { "id": "4fd2b6f4-1347-463f-b5a9-6fba3c92e571" },
+        { "id": "89d2d839-927b-48cb-a7d2-63f7dbf76825" }
       ],
       "messages": [
         {
-          "id": 2,
+          "id": "a9b2c3d4-5678-49ab-bcde-f123456789ab",
           "text": "Message 2 in Group Chat 2",
-          "createdAt": "2025-03-01T16:49:02.358835",
-          "userID": 3,
-          "chatID": 2
+          "createdAt": "2025-03-01T16:49:02.358835Z",
+          "userID": "89d2d839-927b-48cb-a7d2-63f7dbf76825",
+          "chatID": "f0a1c3d5-1234-4b56-b789-d0123456789a"
         }
       ]
+    }
+  ],
+  "userChats": [
+    {
+      "userID": "550e8400-e29b-41d4-a716-446655440000",
+      "chatID": "3c9c06a2-bf6b-4f78-a7a8-2f3bd98e5f3a",
+      "joinedAt": "2025-02-25T15:30:00Z"
+    },
+    {
+      "userID": "89d2d839-927b-48cb-a7d2-63f7dbf76825",
+      "chatID": "f0a1c3d5-1234-4b56-b789-d0123456789a",
+      "joinedAt": "2025-02-26T10:45:30Z"
     }
   ]
 }
