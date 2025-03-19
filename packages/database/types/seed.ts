@@ -22,6 +22,11 @@ import { faker } from '@faker-js/faker';
  *
  */
 
+const seed = faker.number.int({ min: 1, max: 1_000_000 });
+console.log(`Using seed: ${seed}`);
+
+faker.seed(seed); // hardcode this if you want a particular seed
+
 const main = async () => {
   await mockDatabase();
 };
