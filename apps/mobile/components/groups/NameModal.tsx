@@ -10,30 +10,34 @@ import {
 import ReusableModal from '../ui/organisms/BottomSheetModal';
 import CustomInput from '../ui/atoms/Inputs';
 import CustomButton from '../ui/atoms/Button';
+import {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
-interface BottomInputModalProps {
+interface NameModalProps {
   isVisible: boolean;
   onClose: () => void;
   onNext: (groupName: string) => void;
 }
 
-const BottomInputModal: React.FC<BottomInputModalProps> = ({
+const NameModal: React.FC<NameModalProps> = ({
   isVisible,
   onClose,
   onNext,
 }) => {
   const [groupName, setGroupName] = useState('');
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const translateY = useRef(new Animated.Value(300)).current;
+  const translateY = useSharedValue(300);
 
   useEffect(() => {
-    if (isVisible) {
-      Animated.timing(translateY, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: true,
-      }).start();
-    }
+    runOnJS(() => {
+      translateY.value = isVisible
+        ? withTiming(0, { duration: 250 })
+        : withTiming(300, { duration: 250 });
+    })();
   }, [isVisible]);
 
   useEffect(() => {
@@ -57,6 +61,12 @@ const BottomInputModal: React.FC<BottomInputModalProps> = ({
     };
   }, []);
 
+  const animatedStyles = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: translateY.value }],
+    };
+  });
+
   return (
     <ReusableModal
       isVisible={isVisible}
@@ -64,9 +74,7 @@ const BottomInputModal: React.FC<BottomInputModalProps> = ({
       title="Enter Group Name"
       variant="bottom-sheet"
     >
-      <Animated.View
-        style={[styles.animatedContainer, { transform: [{ translateY }] }]}
-      >
+      <Animated.View style={[styles.animatedContainer, animatedStyles]}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0} // Adjust for iOS
@@ -116,4 +124,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BottomInputModal;
+export default NameModal;

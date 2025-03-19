@@ -22,8 +22,8 @@ import { useRouter } from 'expo-router';
 import { useChats } from '@/hooks/useChats';
 import { useSwipeActions } from '@/hooks/useSwipeActions';
 import { GlobalColors } from '@/constants/Colors';
-import BottomInputModal from '@/components/groups/NameModal';
-import CreateGroupScreen from '@/components/groups/AddGroupModal';
+import NameModal from '@/components/groups/NameModal';
+import CreateGroupModal from '@/components/groups/AddGroupModal';
 
 export default function GroupsScreen() {
   const {
@@ -108,7 +108,6 @@ export default function GroupsScreen() {
             <View
               style={[styles.buttonContainer, { backgroundColor: component }]}
             >
-              {' '}
               <CustomButton
                 variant="icon"
                 iconName="add"
@@ -118,7 +117,6 @@ export default function GroupsScreen() {
             <View
               style={[styles.buttonContainer, { backgroundColor: component }]}
             >
-              {' '}
               <CustomButton
                 variant="icon"
                 iconName="search"
@@ -130,7 +128,7 @@ export default function GroupsScreen() {
 
         {/* Modals */}
         {modalStep === 'name' && (
-          <BottomInputModal
+          <NameModal
             isVisible
             onClose={() => setModalStep(null)}
             onNext={handleNext}
@@ -138,7 +136,7 @@ export default function GroupsScreen() {
         )}
 
         {modalStep === 'group' && (
-          <CreateGroupScreen
+          <CreateGroupModal
             visible
             groupName={groupName}
             onClose={() => setModalStep(null)}
@@ -210,7 +208,7 @@ export default function GroupsScreen() {
                           </ThemedText>
                         </View>
                         <ThemedText style={styles.messageText}>
-                          {latestMessageText}
+                          {latestMessageText ?? ''}
                         </ThemedText>
                       </View>
 
