@@ -18,15 +18,20 @@ import { UserDB } from '../types/fan';
 import { PlayerDB } from '../types/player';
 //NOTE: assumptions
 /*
+ * unhashed passwords (will be handled in auth feature)
  * all users have one role
+ * one region (to rule them all!)
+ * one child per parent
  *
  */
 
-const seed = faker.number.int({ min: 1, max: 1_000_000 });
+const seed = faker.number.int({ min: 1, max: 1_000_000 }); // hardcode this if you want a particular seed
+// const seed = 283812;
+
+//dont remove, this is used for debugging
 console.log(`Using seed: ${seed}`);
 
-faker.seed(seed); // hardcode this if you want a particular seed
-
+faker.seed(seed);
 const createAdminUsers = async () => {
   const mockUser = createMockUser([UserRole.ADMIN], UserRole.ADMIN);
 
@@ -142,7 +147,7 @@ const createMock14UPlayer = (
   }
 
   const college =
-    Math.random() < 0.5
+    faker.number.float() < 0.5
       ? faker.helpers.arrayElement([
           `University of ${faker.location.city()}`,
           `${faker.location.city()} State University`,
@@ -177,7 +182,7 @@ const createMock16UToAlumniPlayer = (
     );
 
   const college =
-    Math.random() < 0.5
+    faker.number.float() < 0.5
       ? faker.helpers.arrayElement([
           `University of ${faker.location.city()}`,
           `${faker.location.city()} State University`,
@@ -249,10 +254,11 @@ const createMockAddress = () => {
     state: faker.location.state(),
     city: faker.location.city(),
     zip: faker.location.zipCode(),
-    address1: `${faker.number.int({ min: 0, max: 9999 })} + ${' '}
-      ${faker.location.street()}`,
+    address1: `${faker.number.int({ min: 0, max: 9999 })} ${faker.location.street()}`,
     address2:
-      Math.random() < 0.5 ? faker.location.secondaryAddress() : undefined,
+      faker.number.float() < 0.5
+        ? faker.location.secondaryAddress()
+        : undefined,
   };
 };
 
@@ -313,7 +319,8 @@ const createMockTournamentEvent = (
   tournamentID: string,
   eventType = EventType.TOURNAMENT
 ) => {
-  const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
+  const start =
+    faker.number.float() < 0.5 ? faker.date.soon() : faker.date.recent();
 
   const MAX_EVENT_DAYS = 14;
   const eventDays = faker.number.int({ min: 1, max: MAX_EVENT_DAYS });
@@ -328,7 +335,8 @@ const createMockTournamentEvent = (
   };
 };
 const createMockPracticeEvent = (eventType = EventType.PRACTICE) => {
-  const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
+  const start =
+    faker.number.float() < 0.5 ? faker.date.soon() : faker.date.recent();
 
   const MAX_EVENT_HOURS = 8;
   const eventHours = faker.number.int({ min: 1, max: MAX_EVENT_HOURS });
@@ -342,7 +350,8 @@ const createMockPracticeEvent = (eventType = EventType.PRACTICE) => {
   };
 };
 const createMockGlobalEvent = (eventType = EventType.GLOBAL) => {
-  const start = Math.random() < 0.5 ? faker.date.soon() : faker.date.recent();
+  const start =
+    faker.number.float() < 0.5 ? faker.date.soon() : faker.date.recent();
 
   const MAX_EVENT_HOURS = 8;
   const eventHours = faker.number.int({ min: 1, max: MAX_EVENT_HOURS });
@@ -361,8 +370,6 @@ const mockDatabase = async (
   maxTeams = 3,
   minOtherCoaches = 1,
   maxOtherCoaches = 4,
-  minRegionalCoaches = 1,
-  maxRegionalCoaches = 4,
   minPlayersPerTeam = 0,
   maxPlayersPerTeam = 20,
   minTrophiesPerTeam = 0,
@@ -396,6 +403,35 @@ const mockDatabase = async (
   ageGroups = Object.values(AgeGroup),
   regions = Object.values(Regions)
 ) => {
+  //clear db
+  await prisma.$transaction(async (prisma) => {
+    await prisma.userChat.deleteMany(); // Child linking users and chats
+    await prisma.message.deleteMany(); // Messages inside chats
+    await prisma.chat.deleteMany(); // Parent entity after child records are gone
+
+    await prisma.userNotification.deleteMany();
+    await prisma.notification.deleteMany();
+    await prisma.regCoach.deleteMany();
+    await prisma.fan.deleteMany();
+
+    await prisma.parent.deleteMany();
+    await prisma.address.deleteMany();
+
+    await prisma.player.deleteMany();
+    await prisma.coach.deleteMany();
+    await prisma.admin.deleteMany();
+
+    await prisma.eventAttendance.deleteMany();
+    await prisma.user.deleteMany();
+
+    await prisma.event.deleteMany();
+
+    await prisma.trophy.deleteMany();
+    await prisma.team.deleteMany();
+
+    await prisma.tournament.deleteMany();
+  });
+
   return await prisma.$transaction(async (prisma) => {
     //TODO: fix this pattern, nothing wrong with it, it's just nasty
     /*
@@ -409,9 +445,9 @@ const mockDatabase = async (
      */
     // get nums of team coach + team headCoach relations to generate w/ ageGroups
     const teamsRegion =
-      regions[faker.number.int({ min: 0, max: regions.length })];
+      regions[faker.number.int({ min: 0, max: regions.length - 1 })];
     const teamAgeGroup = ageGroups[
-      faker.number.int({ min: 0, max: ageGroups.length })
+      faker.number.int({ min: 0, max: ageGroups.length - 1 })
     ] as AgeGroup;
 
     //create non-team roles
@@ -423,6 +459,15 @@ const mockDatabase = async (
     for (let i = 0; i < numFans; i++) {
       createUserFan();
     }
+    // create regional coach
+    const mockRegCoachUser = createMockUser(
+      [UserRole.REGIONAL_COACH],
+      UserRole.REGIONAL_COACH
+    );
+
+    const regUser = await prisma.user.create({ data: mockRegCoachUser });
+    const mockRegCoach = createMockRegCoach(regUser.id, teamsRegion);
+    await prisma.regCoach.create({ data: mockRegCoach }); // will relate to team by teamsRegion
 
     //generate global events
     const numGlobalEvents = faker.number.int({
@@ -437,6 +482,7 @@ const mockDatabase = async (
     // generate mock teams as center of db population
     const numTeams = faker.number.int({ min: minTeams, max: maxTeams });
     for (let i = 0; i < numTeams; i++) {
+      //create team
       const mockTeam = createMockTeam(null, teamAgeGroup, teamsRegion);
       const curTeam = await prisma.team.create({ data: mockTeam });
 
@@ -445,6 +491,7 @@ const mockDatabase = async (
         max: maxOtherCoaches,
       });
       const otherCoaches = [];
+      const otherCoachUsers = [];
       for (let j = 0; j < numOtherCoaches; j++) {
         const mockOtherCoachUser = createMockUser(
           [UserRole.COACH],
@@ -456,23 +503,7 @@ const mockDatabase = async (
         const mockOtherCoach = createMockCoach(otherUser.id);
         const otherCoach = await prisma.coach.create({ data: mockOtherCoach });
         otherCoaches.push(otherCoach);
-      }
-
-      const numRegCoaches = faker.number.int({
-        min: minRegionalCoaches,
-        max: maxRegionalCoaches,
-      });
-      const regCoaches = [];
-      for (let j = 0; j < numRegCoaches; j++) {
-        const mockRegCoachUser = createMockUser(
-          [UserRole.REGIONAL_COACH],
-          UserRole.REGIONAL_COACH
-        );
-
-        const regUser = await prisma.user.create({ data: mockRegCoachUser });
-        const mockRegCoach = createMockRegCoach(regUser.id, teamsRegion);
-        const regCoach = await prisma.coach.create({ data: mockRegCoach });
-        regCoaches.push(regCoach);
+        otherCoachUsers.push(otherUser);
       }
 
       const numPlayers = faker.number.int({
@@ -480,6 +511,7 @@ const mockDatabase = async (
         max: maxPlayersPerTeam,
       });
       const teamPlayers = [];
+      const teamPlayerUsers = [];
       for (let j = 0; j < numPlayers; j++) {
         const mockUser = createMockUser([UserRole.PLAYER], UserRole.PLAYER);
         const numParents = faker.number.int({
@@ -511,13 +543,15 @@ const mockDatabase = async (
           });
 
           teamPlayers.push(newPlayer);
+          teamPlayerUsers.push(playerUser);
         } else if (teamAgeGroup == AgeGroup.U14) {
-          if (Math.random() < 0.5) {
+          if (faker.number.float() < 0.5) {
             // isTrusted == true
             //TODO: could simulate a chance that a trusted player still has parent connections...
 
             const playerUser = await prisma.user.create({ data: mockUser });
             const mockAddress = createMockAddress();
+
             const playerAddress = await prisma.address.create({
               data: mockAddress,
             });
@@ -538,7 +572,11 @@ const mockDatabase = async (
             // isTrusted = false
 
             const parents = [];
-            const commonAddress = createMockAddress();
+            const mockCommonAddress = createMockAddress();
+            const commonAddress = await prisma.address.create({
+              data: mockCommonAddress,
+            });
+
             for (let k = 0; k < numParents; k++) {
               const mockParentUser = createMockUser(
                 [UserRole.PARENT],
@@ -549,13 +587,18 @@ const mockDatabase = async (
               });
 
               // ~80% chance two parents have same address
-              const parentAddress = await prisma.address.create({
-                data: Math.random() < 0.9 ? commonAddress : createMockAddress(),
-              });
-              const mockParent = createMockParent(
-                parentAddress.id,
-                parentUser.id
-              );
+              const isNewAddress = faker.number.float() < 0.9;
+              let curAddress;
+              if (isNewAddress) {
+                const mockNewAddress = createMockAddress();
+                curAddress = await prisma.address.create({
+                  data: mockNewAddress,
+                });
+              } else {
+                curAddress = commonAddress;
+              }
+
+              const mockParent = createMockParent(parentUser.id, curAddress.id);
               const newParent = await prisma.parent.create({
                 data: mockParent,
               });
@@ -580,7 +623,10 @@ const mockDatabase = async (
           }
         } else {
           const parents = [];
-          const commonAddress = createMockAddress();
+          const mockCommonAddress = createMockAddress();
+          const commonAddress = await prisma.address.create({
+            data: mockCommonAddress,
+          });
           for (let k = 0; k < numParents; k++) {
             const mockParentUser = createMockUser(
               [UserRole.PARENT],
@@ -590,13 +636,18 @@ const mockDatabase = async (
               data: mockParentUser,
             });
             // ~80% chance two parents have same address
-            const parentAddress = await prisma.address.create({
-              data: Math.random() < 0.9 ? commonAddress : createMockAddress(),
-            });
-            const mockParent = createMockParent(
-              parentAddress.id,
-              parentUser.id
-            );
+            const isNewAddress = faker.number.float() < 0.9;
+            let curAddress;
+            if (isNewAddress) {
+              const mockNewAddress = createMockAddress();
+              curAddress = await prisma.address.create({
+                data: mockNewAddress,
+              });
+            } else {
+              curAddress = commonAddress;
+            }
+
+            const mockParent = createMockParent(parentUser.id, curAddress.id);
             const newParent = await prisma.parent.create({
               data: mockParent,
             });
@@ -664,17 +715,12 @@ const mockDatabase = async (
 
           await prisma.eventAttendance.createMany({
             data: [
-              ...teamPlayers.map((user) => ({
+              ...teamPlayerUsers.map((user) => ({
                 userID: user.id,
                 eventID: tournamentEvent.id,
                 status: faker.helpers.enumValue(AttendanceStatus),
               })),
-              ...otherCoaches.map((user) => ({
-                userID: user.id,
-                eventID: tournamentEvent.id,
-                status: faker.helpers.enumValue(AttendanceStatus),
-              })),
-              ...regCoaches.map((user) => ({
+              ...otherCoachUsers.map((user) => ({
                 userID: user.id,
                 eventID: tournamentEvent.id,
                 status: faker.helpers.enumValue(AttendanceStatus),
@@ -690,9 +736,6 @@ const mockDatabase = async (
           ...mockTeam,
           coaches: {
             connect: [...otherCoaches.map((c) => ({ id: c.id }))],
-          },
-          regCoaches: {
-            connect: [...regCoaches.map((c) => ({ id: c.id }))],
           },
           players: {
             connect: [...teamPlayers.map((p) => ({ id: p.id }))],
@@ -719,7 +762,7 @@ const mockDatabase = async (
               {
                 OR: [
                   { coach: { teams: { some: { id: curTeam.id } } } },
-                  { regCoach: { teams: { some: { id: curTeam.id } } } },
+                  { regCoach: { region: { equals: curTeam.region } } },
                 ],
               },
               //  User is a parent of a player on the team IF the player is untrusted
@@ -753,7 +796,7 @@ const mockDatabase = async (
 
           for (let k = 0; k < numMessagesPerUser; k++) {
             const mockMessage = createMockMessage(
-              teamUsers[i].id,
+              teamUsers[j].id,
               chat.id,
               chat.createdAt
             );
@@ -803,13 +846,18 @@ const mockDatabase = async (
       }
     }
 
-    const numUsersNotified = faker.number.int({
+    let numUsersNotified = faker.number.int({
       min: minUsersNotified,
       max: maxUsersNotified,
     });
     const randomUsers = (await prisma.$queryRaw`
                          SELECT * FROM "User" ORDER BY RANDOM() LIMIT ${numUsersNotified}
                          `) as UserDB[];
+    numUsersNotified =
+      randomUsers.length < numUsersNotified
+        ? randomUsers.length
+        : numUsersNotified;
+
     for (let i = 0; i < numUsersNotified; i++) {
       const numNotificationsPerUser = faker.number.int({
         min: minNotificationsPerUser,
@@ -834,6 +882,7 @@ const mockDatabase = async (
 const main = async () => {
   await mockDatabase();
 };
+
 main()
   .then(async () => {
     await prisma.$disconnect();
