@@ -24,6 +24,7 @@ import { useSwipeActions } from '@/hooks/useSwipeActions';
 import { GlobalColors } from '@/constants/Colors';
 import NameModal from '@/components/groups/NameModal';
 import CreateGroupModal from '@/components/groups/AddGroupModal';
+import { useCreateGroup } from '@/api/groups/groups';
 
 export default function GroupsScreen() {
   const {
@@ -92,9 +93,24 @@ export default function GroupsScreen() {
     setModalStep('group'); // Move to next modal step
   };
 
-  const handleCreateGroup = () => {
-    console.log('Group Created:', groupName);
-    setModalStep(null); // Close all modals
+  const { mutate: createGroup } = useCreateGroup();
+
+  const handleCreateGroup = (selectedUsers: string[]) => {
+    createGroup(
+      {
+        title: groupName,
+        userIds: selectedUsers,
+      },
+      {
+        onSuccess: () => {
+          setModalStep(null);
+          loadChats();
+        },
+        onError: (err) => {
+          console.error('Error creating group: ', err);
+        },
+      }
+    );
   };
 
   return (
