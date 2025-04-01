@@ -7,7 +7,7 @@ import {
   FlatList,
   ScrollView,
 } from 'react-native';
-import ReusableModal from '../ui/organisms/BottomSheetModal';
+import FullsheetModal from '../ui/organisms/FullSheetModal';
 import Checkbox from '../ui/atoms/Checkbox';
 import CustomSelect from '../ui/atoms/dropdown';
 import SearchField from '../ui/atoms/Search';
@@ -37,6 +37,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   isEditMode = false,
   groupId,
 }) => {
+  console.log('🧱 CreateGroupModal rendered, visible:', visible);
   const [groupName, setGroupName] = useState(initialGroupName);
   const [searchText, setSearchText] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -64,8 +65,10 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   const users: UserFE[] = useMemo(() => AllUsers, [AllUsers]);
 
   // Filter users based on search input
-  const filteredUsers = users.filter((user) =>
-    `${user.id}}`.toLowerCase().includes(searchText.toLowerCase())
+  const filteredUsers = users.filter(
+    (user) =>
+      user.id.toString().toLowerCase().includes(searchText.toLowerCase()) &&
+      !existingGroupUserIds.includes(user.id.toString())
   );
 
   // Toggle user selection
@@ -100,19 +103,19 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
   // Select All / Deselect All Users
   const handleSelectAll = () => {
-    if (selectedUsers.length === filteredUsers.length) {
-      setSelectedUsers([]); // Deselect all
+    const filteredIds = filteredUsers.map((user) => user.id.toString());
+    if (selectedUsers.length === filteredIds.length) {
+      setSelectedUsers([]);
     } else {
-      setSelectedUsers(filteredUsers.map((user) => user.id)); // Select all
+      setSelectedUsers(filteredIds);
     }
   };
 
   return (
-    <ReusableModal
+    <FullsheetModal
       isVisible={visible}
       onClose={onClose}
       title="Add Participants"
-      variant="full-screen"
     >
       <View style={styles.container}>
         <View style={styles.fixedHeader}>
@@ -259,7 +262,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
           </ScrollView>
         </View>
       </View>
-    </ReusableModal>
+    </FullsheetModal>
   );
 };
 

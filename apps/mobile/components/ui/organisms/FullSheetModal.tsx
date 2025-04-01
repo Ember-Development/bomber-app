@@ -16,7 +16,7 @@ interface Props {
   children?: React.ReactNode;
 }
 
-const BottomSheetModal: React.FC<Props> = ({
+const FullScreenModal: React.FC<Props> = ({
   isVisible,
   onClose,
   title = 'Modal Title',
@@ -28,11 +28,11 @@ const BottomSheetModal: React.FC<Props> = ({
       onBackdropPress={onClose}
       animationIn="slideInUp"
       animationOut="slideOutDown"
-      backdropOpacity={0.3}
+      backdropOpacity={0.5}
       useNativeDriver
-      style={styles.bottomSheetStyle}
+      style={styles.fullScreenStyle}
     >
-      <SafeAreaView style={styles.sheetContainer}>
+      <SafeAreaView style={styles.modalContainer}>
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
           <TouchableOpacity onPress={onClose}>
@@ -46,15 +46,14 @@ const BottomSheetModal: React.FC<Props> = ({
 };
 
 const styles = StyleSheet.create({
-  bottomSheetStyle: {
-    justifyContent: 'flex-end',
+  fullScreenStyle: {
     margin: 0,
-  },
-  sheetContainer: {
     backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '90%',
+    justifyContent: 'flex-start',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'white',
   },
   header: {
     padding: 20,
@@ -69,9 +68,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   content: {
+    flex: 1,
     paddingHorizontal: 15,
-    paddingBottom: 20,
   },
 });
 
-export default BottomSheetModal;
+export default FullScreenModal;
