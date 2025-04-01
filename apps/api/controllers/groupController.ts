@@ -21,3 +21,16 @@ export const createGroup = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to create group' });
   }
 };
+
+export const addUsersToGroup = async (req: Request, res: Response) => {
+  const { groupId } = req.params;
+  const { userIds } = req.body;
+
+  try {
+    const updatedGroup = await groupService.addUsersToGroup(groupId, userIds);
+    res.status(200).json(updatedGroup);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to add users to group' });
+  }
+};

@@ -22,4 +22,23 @@ export const groupService = {
     });
     return group;
   },
+
+  addUsersToGroup: async (groupId: string, userIds: string[]) => {
+    const updates = userIds.map((id) =>
+      prisma.userChat.create({
+        data: {
+          userID: id,
+          chatID: groupId,
+          joinedAt: new Date(),
+        },
+      })
+    );
+
+    await Promise.all(updates);
+
+    return prisma.chat.findUnique({
+      where: { id: groupId },
+      include: { users: true, messages: true },
+    });
+  },
 };
