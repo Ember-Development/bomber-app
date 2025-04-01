@@ -8,6 +8,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -23,6 +24,11 @@ import {
   shouldShowSenderName,
 } from '@/utils/chatUtils';
 import { useKeyboardVisibility } from '@/hooks/useKeyboardVisibility';
+import { ThemedText } from '@/components/ThemedText';
+import ReusableModal from '@/components/ui/organisms/BottomSheetModal';
+import { UserFE } from '@bomber-app/database';
+import { useAddUsersToGroup, useUsersInGroup } from '@/hooks/useChats';
+import CreateGroupModal from '@/components/groups/AddGroupModal';
 
 export default function GroupChatScreen() {
   const { id } = useLocalSearchParams();
@@ -35,14 +41,25 @@ export default function GroupChatScreen() {
   const component = useThemeColor({}, 'component');
 
   // React Query Hooks
+  const { data: users = [], isLoading: isUsersLoading } =
+    useUsersInGroup(chatId);
+  console.log(
+    '🧑‍🤝‍🧑 useUsers - fetched users:',
+    users,
+    'loading:',
+    isUsersLoading
+  );
   const { data: messages, isLoading: messageLoading } = useChatMessages(chatId);
   const { data: chatDetails, isLoading: chatLoading } = useChatDetails(chatId);
+  const { mutate: addUsersToGroup } = useAddUsersToGroup();
 
   // Mock user UUID
   const currentUserId = '550e8400-e29b-41d4-a716-446655440000';
 
-  // Input state
+  // States
   const [messageText, setMessageText] = useState('');
+  const [showUsers, SetShowUsers] = useState(false);
+  const [addUserModal, setAddUserModal] = useState(false);
 
   // remove expo header
   useEffect(() => {
@@ -63,6 +80,23 @@ export default function GroupChatScreen() {
       setMessageText('');
       scrollToBottom();
     }
+  };
+
+  const handleAddUsersToGroup = (userIds: string[]) => {
+    if (!chatId) return;
+
+    addUsersToGroup(
+      { groupId: chatId, userIds },
+      {
+        onSuccess: () => {
+          setAddUserModal(false);
+          // Optionally refetch group members here
+        },
+        onError: (err) => {
+          console.error('Failed to add users:', err);
+        },
+      }
+    );
   };
 
   return (
@@ -99,7 +133,7 @@ export default function GroupChatScreen() {
                 <CustomButton
                   variant="icon"
                   iconName="people"
-                  onPress={() => alert('Searching!')}
+                  onPress={() => SetShowUsers(true)}
                 />
               </View>
             </View>
@@ -114,6 +148,24 @@ export default function GroupChatScreen() {
         >
           {messageLoading ? (
             <ActivityIndicator size="large" color={iconColor} />
+          ) : messages && messages.length === 0 ? (
+            <View style={styles.noMessageContainer}>
+              <Image
+                source={require('@/styles/images/bubble-msg.png')}
+                style={{ width: 120, height: 120, marginBottom: 20 }}
+                resizeMode="contain"
+              />
+              <ThemedText
+                style={{ fontSize: 18, fontWeight: '600', marginBottom: 10 }}
+              >
+                Start Sending Messages Now
+              </ThemedText>
+
+              <CustomButton
+                title="Add People to Group"
+                onPress={() => setAddUserModal(true)}
+              />
+            </View>
           ) : (
             messages?.map((msg: MessageFE, index) => {
               const isUser = msg.sender.id === currentUserId;
@@ -196,6 +248,70 @@ export default function GroupChatScreen() {
             <Ionicons name="send" size={20} color="white" />
           </TouchableOpacity>
         </View>
+
+        {/* Users Modal */}
+        <ReusableModal
+          isVisible={showUsers}
+          onClose={() => SetShowUsers(false)}
+          title="Members"
+          variant="full-screen"
+        >
+          <View style={{ marginTop: 10 }}>
+            <Text style={{ fontSize: 16, marginBottom: 10 }}>Users:</Text>
+
+            {isUsersLoading ? (
+              <ActivityIndicator size="small" />
+            ) : (
+              users?.map((user: UserFE) => (
+                <TouchableOpacity
+                  key={user.id}
+                  onPress={() => {
+                    // You can add logic here to add to group or call backend
+                    console.log('Selected user:', user.id);
+                  }}
+                  style={{
+                    padding: 15,
+                    backgroundColor: '#eee',
+                    marginBottom: 10,
+                    borderRadius: 10,
+                  }}
+                >
+                  <Text>{user.id}</Text>
+                </TouchableOpacity>
+              ))
+            )}
+            <View
+              style={{ padding: 20, borderTopWidth: 0.5, borderColor: '#ccc' }}
+            >
+              <CustomButton
+                title="Add Person to Group"
+                onPress={() => {
+                  if (chatDetails) {
+                    SetShowUsers(false);
+                    setTimeout(() => setAddUserModal(true), 300);
+                    console.log('this works bitch');
+                  } else {
+                    console.log('⛔️ Cannot open modal: chatDetails not ready');
+                  }
+                }}
+              />
+              <CustomButton
+                title="End Group"
+                variant="danger"
+                onPress={() => alert('Canceled!')}
+              />
+            </View>
+          </View>
+        </ReusableModal>
+
+        <CreateGroupModal
+          visible={addUserModal}
+          groupName={chatDetails?.title || ''}
+          onClose={() => setAddUserModal(false)}
+          onCreate={handleAddUsersToGroup}
+          existingGroupUserIds={chatDetails?.users?.map((u) => u.userID) ?? []}
+          isEditMode
+        />
       </View>
     </KeyboardAvoidingView>
   );

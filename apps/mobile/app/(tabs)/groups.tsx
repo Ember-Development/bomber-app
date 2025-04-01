@@ -20,23 +20,15 @@ import { useRouter } from 'expo-router';
 
 // custom hooks
 import { useChats } from '@/hooks/useChats';
-import { useSwipeActions } from '@/hooks/useSwipeActions';
 import { GlobalColors } from '@/constants/Colors';
 import NameModal from '@/components/groups/NameModal';
 import CreateGroupModal from '@/components/groups/AddGroupModal';
 import { useCreateGroup } from '@/api/groups/groups';
 
 export default function GroupsScreen() {
-  const {
-    chats,
-    mutedGroups,
-    unreadGroups,
-    isLoading,
-    refresh,
-    loadChats,
-    setMutedGroups,
-  } = useChats();
-  const [isSwiping, setIsSwiping] = useState(false);
+  const { chats, mutedGroups, isLoading, loadChats, setMutedGroups } =
+    useChats();
+  console.log('🎯 GroupsScreen - chats:', chats);
   const [modalStep, setModalStep] = useState<'name' | 'group' | null>(null);
   const [groupName, setGroupName] = useState('');
   // Theming Variables
@@ -45,9 +37,6 @@ export default function GroupsScreen() {
   const component = useThemeColor({}, 'component');
   // Router
   const router = useRouter();
-
-  // swipe reference
-  const { swipeableRefs, renderRightActions } = useSwipeActions();
 
   const handleLeaveGroup = () => {
     Alert.alert(
@@ -70,27 +59,12 @@ export default function GroupsScreen() {
       ...prevMutedGroups,
       [groupId]: !prevMutedGroups[groupId],
     }));
-
-    swipeableRefs.current[groupId]?.close();
   };
 
-  // Right Actions (on swipe)
-  const actions = (groupId: string) => [
-    {
-      label: mutedGroups[groupId] ? 'Unmute' : 'Mute',
-      color: GlobalColors.dark,
-      onPress: () => handleMute(groupId),
-    },
-    {
-      label: 'Leave',
-      color: GlobalColors.red,
-      onPress: handleLeaveGroup,
-    },
-  ];
-
+  // Create New Group Flow
   const handleNext = (name: string) => {
     setGroupName(name);
-    setModalStep('group'); // Move to next modal step
+    setModalStep('group');
   };
 
   const { mutate: createGroup } = useCreateGroup();
@@ -102,9 +76,9 @@ export default function GroupsScreen() {
         userIds: selectedUsers,
       },
       {
-        onSuccess: () => {
+        onSuccess: (newGroup) => {
           setModalStep(null);
-          loadChats();
+          router.push(`/groups/${newGroup.id}`);
         },
         onError: (err) => {
           console.error('Error creating group: ', err);
@@ -150,13 +124,18 @@ export default function GroupsScreen() {
             onNext={handleNext}
           />
         )}
-
+        {(() => {
+          console.log('👀 Showing CreateGroupModal - modalStep:', modalStep);
+          console.log('📛 Group Name:', groupName);
+          return null;
+        })()}
         {modalStep === 'group' && (
           <CreateGroupModal
             visible
             groupName={groupName}
             onClose={() => setModalStep(null)}
             onCreate={handleCreateGroup}
+            existingGroupUserIds={[]}
           />
         )}
 
@@ -175,6 +154,8 @@ export default function GroupsScreen() {
           <FlatList
             data={chats}
             keyExtractor={(item) => `chat-${item.id ?? Math.random()}`} // if item.id is ever null/undefined app wont crash
+            refreshing={isLoading}
+            onRefresh={loadChats}
             renderItem={({ item }) => {
               const latestMessage =
                 item.messages.length > 0 ? item.messages[0] : null;
@@ -185,71 +166,48 @@ export default function GroupsScreen() {
                 ? formatRelativeTime(latestMessage.createdAt.toISOString())
                 : '';
               const muted = mutedGroups[item.id];
-              const unread = unreadGroups[item.id];
 
               return (
-                <ReanimatedSwipeable
-                  ref={(ref) => {
-                    if (ref) swipeableRefs.current[item.id] = ref;
+                <TouchableOpacity
+                  onPress={() => {
+                    router.push({
+                      pathname: '/groups/[id]',
+                      params: { id: item.id.toString() },
+                    });
                   }}
-                  onSwipeableOpen={() => setIsSwiping(true)}
-                  onSwipeableWillClose={() => setIsSwiping(false)}
-                  renderRightActions={(progress) =>
-                    renderRightActions(progress, item.id, actions(item.id))
-                  }
                 >
-                  <TouchableOpacity
-                    onPress={() => {
-                      if (!isSwiping) {
-                        router.push({
-                          pathname: '/groups/[id]',
-                          params: { id: item.id.toString() },
-                        });
-                      }
-                    }}
-                  >
-                    <View style={styles.groupItem}>
-                      {/* Left Column: Group Name & Last Message */}
-                      <View style={styles.textContainer}>
-                        <View style={styles.groupTitleContainer}>
-                          {unread && <View style={styles.unreadIndicator} />}
-
-                          <ThemedText
-                            style={[
-                              styles.groupText,
-                              muted && styles.mutedText,
-                            ]}
-                          >
-                            {item.title}
-                          </ThemedText>
-                        </View>
-                        <ThemedText style={styles.messageText}>
-                          {latestMessageText ?? ''}
+                  <View style={styles.groupItem}>
+                    {/* Left Column: Group Name & Last Message */}
+                    <View style={styles.textContainer}>
+                      <View style={styles.groupTitleContainer}>
+                        <ThemedText
+                          style={[styles.groupText, muted && styles.mutedText]}
+                        >
+                          {item.title}
                         </ThemedText>
                       </View>
-
-                      {/* Right: Timestamp */}
-                      <View style={styles.timeContainer}>
-                        {latestMessage && (
-                          <Text style={styles.timeText}>
-                            {latestMessageTime}
-                          </Text>
-                        )}
-                        {muted && (
-                          <Ionicons
-                            name="volume-mute"
-                            size={16}
-                            style={[styles.muteIcon, { color: iconColor }]}
-                          />
-                        )}
-                      </View>
+                      <ThemedText style={styles.messageText}>
+                        {latestMessageText ?? ''}
+                      </ThemedText>
                     </View>
-                  </TouchableOpacity>
-                </ReanimatedSwipeable>
+
+                    {/* Right: Timestamp */}
+                    <View style={styles.timeContainer}>
+                      {latestMessage && (
+                        <Text style={styles.timeText}>{latestMessageTime}</Text>
+                      )}
+                      {muted && (
+                        <Ionicons
+                          name="volume-mute"
+                          size={16}
+                          style={[styles.muteIcon, { color: iconColor }]}
+                        />
+                      )}
+                    </View>
+                  </View>
+                </TouchableOpacity>
               );
             }}
-            refreshing={refresh}
-            onRefresh={loadChats}
           />
         )}
       </ThemedView>

@@ -5,6 +5,7 @@ import { PrismaClient } from '@bomber-app/database';
 import initializeSocket from './websockets/websocket';
 import groupRoutes from './routes/groupRoutes';
 import messageRoutes from './routes/messageRoutes';
+import userRoutes from './routes/userRoutes';
 
 const app = express();
 const server = http.createServer(app);
@@ -14,11 +15,13 @@ const prisma = new PrismaClient();
 app.get('/', (_: Request, res: Response) => {
   res.send('Ready 4 Biznes');
 });
+app.use(express.json());
 
-app.use('/api/chats', groupRoutes);
+app.use('/api/groups', groupRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/users', userRoutes);
 
-initializeSocket(server);
+const io = initializeSocket(server);
 
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

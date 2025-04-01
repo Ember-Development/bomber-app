@@ -1,74 +1,20 @@
 import { ChatFE, MessageFE, UserFE, UserRole } from '@bomber-app/database';
-import chatMock from '../mock-data/mockData.json';
 import { useQuery } from '@tanstack/react-query';
 
+const API_BASE = 'http://192.168.1.76:3000';
 // Fetch chat messages
-const fetchChatMessages = async (chatId: string): Promise<MessageFE[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const chat = chatMock.chats.find((c) => c.id === chatId);
-      if (!chat) return resolve([]);
-
-      const messages: MessageFE[] = chat.messages.map((msg) => {
-        // Find the sender
-        const senderUser = chatMock.users.find(
-          (user) => user.id === msg.userID
-        );
-        if (!senderUser) {
-          throw new Error(`User with ID ${msg.userID} not found in mock data.`);
-        }
-
-        const sender = {
-          id: senderUser.id,
-          email: senderUser.email,
-          phone: senderUser.phone || null,
-          pass: senderUser.pass,
-          fname: senderUser.fname,
-          lname: senderUser.lname,
-          primaryRole: senderUser.primaryRole as UserRole,
-        };
-
-        return {
-          id: msg.id,
-          text: msg.text,
-          createdAt: new Date(msg.createdAt),
-          userID: msg.userID,
-          chatID: msg.chatID,
-          sender,
-          chat: { id: chatId, title: chat.title },
-        };
-      });
-
-      resolve(messages);
-    }, 500);
-  });
+const fetchChatMessages = async (chatId: string) => {
+  const res = await fetch(`${API_BASE}/api/messages/${chatId}`);
+  if (!res.ok) throw new Error('Failed to fetch messages');
+  return res.json();
 };
 
 // Fetch chat details
-const fetchChatDetails = async (chatId: string): Promise<ChatFE | null> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const chat = chatMock.chats.find((c) => c.id === chatId);
-      if (!chat) return resolve(null);
-
-      resolve({
-        id: chat.id,
-        title: chat.title,
-        users: chat.users.map((user) => ({
-          userID: user.id,
-          chatID: chat.id,
-          joinedAt: new Date(),
-        })),
-        messages: chat.messages.map((msg) => ({
-          id: msg.id,
-          text: msg.text,
-          createdAt: new Date(msg.createdAt),
-          userID: msg.userID,
-          chatID: msg.chatID,
-        })),
-      });
-    }, 500);
-  });
+const fetchChatDetails = async (chatId: string) => {
+  const res = await fetch(`${API_BASE}/api/groups`);
+  if (!res.ok) throw new Error('Failed to fetch group');
+  const allGroups = await res.json();
+  return allGroups.find((group: any) => group.id === chatId) ?? null;
 };
 
 // React Query Hooks

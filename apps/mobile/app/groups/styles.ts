@@ -156,6 +156,14 @@ export const createMessageStyles = (theme: 'light' | 'dark') =>
       fontWeight: 'bold',
       color: GlobalColors.black,
     },
+    noMessageContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 50,
+      padding: 20,
+      borderRadius: 20,
+      marginHorizontal: 20,
+    },
   });
 
 export default createMessageStyles;

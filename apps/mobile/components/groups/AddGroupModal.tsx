@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -12,12 +12,20 @@ import Checkbox from '../ui/atoms/Checkbox';
 import CustomSelect from '../ui/atoms/dropdown';
 import SearchField from '../ui/atoms/Search';
 import Separator from '../ui/atoms/Seperator';
+import { useUsers } from '@/hooks/useUser';
+import { UserFE } from '@bomber-app/database';
+import CustomButton from '../ui/atoms/Button';
+import { addUsersToGroup } from '@/api/groups/groups';
+import { useAddUsersToGroup } from '@/hooks/useChats';
 
 interface CreateGroupModalProps {
   visible: boolean;
   groupName: string;
   onClose: () => void;
   onCreate: (selectedUsers: string[]) => void;
+  existingGroupUserIds: string[];
+  isEditMode?: boolean;
+  groupId?: string;
 }
 
 const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
@@ -25,6 +33,9 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   groupName: initialGroupName,
   onClose,
   onCreate,
+  existingGroupUserIds = [],
+  isEditMode = false,
+  groupId,
 }) => {
   const [groupName, setGroupName] = useState(initialGroupName);
   const [searchText, setSearchText] = useState('');
@@ -41,29 +52,20 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     coaches: false,
     pitchers: false,
   });
+  const { data: AllUsers = [] } = useUsers();
+  const { mutate: mutateAddToGroup } = useAddUsersToGroup();
+
   const scrollViewRef = useRef<ScrollView>(null);
 
   const handleScrollToBottom = () => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   };
 
-  // Dummy user data (10 users)
-  const users = [
-    { id: '1', name: 'John Doe' },
-    { id: '2', name: 'Jane Smith' },
-    { id: '3', name: 'Michael Johnson' },
-    { id: '4', name: 'Emily Davis' },
-    { id: '5', name: 'Chris Wilson' },
-    { id: '6', name: 'Sarah Brown' },
-    { id: '7', name: 'David Lee' },
-    { id: '8', name: 'Emma White' },
-    { id: '9', name: 'Daniel Harris' },
-    { id: '10', name: 'Sophia Clark' },
-  ];
+  const users: UserFE[] = useMemo(() => AllUsers, [AllUsers]);
 
   // Filter users based on search input
   const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(searchText.toLowerCase())
+    `${user.id}}`.toLowerCase().includes(searchText.toLowerCase())
   );
 
   // Toggle user selection
@@ -183,7 +185,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
               { label: 'All', type: 'all' },
               { label: 'All Players', type: 'players' },
               { label: 'All Coaches', type: 'coaches' },
-              { label: 'All Pitchers', type: 'pitchers' },
+              { label: 'All Parents', type: 'parents' },
             ].map(({ label, type }) => (
               <View key={type} style={styles.gridItem}>
                 <Checkbox
@@ -226,7 +228,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             </View>
             {filteredUsers.map((item) => (
               <View key={item.id} style={styles.userRow}>
-                <Text style={styles.userName}>{item.name}</Text>
+                <Text style={styles.userName}>{item.id}</Text>
                 <TouchableOpacity
                   style={[
                     styles.actionButton,
@@ -242,12 +244,18 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                 </TouchableOpacity>
               </View>
             ))}
-            <TouchableOpacity
-              style={styles.createButton}
-              onPress={() => onCreate(selectedUsers)}
-            >
-              <Text style={styles.buttonText}>Create</Text>
-            </TouchableOpacity>
+            <CustomButton
+              title={isEditMode ? 'Add to Group' : 'Create Group'}
+              onPress={() => {
+                if (isEditMode && groupId) {
+                  mutateAddToGroup({ groupId, userIds: selectedUsers });
+                } else {
+                  onCreate(selectedUsers);
+                }
+                setSelectedUsers([]);
+              }}
+              variant="primary"
+            />
           </ScrollView>
         </View>
       </View>
@@ -301,6 +309,7 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
     minHeight: 400,
+    marginHorizontal: 10,
   },
   scrollContent: {
     flexGrow: 1,
@@ -313,10 +322,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderBottomWidth: 0.5,
     borderColor: '#ccc',
-    paddingHorizontal: 20,
   },
   userName: {
     fontSize: 16,
+    marginRight: 20,
+    flex: 1,
+    flexWrap: 'wrap',
   },
   addButton: {
     backgroundColor: '#007bff',
