@@ -7,7 +7,7 @@ import {
   Keyboard,
   Animated,
 } from 'react-native';
-import ReusableModal from '../ui/organisms/BottomSheetModal';
+import BottomSheetModal from '../ui/organisms/BottomSheetModal';
 import CustomInput from '../ui/atoms/Inputs';
 import CustomButton from '../ui/atoms/Button';
 import {
@@ -68,11 +68,10 @@ const NameModal: React.FC<NameModalProps> = ({
   });
 
   return (
-    <ReusableModal
+    <BottomSheetModal
       isVisible={isVisible}
       onClose={onClose}
       title="Enter Group Name"
-      variant="bottom-sheet"
     >
       <Animated.View style={[styles.animatedContainer, animatedStyles]}>
         <KeyboardAvoidingView
@@ -102,7 +101,7 @@ const NameModal: React.FC<NameModalProps> = ({
           </View>
         </KeyboardAvoidingView>
       </Animated.View>
-    </ReusableModal>
+    </BottomSheetModal>
   );
 };
 
