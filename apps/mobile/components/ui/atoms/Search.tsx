@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { TextInput, View, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useThemeColor } from "@/hooks/useThemeColor";
+import React, { useState } from 'react';
+import { TextInput, View, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 interface SearchFieldProps {
   placeholder?: string;
@@ -9,17 +9,16 @@ interface SearchFieldProps {
 }
 
 export default function SearchField({
-  placeholder = "Search...",
+  placeholder = 'Search...',
   onSearch,
 }: SearchFieldProps) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
 
-  // **Apply Theme Colors**
-  const borderColor = useThemeColor({}, "border");
-  const backgroundColor = useThemeColor({}, "component");
-  const textColor = useThemeColor({}, "text");
-  const iconColor = useThemeColor({}, "icon");
-  const placeholderColor = useThemeColor({}, "secondaryText");
+  const borderColor = useThemeColor({}, 'border');
+  const backgroundColor = useThemeColor({}, 'component');
+  const textColor = useThemeColor({}, 'text');
+  const iconColor = useThemeColor({}, 'icon');
+  const placeholderColor = useThemeColor({}, 'secondaryText');
 
   return (
     <View style={[styles.container, { borderColor, backgroundColor }]}>
@@ -40,8 +39,8 @@ export default function SearchField({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     borderRadius: 8,
     paddingHorizontal: 10,
     borderWidth: 0.5,
