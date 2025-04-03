@@ -30,6 +30,7 @@ resource "aws_instance" "bomber_app" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
   security_groups = [var.security_group_name]
+  user_data = file("init.sh")
 
   tags = {
     Name = var.instance_name

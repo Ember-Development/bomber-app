@@ -1,5 +1,5 @@
 resource "aws_ebs_volume" "db_volume" {
-  availability_zone = "us-east-1" 
+  availability_zone = aws_instance.bomber_app.availability_zone 
   size              = 10           # GB
   type              = "gp3"
   tags = {
