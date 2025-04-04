@@ -8,7 +8,6 @@ import PhoneInput from '@/components/ui/atoms/PhoneInput';
 import ZipCodeInput from '@/components/ui/atoms/ZipcodeInput';
 import DateOfBirthInput from '@/components/ui/atoms/DOBInput';
 import Checkbox from '@/components/ui/atoms/Checkbox';
-import RadioButtons from '@/components/ui/atoms/Radio';
 import SearchField from '@/components/ui/atoms/Search';
 import Dropdown from '@/components/ui/atoms/dropdown';
 import CustomSelect from '@/components/ui/atoms/dropdown';
@@ -92,14 +91,7 @@ export default function ComponentsScreen() {
                 label="College Commitment"
                 onChange={(checked) => console.log("Checked:", checked)}
               /> */}
-              <RadioButtons
-                options={[
-                  { label: 'Present', value: 'present' },
-                  { label: 'Absent', value: 'absent' },
-                  { label: 'Late', value: 'late' },
-                ]}
-                onSelect={(value) => console.log('Selected:', value)}
-              />
+
               <SearchField
                 onSearch={(query) => console.log('Searching for:', query)}
               />

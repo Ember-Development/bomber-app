@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   buttonText: {
-    fontWeight: 'light',
+    fontWeight: 'medium',
     textAlign: 'center',
   },
   fullWidth: {
