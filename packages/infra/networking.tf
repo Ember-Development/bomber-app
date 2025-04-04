@@ -1,7 +1,10 @@
 resource "aws_security_group" "security_group" {
-    name = var.security_group_name
+    name = "security-group-${var.environment}"
     description = "Allow dev SSH and customer HTTP(S) traffic"
 
+    lifecycle {
+        create_before_destroy = true
+    }
     ingress {
         from_port = 22
         to_port = 22
@@ -33,4 +36,8 @@ resource "aws_security_group" "security_group" {
 
 resource "aws_eip" "eip" {
     instance = aws_instance.bomber_app.id
+    vpc = true
+    tags = {
+        Name = "${var.environment}-eip"
+    }
 }

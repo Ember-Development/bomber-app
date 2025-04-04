@@ -15,8 +15,8 @@ variable "dev_ips" {
     type = list(string)
 }
 
-# network related vars
-variable "security_group_name" {
+# misc
+variable "environment" {
     type = string
-    default = "security group"
+    default = "prod"
 }

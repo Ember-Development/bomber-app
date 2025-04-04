@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "${file("${path.module}/id_rsa.pub")}" >> /home/ubuntu/.ssh/authorized_keys
+chmod 600 /home/ubuntu/.ssh/authorized_keys
+chown ubuntu:ubuntu /home/ubuntu/.ssh/authorized_keys
+
 # install dependencies
 sudo apt-get update -y
 sudo apt-get install -y apache2 nodejs npm postgresql postgresql-contrib

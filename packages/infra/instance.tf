@@ -10,6 +10,15 @@ terraform {
 }
 
 
+resource "aws_key_pair" "ssh_key" {
+    key_name = "bombers-app"
+    public_key = file("${path.module}/id_rsa.pub")
+
+    lifecycle {
+        prevent_destroy = true
+    }
+}
+
 data "aws_ami" "ubuntu" {
   most_recent = true
 
@@ -29,7 +38,8 @@ data "aws_ami" "ubuntu" {
 resource "aws_instance" "bomber_app" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
-  security_groups = [var.security_group_name]
+  key_name = aws_key_pair.ssh_key.key_name
+  security_groups = [aws_security_group.security_group.name]
   user_data = file("init.sh")
 
   tags = {

@@ -3,8 +3,9 @@ resource "aws_ebs_volume" "db_volume" {
   size              = 10           # GB
   type              = "gp3"
   tags = {
-    Name = "db-volume"
+    Name = "${var.environment}-db-volume"
   }
+  depends_on = [aws_instance.bomber_app]
 }
 
 resource "aws_volume_attachment" "db_attach" {
