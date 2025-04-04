@@ -124,11 +124,7 @@ export default function GroupsScreen() {
             onNext={handleNext}
           />
         )}
-        {(() => {
-          console.log('👀 Showing CreateGroupModal - modalStep:', modalStep);
-          console.log('📛 Group Name:', groupName);
-          return null;
-        })()}
+
         {modalStep === 'group' && (
           <CreateGroupModal
             visible
@@ -193,9 +189,12 @@ export default function GroupsScreen() {
 
                     {/* Right: Timestamp */}
                     <View style={styles.timeContainer}>
-                      {latestMessage && (
-                        <Text style={styles.timeText}>{latestMessageTime}</Text>
-                      )}
+                      {latestMessage &&
+                        typeof latestMessageTime === 'string' && (
+                          <Text style={styles.timeText}>
+                            {latestMessageTime}
+                          </Text>
+                        )}
                       {muted && (
                         <Ionicons
                           name="volume-mute"

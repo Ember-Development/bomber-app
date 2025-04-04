@@ -22,6 +22,8 @@ const BottomSheetModal: React.FC<Props> = ({
   title = 'Modal Title',
   children,
 }) => {
+  console.log('BottomSheetModal children:', children);
+
   return (
     <Modal
       isVisible={isVisible}
