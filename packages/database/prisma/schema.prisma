@@ -4,6 +4,11 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+generator custom_generator {
+    provider = "prisma-generator-fake-data"
+    output   = "../types/fake-data.ts"
+}
+
 generator client {
     provider = "prisma-client-js"
     output   = "../generated/client"
@@ -32,6 +37,7 @@ enum UserRole {
     COACH
     REGIONAL_COACH
     PLAYER
+    PARENT
     FAN
 }
 
@@ -109,12 +115,12 @@ enum ShortsSize {
 }
 
 model User {
-    id    String @id @default(uuid()) @db.Uuid
-    email String @unique @db.Uuid 
-    phone String? @db.Uuid //@pattern("^\+?[1-9]\d{1,14}$") // constrain: all but player, fan, and admin
-    pass  String @db.Uuid
-    fname String @db.Uuid
-    lname String @db.Uuid
+    id    String  @id @default(uuid()) @db.Uuid
+    email String  @unique // constrain: all 12u and under players
+    phone String? //@pattern("^\+?[1-9]\d{1,14}$") // constrain: all but player, fan, and admin
+    pass  String
+    fname String
+    lname String
 
     primaryRole UserRole
     admin       Admin?
@@ -135,8 +141,8 @@ model Player {
 
     pos1      Position
     pos2      Position
-    jerseyNum String   @db.Uuid //@pattern("^[0-9]{1,2}$")
-    gradYear  String   @db.Uuid //@pattern("^20[2-9][0-9]$")
+    jerseyNum String //@pattern("^[0-9]{1,2}$")
+    gradYear  String //@pattern("^20[2-9][0-9]$")
 
     jerseySize        JerseySize
     pantSize          PantsSize
@@ -192,7 +198,6 @@ model RegCoach {
     user   User   @relation(fields: [userID], references: [id])
     userID String @unique @db.Uuid
 
-    teams  Team[]
     region Regions @unique //one regCoach per region, allows queries for team by regional coach
 }
 
@@ -207,10 +212,9 @@ model Team {
 
     players Player[]
 
-    regCoaches  RegCoach[]
-    coaches     Coach[]    @relation("CoachTeams")
-    headCoach   Coach      @relation(fields: [headCoachID], references: [id])
-    headCoachID String     @db.Uuid
+    coaches     Coach[] @relation("CoachTeams")
+    headCoach   Coach?  @relation(fields: [headCoachID], references: [id])
+    headCoachID String? @db.Uuid
 }
 
 model Trophy {
@@ -252,7 +256,8 @@ model Address {
 model Chat {
     id String @id @default(uuid()) @db.Uuid
 
-    title String
+    title     String
+    createdAt DateTime
 
     users    UserChat[]
     messages Message[]
@@ -333,8 +338,8 @@ model EventAttendance {
 model Tournament {
     id String @id @default(uuid()) @db.Uuid
 
-    title String @db.Uuid
-    body  String @db.Uuid
+    title String
+    body  String
 
     imageURL String
 
