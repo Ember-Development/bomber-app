@@ -20,9 +20,12 @@
     "typescript-eslint": "^8.22.0"
   },
   "dependencies": {
+    "@babel/runtime": "^7.27.0",
+    "@react-navigation/elements": "^2.3.6",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-n": "^16.6.2",
-    "eslint-plugin-promise": "^6.6.0"
+    "eslint-plugin-promise": "^6.6.0",
+    "expo-router": "~4.0.20"
   }
 }

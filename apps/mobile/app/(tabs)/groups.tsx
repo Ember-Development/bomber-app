@@ -7,20 +7,18 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { createGroupStyles } from '@/styles/groupsStyle';
 import CustomButton from '@/components/ui/atoms/Button';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { formatRelativeTime } from '@/utils/DateTimeUtil';
-import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useRouter } from 'expo-router';
 
 // custom hooks
 import { useChats } from '@/hooks/useChats';
-import { GlobalColors } from '@/constants/Colors';
 import NameModal from '@/components/groups/NameModal';
 import CreateGroupModal from '@/components/groups/AddGroupModal';
 import { useCreateGroup } from '@/api/groups/groups';
@@ -76,11 +74,11 @@ export default function GroupsScreen() {
         userIds: selectedUsers,
       },
       {
-        onSuccess: (newGroup) => {
+        onSuccess: (newGroup: { id: any }) => {
           setModalStep(null);
           router.push(`/groups/${newGroup.id}`);
         },
-        onError: (err) => {
+        onError: (err: any) => {
           console.error('Error creating group: ', err);
         },
       }

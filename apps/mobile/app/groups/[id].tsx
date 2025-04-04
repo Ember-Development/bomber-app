@@ -93,7 +93,7 @@ export default function GroupChatScreen() {
           setAddUserModal(false);
           // Optionally refetch group members here
         },
-        onError: (err) => {
+        onError: (err: any) => {
           console.error('Failed to add users:', err);
         },
       }
@@ -120,7 +120,11 @@ export default function GroupChatScreen() {
               >
                 <Ionicons name="arrow-back" size={24} color="black" />
               </TouchableOpacity>
-              <Text style={styles.chatTitle}>
+              <Text
+                style={[styles.chatTitle, { flexShrink: 1 }]}
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
                 {chatLoading
                   ? 'Loading...'
                   : chatDetails?.title || 'Group Chat'}
@@ -181,7 +185,7 @@ export default function GroupChatScreen() {
                 />
               </View>
             ) : (
-              messages?.map((msg: MessageFE, index) => {
+              messages?.map((msg: MessageFE, index: number) => {
                 const isUser = msg.sender.id === currentUserId;
                 const initials = getInitials(
                   msg.sender.fname,
@@ -334,7 +338,9 @@ export default function GroupChatScreen() {
         groupName={chatDetails?.title || ''}
         onClose={() => setAddUserModal(false)}
         onCreate={handleAddUsersToGroup}
-        existingGroupUserIds={chatDetails?.users?.map((u) => u.userID) ?? []}
+        existingGroupUserIds={
+          chatDetails?.users?.map((u: { userID: any }) => u.userID) ?? []
+        }
         isEditMode
       />
     </>

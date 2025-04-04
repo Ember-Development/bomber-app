@@ -11,6 +11,7 @@ export const groupService = {
     const group = await prisma.chat.create({
       data: {
         title,
+        createdAt: new Date(),
         users: {
           create: userIds.map((id) => ({
             user: { connect: { id } },
