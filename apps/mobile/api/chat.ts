@@ -1,10 +1,19 @@
 import { ChatFE, MessageFE, UserFE, UserRole } from '@bomber-app/database';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 
 const API_BASE = 'http://192.168.1.76:3000';
 // Fetch chat messages
-const fetchChatMessages = async (chatId: string) => {
-  const res = await fetch(`${API_BASE}/api/messages/${chatId}`);
+const fetchChatMessages = async ({
+  chatId,
+  pageParam,
+}: {
+  chatId: string;
+  pageParam?: string;
+}) => {
+  const cursorParam = pageParam ? `&cursor=${pageParam}` : '';
+  const res = await fetch(
+    `${API_BASE}/api/messages/${chatId}?limit=20${cursorParam}`
+  );
   if (!res.ok) throw new Error('Failed to fetch messages');
   return res.json();
 };
@@ -19,10 +28,16 @@ const fetchChatDetails = async (chatId: string) => {
 
 // React Query Hooks
 export const useChatMessages = (chatId: string) => {
-  return useQuery<MessageFE[]>({
+  return useInfiniteQuery({
     queryKey: ['chatMessages', chatId],
-    queryFn: () => fetchChatMessages(chatId),
-    staleTime: 1000 * 30, // Cache for 30 seconds
+    queryFn: ({ pageParam }: { pageParam?: string }) =>
+      fetchChatMessages({ chatId, pageParam }),
+    getNextPageParam: (lastPage: string | any[]) => {
+      if (!lastPage || lastPage.length === 0) return undefined;
+      return lastPage[lastPage.length - 1].id;
+    },
+    initialPageParam: undefined,
+    enabled: !!chatId,
   });
 };
 

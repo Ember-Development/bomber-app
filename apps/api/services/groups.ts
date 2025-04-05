@@ -1,9 +1,23 @@
 import { prisma } from '@bomber-app/database';
 
 export const groupService = {
-  getAllGroups: async () => {
+  getAllGroups: async (take: number = 10, cursor?: string) => {
     return await prisma.chat.findMany({
-      include: { users: true, messages: true },
+      include: {
+        users: true,
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
+      orderBy: {
+        id: 'desc',
+      },
+      take,
+      ...(cursor && {
+        skip: 1,
+        cursor: { id: cursor },
+      }),
     });
   },
 

@@ -49,6 +49,33 @@ export const userService = {
         fname: true,
         lname: true,
         email: true,
+        primaryRole: true,
+
+        player: {
+          select: {
+            pos1: true,
+            pos2: true,
+            ageGroup: true,
+            team: {
+              select: {
+                id: true,
+                name: true,
+                ageGroup: true,
+              },
+            },
+          },
+        },
+
+        coach: {
+          select: {
+            teams: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
   },
@@ -58,11 +85,22 @@ export const userService = {
       where: { id: chatId },
       include: {
         users: {
-          include: { user: true },
+          include: {
+            user: {
+              select: {
+                id: true,
+                fname: true,
+                lname: true,
+                primaryRole: true,
+              },
+            },
+          },
         },
       },
     });
 
-    return chat?.users.map((userChat) => userChat.user) || [];
+    return (chat?.users || [])
+      .map((userChat) => userChat.user)
+      .filter((u) => u !== null);
   },
 };
