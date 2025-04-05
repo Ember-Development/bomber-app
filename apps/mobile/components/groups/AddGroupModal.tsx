@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  FlatList,
   ScrollView,
 } from 'react-native';
 import FullsheetModal from '../ui/organisms/FullSheetModal';
@@ -13,10 +12,10 @@ import CustomSelect from '../ui/atoms/dropdown';
 import SearchField from '../ui/atoms/Search';
 import Separator from '../ui/atoms/Seperator';
 import { useUsers } from '@/hooks/useUser';
-import { UserFE } from '@bomber-app/database';
+import { Position } from '@bomber-app/database';
 import CustomButton from '../ui/atoms/Button';
-import { addUsersToGroup } from '@/api/groups/groups';
 import { useAddUsersToGroup } from '@/hooks/useChats';
+import { UserFE } from '@/types';
 
 interface CreateGroupModalProps {
   visible: boolean;
@@ -37,7 +36,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   isEditMode = false,
   groupId,
 }) => {
-  console.log('🧱 CreateGroupModal rendered, visible:', visible);
   const [groupName, setGroupName] = useState(initialGroupName);
   const [searchText, setSearchText] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -45,15 +43,18 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     team: '',
     ageDivision: '',
     position: '',
-    state: '',
   });
   const [checkboxes, setCheckboxes] = useState({
     all: true,
     players: false,
     coaches: false,
+    parents: false,
     pitchers: false,
+    admin: false,
+    regional_coaches: false,
   });
   const { data: AllUsers = [] } = useUsers();
+  console.log('boi', AllUsers);
   const { mutate: mutateAddToGroup } = useAddUsersToGroup();
 
   const scrollViewRef = useRef<ScrollView>(null);
@@ -64,14 +65,67 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
   const users: UserFE[] = useMemo(() => AllUsers, [AllUsers]);
 
-  // Filter users based on search input
-  const filteredUsers = users.filter(
-    (user) =>
-      user.id.toString().toLowerCase().includes(searchText.toLowerCase()) &&
-      !existingGroupUserIds.includes(user.id.toString())
+  const teamNames = Array.from(
+    new Set(
+      users
+        .filter((user) => user.player?.team)
+        .map((user) => user.player!.team!.name)
+    )
   );
 
-  // Toggle user selection
+  const teamOptions = teamNames.map((name) => ({
+    label: name,
+    value: name,
+  }));
+
+  const filteredUsers = users.filter((user) => {
+    if (existingGroupUserIds.includes(user.id)) return false;
+
+    // Search
+    const matchesSearch =
+      user.fname.toLowerCase().includes(searchText.toLowerCase()) ||
+      user.lname.toLowerCase().includes(searchText.toLowerCase());
+
+    if (!matchesSearch) return false;
+
+    // Role Checkboxes
+    if (!checkboxes.all) {
+      if (checkboxes.players && user.primaryRole !== 'PLAYER') return false;
+      if (checkboxes.coaches && user.primaryRole !== 'COACH') return false;
+      if (checkboxes.parents && user.primaryRole !== 'PARENT') return false;
+      if (checkboxes.admin && user.primaryRole !== 'ADMIN') return false;
+      if (checkboxes.regional_coaches && user.primaryRole !== 'REGIONAL_COACH')
+        return false;
+      if (checkboxes.pitchers) {
+        if (user.primaryRole !== 'PLAYER') return false;
+
+        if (
+          user.player?.pos1 !== 'PITCHER' &&
+          user.player?.pos2 !== 'PITCHER'
+        ) {
+          return false;
+        }
+      }
+    }
+
+    // Team filter
+    if (filters.team && user.player?.team?.name !== filters.team) return false;
+
+    // Age Division filter
+    if (filters.ageDivision && user.player?.ageGroup !== filters.ageDivision)
+      return false;
+
+    // Position filter
+    if (filters.position && user.player) {
+      const { pos1, pos2 } = user.player;
+      if (pos1 !== filters.position && pos2 !== filters.position) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
   const toggleUserSelection = (userId: string) => {
     setSelectedUsers((prev) =>
       prev.includes(userId)
@@ -80,7 +134,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     );
   };
 
-  // Handle Checkbox Change
   const handleCheckboxChange = (
     type: keyof typeof checkboxes,
     checked: boolean
@@ -90,7 +143,10 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         all: true,
         players: false,
         coaches: false,
+        parents: false,
         pitchers: false,
+        regional_coaches: false,
+        admin: false,
       });
     } else {
       setCheckboxes((prev) => ({
@@ -101,7 +157,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     }
   };
 
-  // Select All / Deselect All Users
   const handleSelectAll = () => {
     const filteredIds = filteredUsers.map((user) => user.id.toString());
     if (selectedUsers.length === filteredIds.length) {
@@ -119,26 +174,47 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     >
       <View style={styles.container}>
         <View style={styles.fixedHeader}>
+          {/* Counter */}
           <View style={styles.topSection}>
             <Text style={styles.counter}>
               {selectedUsers.length} Added to {groupName}
             </Text>
+            <TouchableOpacity
+              style={styles.clearButton}
+              onPress={() => {
+                setFilters({
+                  team: '',
+                  ageDivision: '',
+                  position: '',
+                });
+                setCheckboxes({
+                  all: true,
+                  players: false,
+                  coaches: false,
+                  parents: false,
+                  pitchers: false,
+                  admin: false,
+                  regional_coaches: false,
+                });
+                setSearchText('');
+              }}
+            >
+              <Text style={styles.clearButtonText}>Clear Filters</Text>
+            </TouchableOpacity>
           </View>
 
+          {/* Search */}
           <SearchField
             onSearch={(query) => setSearchText(query)}
             placeholder="Search users..."
           />
 
-          {/* Filters (Fixed) */}
+          {/* Filters */}
           <View style={styles.gridContainer}>
             <View style={styles.gridItem}>
               <CustomSelect
                 label="Select Team"
-                options={[
-                  { label: 'Team A', value: 'Team A' },
-                  { label: 'Team B', value: 'Team B' },
-                ]}
+                options={teamOptions}
                 onSelect={(value) =>
                   setFilters((prev) => ({ ...prev, team: value }))
                 }
@@ -148,8 +224,13 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
               <CustomSelect
                 label="Age Division"
                 options={[
+                  { label: 'U8', value: 'U8' },
+                  { label: 'U10', value: 'U10' },
                   { label: 'U12', value: 'U12' },
                   { label: 'U14', value: 'U14' },
+                  { label: 'U16', value: 'U16' },
+                  { label: 'U18', value: 'U18' },
+                  { label: 'Alumni', value: 'ALUMNI' },
                 ]}
                 onSelect={(value) =>
                   setFilters((prev) => ({ ...prev, ageDivision: value }))
@@ -159,36 +240,27 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             <View style={styles.gridItem}>
               <CustomSelect
                 label="Position"
-                options={[
-                  { label: 'Pitcher', value: 'Pitcher' },
-                  { label: 'Catcher', value: 'Catcher' },
-                ]}
+                options={Object.values(Position).map((pos) => ({
+                  label: pos,
+                  value: pos,
+                }))}
                 onSelect={(value) =>
                   setFilters((prev) => ({ ...prev, position: value }))
                 }
               />
             </View>
-            <View style={styles.gridItem}>
-              <CustomSelect
-                label="State"
-                options={[
-                  { label: 'California', value: 'CA' },
-                  { label: 'Texas', value: 'TX' },
-                ]}
-                onSelect={(value) =>
-                  setFilters((prev) => ({ ...prev, state: value }))
-                }
-              />
-            </View>
           </View>
 
-          {/* Checkboxes (Fixed) */}
+          {/* Checkboxes */}
           <View style={styles.gridContainer}>
             {[
               { label: 'All', type: 'all' },
-              { label: 'All Players', type: 'players' },
-              { label: 'All Coaches', type: 'coaches' },
-              { label: 'All Parents', type: 'parents' },
+              { label: 'Admin', type: 'admin' },
+              { label: 'Coaches', type: 'coaches' },
+              { label: 'Regional Coaches', type: 'regional_coaches' },
+              { label: 'Players', type: 'players' },
+              { label: 'Parents', type: 'parents' },
+              { label: 'Pitchers Only', type: 'pitchers' },
             ].map(({ label, type }) => (
               <View key={type} style={styles.gridItem}>
                 <Checkbox
@@ -208,12 +280,11 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
           <Separator width="90%" color="#000" />
         </View>
 
-        {/* Scrollable Users */}
+        {/* Scrollable List */}
         <View style={styles.scrollContainer}>
           <ScrollView
             ref={scrollViewRef}
             contentContainerStyle={styles.scrollContent}
-            onLayout={handleScrollToBottom}
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.userListHeader}>
@@ -229,24 +300,28 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                 </Text>
               </TouchableOpacity>
             </View>
-            {filteredUsers.map((item) => (
-              <View key={item.id} style={styles.userRow}>
-                <Text style={styles.userName}>{item.id}</Text>
+
+            {filteredUsers.map((user) => (
+              <View key={user.id} style={styles.userRow}>
+                <Text style={styles.userName}>
+                  {user.fname} {user.lname}
+                </Text>
                 <TouchableOpacity
                   style={[
                     styles.actionButton,
-                    selectedUsers.includes(item.id)
+                    selectedUsers.includes(user.id)
                       ? styles.removeButton
                       : styles.addButton,
                   ]}
-                  onPress={() => toggleUserSelection(item.id)}
+                  onPress={() => toggleUserSelection(user.id)}
                 >
                   <Text style={styles.buttonText}>
-                    {selectedUsers.includes(item.id) ? 'Remove' : 'Add'}
+                    {selectedUsers.includes(user.id) ? 'Remove' : 'Add'}
                   </Text>
                 </TouchableOpacity>
               </View>
             ))}
+
             <CustomButton
               title={isEditMode ? 'Add to Group' : 'Create Group'}
               onPress={() => {
@@ -297,7 +372,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginVertical: 10,
+    marginVertical: 5,
   },
   usersTitle: {
     fontSize: 18,
@@ -353,6 +428,18 @@ const styles = StyleSheet.create({
     marginTop: 10,
     alignItems: 'center',
     marginHorizontal: 20,
+  },
+  clearButton: {
+    backgroundColor: '#f0f0f0',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
+
+  clearButtonText: {
+    fontSize: 14,
+    color: '#000000',
+    fontWeight: '600',
   },
 });
 

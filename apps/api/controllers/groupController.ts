@@ -3,7 +3,11 @@ import { groupService } from '../services/groups';
 
 export const getGroups = async (req: Request, res: Response) => {
   try {
-    const groups = await groupService.getAllGroups();
+    const { take, cursor } = req.query;
+    const groups = await groupService.getAllGroups(
+      Number(take) || 10,
+      cursor ? String(cursor) : undefined
+    );
     res.json(groups);
   } catch (error) {
     console.error(error);

@@ -18,15 +18,15 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useRouter } from 'expo-router';
 
 // custom hooks
-import { useChats } from '@/hooks/useChats';
+import { usePaginatedChats } from '@/hooks/useChats';
 import NameModal from '@/components/groups/NameModal';
 import CreateGroupModal from '@/components/groups/AddGroupModal';
 import { useCreateGroup } from '@/api/groups/groups';
 
 export default function GroupsScreen() {
-  const { chats, mutedGroups, isLoading, loadChats, setMutedGroups } =
-    useChats();
-  console.log('🎯 GroupsScreen - chats:', chats);
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    usePaginatedChats();
+  const chats = data?.pages.flat() ?? [];
   const [modalStep, setModalStep] = useState<'name' | 'group' | null>(null);
   const [groupName, setGroupName] = useState('');
   // Theming Variables
@@ -35,6 +35,16 @@ export default function GroupsScreen() {
   const component = useThemeColor({}, 'component');
   // Router
   const router = useRouter();
+
+  const sortedChats = [...chats].sort((a, b) => {
+    const aTime = a.messages[0]?.createdAt
+      ? new Date(a.messages[0].createdAt).getTime()
+      : 0;
+    const bTime = b.messages[0]?.createdAt
+      ? new Date(b.messages[0].createdAt).getTime()
+      : 0;
+    return bTime - aTime;
+  });
 
   const handleLeaveGroup = () => {
     Alert.alert(
@@ -50,13 +60,6 @@ export default function GroupsScreen() {
 
   const handleLeft = () => {
     console.log('LEFT GROUP');
-  };
-
-  const handleMute = (groupId: string) => {
-    setMutedGroups((prevMutedGroups) => ({
-      ...prevMutedGroups,
-      [groupId]: !prevMutedGroups[groupId],
-    }));
   };
 
   // Create New Group Flow
@@ -146,10 +149,19 @@ export default function GroupsScreen() {
           </View>
         ) : (
           <FlatList
-            data={chats}
+            data={sortedChats}
             keyExtractor={(item) => `chat-${item.id ?? Math.random()}`} // if item.id is ever null/undefined app wont crash
             refreshing={isLoading}
-            onRefresh={loadChats}
+            contentContainerStyle={{ paddingBottom: 50 }}
+            onEndReached={() => {
+              if (hasNextPage) fetchNextPage();
+            }}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              hasNextPage && isFetchingNextPage ? (
+                <ActivityIndicator style={{ marginVertical: 16 }} />
+              ) : null
+            }
             renderItem={({ item }) => {
               const latestMessage =
                 item.messages.length > 0 ? item.messages[0] : null;
@@ -159,7 +171,6 @@ export default function GroupsScreen() {
               const latestMessageTime = latestMessage
                 ? formatRelativeTime(latestMessage.createdAt.toISOString())
                 : '';
-              const muted = mutedGroups[item.id];
 
               return (
                 <TouchableOpacity
@@ -174,13 +185,11 @@ export default function GroupsScreen() {
                     {/* Left Column: Group Name & Last Message */}
                     <View style={styles.textContainer}>
                       <View style={styles.groupTitleContainer}>
-                        <ThemedText
-                          style={[styles.groupText, muted && styles.mutedText]}
-                        >
+                        <ThemedText style={[styles.groupText]}>
                           {item.title}
                         </ThemedText>
                       </View>
-                      <ThemedText style={styles.messageText}>
+                      <ThemedText style={styles.messageText} numberOfLines={1}>
                         {latestMessageText ?? ''}
                       </ThemedText>
                     </View>
@@ -193,13 +202,6 @@ export default function GroupsScreen() {
                             {latestMessageTime}
                           </Text>
                         )}
-                      {muted && (
-                        <Ionicons
-                          name="volume-mute"
-                          size={16}
-                          style={[styles.muteIcon, { color: iconColor }]}
-                        />
-                      )}
                     </View>
                   </View>
                 </TouchableOpacity>

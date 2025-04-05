@@ -87,40 +87,44 @@ export const useCreateGroup = () => {
   });
 };
 
-export const useGroups = () => {
-  return useQuery({
-    queryKey: ['groups'],
-    queryFn: async () => {
-      const response = await fetch(`${API_BASE}/api/groups`);
-      const raw = await response.json();
+export const fetchGroups = async ({
+  take = 10,
+  cursor,
+}: {
+  take?: number;
+  cursor?: string;
+}) => {
+  let url = `${API_BASE}/api/groups?take=${take}`;
+  if (cursor) {
+    url += `&cursor=${cursor}`;
+  }
 
-      console.log('📡 RAW GROUPS RESPONSE:', raw);
+  const response = await fetch(url);
+  const raw = await response.json();
 
-      return raw.map((chat: any) => ({
-        id: chat.id,
-        title: chat.title,
-        users: chat.users.map((u: any) => ({
-          userID: u.userID,
-          chatID: u.chatID,
-          joinedAt: new Date(u.joinedAt),
-        })),
-        messages: chat.messages.map((m: any) => ({
-          id: m.id,
-          userID: m.userID,
-          chatID: m.chatID,
-          text: m.text,
-          createdAt: new Date(m.createdAt),
-        })),
-      }));
-    },
-  });
+  return raw.map((chat: any) => ({
+    id: chat.id,
+    title: chat.title,
+    users: chat.users.map((u: any) => ({
+      userID: u.userID,
+      chatID: u.chatID,
+      joinedAt: new Date(u.joinedAt),
+    })),
+    messages: chat.messages.map((m: any) => ({
+      id: m.id,
+      userID: m.userID,
+      chatID: m.chatID,
+      text: m.text,
+      createdAt: new Date(m.createdAt),
+    })),
+  }));
 };
 
 export const listenForNewMessages = (
   chatId: string,
   callback: (message: any) => void
 ) => {
-  socket.on('newMessage', (message) => {
+  socket.on('newMessage', (message: { chatID: string }) => {
     if (message.chatID === chatId) {
       callback(message);
     }

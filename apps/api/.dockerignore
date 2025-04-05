@@ -1,0 +1,18 @@
+# .dockerignore
+node_modules
+dist
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+*.log
+.env
+pnpm-lock.yaml
+npm-debug.log
+yarn-error.log
+.cache
+.next
+workspace/packages/*/node_modules
+workspace/packages/*/dist
+workspace/apps/*/node_modules
+workspace/apps/*/dist

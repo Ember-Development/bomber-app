@@ -14,7 +14,7 @@ import {
 import React, { useEffect, useRef, useState } from 'react';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useChatMessages, useChatDetails } from '@/api/chat';
-import { MessageFE } from '@bomber-app/database';
+import { MessageFE, UserRole } from '@bomber-app/database';
 import { Ionicons } from '@expo/vector-icons';
 import { createMessageStyles } from './styles';
 import CustomButton from '@/components/ui/atoms/Button';
@@ -22,14 +22,15 @@ import {
   formatMessageDate,
   getInitials,
   shouldShowDateHeader,
-  shouldShowSenderName,
 } from '@/utils/chatUtils';
 import { useKeyboardVisibility } from '@/hooks/useKeyboardVisibility';
 import { ThemedText } from '@/components/ThemedText';
 import BottomSheetModal from '@/components/ui/organisms/BottomSheetModal';
-import { UserFE } from '@bomber-app/database';
 import { useAddUsersToGroup, useUsersInGroup } from '@/hooks/useChats';
 import CreateGroupModal from '@/components/groups/AddGroupModal';
+import { ChatUser } from '@/types'; // Make sure you import this type
+import socket from '@/hooks/socket';
+import { useLocalMessages } from '@/hooks/useLocalMessages';
 
 export default function GroupChatScreen() {
   const { id } = useLocalSearchParams();
@@ -41,31 +42,54 @@ export default function GroupChatScreen() {
   const styles = createMessageStyles('light');
   const component = useThemeColor({}, 'component');
 
-  // React Query Hooks
   const { data: users = [], isLoading: isUsersLoading } =
     useUsersInGroup(chatId);
-  console.log(
-    '🧑‍🤝‍🧑 useUsers - fetched users:',
-    users,
-    'loading:',
-    isUsersLoading
-  );
-  const { data: messages, isLoading: messageLoading } = useChatMessages(chatId);
+  const {
+    data,
+    isLoading: messageLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useChatMessages(chatId);
+  const messages: MessageFE[] = data?.pages.flat().reverse() || [];
   const { data: chatDetails, isLoading: chatLoading } = useChatDetails(chatId);
   const { mutate: addUsersToGroup } = useAddUsersToGroup();
 
-  // Mock user UUID
+  const sortedMessages = data?.pages.flat().reverse() ?? [];
+  const {
+    localMessages,
+    addLocalMessage,
+    replaceLocalMessage,
+    clearLocalMessages,
+    allMessages,
+  } = useLocalMessages(sortedMessages);
+
   const currentUserId = '550e8400-e29b-41d4-a716-446655440000';
 
-  // States
   const [messageText, setMessageText] = useState('');
   const [showUsers, SetShowUsers] = useState(false);
   const [addUserModal, setAddUserModal] = useState(false);
 
-  // remove expo header
+  // useEffects
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
+
+  useEffect(() => {
+    if (!socket.connected) socket.connect();
+
+    socket.emit('joinChat', chatId);
+
+    socket.on('NewMessage', (newMessage: MessageFE) => {
+      console.log('New message received:', newMessage);
+      replaceLocalMessage(newMessage);
+      addLocalMessage(newMessage);
+    });
+
+    return () => {
+      socket.off('NewMessage');
+    };
+  }, [chatId]);
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -76,8 +100,38 @@ export default function GroupChatScreen() {
   useKeyboardVisibility(scrollToBottom);
 
   const handleSendMessage = () => {
-    if (messageText.trim() !== '') {
-      console.log('Sending Message:', messageText);
+    if (messageText.trim() !== '' && chatId) {
+      const tempId = `${Date.now()}-temp`;
+
+      const localMessage: MessageFE = {
+        id: tempId,
+        text: messageText,
+        chatID: chatId,
+        userID: currentUserId,
+        createdAt: new Date().toISOString() as unknown as Date,
+        sender: {
+          id: currentUserId,
+          email: '',
+          phone: null,
+          pass: '',
+          fname: 'Temp',
+          lname: 'User',
+          primaryRole: 'PLAYER',
+        },
+        chat: {
+          id: chatId,
+          createdAt: new Date(),
+          title: '',
+        },
+      };
+
+      addLocalMessage(localMessage);
+
+      socket.emit('sendMessage', {
+        text: messageText,
+        chatId,
+        userId: currentUserId,
+      });
       setMessageText('');
       scrollToBottom();
     }
@@ -91,7 +145,6 @@ export default function GroupChatScreen() {
       {
         onSuccess: () => {
           setAddUserModal(false);
-          // Optionally refetch group members here
         },
         onError: (err: any) => {
           console.error('Failed to add users:', err);
@@ -100,9 +153,18 @@ export default function GroupChatScreen() {
     );
   };
 
-  useEffect(() => {
-    console.log('🧱 Modal visibility changed:', addUserModal);
-  }, [addUserModal]);
+  // Group users by role
+  const groupedUsers = users
+    .filter((u: { primaryRole: any }) => u.primaryRole)
+    .reduce(
+      (acc: Record<UserRole, ChatUser[]>, user: ChatUser) => {
+        (acc[user.primaryRole] = acc[user.primaryRole] || []).push(user);
+        return acc;
+      },
+      {} as Record<UserRole, ChatUser[]>
+    );
+
+  const roleOrder: UserRole[] = ['PLAYER', 'COACH', 'FAN', 'ADMIN'];
 
   return (
     <>
@@ -111,8 +173,8 @@ export default function GroupChatScreen() {
         style={{ flex: 1, backgroundColor: 'white' }}
       >
         <View style={{ flex: 1 }}>
+          {/* Header */}
           <View style={{ paddingTop: Platform.OS === 'android' ? 40 : 50 }}>
-            {/* Chat Title and Back Button */}
             <View style={styles.headerContainer}>
               <TouchableOpacity
                 onPress={() => router.push('/(tabs)/groups')}
@@ -158,15 +220,25 @@ export default function GroupChatScreen() {
             </View>
           </View>
 
-          {/* Chat Messages */}
+          {/* Messages */}
           <ScrollView
             ref={scrollViewRef}
             contentContainerStyle={{ padding: 10 }}
             onContentSizeChange={scrollToBottom}
+            onScroll={({ nativeEvent }) => {
+              if (
+                nativeEvent.contentOffset.y <= 0 &&
+                hasNextPage &&
+                !isFetchingNextPage
+              ) {
+                fetchNextPage();
+              }
+            }}
+            scrollEventThrottle={400}
           >
             {messageLoading ? (
               <ActivityIndicator size="large" color={iconColor} />
-            ) : messages && messages.length === 0 ? (
+            ) : sortedMessages && sortedMessages.length === 0 ? (
               <View style={styles.noMessageContainer}>
                 <Image
                   source={require('@/styles/images/bubble-msg.png')}
@@ -178,14 +250,13 @@ export default function GroupChatScreen() {
                 >
                   Start Sending Messages Now
                 </ThemedText>
-
                 <CustomButton
                   title="Add People to Group"
                   onPress={() => setAddUserModal(true)}
                 />
               </View>
             ) : (
-              messages?.map((msg: MessageFE, index: number) => {
+              allMessages?.map((msg: MessageFE, index: number) => {
                 const isUser = msg.sender.id === currentUserId;
                 const initials = getInitials(
                   msg.sender.fname,
@@ -201,13 +272,9 @@ export default function GroupChatScreen() {
                         </Text>
                       </View>
                     )}
-
-                    {shouldShowSenderName(messages, index, currentUserId) && (
-                      <Text style={styles.senderName}>
-                        {msg.sender.fname} {msg.sender.lname}
-                      </Text>
-                    )}
-
+                    <Text style={styles.senderName}>
+                      {msg.sender.fname} {msg.sender.lname}
+                    </Text>
                     <View
                       style={[
                         styles.messageContainer,
@@ -252,6 +319,7 @@ export default function GroupChatScreen() {
             )}
           </ScrollView>
 
+          {/* Input */}
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
@@ -260,7 +328,7 @@ export default function GroupChatScreen() {
               value={messageText}
               onChangeText={setMessageText}
               onFocus={scrollToBottom}
-              multiline={true}
+              multiline
               numberOfLines={3}
               textAlignVertical="top"
             />
@@ -279,60 +347,119 @@ export default function GroupChatScreen() {
             title="Members"
           >
             <View style={{ marginTop: 10 }}>
-              <Text style={{ fontSize: 16, marginBottom: 10 }}>Users:</Text>
-
               {isUsersLoading ? (
                 <ActivityIndicator size="small" />
               ) : (
-                users?.map((user: UserFE) => (
-                  <TouchableOpacity
-                    key={user.id}
-                    onPress={() => {
-                      // You can add logic here to add to group or call backend
-                      console.log('Selected user:', user.id);
-                    }}
+                <View style={{ maxHeight: '99%' }}>
+                  <ScrollView contentContainerStyle={{ paddingBottom: 0 }}>
+                    {roleOrder.map((role) => {
+                      const usersForRole = groupedUsers[role];
+                      if (!usersForRole || usersForRole.length === 0)
+                        return null;
+
+                      return (
+                        <View key={role} style={{ marginBottom: 20 }}>
+                          <Text
+                            style={{
+                              fontWeight: '700',
+                              fontSize: 18,
+                              marginBottom: 8,
+                            }}
+                          >
+                            {role.charAt(0) + role.slice(1).toLowerCase()}s
+                          </Text>
+
+                          {usersForRole
+                            .slice()
+                            .sort(
+                              (a: { fname: string }, b: { fname: string }) =>
+                                a.fname.localeCompare(b.fname)
+                            )
+                            .map((user: ChatUser) => (
+                              <TouchableOpacity
+                                key={user.id}
+                                style={{
+                                  padding: 15,
+                                  backgroundColor: '#eee',
+                                  marginBottom: 10,
+                                  borderRadius: 10,
+                                }}
+                              >
+                                <View
+                                  style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                  }}
+                                >
+                                  <Text
+                                    style={{
+                                      fontSize: 16,
+                                      fontWeight: '500',
+                                      marginRight: 8,
+                                    }}
+                                  >
+                                    {user.fname} {user.lname}
+                                  </Text>
+                                  <View
+                                    style={{
+                                      backgroundColor: '#D1E8FF',
+                                      paddingHorizontal: 8,
+                                      paddingVertical: 2,
+                                      borderRadius: 12,
+                                    }}
+                                  >
+                                    <Text
+                                      style={{
+                                        fontSize: 12,
+                                        color: '#0366d6',
+                                        fontWeight: '600',
+                                      }}
+                                    >
+                                      {user.primaryRole}
+                                    </Text>
+                                  </View>
+                                </View>
+                              </TouchableOpacity>
+                            ))}
+                        </View>
+                      );
+                    })}
+                  </ScrollView>
+
+                  {/* Pinned Buttons */}
+                  <View
                     style={{
-                      padding: 15,
-                      backgroundColor: '#eee',
-                      marginBottom: 10,
-                      borderRadius: 10,
+                      padding: 20,
+                      borderTopWidth: 0.5,
+                      borderColor: '#ccc',
+                      backgroundColor: 'white',
                     }}
                   >
-                    <Text>{user.id}</Text>
-                  </TouchableOpacity>
-                ))
+                    <CustomButton
+                      title="Add Person to Group"
+                      onPress={() => {
+                        if (chatDetails) {
+                          SetShowUsers(false);
+                          InteractionManager.runAfterInteractions(() => {
+                            setAddUserModal(true);
+                          });
+                        }
+                      }}
+                    />
+                    <CustomButton
+                      title="End Group"
+                      variant="danger"
+                      onPress={() => alert('Canceled!')}
+                    />
+                  </View>
+                </View>
               )}
-              <View
-                style={{
-                  padding: 20,
-                  borderTopWidth: 0.5,
-                  borderColor: '#ccc',
-                }}
-              >
-                <CustomButton
-                  title="Add Person to Group"
-                  onPress={() => {
-                    if (chatDetails) {
-                      SetShowUsers(false);
-                      InteractionManager.runAfterInteractions(() => {
-                        setAddUserModal(true);
-                        console.log('Modal opened after animation');
-                      });
-                    } else {
-                      console.log('Cannot open modal: chatDetails not ready');
-                    }
-                  }}
-                />
-                <CustomButton
-                  title="End Group"
-                  variant="danger"
-                  onPress={() => alert('Canceled!')}
-                />
-              </View>
             </View>
           </BottomSheetModal>
         </View>
       </KeyboardAvoidingView>
+
+      {/* Create Group Modal */}
       <CreateGroupModal
         visible={addUserModal}
         groupName={chatDetails?.title || ''}
