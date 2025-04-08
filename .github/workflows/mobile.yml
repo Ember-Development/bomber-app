@@ -1,0 +1,25 @@
+name: Deploy Mobile to EC2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/mobile/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      # TODO: finish this step when we get apple dev account, TestFlight, whatever else we might need
+      #
+      # - name: EAS Build for iOS
+      #   run: npx eas build --platform ios
+      #
+      # - name: Submit build to TestFlight
+      #   run: npx eas submit --platform ios --latest
