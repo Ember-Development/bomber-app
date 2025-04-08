@@ -1,4 +1,5 @@
 #!/bin/bash
 cd /home/ubuntu/api
-pnpm install
 
+pnpm install
+tsc
