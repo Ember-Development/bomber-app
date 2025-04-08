@@ -1,0 +1,18 @@
+version: 0.0
+os: linux
+files:
+  - source: /apps/web/
+    destination: /home/ubuntu/web
+hooks:
+  BeforeInstall:
+    - location: apps/web/scripts/before_install.sh
+      timeout: 300
+      runas: root
+  AfterInstall:
+    - location: apps/web/scripts/after_install.sh
+      timeout: 300
+      runas: root
+  ApplicationStart:
+    - location: apps/web/scripts/start_application.sh
+      timeout: 300
+      runas: root
