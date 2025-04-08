@@ -1,0 +1,18 @@
+version: 0.0
+os: linux
+files:
+  - source: /apps/api/
+    destination: /home/ubuntu/api/
+hooks:
+  BeforeInstall:
+    - location: apps/api/scripts/before_install.sh
+      timeout: 300
+      runas: root
+  AfterInstall:
+    - location: apps/api/scripts/after_install.sh
+      timeout: 300
+      runas: root
+  ApplicationStart:
+    - location: apps/api/scripts/start_application.sh
+      timeout: 300
+      runas: root
