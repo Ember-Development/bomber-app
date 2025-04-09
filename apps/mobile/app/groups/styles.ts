@@ -43,8 +43,6 @@ export const createMessageStyles = (theme: 'light' | 'dark') =>
       fontSize: 12,
       fontWeight: 'bold',
       color: GlobalColors.dark,
-      marginBottom: 2,
-      marginLeft: 50,
     },
     messageWrapper: {
       marginBottom: 12,

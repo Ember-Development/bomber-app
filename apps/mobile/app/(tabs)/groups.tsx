@@ -37,12 +37,16 @@ export default function GroupsScreen() {
   const router = useRouter();
 
   const sortedChats = [...chats].sort((a, b) => {
-    const aTime = a.messages[0]?.createdAt
-      ? new Date(a.messages[0].createdAt).getTime()
+    const aMessages = a.messages ?? []; // <-- fallback to []
+    const bMessages = b.messages ?? [];
+
+    const aTime = aMessages[0]?.createdAt
+      ? new Date(aMessages[0].createdAt).getTime()
       : 0;
-    const bTime = b.messages[0]?.createdAt
-      ? new Date(b.messages[0].createdAt).getTime()
+    const bTime = bMessages[0]?.createdAt
+      ? new Date(bMessages[0].createdAt).getTime()
       : 0;
+
     return bTime - aTime;
   });
 
@@ -164,12 +168,14 @@ export default function GroupsScreen() {
             }
             renderItem={({ item }) => {
               const latestMessage =
-                item.messages.length > 0 ? item.messages[0] : null;
+                item.messages?.length > 0 ? item.messages[0] : null;
               const latestMessageText = latestMessage?.text?.trim()
                 ? latestMessage.text
                 : 'No messages yet.';
-              const latestMessageTime = latestMessage
-                ? formatRelativeTime(latestMessage.createdAt.toISOString())
+              const latestMessageTime = latestMessage?.createdAt
+                ? formatRelativeTime(
+                    new Date(latestMessage.createdAt).toISOString()
+                  )
                 : '';
 
               return (

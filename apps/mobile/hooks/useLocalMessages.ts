@@ -1,25 +1,20 @@
+import { useState, useEffect } from 'react';
 import { MessageFE } from '@bomber-app/database';
-import { useState } from 'react';
 
-export function useLocalMessages(initialMessages: MessageFE[] = []) {
-  const [localMessages, setLocalMessages] = useState<MessageFE[]>([]);
+export function useLocalMessages(initialMessages: MessageFE[]) {
+  const [localMessages, setLocalMessages] =
+    useState<MessageFE[]>(initialMessages);
 
   const addLocalMessage = (message: MessageFE) => {
+    console.log('📤 Adding local message:', message);
     setLocalMessages((prev) => [...prev, message]);
   };
 
-  const replaceLocalMessage = (serverMessage: MessageFE) => {
+  const replaceLocalMessage = (newMessage: MessageFE) => {
     setLocalMessages((prev) =>
-      prev.map((msg) => {
-        if (
-          msg.text === serverMessage.text &&
-          msg.sender.id === serverMessage.sender.id &&
-          msg.id.startsWith('temp-')
-        ) {
-          return serverMessage;
-        }
-        return msg;
-      })
+      prev.map((m) =>
+        m.id.endsWith('-temp') && m.text === newMessage.text ? newMessage : m
+      )
     );
   };
 
@@ -27,17 +22,15 @@ export function useLocalMessages(initialMessages: MessageFE[] = []) {
     setLocalMessages([]);
   };
 
-  const allMessages = [...localMessages, ...initialMessages];
-
-  const uniqueMessages = Array.from(
-    new Map(allMessages.map((msg) => [msg.id, msg])).values()
-  );
+  // ✨ THE FIX:
+  useEffect(() => {
+    setLocalMessages(initialMessages);
+  }, [initialMessages]);
 
   return {
     localMessages,
     addLocalMessage,
     replaceLocalMessage,
     clearLocalMessages,
-    allMessages: uniqueMessages,
   };
 }

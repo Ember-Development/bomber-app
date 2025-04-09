@@ -5,6 +5,13 @@ const API_BASE = 'http://192.168.1.76:3000';
 const socket = io(`${API_BASE}`, {
   transports: ['websocket'],
   autoConnect: false,
+  reconnection: true,
+  reconnectionAttempts: Infinity,
+  reconnectionDelay: 2000,
+});
+
+socket.on('connect_error', (err) => {
+  console.log('Socket failed connnection', err.message);
 });
 
 export default socket;
