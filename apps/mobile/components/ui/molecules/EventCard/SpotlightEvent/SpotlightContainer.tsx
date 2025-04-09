@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
-import { View, StyleSheet, Pressable, Animated } from "react-native";
-import { ThemedText } from "@/components/ThemedText";
-import { Ionicons } from "@expo/vector-icons";
-import { useThemeColor } from "@/hooks/useThemeColor";
-import { GlobalColors } from "@/constants/Colors";
+import React, { useState, useRef, useEffect } from 'react';
+import { View, StyleSheet, Pressable, Animated } from 'react-native';
+import { ThemedText } from '@/components/ThemedText';
+import { Ionicons } from '@expo/vector-icons';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { GlobalColors } from '@/constants/Colors';
 
 interface Event {
   date: string;
@@ -13,26 +13,26 @@ interface Event {
 }
 
 const eventData: Event = {
-  date: "2025-05-12T19:00:00",
-  title: "Texas Bombers 16U - Hitting Practice",
-  location: "Bomber Lab Facility",
-  time: "7:00 PM - 8:30 PM",
+  date: '2025-05-12T19:00:00',
+  title: 'Texas Bombers 16U - Hitting Practice',
+  location: 'Bomber Lab Facility',
+  time: '7:00 PM - 8:30 PM',
 };
 
 export default function EventCardContainer() {
-  const [selectedTab, setSelectedTab] = useState<"Upcoming" | "Past">(
-    "Upcoming"
+  const [selectedTab, setSelectedTab] = useState<'Upcoming' | 'Past'>(
+    'Upcoming'
   );
   const animatedValue = useRef(new Animated.Value(0)).current;
-  const [countdown, setCountdown] = useState("");
+  const [countdown, setCountdown] = useState('');
 
   // **Apply Theme Colors**
-  const cardBackground = useThemeColor({}, "component");
-  const toggleBackground = useThemeColor({}, "background");
-  const activeIndicatorColor = useThemeColor({}, "background");
-  const textColor = useThemeColor({}, "text");
-  const secondaryColor = useThemeColor({}, "component");
-  const eventTitleColor = useThemeColor({}, "buttonText");
+  const cardBackground = useThemeColor({}, 'component');
+  const toggleBackground = useThemeColor({}, 'background');
+  const activeIndicatorColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const secondaryColor = useThemeColor({}, 'component');
+  const eventTitleColor = useThemeColor({}, 'buttonText');
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -41,7 +41,7 @@ export default function EventCardContainer() {
       const timeDifference = eventTime - now;
 
       if (timeDifference <= 0) {
-        setCountdown("Event Started");
+        setCountdown('Event Started');
         return;
       }
 
@@ -63,10 +63,10 @@ export default function EventCardContainer() {
     return () => clearInterval(interval);
   }, []);
 
-  const toggleTab = (tab: "Upcoming" | "Past") => {
+  const toggleTab = (tab: 'Upcoming' | 'Past') => {
     setSelectedTab(tab);
     Animated.timing(animatedValue, {
-      toValue: tab === "Upcoming" ? 0 : 1,
+      toValue: tab === 'Upcoming' ? 0 : 1,
       duration: 250,
       useNativeDriver: false,
     }).start();
@@ -75,7 +75,7 @@ export default function EventCardContainer() {
   const slideStyle = {
     left: animatedValue.interpolate({
       inputRange: [0, 1],
-      outputRange: ["0%", "50%"],
+      outputRange: ['0%', '50%'],
     }),
   };
 
@@ -91,21 +91,21 @@ export default function EventCardContainer() {
             { backgroundColor: secondaryColor },
           ]}
         />
-        <Pressable style={styles.tab} onPress={() => toggleTab("Upcoming")}>
+        <Pressable style={styles.tab} onPress={() => toggleTab('Upcoming')}>
           <ThemedText
             style={[
               styles.tabText,
-              selectedTab === "Upcoming" && styles.activeText,
+              selectedTab === 'Upcoming' && styles.activeText,
             ]}
           >
             Upcoming
           </ThemedText>
         </Pressable>
-        <Pressable style={styles.tab} onPress={() => toggleTab("Past")}>
+        <Pressable style={styles.tab} onPress={() => toggleTab('Past')}>
           <ThemedText
             style={[
               styles.tabText,
-              selectedTab === "Past" && styles.activeText,
+              selectedTab === 'Past' && styles.activeText,
             ]}
           >
             Past
@@ -120,7 +120,7 @@ export default function EventCardContainer() {
             type="subtitle"
             style={[styles.titleText, { color: textColor }]}
           >
-            {eventData.date.split("T")[0]}
+            {eventData.date.split('T')[0]}
           </ThemedText>
         </View>
         <ThemedText style={[styles.countdownText]}>{countdown}</ThemedText>
@@ -149,38 +149,38 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginVertical: 10,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 4,
     elevation: 3,
   },
   toggleContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     borderRadius: 12,
-    position: "relative",
-    overflow: "hidden",
+    position: 'relative',
+    overflow: 'hidden',
     height: 40,
     marginBottom: 12,
     paddingRight: 4,
     paddingBottom: 4,
   },
   dateContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginTop: 10,
     marginBottom: 8,
   },
   countdownText: {
     fontSize: 12,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: GlobalColors.blue,
   },
   activeIndicator: {
-    position: "absolute",
-    width: "50%",
-    height: "100%",
+    position: 'absolute',
+    width: '50%',
+    height: '100%',
     borderRadius: 12,
     marginTop: 2,
     marginRight: 2,
@@ -188,38 +188,39 @@ const styles = StyleSheet.create({
   },
   tab: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     zIndex: 1,
   },
   tabText: {
     fontSize: 12,
-    fontWeight: "500",
+    fontWeight: '500',
     marginTop: 2,
   },
   titleText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginLeft: 8,
   },
   activeText: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   detailContainer: {
     marginTop: 12,
+    marginBottom: 10,
     padding: 12,
     borderRadius: 8,
     backgroundColor: GlobalColors.dark,
   },
   eventTitle: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   eventText: {
     fontSize: 14,
   },
   iconContainer: {
-    display: "flex",
-    flexDirection: "row",
+    display: 'flex',
+    flexDirection: 'row',
   },
 });

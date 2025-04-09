@@ -31,6 +31,8 @@ export default function Card({
         styles.card,
         { backgroundColor: component },
         type === 'quickAction' && styles.quickAction,
+        type === 'groupChat' && { width: 220, marginRight: 10 },
+        { flex: 1 },
       ]}
       onPress={onPress}
     >
@@ -65,7 +67,8 @@ const styles = StyleSheet.create({
     padding: 12,
     marginVertical: 6,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 3,
   },
@@ -89,7 +92,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: 'semibold',
+    fontWeight: 'bold',
   },
   subtitle: {
     fontSize: 14,
