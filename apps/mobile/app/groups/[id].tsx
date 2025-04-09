@@ -11,151 +11,72 @@ import {
   Image,
   InteractionManager,
 } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { useChatMessages, useChatDetails } from '@/api/chat';
-import { MessageFE, UserRole } from '@bomber-app/database';
-import { Ionicons } from '@expo/vector-icons';
 import { createMessageStyles } from './styles';
 import CustomButton from '@/components/ui/atoms/Button';
 import {
-  formatMessageDate,
   getInitials,
   shouldShowDateHeader,
+  formatMessageDate,
 } from '@/utils/chatUtils';
-import { useKeyboardVisibility } from '@/hooks/useKeyboardVisibility';
+import { useUsersInGroup, useAddUsersToGroup } from '@/hooks/useChats';
+import { useChatDetails } from '@/api/chat';
+import { useChatMessagesWithOptimism } from '@/hooks/useChatMessages'; // <-- the new clean hook
+import { ChatUser, UserRole } from '@/types';
 import { ThemedText } from '@/components/ThemedText';
 import BottomSheetModal from '@/components/ui/organisms/BottomSheetModal';
-import { useAddUsersToGroup, useUsersInGroup } from '@/hooks/useChats';
 import CreateGroupModal from '@/components/groups/AddGroupModal';
-import { ChatUser } from '@/types'; // Make sure you import this type
-import socket from '@/hooks/socket';
-import { useLocalMessages } from '@/hooks/useLocalMessages';
+import { Ionicons } from '@expo/vector-icons';
+import { MessageFE } from '@bomber-app/database';
 
 export default function GroupChatScreen() {
   const { id } = useLocalSearchParams();
   const navigation = useNavigation();
   const router = useRouter();
   const chatId = Array.isArray(id) ? id[0] : id;
-  const scrollViewRef = useRef<ScrollView>(null);
-  const iconColor = useThemeColor({}, 'icon');
   const styles = createMessageStyles('light');
   const component = useThemeColor({}, 'component');
+  const iconColor = useThemeColor({}, 'icon');
 
   const { data: users = [], isLoading: isUsersLoading } =
     useUsersInGroup(chatId);
+  const { data: chatDetails, isLoading: chatLoading } = useChatDetails(chatId);
+  const { mutate: addUsersToGroup } = useAddUsersToGroup();
+
   const {
-    data,
+    scrollViewRef,
+    allMessages,
+    messageText,
+    setMessageText,
+    handleSendMessage,
+    handleRetrySendMessage,
     isLoading: messageLoading,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useChatMessages(chatId);
-  const messages: MessageFE[] = data?.pages.flat().reverse() || [];
-  const { data: chatDetails, isLoading: chatLoading } = useChatDetails(chatId);
-  const { mutate: addUsersToGroup } = useAddUsersToGroup();
+  } = useChatMessagesWithOptimism(chatId);
 
-  const sortedMessages = data?.pages.flat().reverse() ?? [];
-  const {
-    localMessages,
-    addLocalMessage,
-    replaceLocalMessage,
-    clearLocalMessages,
-    allMessages,
-  } = useLocalMessages(sortedMessages);
-
-  const currentUserId = '550e8400-e29b-41d4-a716-446655440000';
-
-  const [messageText, setMessageText] = useState('');
-  const [showUsers, SetShowUsers] = useState(false);
+  const [showUsers, setShowUsers] = useState(false);
   const [addUserModal, setAddUserModal] = useState(false);
 
-  // useEffects
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
-  useEffect(() => {
-    if (!socket.connected) socket.connect();
-
-    socket.emit('joinChat', chatId);
-
-    socket.on('NewMessage', (newMessage: MessageFE) => {
-      console.log('New message received:', newMessage);
-      replaceLocalMessage(newMessage);
-      addLocalMessage(newMessage);
-    });
-
-    return () => {
-      socket.off('NewMessage');
-    };
-  }, [chatId]);
-
-  const scrollToBottom = () => {
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 200);
-  };
-
-  useKeyboardVisibility(scrollToBottom);
-
-  const handleSendMessage = () => {
-    if (messageText.trim() !== '' && chatId) {
-      const tempId = `${Date.now()}-temp`;
-
-      const localMessage: MessageFE = {
-        id: tempId,
-        text: messageText,
-        chatID: chatId,
-        userID: currentUserId,
-        createdAt: new Date().toISOString() as unknown as Date,
-        sender: {
-          id: currentUserId,
-          email: '',
-          phone: null,
-          pass: '',
-          fname: 'Temp',
-          lname: 'User',
-          primaryRole: 'PLAYER',
-        },
-        chat: {
-          id: chatId,
-          createdAt: new Date(),
-          title: '',
-        },
-      };
-
-      addLocalMessage(localMessage);
-
-      socket.emit('sendMessage', {
-        text: messageText,
-        chatId,
-        userId: currentUserId,
-      });
-      setMessageText('');
-      scrollToBottom();
-    }
-  };
-
   const handleAddUsersToGroup = (userIds: string[]) => {
     if (!chatId) return;
-
     addUsersToGroup(
       { groupId: chatId, userIds },
       {
-        onSuccess: () => {
-          setAddUserModal(false);
-        },
-        onError: (err: any) => {
-          console.error('Failed to add users:', err);
-        },
+        onSuccess: () => setAddUserModal(false),
+        onError: (err: any) => console.error('Failed to add users:', err),
       }
     );
   };
 
-  // Group users by role
   const groupedUsers = users
-    .filter((u: { primaryRole: any }) => u.primaryRole)
+    .filter((u) => u.primaryRole)
     .reduce(
       (acc: Record<UserRole, ChatUser[]>, user: ChatUser) => {
         (acc[user.primaryRole] = acc[user.primaryRole] || []).push(user);
@@ -213,7 +134,7 @@ export default function GroupChatScreen() {
                   <CustomButton
                     variant="icon"
                     iconName="people"
-                    onPress={() => SetShowUsers(true)}
+                    onPress={() => setShowUsers(true)}
                   />
                 </View>
               </View>
@@ -224,7 +145,12 @@ export default function GroupChatScreen() {
           <ScrollView
             ref={scrollViewRef}
             contentContainerStyle={{ padding: 10 }}
-            onContentSizeChange={scrollToBottom}
+            onContentSizeChange={() => {
+              setTimeout(
+                () => scrollViewRef.current?.scrollToEnd({ animated: true }),
+                200
+              );
+            }}
             onScroll={({ nativeEvent }) => {
               if (
                 nativeEvent.contentOffset.y <= 0 &&
@@ -238,7 +164,7 @@ export default function GroupChatScreen() {
           >
             {messageLoading ? (
               <ActivityIndicator size="large" color={iconColor} />
-            ) : sortedMessages && sortedMessages.length === 0 ? (
+            ) : !allMessages || allMessages.length === 0 ? (
               <View style={styles.noMessageContainer}>
                 <Image
                   source={require('@/styles/images/bubble-msg.png')}
@@ -257,7 +183,9 @@ export default function GroupChatScreen() {
               </View>
             ) : (
               allMessages?.map((msg: MessageFE, index: number) => {
-                const isUser = msg.sender.id === currentUserId;
+                console.log('💬 Right here bitch Message:', msg.text, msg.id);
+                const isUser =
+                  msg.sender.id === '379cf0ba-a1fd-4df0-b2a3-5fc0649f137b';
                 const initials = getInitials(
                   msg.sender.fname,
                   msg.sender.lname
@@ -265,16 +193,29 @@ export default function GroupChatScreen() {
 
                 return (
                   <View key={msg.id} style={styles.messageWrapper}>
-                    {shouldShowDateHeader(messages, index) && (
+                    {shouldShowDateHeader(allMessages, index) && (
                       <View style={styles.dateHeader}>
                         <Text style={styles.dateHeaderText}>
                           {formatMessageDate(msg.createdAt)}
                         </Text>
                       </View>
                     )}
-                    <Text style={styles.senderName}>
-                      {msg.sender.fname} {msg.sender.lname}
-                    </Text>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: isUser ? 'flex-end' : 'flex-start',
+                        marginBottom: 2,
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.senderName,
+                          isUser ? { marginRight: 10 } : { marginLeft: 50 },
+                        ]}
+                      >
+                        {msg.sender.fname} {msg.sender.lname}
+                      </Text>
+                    </View>
                     <View
                       style={[
                         styles.messageContainer,
@@ -304,6 +245,23 @@ export default function GroupChatScreen() {
                         >
                           {msg.text}
                         </Text>
+
+                        {msg.failedToSend && (
+                          <TouchableOpacity
+                            onPress={() => handleRetrySendMessage(msg)}
+                            style={{ marginTop: 2 }}
+                          >
+                            <Text
+                              style={{
+                                color: 'red',
+                                fontSize: 10,
+                                textDecorationLine: 'underline',
+                              }}
+                            >
+                              Failed to send - Tap to retry
+                            </Text>
+                          </TouchableOpacity>
+                        )}
                       </View>
                       {isUser && (
                         <View style={[styles.avatar, styles.userAvatar]}>
@@ -327,7 +285,12 @@ export default function GroupChatScreen() {
               placeholderTextColor="#999"
               value={messageText}
               onChangeText={setMessageText}
-              onFocus={scrollToBottom}
+              onFocus={() => {
+                setTimeout(
+                  () => scrollViewRef.current?.scrollToEnd({ animated: true }),
+                  200
+                );
+              }}
               multiline
               numberOfLines={3}
               textAlignVertical="top"
@@ -343,7 +306,7 @@ export default function GroupChatScreen() {
           {/* Users Modal */}
           <BottomSheetModal
             isVisible={showUsers}
-            onClose={() => SetShowUsers(false)}
+            onClose={() => setShowUsers(false)}
             title="Members"
           >
             <View style={{ marginTop: 10 }}>
@@ -439,7 +402,7 @@ export default function GroupChatScreen() {
                       title="Add Person to Group"
                       onPress={() => {
                         if (chatDetails) {
-                          SetShowUsers(false);
+                          setShowUsers(false);
                           InteractionManager.runAfterInteractions(() => {
                             setAddUserModal(true);
                           });

@@ -48,7 +48,7 @@ export default function initializeSocket(server: Server) {
           include: { sender: true, chat: true },
         });
 
-        io.to(chatId).emit('NewMessage', newMessage);
+        io.in(chatId).emit('NewMessage', newMessage);
       } catch (error) {
         console.error('Error sending message', error);
       }
