@@ -82,7 +82,6 @@ function AnimatedIcon({
 }) {
   const scale = useRef(new Animated.Value(1)).current;
 
-  // Animate when "focused" changes
   if (focused) {
     Animated.spring(scale, {
       toValue: 1.2,
