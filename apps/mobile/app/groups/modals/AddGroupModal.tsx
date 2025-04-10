@@ -6,16 +6,17 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
-import FullsheetModal from '../ui/organisms/FullSheetModal';
-import Checkbox from '../ui/atoms/Checkbox';
-import CustomSelect from '../ui/atoms/dropdown';
-import SearchField from '../ui/atoms/Search';
-import Separator from '../ui/atoms/Seperator';
+import FullsheetModal from '../../../components/ui/organisms/FullSheetModal';
+import Checkbox from '../../../components/ui/atoms/Checkbox';
+import CustomSelect from '../../../components/ui/atoms/dropdown';
+import SearchField from '../../../components/ui/atoms/Search';
+import Separator from '../../../components/ui/atoms/Seperator';
 import { useUsers } from '@/hooks/useUser';
 import { Position } from '@bomber-app/database';
-import CustomButton from '../ui/atoms/Button';
-import { useAddUsersToGroup } from '@/hooks/useChats';
+import CustomButton from '../../../components/ui/atoms/Button';
+import { useAddUsersToGroup } from '@/hooks/groups/useChats';
 import { UserFE } from '@/types';
+import UserList from '../components/UserList';
 
 interface CreateGroupModalProps {
   visible: boolean;
@@ -280,62 +281,26 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
           <Separator width="90%" color="#000" />
         </View>
 
-        {/* Scrollable List */}
-        <View style={styles.scrollContainer}>
-          <ScrollView
-            ref={scrollViewRef}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.userListHeader}>
-              <Text style={styles.usersTitle}>Users</Text>
-              <TouchableOpacity
-                style={styles.selectAllButton}
-                onPress={handleSelectAll}
-              >
-                <Text style={styles.buttonText}>
-                  {selectedUsers.length === filteredUsers.length
-                    ? 'Deselect All'
-                    : 'Select All'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {filteredUsers.map((user) => (
-              <View key={user.id} style={styles.userRow}>
-                <Text style={styles.userName}>
-                  {user.fname} {user.lname}
-                </Text>
-                <TouchableOpacity
-                  style={[
-                    styles.actionButton,
-                    selectedUsers.includes(user.id)
-                      ? styles.removeButton
-                      : styles.addButton,
-                  ]}
-                  onPress={() => toggleUserSelection(user.id)}
-                >
-                  <Text style={styles.buttonText}>
-                    {selectedUsers.includes(user.id) ? 'Remove' : 'Add'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-
-            <CustomButton
-              title={isEditMode ? 'Add to Group' : 'Create Group'}
-              onPress={() => {
-                if (isEditMode && groupId) {
-                  mutateAddToGroup({ groupId, userIds: selectedUsers });
-                } else {
-                  onCreate(selectedUsers);
-                }
-                setSelectedUsers([]);
-              }}
-              variant="primary"
-            />
-          </ScrollView>
-        </View>
+        <ScrollView ref={scrollViewRef} style={styles.scrollContainer}>
+          <UserList
+            users={filteredUsers}
+            selectedUsers={selectedUsers}
+            onToggleUser={toggleUserSelection}
+            onSelectAll={handleSelectAll}
+          />
+          <CustomButton
+            title={isEditMode ? 'Add to Group' : 'Create Group'}
+            onPress={() => {
+              if (isEditMode && groupId) {
+                mutateAddToGroup({ groupId, userIds: selectedUsers });
+              } else {
+                onCreate(selectedUsers);
+              }
+              setSelectedUsers([]);
+            }}
+            variant="primary"
+          />
+        </ScrollView>
       </View>
     </FullsheetModal>
   );
@@ -368,22 +333,6 @@ const styles = StyleSheet.create({
   gridItem: {
     width: '48%',
   },
-  userListHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: 5,
-  },
-  usersTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  selectAllButton: {
-    backgroundColor: '#007bff',
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 5,
-  },
   scrollContainer: {
     flex: 1,
     minHeight: 400,
@@ -392,34 +341,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 100,
-  },
-  userRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 0.5,
-    borderColor: '#ccc',
-  },
-  userName: {
-    fontSize: 16,
-    marginRight: 20,
-    flex: 1,
-    flexWrap: 'wrap',
-  },
-  addButton: {
-    backgroundColor: '#007bff',
-  },
-  removeButton: {
-    backgroundColor: '#dc3545',
-  },
-  actionButton: {
-    padding: 8,
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
   },
   createButton: {
     backgroundColor: '#28a745',

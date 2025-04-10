@@ -1,25 +1,7 @@
 import { addUsersToGroup, fetchGroups } from '@/api/groups/groups';
 import { useMutation, useQuery, useInfiniteQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
 import { fetchUsersInGroup } from '@/api/groups/groups';
-import { ChatUser } from '../types';
-
-// export function useChats() {
-//   const { data: chats = [], isLoading, refetch } = useGroups();
-
-//   const [mutedGroups, setMutedGroups] = useState<{ [key: string]: boolean }>(
-//     {}
-//   );
-
-//   return {
-//     chats,
-//     mutedGroups,
-//     isLoading,
-//     refresh: refetch,
-//     loadChats: refetch,
-//     setMutedGroups,
-//   };
-// }
+import { ChatUser } from '../../types';
 
 export const useUsersInGroup = (chatId: string) => {
   return useQuery<ChatUser[]>({

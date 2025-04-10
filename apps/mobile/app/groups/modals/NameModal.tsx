@@ -7,9 +7,9 @@ import {
   Keyboard,
   Animated,
 } from 'react-native';
-import BottomSheetModal from '../ui/organisms/BottomSheetModal';
-import CustomInput from '../ui/atoms/Inputs';
-import CustomButton from '../ui/atoms/Button';
+import BottomSheetModal from '../../../components/ui/organisms/BottomSheetModal';
+import CustomInput from '../../../components/ui/atoms/Inputs';
+import CustomButton from '../../../components/ui/atoms/Button';
 import {
   runOnJS,
   useAnimatedStyle,
@@ -76,7 +76,7 @@ const NameModal: React.FC<NameModalProps> = ({
       <Animated.View style={[styles.animatedContainer, animatedStyles]}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0} // Adjust for iOS
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
           style={styles.keyboardAvoidingContainer}
         >
           <View

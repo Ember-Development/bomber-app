@@ -10,6 +10,14 @@ const socket = io(`${API_BASE}`, {
   reconnectionDelay: 2000,
 });
 
+socket.on('connect', () => {
+  console.log('Connected to socket server');
+});
+
+socket.on('disconnect', () => {
+  console.log('Disconnected to socket server');
+});
+
 socket.on('connect_error', (err) => {
   console.log('Socket failed connnection', err.message);
 });

@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,23 +11,26 @@ import {
   Image,
   InteractionManager,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { createMessageStyles } from './styles';
 import CustomButton from '@/components/ui/atoms/Button';
+import BottomSheetModal from '@/components/ui/organisms/BottomSheetModal';
+import CreateGroupModal from '@/app/groups/modals/AddGroupModal';
+import { ThemedText } from '@/components/ThemedText';
+
+import { useUsersInGroup, useAddUsersToGroup } from '@/hooks/groups/useChats';
+import { useChatDetails } from '@/api/groups/chat';
+import { useChatMessagesWithOptimism } from '@/hooks/groups/useChatMessages';
+
 import {
   getInitials,
   shouldShowDateHeader,
   formatMessageDate,
 } from '@/utils/chatUtils';
-import { useUsersInGroup, useAddUsersToGroup } from '@/hooks/useChats';
-import { useChatDetails } from '@/api/chat';
-import { useChatMessagesWithOptimism } from '@/hooks/useChatMessages'; // <-- the new clean hook
 import { ChatUser, UserRole } from '@/types';
-import { ThemedText } from '@/components/ThemedText';
-import BottomSheetModal from '@/components/ui/organisms/BottomSheetModal';
-import CreateGroupModal from '@/components/groups/AddGroupModal';
-import { Ionicons } from '@expo/vector-icons';
 import { MessageFE } from '@bomber-app/database';
 
 export default function GroupChatScreen() {
@@ -35,6 +38,7 @@ export default function GroupChatScreen() {
   const navigation = useNavigation();
   const router = useRouter();
   const chatId = Array.isArray(id) ? id[0] : id;
+
   const styles = createMessageStyles('light');
   const component = useThemeColor({}, 'component');
   const iconColor = useThemeColor({}, 'icon');
@@ -94,7 +98,6 @@ export default function GroupChatScreen() {
         style={{ flex: 1, backgroundColor: 'white' }}
       >
         <View style={{ flex: 1 }}>
-          {/* Header */}
           <View style={{ paddingTop: Platform.OS === 'android' ? 40 : 50 }}>
             <View style={styles.headerContainer}>
               <TouchableOpacity
@@ -145,12 +148,12 @@ export default function GroupChatScreen() {
           <ScrollView
             ref={scrollViewRef}
             contentContainerStyle={{ padding: 10 }}
-            onContentSizeChange={() => {
+            onContentSizeChange={() =>
               setTimeout(
                 () => scrollViewRef.current?.scrollToEnd({ animated: true }),
                 200
-              );
-            }}
+              )
+            }
             onScroll={({ nativeEvent }) => {
               if (
                 nativeEvent.contentOffset.y <= 0 &&
@@ -182,8 +185,7 @@ export default function GroupChatScreen() {
                 />
               </View>
             ) : (
-              allMessages?.map((msg: MessageFE, index: number) => {
-                console.log('💬 Right here bitch Message:', msg.text, msg.id);
+              allMessages.map((msg: MessageFE, index: number) => {
                 const isUser =
                   msg.sender.id === '379cf0ba-a1fd-4df0-b2a3-5fc0649f137b';
                 const initials = getInitials(
@@ -213,7 +215,8 @@ export default function GroupChatScreen() {
                           isUser ? { marginRight: 10 } : { marginLeft: 50 },
                         ]}
                       >
-                        {msg.sender.fname} {msg.sender.lname}
+                        {' '}
+                        {msg.sender.fname} {msg.sender.lname}{' '}
                       </Text>
                     </View>
                     <View
@@ -245,7 +248,6 @@ export default function GroupChatScreen() {
                         >
                           {msg.text}
                         </Text>
-
                         {msg.failedToSend && (
                           <TouchableOpacity
                             onPress={() => handleRetrySendMessage(msg)}
@@ -285,12 +287,12 @@ export default function GroupChatScreen() {
               placeholderTextColor="#999"
               value={messageText}
               onChangeText={setMessageText}
-              onFocus={() => {
+              onFocus={() =>
                 setTimeout(
                   () => scrollViewRef.current?.scrollToEnd({ animated: true }),
                   200
-                );
-              }}
+                )
+              }
               multiline
               numberOfLines={3}
               textAlignVertical="top"
@@ -313,116 +315,106 @@ export default function GroupChatScreen() {
               {isUsersLoading ? (
                 <ActivityIndicator size="small" />
               ) : (
-                <View style={{ maxHeight: '99%' }}>
-                  <ScrollView contentContainerStyle={{ paddingBottom: 0 }}>
-                    {roleOrder.map((role) => {
-                      const usersForRole = groupedUsers[role];
-                      if (!usersForRole || usersForRole.length === 0)
-                        return null;
+                <ScrollView contentContainerStyle={{ paddingBottom: 0 }}>
+                  {roleOrder.map((role) => {
+                    const usersForRole = groupedUsers[role];
+                    if (!usersForRole || usersForRole.length === 0) return null;
 
-                      return (
-                        <View key={role} style={{ marginBottom: 20 }}>
-                          <Text
-                            style={{
-                              fontWeight: '700',
-                              fontSize: 18,
-                              marginBottom: 8,
-                            }}
-                          >
-                            {role.charAt(0) + role.slice(1).toLowerCase()}s
-                          </Text>
-
-                          {usersForRole
-                            .slice()
-                            .sort(
-                              (a: { fname: string }, b: { fname: string }) =>
-                                a.fname.localeCompare(b.fname)
-                            )
-                            .map((user: ChatUser) => (
-                              <TouchableOpacity
-                                key={user.id}
+                    return (
+                      <View key={role} style={{ marginBottom: 20 }}>
+                        <Text
+                          style={{
+                            fontWeight: '700',
+                            fontSize: 18,
+                            marginBottom: 8,
+                          }}
+                        >
+                          {role.charAt(0) + role.slice(1).toLowerCase()}s
+                        </Text>
+                        {usersForRole
+                          .sort((a, b) => a.fname.localeCompare(b.fname))
+                          .map((user) => (
+                            <TouchableOpacity
+                              key={user.id}
+                              style={{
+                                padding: 15,
+                                backgroundColor: '#eee',
+                                marginBottom: 10,
+                                borderRadius: 10,
+                              }}
+                            >
+                              <View
                                 style={{
-                                  padding: 15,
-                                  backgroundColor: '#eee',
-                                  marginBottom: 10,
-                                  borderRadius: 10,
+                                  flexDirection: 'row',
+                                  alignItems: 'center',
                                 }}
                               >
+                                <Text
+                                  style={{
+                                    fontSize: 16,
+                                    fontWeight: '500',
+                                    marginRight: 8,
+                                  }}
+                                >
+                                  {user.fname} {user.lname}
+                                </Text>
                                 <View
                                   style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
+                                    backgroundColor: '#D1E8FF',
+                                    paddingHorizontal: 8,
+                                    paddingVertical: 2,
+                                    borderRadius: 12,
                                   }}
                                 >
                                   <Text
                                     style={{
-                                      fontSize: 16,
-                                      fontWeight: '500',
-                                      marginRight: 8,
+                                      fontSize: 12,
+                                      color: '#0366d6',
+                                      fontWeight: '600',
                                     }}
                                   >
-                                    {user.fname} {user.lname}
+                                    {user.primaryRole}
                                   </Text>
-                                  <View
-                                    style={{
-                                      backgroundColor: '#D1E8FF',
-                                      paddingHorizontal: 8,
-                                      paddingVertical: 2,
-                                      borderRadius: 12,
-                                    }}
-                                  >
-                                    <Text
-                                      style={{
-                                        fontSize: 12,
-                                        color: '#0366d6',
-                                        fontWeight: '600',
-                                      }}
-                                    >
-                                      {user.primaryRole}
-                                    </Text>
-                                  </View>
                                 </View>
-                              </TouchableOpacity>
-                            ))}
-                        </View>
-                      );
-                    })}
-                  </ScrollView>
-
-                  {/* Pinned Buttons */}
-                  <View
-                    style={{
-                      padding: 20,
-                      borderTopWidth: 0.5,
-                      borderColor: '#ccc',
-                      backgroundColor: 'white',
-                    }}
-                  >
-                    <CustomButton
-                      title="Add Person to Group"
-                      onPress={() => {
-                        if (chatDetails) {
-                          setShowUsers(false);
-                          InteractionManager.runAfterInteractions(() => {
-                            setAddUserModal(true);
-                          });
-                        }
-                      }}
-                    />
-                    <CustomButton
-                      title="End Group"
-                      variant="danger"
-                      onPress={() => alert('Canceled!')}
-                    />
-                  </View>
-                </View>
+                              </View>
+                            </TouchableOpacity>
+                          ))}
+                      </View>
+                    );
+                  })}
+                </ScrollView>
               )}
+              <View
+                style={{
+                  padding: 20,
+                  borderTopWidth: 0.5,
+                  borderColor: '#ccc',
+                  backgroundColor: 'white',
+                }}
+              >
+                <CustomButton
+                  title="Add Person to Group"
+                  onPress={() => {
+                    if (chatDetails) {
+                      setShowUsers(false);
+                      InteractionManager.runAfterInteractions(() => {
+                        setAddUserModal(true);
+                      });
+                    }
+                  }}
+                />
+                <CustomButton
+                  title="End Group"
+                  variant="danger"
+                  onPress={() => alert('Canceled!')}
+                />
+              </View>
             </View>
           </BottomSheetModal>
         </View>
       </KeyboardAvoidingView>
 
-      {/* Create Group Modal */}
+      {/* Add user to Group */}
       <CreateGroupModal
         visible={addUserModal}
         groupName={chatDetails?.title || ''}
