@@ -1,7 +1,10 @@
 import { ChatFE, MessageFE, UserFE, UserRole } from '@bomber-app/database';
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
+import Constants from 'expo-constants';
 
-const API_BASE = 'http://192.168.1.76:3000';
+// Read from env
+const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL;
+
 // Fetch chat messages
 const fetchChatMessages = async ({
   chatId,
@@ -12,7 +15,7 @@ const fetchChatMessages = async ({
 }) => {
   const cursorParam = pageParam ? `&cursor=${pageParam}` : '';
   const res = await fetch(
-    `${API_BASE}/api/messages/${chatId}?limit=20${cursorParam}`
+    `${API_BASE_URL}/api/messages/${chatId}?limit=20${cursorParam}`
   );
   if (!res.ok) throw new Error('Failed to fetch messages');
   return res.json();
@@ -20,7 +23,7 @@ const fetchChatMessages = async ({
 
 // Fetch chat details
 const fetchChatDetails = async (chatId: string) => {
-  const res = await fetch(`${API_BASE}/api/groups`);
+  const res = await fetch(`${API_BASE_URL}/api/groups`);
   if (!res.ok) throw new Error('Failed to fetch group');
   const allGroups = await res.json();
   return allGroups.find((group: any) => group.id === chatId) ?? null;

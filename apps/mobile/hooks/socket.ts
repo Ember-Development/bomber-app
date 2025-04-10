@@ -1,8 +1,9 @@
 import { io } from 'socket.io-client';
+import Constants from 'expo-constants';
 
-const API_BASE = 'http://192.168.1.76:3000';
+const { SOCKET_SERVER_URL } = Constants.expoConfig?.extra ?? {};
 
-const socket = io(`${API_BASE}`, {
+const socket = io(SOCKET_SERVER_URL, {
   transports: ['websocket'],
   autoConnect: false,
   reconnection: true,
@@ -15,11 +16,11 @@ socket.on('connect', () => {
 });
 
 socket.on('disconnect', () => {
-  console.log('Disconnected to socket server');
+  console.log('Disconnected from socket server');
 });
 
 socket.on('connect_error', (err) => {
-  console.log('Socket failed connnection', err.message);
+  console.log('Socket connection failed:', err.message);
 });
 
 export default socket;

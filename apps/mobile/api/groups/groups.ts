@@ -1,7 +1,10 @@
 import io from 'socket.io-client';
+import Constants from 'expo-constants';
 
-const API_BASE = 'http://192.168.1.76:3000';
-const socket = io('http://localhost:3000');
+const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL;
+const SOCKET_SERVER_URL = Constants.expoConfig?.extra?.SOCKET_SERVER_URL;
+
+const socket = io(SOCKET_SERVER_URL);
 
 export const fetchGroups = async ({
   take = 10,
@@ -10,7 +13,7 @@ export const fetchGroups = async ({
   take?: number;
   cursor?: string;
 }) => {
-  let url = `${API_BASE}/api/groups?take=${take}`;
+  let url = `${API_BASE_URL}/api/groups?take=${take}`;
   if (cursor) url += `&cursor=${cursor}`;
 
   const response = await fetch(url);
@@ -35,13 +38,13 @@ export const fetchGroups = async ({
 };
 
 export const fetchUsersInGroup = async (chatId: string) => {
-  const res = await fetch(`${API_BASE}/api/users/group/${chatId}`);
+  const res = await fetch(`${API_BASE_URL}/api/users/group/${chatId}`);
   if (!res.ok) throw new Error('Failed to fetch users in group');
   return res.json();
 };
 
 export const fetchMessages = async (chatId: string) => {
-  const response = await fetch(`http://localhost:3000/api/messages/${chatId}`);
+  const response = await fetch(`${API_BASE_URL}/api/messages/${chatId}`);
   return response.json();
 };
 
@@ -52,7 +55,7 @@ export const addUsersToGroup = async ({
   groupId: string;
   userIds: string[];
 }) => {
-  const res = await fetch(`${API_BASE}/api/groups/${groupId}/users`, {
+  const res = await fetch(`${API_BASE_URL}/api/groups/${groupId}/users`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userIds }),
