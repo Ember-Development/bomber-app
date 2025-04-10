@@ -64,7 +64,7 @@ export const createGroupStyles = (theme: 'light' | 'dark') =>
       marginTop: 2,
     },
     timeContainer: {
-      alignItems: 'center', // Center timestamp + icon
+      alignItems: 'center',
       justifyContent: 'center',
     },
     timeText: {

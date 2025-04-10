@@ -43,7 +43,7 @@ export default function CustomButton({
       onPress={onPress}
     >
       {variant === 'icon' && iconName ? (
-        <Ionicons name={iconName} size={18} style={{ color: icon }} />
+        <Ionicons name={iconName} size={20} style={{ color: icon }} />
       ) : (
         <Text
           style={[
