@@ -22,7 +22,6 @@ export function useLocalMessages(initialMessages: MessageFE[]) {
     setLocalMessages([]);
   };
 
-  // ✨ THE FIX:
   useEffect(() => {
     setLocalMessages(initialMessages);
   }, [initialMessages]);
