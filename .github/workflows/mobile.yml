@@ -5,21 +5,31 @@ on:
     branches: [main]
     paths:
       - 'apps/mobile/**'
+      - '.github/workflows/mobile.yml'
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  deploy:
+    runs-on: macos-latest
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: npm install
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
 
-      # TODO: finish this step when we get apple dev account, TestFlight, whatever else we might need
-      #
-      # - name: EAS Build for iOS
-      #   run: npx eas build --platform ios
-      #
-      # - name: Submit build to TestFlight
-      #   run: npx eas submit --platform ios --latest
+      - name: Setup Fastlane
+        run: |
+          cd apps/ios-app1
+          gem install bundler
+          bundle install || gem install fastlane
+
+      - name: Run Fastlane
+        working-directory: apps/ios-app1
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
+        run: bundle exec fastlane beta
