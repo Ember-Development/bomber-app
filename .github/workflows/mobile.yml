@@ -22,12 +22,12 @@ jobs:
 
       - name: Setup Fastlane
         run: |
-          cd apps/ios-app1
+          cd apps/mobile
           gem install bundler
           bundle install || gem install fastlane
 
       - name: Run Fastlane
-        working-directory: apps/ios-app1
+        working-directory: apps/mobile
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
