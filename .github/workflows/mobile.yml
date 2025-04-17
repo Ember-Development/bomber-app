@@ -2,7 +2,7 @@ name: Deploy Mobile to EC2
 
 on:
   push:
-    branches: [main]
+    branches: [main, ci-cd]
     paths:
       - 'apps/mobile/**'
       - '.github/workflows/mobile.yml'
