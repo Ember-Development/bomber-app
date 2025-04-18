@@ -32,20 +32,18 @@ jobs:
       - name: 📦 Install dependencies
         run: |
           cd apps/mobile
-          pnpm install
-
-      - name: 🔐 Setup EAS
-        run: |
-          npm install -g eas-cli
-          cd apps/mobile
-          echo "${{ secrets.EXPO_TOKEN }}" | eas login
+          pnpm install --strict-peer-dependencies=false
 
       - name: 🏗️ Build app for iOS TestFlight
         run: |
           cd apps/mobile
           eas build --platform ios --profile preview --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: 🚀 Submit to TestFlight
         run: |
           cd apps/mobile
           eas submit -p ios --latest
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
