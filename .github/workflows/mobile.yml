@@ -15,11 +15,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Debug environment variables
+        run: printenv
+
       - name: Install dependencies
         run: bundle install
 
       - name: Run Fastlane
         run: bundle exec fastlane ios beta
         env:
+          KEY_ID: ${{secrets.APP_STORE_CONNECT_KEY_ID}}
+          KEY_CONTENT: ${{secrets.APP_STORE_CONNECT_KEY}}
+          ISSUER_ID: ${{secrets.APP_STORE_CONNECT_ISSUER_ID}}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           CI: true
