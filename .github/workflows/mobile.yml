@@ -1,25 +1,51 @@
-name: Deploy Mobile to EC2
+name: Deploy Mobile App
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - ci-cd
+      - eas
     paths:
       - 'apps/mobile/**'
+      - '.github/workflows/mobile.yml'
+
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-and-submit:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: 📥 Checkout code
         uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: npm install
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-      # TODO: finish this step when we get apple dev account, TestFlight, whatever else we might need
-      #
-      # - name: EAS Build for iOS
-      #   run: npx eas build --platform ios
-      #
-      # - name: Submit build to TestFlight
-      #   run: npx eas submit --platform ios --latest
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: 📦 Install dependencies
+        run: |
+          cd apps/mobile
+          pnpm install
+
+      - name: 🔐 Setup EAS
+        run: |
+          npm install -g eas-cli
+          cd apps/mobile
+          echo "${{ secrets.EXPO_TOKEN }}" | eas login
+
+      - name: 🏗️ Build app for iOS TestFlight
+        run: |
+          cd apps/mobile
+          eas build --platform ios --profile preview --non-interactive
+
+      - name: 🚀 Submit to TestFlight
+        run: |
+          cd apps/mobile
+          eas submit -p ios --latest

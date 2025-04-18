@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "bomber-app",
+    "name": "Bomber App",
     "slug": "bomber-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,13 +9,17 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bombersfastpitch.bomberapp",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.bombersfastpitch.bomberapp",
+      "versionCode": 1
     },
     "web": {
       "bundler": "metro",
@@ -36,6 +40,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "5716a622-1434-422d-a9af-fb8aab33b8c3"
+      }
+    },
+    "owner": "emberdevco"
   }
 }
