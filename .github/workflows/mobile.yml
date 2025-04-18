@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: bundle install
 
-      - name: Run Fastlane
+      - name: Build and Upload to TestFlight with Fastlane
         run: bundle exec fastlane ios beta
         env:
           KEY_ID: ${{secrets.APP_STORE_CONNECT_KEY_ID}}
