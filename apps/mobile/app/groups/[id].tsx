@@ -22,7 +22,7 @@ import {
 } from '@/utils/chatUtils';
 import { useUsersInGroup, useAddUsersToGroup } from '@/hooks/useChats';
 import { useChatDetails } from '@/api/chat';
-import { useChatMessagesWithOptimism } from '@/hooks/useChatMessages'; // <-- the new clean hook
+import { useChatMessagesWithOptimism } from '@/hooks/useChatMessages';
 import { ChatUser, UserRole } from '@/types';
 import { ThemedText } from '@/components/ThemedText';
 import BottomSheetModal from '@/components/ui/organisms/BottomSheetModal';
@@ -94,7 +94,6 @@ export default function GroupChatScreen() {
         style={{ flex: 1, backgroundColor: 'white' }}
       >
         <View style={{ flex: 1 }}>
-          {/* Header */}
           <View style={{ paddingTop: Platform.OS === 'android' ? 40 : 50 }}>
             <View style={styles.headerContainer}>
               <TouchableOpacity
@@ -141,7 +140,6 @@ export default function GroupChatScreen() {
             </View>
           </View>
 
-          {/* Messages */}
           <ScrollView
             ref={scrollViewRef}
             contentContainerStyle={{ padding: 10 }}
@@ -277,7 +275,6 @@ export default function GroupChatScreen() {
             )}
           </ScrollView>
 
-          {/* Input */}
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
@@ -303,7 +300,6 @@ export default function GroupChatScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Users Modal */}
           <BottomSheetModal
             isVisible={showUsers}
             onClose={() => setShowUsers(false)}
@@ -389,7 +385,6 @@ export default function GroupChatScreen() {
                     })}
                   </ScrollView>
 
-                  {/* Pinned Buttons */}
                   <View
                     style={{
                       padding: 20,
@@ -422,7 +417,6 @@ export default function GroupChatScreen() {
         </View>
       </KeyboardAvoidingView>
 
-      {/* Create Group Modal */}
       <CreateGroupModal
         visible={addUserModal}
         groupName={chatDetails?.title || ''}

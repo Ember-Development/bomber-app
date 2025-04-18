@@ -40,7 +40,11 @@ export default function Card({
       {icon && <Image source={icon} style={styles.icon} />}
 
       <View style={styles.textContainer}>
-        <ThemedText style={[styles.title, { color: textColor }]}>
+        <ThemedText
+          style={[styles.title, { color: textColor }]}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
           {typeof title === 'string' ? title : String(title)}
         </ThemedText>
         {subtitle && (
@@ -89,6 +93,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
+    gap: 8,
   },
   title: {
     fontSize: 16,

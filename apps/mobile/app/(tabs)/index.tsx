@@ -8,22 +8,67 @@ import CustomButton from '@/components/ui/atoms/Button';
 import EventCardContainer from '@/components/ui/molecules/EventCard/SpotlightEvent/SpotlightContainer';
 import { useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
+import { useUserEvents, useUserChats } from '@/hooks/useUser';
+import { useRouter } from 'expo-router';
+import { UserFE } from '@bomber-app/database';
 
 export default function HomeScreen() {
+  const API_BASE = 'http://192.168.1.76:3000';
+  const [user, setUser] = useState<UserFE | null>(null);
+  const { data: rawEvents } = useUserEvents(user?.id);
+  const { data: userChats } = useUserChats(user?.id);
   const styles = createHomeStyles('light');
+  const router = useRouter();
 
-  // Scrollable Header
+  useEffect(() => {
+    const loadUser = async () => {
+      const res = await fetch(`${API_BASE}/api/auth/login`);
+      const fetchedUser = await res.json();
+      setUser(fetchedUser);
+      console.log('User:', fetchedUser);
+    };
+
+    loadUser();
+  }, []);
+
+  const formattedEvents =
+    rawEvents?.flatMap((e) => {
+      if (!e.event?.start || !e.event?.end) return [];
+
+      const start = new Date(e.event.start);
+      const end = new Date(e.event.end);
+      const time = `${start.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })} - ${end.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`;
+
+      return [
+        {
+          date: e.event.start,
+          title: e.event.tournament
+            ? `Tournament – ${e.event.tournament.name}`
+            : e.event.eventType,
+          location: e.event.tournament?.location ?? 'Unknown Location',
+          time,
+        },
+      ];
+    }) ?? [];
+
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const headerHeight = scrollY.interpolate({
-    inputRange: [0, 80], // scroll distance
-    outputRange: [100, 70], // initial height -> shrunken height
+    inputRange: [0, 80],
+    outputRange: [100, 70],
     extrapolate: 'clamp',
   });
 
   const headerScale = scrollY.interpolate({
     inputRange: [0, 80],
-    outputRange: [1, 0.9], // scale slightly smaller
+    outputRange: [1, 0.9],
     extrapolate: 'clamp',
   });
 
@@ -63,9 +108,14 @@ export default function HomeScreen() {
           <View style={styles.title}>
             <View style={styles.titleText}>
               <ThemedText type="defaultSemiBold">Welcome Back,</ThemedText>
-              <ThemedText type="title">Gunnar Smith</ThemedText>
+              <ThemedText type="title">
+                {user?.fname} {user?.lname}
+              </ThemedText>
             </View>
-            <UserAvatar firstName="Gunnar" lastName="Smith" />
+            <UserAvatar
+              firstName={user?.fname ?? 'First'}
+              lastName={user?.lname ?? 'Last'}
+            />
           </View>
         </Animated.View>
 
@@ -101,7 +151,7 @@ export default function HomeScreen() {
               fullWidth={false}
             />
           </View>
-          <EventCardContainer />
+          <EventCardContainer events={formattedEvents} />
         </View>
 
         {/* Groups */}
@@ -126,30 +176,20 @@ export default function HomeScreen() {
             bounces={false}
             overScrollMode="never"
           >
-            <Card
-              type="groupChat"
-              title="Texas Bombers 16U"
-              additionalInfo="25 Members"
-              onPress={() => console.log('Open Group Chat')}
-            />
-            <Card
-              type="groupChat"
-              title="Texas Bombers 16U"
-              additionalInfo="25 Members"
-              onPress={() => console.log('Open Group Chat')}
-            />
-            <Card
-              type="groupChat"
-              title="Texas Bombers 16U"
-              additionalInfo="25 Members"
-              onPress={() => console.log('Open Group Chat')}
-            />
-            <Card
-              type="groupChat"
-              title="Texas Bombers 16U"
-              additionalInfo="25 Members"
-              onPress={() => console.log('Open Group Chat')}
-            />
+            {userChats?.map((chat) => (
+              <Card
+                key={chat.id}
+                type="groupChat"
+                title={chat.title}
+                additionalInfo={`${chat.users.length} Members`}
+                onPress={() => {
+                  router.push({
+                    pathname: '/groups/[id]',
+                    params: { id: chat.id.toString() },
+                  });
+                }}
+              />
+            ))}
           </Animated.ScrollView>
         </Animated.View>
 

@@ -188,7 +188,6 @@ export default function GroupsScreen() {
                   }}
                 >
                   <View style={styles.groupItem}>
-                    {/* Left Column: Group Name & Last Message */}
                     <View style={styles.textContainer}>
                       <View style={styles.groupTitleContainer}>
                         <ThemedText style={[styles.groupText]}>
@@ -200,7 +199,6 @@ export default function GroupsScreen() {
                       </ThemedText>
                     </View>
 
-                    {/* Right: Timestamp */}
                     <View style={styles.timeContainer}>
                       {latestMessage &&
                         typeof latestMessageTime === 'string' && (

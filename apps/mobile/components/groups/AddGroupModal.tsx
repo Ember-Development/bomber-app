@@ -15,7 +15,7 @@ import { useUsers } from '@/hooks/useUser';
 import { Position } from '@bomber-app/database';
 import CustomButton from '../ui/atoms/Button';
 import { useAddUsersToGroup } from '@/hooks/useChats';
-import { UserFE } from '@/types';
+import { UserForGroupModal } from '@/types';
 
 interface CreateGroupModalProps {
   visible: boolean;
@@ -63,7 +63,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     scrollViewRef.current?.scrollToEnd({ animated: true });
   };
 
-  const users: UserFE[] = useMemo(() => AllUsers, [AllUsers]);
+  const users: UserForGroupModal[] = useMemo(() => AllUsers, [AllUsers]);
 
   const teamNames = Array.from(
     new Set(
@@ -174,7 +174,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     >
       <View style={styles.container}>
         <View style={styles.fixedHeader}>
-          {/* Counter */}
           <View style={styles.topSection}>
             <Text style={styles.counter}>
               {selectedUsers.length} Added to {groupName}
@@ -203,13 +202,11 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Search */}
           <SearchField
             onSearch={(query) => setSearchText(query)}
             placeholder="Search users..."
           />
 
-          {/* Filters */}
           <View style={styles.gridContainer}>
             <View style={styles.gridItem}>
               <CustomSelect
@@ -251,7 +248,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             </View>
           </View>
 
-          {/* Checkboxes */}
           <View style={styles.gridContainer}>
             {[
               { label: 'All', type: 'all' },
@@ -280,7 +276,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
           <Separator width="90%" color="#000" />
         </View>
 
-        {/* Scrollable List */}
         <View style={styles.scrollContainer}>
           <ScrollView
             ref={scrollViewRef}
