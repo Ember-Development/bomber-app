@@ -34,6 +34,9 @@ jobs:
           cd apps/mobile
           pnpm install --strict-peer-dependencies=false
 
+      - name: 🔐 Install EAS CLI
+        run: npm install -g eas-cli
+
       - name: 🏗️ Build app for iOS TestFlight
         run: |
           cd apps/mobile
