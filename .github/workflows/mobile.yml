@@ -1,35 +1,25 @@
-name: Deploy Mobile to EC2
+name: mobile
 
 on:
   push:
-    branches: [main, ci-cd]
-    paths:
-      - 'apps/mobile/**'
-      - '.github/workflows/mobile.yml'
+    branches:
+      - 'main'
+      - 'ci-cd'
 
 jobs:
-  deploy:
+  build:
     runs-on: macos-latest
-
+    defaults:
+      run:
+        working-directory: apps/mobile/ios
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v2
 
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.1'
-
-      - name: Setup Fastlane
-        run: |
-          cd apps/mobile
-          gem install bundler
-          bundle install || gem install fastlane
+      - name: Install dependencies
+        run: bundle install
 
       - name: Run Fastlane
-        working-directory: apps/mobile
+        run: bundle exec fastlane ios beta
         env:
-          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
-        run: bundle exec fastlane beta
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          CI: true
