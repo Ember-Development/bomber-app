@@ -6,9 +6,17 @@
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     },
-    "types": ["react", "react-native"]
+    "types": [
+      "react",
+      "react-native"
+    ]
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ]
 }
