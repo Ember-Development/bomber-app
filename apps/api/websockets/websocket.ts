@@ -3,6 +3,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
 import createClient from 'ioredis';
 import { Server } from 'http';
+import { messageService } from '../services/messages';
 
 export default function initializeSocket(server: Server) {
   const io = new SocketIOServer(server, {
@@ -34,23 +35,31 @@ export default function initializeSocket(server: Server) {
       console.log(`User has joined the chat: ${chatId}`);
     });
 
-    socket.on('sendMessage', async (data) => {
+    socket.on('sendMessage', async (data, ack) => {
       const { text, chatId, userId } = data;
 
       try {
-        const newMessage = await prisma.message.create({
-          data: {
-            text,
-            chatID: chatId,
-            userID: userId,
-            createdAt: new Date(),
-          },
-          include: { sender: true, chat: true },
-        });
+        const newMessage = await messageService.sendMessage(
+          text,
+          chatId,
+          userId
+        );
 
         io.in(chatId).emit('NewMessage', newMessage);
+
+        if (ack) ack({ success: true });
       } catch (error) {
-        console.error('Error sending message', error);
+        if (ack) ack({ success: false });
+      }
+    });
+
+    socket.on('retryMessage', async ({ messageId }, callback) => {
+      try {
+        const message = await messageService.retryMessage(messageId);
+        io.to(message.chatID).emit('NewMessage', message);
+        callback?.({ success: true });
+      } catch {
+        callback?.({ success: false });
       }
     });
 

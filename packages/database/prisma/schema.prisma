@@ -258,9 +258,12 @@ model Chat {
 
     title     String
     createdAt DateTime
+    lastMessageAt DateTime @default(now())
 
     users    UserChat[]
     messages Message[]
+
+    @@index([lastMessageAt, id])
 }
 
 model UserChat {
@@ -279,6 +282,8 @@ model Message {
 
     text      String
     createdAt DateTime
+    retryCount Int @default(0)
+    failedToSend Boolean @default(false)
 
     sender User   @relation(fields: [userID], references: [id])
     userID String @db.Uuid

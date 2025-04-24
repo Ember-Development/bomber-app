@@ -2,13 +2,15 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { ScrollView } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useKeyboardVisibility } from '@/hooks/useKeyboardVisibility';
-import { useChatMessages } from '@/api/groups/chat';
+import { retryMessage, useChatMessages } from '@/api/groups/chat';
 import { useLocalMessages } from '@/hooks/useLocalMessages';
 import socket from '@/hooks/socket';
 import { MessageFE } from '@bomber-app/database';
 
 export function useChatMessagesWithOptimism(chatId: string) {
   const scrollViewRef = useRef<ScrollView>(null);
+  const isNearBottom = useRef(true);
+  const isPaginating = useRef(false);
   const queryClient = useQueryClient();
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -43,7 +45,7 @@ export function useChatMessagesWithOptimism(chatId: string) {
   const scrollToBottom = () => {
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 200);
+    }, 100);
   };
 
   useKeyboardVisibility(scrollToBottom);
@@ -54,12 +56,13 @@ export function useChatMessagesWithOptimism(chatId: string) {
 
     const tempId = `${Date.now()}-temp`;
 
+    // TODO: replace with real user data
     const localMessage: MessageFE = {
       id: tempId,
       text: messageText,
       chatID: chatId,
       userID: currentUserId,
-      createdAt: new Date().toISOString() as unknown as Date,
+      createdAt: new Date(),
       sender: {
         id: currentUserId,
         email: '',
@@ -71,42 +74,14 @@ export function useChatMessagesWithOptimism(chatId: string) {
       },
       chat: {
         id: chatId,
-        createdAt: new Date().toISOString() as unknown as Date,
+        createdAt: new Date(),
         title: '',
+        lastMessageAt: new Date(),
       },
       failedToSend: false,
     };
 
     local.addLocalMessage(localMessage);
-
-    // update groups list
-    queryClient.setQueriesData({ queryKey: ['groups'] }, (oldData: any) => {
-      if (!oldData) return oldData;
-
-      return {
-        ...oldData,
-        pages: oldData.pages.map((groupPage: any[]) =>
-          groupPage.map((group: any) => {
-            if (group.id === chatId) {
-              return {
-                ...group,
-                messages: [
-                  {
-                    id: tempId,
-                    userID: currentUserId,
-                    chatID: chatId,
-                    text: messageText,
-                    createdAt: new Date().toISOString(),
-                  },
-                  ...group.messages,
-                ],
-              };
-            }
-            return group;
-          })
-        ),
-      };
-    });
 
     // send to server
     socket.emit(
@@ -129,20 +104,26 @@ export function useChatMessagesWithOptimism(chatId: string) {
     scrollToBottom();
   };
 
-  // Retry sending a failed message
+  // Retry failed message
   const handleRetrySendMessage = (msg: MessageFE) => {
     if (!chatId) return;
 
-    socket.emit('sendMessage', {
-      text: msg.text,
+    const payload = {
+      messageId: msg.id,
       chatId,
       userId: currentUserId,
-    });
+    };
 
-    local.replaceLocalMessage({
-      ...msg,
-      failedToSend: false,
-    });
+    // Use socket if connected, fallback to REST
+    if (socket.connected) {
+      socket.emit('retryMessage', payload);
+    } else {
+      retryMessage(payload).catch((err) => {
+        console.error('Retry message failed via REST:', err);
+      });
+    }
+
+    queryClient.invalidateQueries({ queryKey: ['chatMessages', chatId] });
   };
 
   return {
@@ -156,5 +137,7 @@ export function useChatMessagesWithOptimism(chatId: string) {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isNearBottom,
+    isPaginating,
   };
 }

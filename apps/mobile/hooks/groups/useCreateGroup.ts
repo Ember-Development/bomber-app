@@ -1,6 +1,5 @@
-import { useMutation } from '@tanstack/react-query';
-
-const API_BASE = 'http://192.168.1.76:3000';
+import { api } from '@/api/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const createGroup = async ({
   title,
@@ -9,20 +8,20 @@ const createGroup = async ({
   title: string;
   userIds: string[];
 }) => {
-  const res = await fetch(`${API_BASE}/api/groups`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ title, userIds }),
+  const { data } = await api.post('/api/groups', {
+    title,
+    userIds,
   });
-
-  if (!res.ok) throw new Error('Failed to create group');
-  return res.json();
+  return data;
 };
 
 export const useCreateGroup = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: createGroup,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+    },
   });
 };

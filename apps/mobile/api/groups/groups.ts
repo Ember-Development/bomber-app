@@ -1,7 +1,11 @@
 import io from 'socket.io-client';
 import Constants from 'expo-constants';
+import { api } from '../api';
+import { ChatFE } from '@bomber-app/database';
 
-const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL;
+type UserInChat = ChatFE['users'][number];
+type MessageInChat = ChatFE['messages'][number];
+
 const SOCKET_SERVER_URL = Constants.expoConfig?.extra?.SOCKET_SERVER_URL;
 
 const socket = io(SOCKET_SERVER_URL);
@@ -11,23 +15,25 @@ export const fetchGroups = async ({
   cursor,
 }: {
   take?: number;
-  cursor?: string;
+  cursor?: { lastMessageAt: string; id: string };
 }) => {
-  let url = `${API_BASE_URL}/api/groups?take=${take}`;
-  if (cursor) url += `&cursor=${cursor}`;
+  const { data } = await api.get('/api/groups', {
+    params: {
+      take,
+      cursor: cursor?.id,
+    },
+  });
 
-  const response = await fetch(url);
-  const raw = await response.json();
-
-  return raw.map((chat: any) => ({
+  return data.map((chat: ChatFE) => ({
     id: chat.id,
     title: chat.title,
-    users: chat.users.map((u: any) => ({
+    lastMessageAt: new Date(chat.lastMessageAt),
+    users: chat.users.map((u: UserInChat) => ({
       userID: u.userID,
       chatID: u.chatID,
       joinedAt: new Date(u.joinedAt),
     })),
-    messages: chat.messages.map((m: any) => ({
+    messages: chat.messages.map((m: MessageInChat) => ({
       id: m.id,
       userID: m.userID,
       chatID: m.chatID,
@@ -38,14 +44,13 @@ export const fetchGroups = async ({
 };
 
 export const fetchUsersInGroup = async (chatId: string) => {
-  const res = await fetch(`${API_BASE_URL}/api/users/group/${chatId}`);
-  if (!res.ok) throw new Error('Failed to fetch users in group');
-  return res.json();
+  const { data } = await api.get(`/api/users/group/${chatId}`);
+  return data;
 };
 
 export const fetchMessages = async (chatId: string) => {
-  const response = await fetch(`${API_BASE_URL}/api/messages/${chatId}`);
-  return response.json();
+  const { data } = await api.get(`/api/messages/${chatId}`);
+  return data;
 };
 
 export const addUsersToGroup = async ({
@@ -55,13 +60,10 @@ export const addUsersToGroup = async ({
   groupId: string;
   userIds: string[];
 }) => {
-  const res = await fetch(`${API_BASE_URL}/api/groups/${groupId}/users`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userIds }),
+  const { data } = await api.post(`/api/groups/${groupId}/users`, {
+    userIds,
   });
-  if (!res.ok) throw new Error('Failed to add users to group');
-  return res.json();
+  return data;
 };
 
 export const socketInstance = socket;

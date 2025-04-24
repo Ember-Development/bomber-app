@@ -30,8 +30,8 @@ import {
   shouldShowDateHeader,
   formatMessageDate,
 } from '@/utils/chatUtils';
-import { ChatUser, UserRole } from '@/types';
-import { MessageFE } from '@bomber-app/database';
+import { UserRole } from '@/types';
+import { ChatUser, MessageFE } from '@bomber-app/database';
 
 export default function GroupChatScreen() {
   const { id } = useLocalSearchParams();
@@ -59,6 +59,8 @@ export default function GroupChatScreen() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isNearBottom,
+    isPaginating,
   } = useChatMessagesWithOptimism(chatId);
 
   const [showUsers, setShowUsers] = useState(false);
@@ -116,7 +118,7 @@ export default function GroupChatScreen() {
                   : chatDetails?.title || 'Group Chat'}
               </Text>
               <View style={styles.iconContainer}>
-                <View
+                {/* <View
                   style={[
                     styles.buttonContainer,
                     { backgroundColor: component },
@@ -127,7 +129,7 @@ export default function GroupChatScreen() {
                     iconName="volume-mute"
                     onPress={() => {}}
                   />
-                </View>
+                </View> */}
                 <View
                   style={[
                     styles.buttonContainer,
@@ -148,19 +150,33 @@ export default function GroupChatScreen() {
           <ScrollView
             ref={scrollViewRef}
             contentContainerStyle={{ padding: 10 }}
-            onContentSizeChange={() =>
-              setTimeout(
-                () => scrollViewRef.current?.scrollToEnd({ animated: true }),
-                200
-              )
-            }
+            onContentSizeChange={() => {
+              if (isNearBottom.current && !isPaginating.current) {
+                setTimeout(() => {
+                  scrollViewRef.current?.scrollToEnd({ animated: true });
+                }, 200);
+              }
+            }}
             onScroll={({ nativeEvent }) => {
+              const paddingToBottom = 100;
+              const isBottom =
+                nativeEvent.layoutMeasurement.height +
+                  nativeEvent.contentOffset.y >=
+                nativeEvent.contentSize.height - paddingToBottom;
+
+              isNearBottom.current = isBottom;
+
               if (
                 nativeEvent.contentOffset.y <= 0 &&
                 hasNextPage &&
                 !isFetchingNextPage
               ) {
-                fetchNextPage();
+                isPaginating.current = true;
+                fetchNextPage().finally(() => {
+                  setTimeout(() => {
+                    isPaginating.current = false;
+                  }, 500);
+                });
               }
             }}
             scrollEventThrottle={400}
@@ -251,7 +267,7 @@ export default function GroupChatScreen() {
                         {msg.failedToSend && (
                           <TouchableOpacity
                             onPress={() => handleRetrySendMessage(msg)}
-                            style={{ marginTop: 2 }}
+                            style={{ marginTop: 4 }}
                           >
                             <Text
                               style={{
@@ -260,9 +276,22 @@ export default function GroupChatScreen() {
                                 textDecorationLine: 'underline',
                               }}
                             >
-                              Failed to send - Tap to retry
+                              Failed to send – Tap to retry
                             </Text>
                           </TouchableOpacity>
+                        )}
+
+                        {msg.retryCount >= 3 && (
+                          <Text
+                            style={{
+                              color: 'orange',
+                              fontSize: 10,
+                              marginTop: 4,
+                              fontStyle: 'italic',
+                            }}
+                          >
+                            This message failed. Try Again Later.
+                          </Text>
                         )}
                       </View>
                       {isUser && (
@@ -311,14 +340,20 @@ export default function GroupChatScreen() {
             onClose={() => setShowUsers(false)}
             title="Members"
           >
-            <View style={{ marginTop: 10 }}>
-              {isUsersLoading ? (
-                <ActivityIndicator size="small" />
-              ) : (
-                <ScrollView contentContainerStyle={{ paddingBottom: 0 }}>
+            <View style={{ height: '95%' }}>
+              <View style={{ flex: 1 }}>
+                <ScrollView
+                  contentContainerStyle={{
+                    paddingHorizontal: 20,
+                    paddingTop: 20,
+                    paddingBottom: 20,
+                    marginBottom: 20,
+                  }}
+                  showsVerticalScrollIndicator={false}
+                >
                   {roleOrder.map((role) => {
                     const usersForRole = groupedUsers[role];
-                    if (!usersForRole || usersForRole.length === 0) return null;
+                    if (!usersForRole?.length) return null;
 
                     return (
                       <View key={role} style={{ marginBottom: 20 }}>
@@ -383,31 +418,32 @@ export default function GroupChatScreen() {
                     );
                   })}
                 </ScrollView>
-              )}
-              <View
-                style={{
-                  padding: 20,
-                  borderTopWidth: 0.5,
-                  borderColor: '#ccc',
-                  backgroundColor: 'white',
-                }}
-              >
-                <CustomButton
-                  title="Add Person to Group"
-                  onPress={() => {
-                    if (chatDetails) {
-                      setShowUsers(false);
-                      InteractionManager.runAfterInteractions(() => {
-                        setAddUserModal(true);
-                      });
-                    }
+
+                <View
+                  style={{
+                    paddingHorizontal: 20,
+                    paddingTop: -30,
+                    paddingBottom: 0, // extra space below buttons
+                    backgroundColor: 'white',
                   }}
-                />
-                <CustomButton
-                  title="End Group"
-                  variant="danger"
-                  onPress={() => alert('Canceled!')}
-                />
+                >
+                  <CustomButton
+                    title="Add Person to Group"
+                    onPress={() => {
+                      if (chatDetails) {
+                        setShowUsers(false);
+                        InteractionManager.runAfterInteractions(() => {
+                          setAddUserModal(true);
+                        });
+                      }
+                    }}
+                  />
+                  <CustomButton
+                    title="End Group"
+                    variant="danger"
+                    onPress={() => alert('Canceled!')}
+                  />
+                </View>
               </View>
             </View>
           </BottomSheetModal>

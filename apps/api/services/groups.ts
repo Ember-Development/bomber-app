@@ -1,7 +1,10 @@
 import { prisma } from '@bomber-app/database';
 
 export const groupService = {
-  getAllGroups: async (take: number = 10, cursor?: string) => {
+  getAllGroups: async (
+    take: number = 10,
+    cursor?: { lastMessageAt: Date; id: string }
+  ) => {
     return await prisma.chat.findMany({
       include: {
         users: true,
@@ -10,18 +13,16 @@ export const groupService = {
           take: 1,
         },
       },
-      orderBy: {
-        id: 'desc',
-      },
+      orderBy: [{ lastMessageAt: 'desc' }, { id: 'desc' }],
       take,
       ...(cursor && {
         skip: 1,
-        cursor: { id: cursor },
+        cursor,
       }),
     });
   },
 
-  createGroups: async (title: string, userIds: string[]) => {
+  createGroup: async (title: string, userIds: string[]) => {
     const group = await prisma.chat.create({
       data: {
         title,

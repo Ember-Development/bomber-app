@@ -1,9 +1,7 @@
-import { ChatFE, MessageFE, UserFE, UserRole } from '@bomber-app/database';
+import { ChatFE, MessageFE } from '@bomber-app/database';
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
-import Constants from 'expo-constants';
-
-// Read from env
-const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL;
+import { api } from '../api';
+import type { QueryFunctionContext } from '@tanstack/react-query';
 
 // Fetch chat messages
 const fetchChatMessages = async ({
@@ -13,30 +11,51 @@ const fetchChatMessages = async ({
   chatId: string;
   pageParam?: string;
 }) => {
-  const cursorParam = pageParam ? `&cursor=${pageParam}` : '';
-  const res = await fetch(
-    `${API_BASE_URL}/api/messages/${chatId}?limit=20${cursorParam}`
-  );
-  if (!res.ok) throw new Error('Failed to fetch messages');
-  return res.json();
+  const { data } = await api.get(`/api/messages/${chatId}`, {
+    params: {
+      limit: 20,
+      cursor: pageParam,
+    },
+  });
+  return data;
 };
 
 // Fetch chat details
 const fetchChatDetails = async (chatId: string) => {
-  const res = await fetch(`${API_BASE_URL}/api/groups`);
-  if (!res.ok) throw new Error('Failed to fetch group');
-  const allGroups = await res.json();
-  return allGroups.find((group: any) => group.id === chatId) ?? null;
+  const { data: allGroups } = await api.get('/api/groups');
+  return allGroups.find((group: ChatFE) => group.id === chatId) ?? null;
+};
+
+// retry chat message
+export const retryMessage = async ({
+  messageId,
+  chatId,
+  userId,
+}: {
+  messageId: string;
+  chatId: string;
+  userId: string;
+}) => {
+  const { data } = await api.post(`/api/messages/${messageId}/retry`, {
+    messageId,
+    chatId,
+    userId,
+  });
+  return data;
 };
 
 // React Query Hooks
 export const useChatMessages = (chatId: string) => {
-  return useInfiniteQuery({
+  return useInfiniteQuery<MessageFE[], unknown, MessageFE[], [string, string]>({
     queryKey: ['chatMessages', chatId],
-    queryFn: ({ pageParam }: { pageParam?: string }) =>
-      fetchChatMessages({ chatId, pageParam }),
-    getNextPageParam: (lastPage: string | any[]) => {
-      if (!lastPage || lastPage.length === 0) return undefined;
+    queryFn: async (
+      ctx: QueryFunctionContext<[string, string]>
+    ): Promise<MessageFE[]> => {
+      const pageParam = ctx.pageParam as string | undefined;
+      return await fetchChatMessages({ chatId, pageParam });
+    },
+    getNextPageParam: (lastPage) => {
+      if (lastPage.length === 0) return undefined;
       return lastPage[lastPage.length - 1].id;
     },
     initialPageParam: undefined,

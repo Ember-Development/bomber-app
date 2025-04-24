@@ -1,7 +1,7 @@
 import { addUsersToGroup, fetchGroups } from '@/api/groups/groups';
 import { useMutation, useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { fetchUsersInGroup } from '@/api/groups/groups';
-import { ChatUser } from '../../types';
+import { ChatUser } from '@bomber-app/database';
 
 export const useUsersInGroup = (chatId: string) => {
   return useQuery<ChatUser[]>({
@@ -21,12 +21,19 @@ export const useAddUsersToGroup = () => {
 export const usePaginatedChats = () => {
   return useInfiniteQuery({
     queryKey: ['groups'],
-    queryFn: ({ pageParam }: { pageParam?: string }) =>
-      fetchGroups({ cursor: pageParam }),
+    queryFn: ({
+      pageParam,
+    }: {
+      pageParam?: { lastMessageAt: string; id: string };
+    }) => fetchGroups({ cursor: pageParam }),
     initialPageParam: undefined,
-    getNextPageParam: (lastPage: string | any[]) => {
+    getNextPageParam: (lastPage: any[]) => {
       if (lastPage.length === 0) return undefined;
-      return lastPage[lastPage.length - 1].id;
+      const last = lastPage[lastPage.length - 1];
+      return {
+        lastMessageAt: last.lastMessageAt.toISOString(),
+        id: last.id,
+      };
     },
   });
 };
