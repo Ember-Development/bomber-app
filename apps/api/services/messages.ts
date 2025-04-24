@@ -18,9 +18,55 @@ export const messageService = {
   },
 
   sendMessage: async (text: string, chatId: string, userId: string) => {
-    return await prisma.message.create({
-      data: { text, chatID: chatId, userID: userId, createdAt: new Date() },
-      include: { sender: true, chat: true },
+    const now = new Date();
+
+    const [message] = await prisma.$transaction([
+      prisma.message.create({
+        data: {
+          text,
+          chatID: chatId,
+          userID: userId,
+          createdAt: now,
+          retryCount: 0,
+          failedToSend: false,
+        },
+        include: { sender: true, chat: true },
+      }),
+      prisma.chat.update({
+        where: { id: chatId },
+        data: { lastMessageAt: now },
+      }),
+    ]);
+
+    return message;
+  },
+
+  retryMessage: async (messageId: string) => {
+    const existing = await prisma.message.findUnique({
+      where: { id: messageId },
+      select: {
+        retryCount: true,
+      },
+    });
+
+    if (!existing) {
+      throw new Error('Message not found');
+    }
+
+    if (existing.retryCount >= 3) {
+      throw new Error('Retry limit reached');
+    }
+
+    return await prisma.message.update({
+      where: { id: messageId },
+      data: {
+        retryCount: { increment: 1 },
+        failedToSend: false,
+      },
+      include: {
+        sender: true,
+        chat: true,
+      },
     });
   },
 };

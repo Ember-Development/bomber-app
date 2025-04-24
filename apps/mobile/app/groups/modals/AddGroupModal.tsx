@@ -12,10 +12,9 @@ import CustomSelect from '../../../components/ui/atoms/dropdown';
 import SearchField from '../../../components/ui/atoms/Search';
 import Separator from '../../../components/ui/atoms/Seperator';
 import { useUsers } from '@/hooks/useUser';
-import { Position } from '@bomber-app/database';
+import { Position, PublicUserFE } from '@bomber-app/database';
 import CustomButton from '../../../components/ui/atoms/Button';
 import { useAddUsersToGroup } from '@/hooks/groups/useChats';
-import { UserFE } from '@/types';
 import UserList from '../components/UserList';
 
 interface CreateGroupModalProps {
@@ -55,7 +54,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     regional_coaches: false,
   });
   const { data: AllUsers = [] } = useUsers();
-  console.log('boi', AllUsers);
   const { mutate: mutateAddToGroup } = useAddUsersToGroup();
 
   const scrollViewRef = useRef<ScrollView>(null);
@@ -64,7 +62,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     scrollViewRef.current?.scrollToEnd({ animated: true });
   };
 
-  const users: UserFE[] = useMemo(() => AllUsers, [AllUsers]);
+  const users: PublicUserFE[] = useMemo(() => AllUsers, [AllUsers]);
 
   const teamNames = Array.from(
     new Set(
@@ -281,7 +279,12 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
           <Separator width="90%" color="#000" />
         </View>
 
-        <ScrollView ref={scrollViewRef} style={styles.scrollContainer}>
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.scrollContainer}
+          contentContainerStyle={{ paddingBottom: 120 }}
+          showsVerticalScrollIndicator={false}
+        >
           <UserList
             users={filteredUsers}
             selectedUsers={selectedUsers}
@@ -356,7 +359,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 8,
   },
-
   clearButtonText: {
     fontSize: 14,
     color: '#000000',

@@ -24,3 +24,15 @@ export const sendMessage = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to send message' });
   }
 };
+
+export const retryMessage = async (req: Request, res: Response) => {
+  const { messageId } = req.params;
+
+  try {
+    const retried = await messageService.retryMessage(messageId);
+    res.json(retried);
+  } catch (error) {
+    console.error('Failed to retry message', error);
+    res.status(500).json({ error: 'Retry failed' });
+  }
+};

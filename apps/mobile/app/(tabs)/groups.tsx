@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { createGroupStyles } from '@/styles/groupsStyle';
 import { ThemedText } from '@/components/ThemedText';
@@ -22,7 +22,13 @@ import { useCreateGroup } from '@/hooks/groups/useCreateGroup';
 export default function GroupsScreen() {
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     usePaginatedChats();
-  const chats = data?.pages.flat() ?? [];
+  const chats = useMemo(() => {
+    return (data?.pages.flat() ?? []).sort(
+      (a: { lastMessageAt: Date }, b: { lastMessageAt: Date }) =>
+        new Date(b.lastMessageAt).getTime() -
+        new Date(a.lastMessageAt).getTime()
+    );
+  }, [data]);
   const [modalStep, setModalStep] = useState<'name' | 'group' | null>(null);
   const [groupName, setGroupName] = useState('');
   const router = useRouter();
@@ -51,16 +57,6 @@ export default function GroupsScreen() {
     );
   };
 
-  const sortedChats = [...chats].sort((a, b) => {
-    const aTime = a.messages?.[0]?.createdAt
-      ? new Date(a.messages[0].createdAt).getTime()
-      : 0;
-    const bTime = b.messages?.[0]?.createdAt
-      ? new Date(b.messages[0].createdAt).getTime()
-      : 0;
-    return bTime - aTime;
-  });
-
   return (
     <SafeAreaView style={styles.safeContainer}>
       <ThemedView style={styles.container}>
@@ -72,11 +68,12 @@ export default function GroupsScreen() {
               iconName="add"
               onPress={() => setModalStep('name')}
             />
-            <CustomButton
+            {/* IMPLEMENT LATER */}
+            {/* <CustomButton
               variant="icon"
               iconName="search"
               onPress={() => alert('Searching!')}
-            />
+            /> */}
           </View>
         </View>
 
@@ -112,7 +109,7 @@ export default function GroupsScreen() {
           </View>
         ) : (
           <FlatList
-            data={sortedChats}
+            data={chats}
             keyExtractor={(item) => `chat-${item.id ?? Math.random()}`}
             refreshing={isLoading}
             contentContainerStyle={{ paddingBottom: 50 }}
@@ -143,11 +140,9 @@ export default function GroupsScreen() {
                   </View>
                   <View style={styles.timeContainer}>
                     <Text style={styles.timeText}>
-                      {item.messages?.[0]?.createdAt
-                        ? formatRelativeTime(
-                            new Date(item.messages[0].createdAt).toISOString()
-                          )
-                        : ''}
+                      {formatRelativeTime(
+                        new Date(item.lastMessageAt).toISOString()
+                      )}
                     </Text>
                   </View>
                 </View>

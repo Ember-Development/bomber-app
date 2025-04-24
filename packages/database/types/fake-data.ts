@@ -158,6 +158,7 @@ export function fakeChatComplete() {
     id: faker.string.uuid(),
     title: faker.lorem.words(5),
     createdAt: faker.date.anytime(),
+    lastMessageAt: new Date(),
   };
 }
 export function fakeUserChat() {
@@ -183,6 +184,8 @@ export function fakeMessageComplete() {
     id: faker.string.uuid(),
     text: faker.lorem.words(5),
     createdAt: faker.date.anytime(),
+    retryCount: 0,
+    failedToSend: false,
     userID: faker.string.uuid(),
     chatID: faker.string.uuid(),
   };
