@@ -9,6 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "ITSAppUsesNonExemptEncryption": false,
       "supportsTablet": true,
       "bundleIdentifier": "com.bombersfastpitch.bomberapp",
       "buildNumber": "1"

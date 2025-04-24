@@ -40,7 +40,8 @@ jobs:
       - name: 🏗️ Build app for iOS TestFlight
         run: |
           cd apps/mobile
-          eas build --platform ios --profile preview --non-interactive
+          eas build --platform ios --profile preview --non-interactive --json > build_output.json
+          cat build_output.json
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
