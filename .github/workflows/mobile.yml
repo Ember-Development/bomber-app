@@ -17,10 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
@@ -29,24 +29,28 @@ jobs:
         with:
           version: 8
 
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
       - name: 📦 Install dependencies
         run: |
           cd apps/mobile
           pnpm install --strict-peer-dependencies=false
 
-      - name: 🔐 Install EAS CLI
-        run: npm install -g eas-cli
-
+      # - name: 🔐 Install EAS CLI
+      #   run: npm install -g eas-cli
+      #
       - name: 🏗️ Build app for iOS TestFlight
         run: |
           cd apps/mobile
           eas build --platform ios --profile preview --non-interactive
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
-      - name: 🚀 Submit to TestFlight
-        run: |
-          cd apps/mobile
-          eas submit -p ios --latest
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      # - name: Build on EAS
+      #   run: |
+      #     cd apps/mobile
+      #     eas build --platform ios --non-interactive --no-wait
+      #   env:
+      #     EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
