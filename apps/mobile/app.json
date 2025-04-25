@@ -5,11 +5,10 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "BomberApp",
+    "scheme": "bomberapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "ITSAppUsesNonExemptEncryption": false,
       "supportsTablet": true,
       "bundleIdentifier": "com.bombersfastpitch.bomberapp",
       "buildNumber": "1"
@@ -37,7 +36,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
