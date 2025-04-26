@@ -27,6 +27,7 @@ jobs:
         uses: pnpm/action-setup@v2
         with:
           version: 8
+          run_install: false
 
       - name: Install dependencies
         run: pnpm install
@@ -43,20 +44,36 @@ jobs:
 
       - name: Set up code signing
         env:
-          APPLE_API_KEY_P8_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          APPLE_ID: 'emberdevco@gmail.com'
         run: |
-          # Create temporary keychain
+          # Create a temporary keychain
           fastlane run create_keychain name:"github_actions_keychain" password:"$KEYCHAIN_PASSWORD" unlock:true default_keychain:true
 
+
+          # Set up certificates and provisioning profiles
+          fastlane run match \
+            type:appstore \
+            app_identifier:"com.bomberfastpitch.bomberapp" \
+            username:"$APPLE_ID" \
+            team_id:"56SR3FVFLU" \
+            readonly:false \
+            skip_git:true \
+            keychain_name:"github_actions_keychain" \
+            keychain_password:"$KEYCHAIN_PASSWORD"
+
+          # Set up provisioning profiles using match
+          # Since your git_url is the same as the repo, we don't need to specify it again
+          fastlane run match type:appstore app_identifier:"com.bomberfastpitch.bomberapp" username:"${{ secrets.APPLE_ID }}" team_id:"56SR3FVFLU" readonly:true keychain_name:"github_actions_keychain" keychain_password:"$KEYCHAIN_PASSWORD"
+
+      - name: Setup App Store Connect API Key
+        env:
+          APPLE_API_KEY_P8_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}
+        run: |
           # Decode and save the API key
           mkdir -p $RUNNER_TEMP/private_keys
           echo -n "$APPLE_API_KEY_P8_BASE64" | base64 --decode > $RUNNER_TEMP/private_keys/AuthKey_P928568HLS.p8
-
-          # Set up provisioning profiles
-          fastlane run match type:appstore git_url:"$MATCH_GIT_URL" app_identifier:"com.bomberfastpitch.bomberapp" username:"${{ secrets.APPLE_ID }}" team_id:"56SR3FVFLU" readonly:true keychain_name:"github_actions_keychain" keychain_password:"$KEYCHAIN_PASSWORD"
 
       - name: Deploy to TestFlight
         env:
