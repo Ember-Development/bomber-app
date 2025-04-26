@@ -12,7 +12,7 @@ import { GlobalColors } from '@/constants/Colors';
 interface CustomButtonProps {
   title?: string;
   onPress: (event: GestureResponderEvent) => void;
-  variant?: 'primary' | 'secondary' | 'danger' | 'icon';
+  variant?: 'primary' | 'secondary' | 'danger' | 'icon' | 'text';
   iconName?: keyof typeof Ionicons.glyphMap;
   fullWidth?: boolean;
 }
@@ -38,6 +38,7 @@ export default function CustomButton({
         variant === 'secondary' && { backgroundColor: componentButton },
         variant === 'danger' && styles.danger,
         variant === 'icon' && styles.iconButton,
+        variant === 'text' && styles.textButton,
         fullWidth && styles.fullWidth,
       ]}
       onPress={onPress}
@@ -50,6 +51,7 @@ export default function CustomButton({
             styles.buttonText,
             { color: textColor },
             variant === 'secondary' && styles.secondaryText,
+            variant === 'text' && styles.textVariantText,
           ]}
         >
           {title}
@@ -90,5 +92,16 @@ const styles = StyleSheet.create({
   },
   secondaryText: {
     color: GlobalColors.black,
+  },
+  textButton: {
+    backgroundColor: 'transparent',
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    minWidth: 0,
+  },
+  textVariantText: {
+    color: GlobalColors.black,
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

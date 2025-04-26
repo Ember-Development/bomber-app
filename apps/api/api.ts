@@ -6,6 +6,7 @@ import initializeSocket from './websockets/websocket';
 import groupRoutes from './routes/groupRoutes';
 import messageRoutes from './routes/messageRoutes';
 import userRoutes from './routes/userRoutes';
+import authRoutes from './routes/authRoutes';
 
 const app = express();
 const server = http.createServer(app);
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use('/api/groups', groupRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
 
 const io = initializeSocket(server);
 

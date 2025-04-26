@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,14 +7,14 @@ import {
   Modal,
   TouchableOpacity,
   Switch,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import Separator from "../atoms/Seperator";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { GlobalColors } from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { useThemeColor } from "@/hooks/useThemeColor";
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import Separator from '../atoms/Seperator';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { GlobalColors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 interface UserAvatarProps {
   firstName: string;
@@ -28,9 +28,9 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 
   // theme
-  const backgroundColor = useThemeColor({}, "background");
-  const textColor = useThemeColor({}, "text");
-  const icons = useThemeColor({}, "icon");
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const icons = useThemeColor({}, 'icon');
 
   return (
     <>
@@ -72,28 +72,28 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
             <View style={styles.menuItems}>
               {[
                 {
-                  name: "Teams",
-                  icon: "people-outline" as keyof typeof Ionicons.glyphMap,
+                  name: 'Teams',
+                  icon: 'people-outline' as keyof typeof Ionicons.glyphMap,
                 },
                 {
-                  name: "Media",
-                  icon: "play-outline" as keyof typeof Ionicons.glyphMap,
+                  name: 'Media',
+                  icon: 'play-outline' as keyof typeof Ionicons.glyphMap,
                 },
                 {
-                  name: "Legacy",
-                  icon: "school-outline" as keyof typeof Ionicons.glyphMap,
+                  name: 'Legacy',
+                  icon: 'school-outline' as keyof typeof Ionicons.glyphMap,
                 },
                 {
-                  name: "Bomber Portal",
-                  icon: "book-outline" as keyof typeof Ionicons.glyphMap,
+                  name: 'Bomber Portal',
+                  icon: 'book-outline' as keyof typeof Ionicons.glyphMap,
                 },
                 {
-                  name: "About Us",
-                  icon: "flag-outline" as keyof typeof Ionicons.glyphMap,
+                  name: 'About Us',
+                  icon: 'flag-outline' as keyof typeof Ionicons.glyphMap,
                 },
                 {
-                  name: "Player Development",
-                  icon: "star-outline" as keyof typeof Ionicons.glyphMap,
+                  name: 'Player Development',
+                  icon: 'star-outline' as keyof typeof Ionicons.glyphMap,
                 },
               ].map((item, index) => (
                 <Pressable key={index} style={styles.menuItem}>
@@ -128,10 +128,10 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
               </View>
             </View>
 
-            <View style={styles.themeToggleContainer}>
+            {/* <View style={styles.themeToggleContainer}>
               <ThemedText>Dark Mode</ThemedText>
               <Switch value={theme === "dark"} onValueChange={toggleTheme} />
-            </View>
+            </View> */}
 
             <Pressable style={styles.logoutButton}>
               <Text style={styles.logoutText}>Logout</Text>
@@ -148,53 +148,53 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#EAEAEA",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#EAEAEA',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   avatarText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   sidebar: {
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
     paddingTop: 50,
     paddingHorizontal: 20,
   },
   profileHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 30,
     marginTop: 20,
   },
   profileDetails: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   avatarLarge: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: "#EAEAEA",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#EAEAEA',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 12,
   },
   avatarTextLarge: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   nameText: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   roleText: {
     fontSize: 16,
@@ -203,14 +203,14 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 15,
   },
   menuText: {
     fontSize: 20,
     marginLeft: 15,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   footer: {
     marginTop: 10,
@@ -221,28 +221,28 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 16,
-    fontWeight: "semibold",
-    color: "#6D6D6D",
+    fontWeight: 'semibold',
+    color: '#6D6D6D',
   },
   themeToggleContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 15,
     borderTopWidth: 1,
-    borderColor: "#EAEAEA",
+    borderColor: '#EAEAEA',
     marginTop: 10,
   },
   logoutButton: {
     backgroundColor: GlobalColors.red,
     padding: 15,
     borderRadius: 10,
-    alignItems: "center",
-    marginTop: 10,
+    alignItems: 'center',
+    marginTop: 30,
   },
   logoutText: {
-    color: "white",
+    color: 'white',
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
 });
