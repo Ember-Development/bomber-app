@@ -114,7 +114,6 @@ export default function ComponentsScreen() {
                 type="trophy"
                 image={require('@/assets/images/react-logo.png')}
               />
-              <EventCardContainer />
               <NotificationCard />
               <View
                 style={{

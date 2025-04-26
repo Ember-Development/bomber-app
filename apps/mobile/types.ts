@@ -1,37 +1,20 @@
-import { UserRole, AgeGroup, Position } from '@bomber-app/database';
+import {
+  AttendanceStatus,
+  EventDynamic,
+  TournamentDynamic,
+} from '@bomber-app/database';
 
-// groups
-export type ChatUser = {
-  id: string;
-  fname: string;
-  lname: string;
-  primaryRole: UserRole;
+// Frontend type created with backend Types
+export type UserEvent = {
+  id: number;
+  eventID: number;
+  userID: number;
+  status: AttendanceStatus;
+
+  event: Pick<
+    EventDynamic<['tournament', 'attendees']>,
+    'start' | 'end' | 'eventType'
+  > & {
+    tournament?: Pick<TournamentDynamic<[]>, 'title'>;
+  };
 };
-
-export interface UserFE {
-  id: string;
-  fname: string;
-  lname: string;
-  email: string;
-  primaryRole: UserRole;
-
-  player?: {
-    pos1: Position;
-    pos2: Position;
-    ageGroup: AgeGroup;
-    team?: {
-      id: string;
-      name: string;
-      ageGroup: AgeGroup;
-    };
-  };
-
-  coach?: {
-    teams: {
-      id: string;
-      name: string;
-    }[];
-  };
-}
-
-export { UserRole };
