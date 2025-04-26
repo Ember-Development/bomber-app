@@ -1,64 +1,32 @@
 import { SafeAreaView, Animated, View, TouchableOpacity } from 'react-native';
+import { useRef } from 'react';
+import { useRouter } from 'expo-router';
+
+// Components
 import { ThemedText } from '@/components/ThemedText';
-import { createHomeStyles } from '@/styles/homeStyle';
 import Card from '@/components/ui/molecules/Card';
 import NotificationCard from '@/components/ui/molecules/NotificationCard';
 import UserAvatar from '@/components/ui/organisms/Sidemenu';
 import CustomButton from '@/components/ui/atoms/Button';
 import EventCardContainer from '@/components/ui/molecules/EventCard/SpotlightEvent/SpotlightContainer';
-import { useRef } from 'react';
-import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import ArticleCard from '@/components/ui/molecules/ArticleCard';
+import VideoCard from '@/components/ui/molecules/MediaCards';
+
+import { useCurrentUser } from '@/hooks/user/useCurrentUser';
 import { useUserEvents, useUserChats } from '@/hooks/useUser';
-import { useRouter } from 'expo-router';
-import { UserFE } from '@bomber-app/database';
-import { api } from '@/api/api';
+import { formatEvents } from '@/utils/FormatEvents';
+import { legacyItems, mockArticles, mockVideos } from '@/constants/items';
+import { createHomeStyles } from '@/styles/homeStyle';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
-  const [user, setUser] = useState<UserFE | null>(null);
+  const user = useCurrentUser();
   const { data: rawEvents } = useUserEvents(user?.id);
   const { data: userChats } = useUserChats(user?.id);
   const styles = createHomeStyles('light');
   const router = useRouter();
 
-  useEffect(() => {
-    const loadUser = async () => {
-      const { data: fetchedUser } = await api.get('/api/auth/login');
-      setUser(fetchedUser);
-      console.log('User:', fetchedUser);
-    };
-
-    loadUser();
-  }, []);
-
-  const formattedEvents =
-    rawEvents?.flatMap((e) => {
-      if (!e.event?.start || !e.event?.end) return [];
-
-      const start = new Date(e.event.start);
-      const end = new Date(e.event.end);
-      const time = `${start.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      })} - ${end.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      })}`;
-
-      return [
-        {
-          date:
-            typeof e.event.start === 'string'
-              ? e.event.start
-              : e.event.start.toISOString(),
-          title: e.event.tournament
-            ? `Tournament – ${e.event.tournament.title}`
-            : e.event.eventType,
-          location: e.event.tournament?.title ?? 'Unknown Location',
-          time,
-        },
-      ];
-    }) ?? [];
+  const formattedEvents = formatEvents(rawEvents ?? []);
 
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -73,13 +41,6 @@ export default function HomeScreen() {
     outputRange: [1, 0.9],
     extrapolate: 'clamp',
   });
-
-  const legacyItems: { title: string; icon: keyof typeof Ionicons.glyphMap }[] =
-    [
-      { title: 'Bombers History', icon: 'book-outline' },
-      { title: 'Bombers Alumni', icon: 'people-outline' },
-      { title: 'Recent Commitments', icon: 'medal-outline' },
-    ];
 
   return (
     <SafeAreaView style={styles.safeContainer}>
@@ -96,6 +57,7 @@ export default function HomeScreen() {
         decelerationRate="fast"
         overScrollMode="never"
       >
+        {/* Header */}
         <Animated.View
           style={[
             styles.titleContainer,
@@ -121,7 +83,7 @@ export default function HomeScreen() {
           </View>
         </Animated.View>
 
-        {/* Scrollable */}
+        {/* Quick Actions */}
         <View style={styles.quickAction}>
           <View style={styles.myActions}>
             <Card
@@ -134,7 +96,7 @@ export default function HomeScreen() {
               type="quickAction"
               title="My Teams"
               icon={require('@/assets/images/react-logo.png')}
-              onPress={() => alert('Payments Clicked!')}
+              onPress={() => alert('My Teams Clicked!')}
             />
           </View>
           <View style={styles.notifications}>
@@ -195,6 +157,7 @@ export default function HomeScreen() {
           </Animated.ScrollView>
         </Animated.View>
 
+        {/* Legacy */}
         <View style={styles.legacy}>
           <View style={styles.legacyText}>
             <ThemedText type="title">Bombers Legacy</ThemedText>
@@ -214,6 +177,37 @@ export default function HomeScreen() {
               </TouchableOpacity>
             ))}
           </View>
+        </View>
+
+        {/* Media */}
+        <View style={styles.mediaSection}>
+          <View style={styles.EventText}>
+            <ThemedText type="title">Media</ThemedText>
+            <CustomButton
+              title="See All"
+              variant="text"
+              onPress={() => console.log('See All Media')}
+              fullWidth={false}
+            />
+          </View>
+
+          <Animated.ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 5, paddingBottom: 5 }}
+            decelerationRate={0.8}
+            snapToAlignment="start"
+            snapToInterval={200}
+            bounces={false}
+            overScrollMode="never"
+          >
+            {mockArticles.map((item, idx) => (
+              <ArticleCard key={`article-${idx}`} {...item} />
+            ))}
+            {mockVideos.map((item, idx) => (
+              <VideoCard key={`video-${idx}`} {...item} />
+            ))}
+          </Animated.ScrollView>
         </View>
       </Animated.ScrollView>
     </SafeAreaView>

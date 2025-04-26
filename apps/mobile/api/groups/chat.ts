@@ -1,7 +1,7 @@
 import { ChatFE, MessageFE } from '@bomber-app/database';
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { api } from '../api';
-import type { QueryFunctionContext } from '@tanstack/react-query';
+import type { InfiniteData } from '@tanstack/react-query';
 
 // Fetch chat messages
 const fetchChatMessages = async ({
@@ -46,11 +46,14 @@ export const retryMessage = async ({
 
 // React Query Hooks
 export const useChatMessages = (chatId: string) => {
-  return useInfiniteQuery<MessageFE[], unknown, MessageFE[], [string, string]>({
+  return useInfiniteQuery<
+    MessageFE[],
+    unknown,
+    InfiniteData<MessageFE[]>,
+    [string, string]
+  >({
     queryKey: ['chatMessages', chatId],
-    queryFn: async (
-      ctx: QueryFunctionContext<[string, string]>
-    ): Promise<MessageFE[]> => {
+    queryFn: async (ctx) => {
       const pageParam = ctx.pageParam as string | undefined;
       return await fetchChatMessages({ chatId, pageParam });
     },

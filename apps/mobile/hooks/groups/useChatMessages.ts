@@ -16,10 +16,10 @@ export function useChatMessagesWithOptimism(chatId: string) {
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useChatMessages(chatId);
 
-  const serverMessages = useMemo(
-    () => data?.pages.flat().reverse() ?? [],
-    [data]
-  );
+  const serverMessages = useMemo(() => {
+    const allMessages = data?.pages.flatMap((page) => page) ?? [];
+    return allMessages.slice().reverse();
+  }, [data]);
   const local = useLocalMessages(serverMessages);
 
   const [messageText, setMessageText] = useState('');
@@ -79,6 +79,7 @@ export function useChatMessagesWithOptimism(chatId: string) {
         lastMessageAt: new Date(),
       },
       failedToSend: false,
+      retryCount: 0,
     };
 
     local.addLocalMessage(localMessage);
