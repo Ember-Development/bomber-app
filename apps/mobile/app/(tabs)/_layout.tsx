@@ -1,38 +1,48 @@
-import React from 'react';
-import { Platform } from 'react-native';
-
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { Platform, Animated } from 'react-native';
 import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { Colors } from '@/constants/Colors';
+import { useRef } from 'react';
+import { HapticTab } from '@/components/HapticTab';
+import TabBarBackground from '@/components/ui/TabBarBackground';
 
 export default function TabLayout() {
-  const { theme } = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors.light.tint,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
+        tabBarBackground: () => <TabBarBackground children={undefined} />,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
+            backgroundColor: 'transparent',
+            borderTopWidth: 0,
+            height: 70,
           },
-          default: {},
+          default: {
+            height: 70,
+          },
         }),
+        tabBarIconStyle: {
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginTop: 6,
+          width: '100%',
+          height: '100%',
+        },
+        tabBarLabelStyle: {
+          display: 'none',
+        },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedIcon name="home" color={color} focused={focused} />
           ),
         }}
       />
@@ -40,8 +50,8 @@ export default function TabLayout() {
         name="component"
         options={{
           title: 'Components',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedIcon name="construct" color={color} focused={focused} />
           ),
         }}
       />
@@ -49,11 +59,43 @@ export default function TabLayout() {
         name="groups"
         options={{
           title: 'Groups',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedIcon name="chatbox" color={color} focused={focused} />
           ),
         }}
       />
     </Tabs>
+  );
+}
+
+function AnimatedIcon({
+  name,
+  color,
+  focused,
+}: {
+  name: any;
+  color: string;
+  focused: boolean;
+}) {
+  const scale = useRef(new Animated.Value(1)).current;
+
+  if (focused) {
+    Animated.spring(scale, {
+      toValue: 1.2,
+      friction: 4,
+      useNativeDriver: true,
+    }).start();
+  } else {
+    Animated.spring(scale, {
+      toValue: 1,
+      friction: 4,
+      useNativeDriver: true,
+    }).start();
+  }
+
+  return (
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <Ionicons name={name} size={20} color={color} />
+    </Animated.View>
   );
 }
