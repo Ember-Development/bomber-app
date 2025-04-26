@@ -97,4 +97,9 @@ export const createHomeStyles = (theme: 'light' | 'dark') =>
       flexDirection: 'column',
       gap: 8,
     },
+    mediaSection: {
+      flexDirection: 'column',
+      paddingHorizontal: 20,
+      marginVertical: 10,
+    },
   });
