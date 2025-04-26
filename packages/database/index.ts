@@ -14,3 +14,4 @@ export * from './types/regCoach';
 export * from './types/team';
 export * from './types/tournament';
 export * from './types/trophy';
+export { UserFE, UserDB, ChatUser, PublicUserFE } from './types/user';

@@ -1,3 +1,5 @@
+import { prisma } from '@bomber-app/database';
+
 //FIXME: replace the any once we have full types
 const validateUser = (user: any) => {
   const userHasRoleOtherThanPlayer =
@@ -5,36 +7,100 @@ const validateUser = (user: any) => {
 
   //TODO: figure out how to eval this quickly... worst case make query
   let userIsPlayer = true;
-  let playerAgeGroup = "8u"; //TODO: use the enums when types are defined
+  let playerAgeGroup = '8u'; //TODO: use the enums when types are defined
 
   const userIs14PlusPlayer =
     userIsPlayer &&
-    (playerAgeGroup === "14u" ||
-      playerAgeGroup === "16u" ||
-      playerAgeGroup === "18u" ||
-      playerAgeGroup === "alumni");
+    (playerAgeGroup === '14u' ||
+      playerAgeGroup === '16u' ||
+      playerAgeGroup === '18u' ||
+      playerAgeGroup === 'alumni');
 
   const errors = [];
 
   if (!user.phone) {
     if (userHasRoleOtherThanPlayer)
-      errors.push("User roles other than players must have phone number");
+      errors.push('User roles other than players must have phone number');
   }
   if (!user.email) {
     if (userHasRoleOtherThanPlayer)
-      errors.push("User roles other than players must have an email for login");
+      errors.push('User roles other than players must have an email for login');
     else if (userIs14PlusPlayer)
-      errors.push("Players 14 and up require an email for login");
+      errors.push('Players 14 and up require an email for login');
   }
   if (!user.pass)
     if (userHasRoleOtherThanPlayer)
       errors.push(
-        "User roles other than players must have a password for login",
+        'User roles other than players must have a password for login'
       );
     else if (userIs14PlusPlayer)
-      errors.push("Players 14 and up require a password for login");
+      errors.push('Players 14 and up require a password for login');
 
   if (errors.length > 0) return errors;
 };
 
 export { validateUser };
+
+export const userService = {
+  getAllUsers: async () => {
+    return await prisma.user.findMany({
+      select: {
+        id: true,
+        fname: true,
+        lname: true,
+        email: true,
+        primaryRole: true,
+
+        player: {
+          select: {
+            pos1: true,
+            pos2: true,
+            ageGroup: true,
+            team: {
+              select: {
+                id: true,
+                name: true,
+                ageGroup: true,
+              },
+            },
+          },
+        },
+
+        coach: {
+          select: {
+            teams: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  },
+
+  getUsersByChatId: async (chatId: string) => {
+    const chat = await prisma.chat.findUnique({
+      where: { id: chatId },
+      include: {
+        users: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                fname: true,
+                lname: true,
+                primaryRole: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return (chat?.users || [])
+      .map((userChat) => userChat.user)
+      .filter((u) => u !== null);
+  },
+};
