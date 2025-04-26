@@ -1,10 +1,10 @@
-import { ThemedText } from "@/components/ThemedText";
-import { useThemeColor } from "@/hooks/useThemeColor";
-import React from "react";
-import { View, Text, Image, Pressable, StyleSheet } from "react-native";
+import { ThemedText } from '@/components/ThemedText';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import React from 'react';
+import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
 
 interface CardProps {
-  type: "info" | "quickAction" | "groupChat" | "trophy";
+  type: 'info' | 'quickAction' | 'groupChat' | 'trophy';
   title?: string;
   subtitle?: string;
   image?: any;
@@ -22,15 +22,15 @@ export default function Card({
   onPress,
   additionalInfo,
 }: CardProps) {
-  const component = useThemeColor({}, "component");
-  const textColor = useThemeColor({}, "text");
-  const secondaryTextColor = useThemeColor({}, "secondaryText");
+  const component = useThemeColor({}, 'component');
+  const textColor = useThemeColor({}, 'text');
+  const secondaryTextColor = useThemeColor({}, 'secondaryText');
   return (
     <Pressable
       style={[
         styles.card,
         { backgroundColor: component },
-        type === "quickAction" && styles.quickAction,
+        type === 'quickAction' && styles.quickAction,
       ]}
       onPress={onPress}
     >
@@ -39,16 +39,18 @@ export default function Card({
 
       <View style={styles.textContainer}>
         <ThemedText style={[styles.title, { color: textColor }]}>
-          {title}
+          {typeof title === 'string' ? title : String(title)}
         </ThemedText>
         {subtitle && (
           <Text style={[styles.subtitle, { color: secondaryTextColor }]}>
-            {subtitle}
+            {typeof subtitle === 'string' ? subtitle : String(subtitle)}
           </Text>
         )}
         {additionalInfo && (
           <Text style={[styles.additionalInfo, { color: secondaryTextColor }]}>
-            {additionalInfo}
+            {typeof additionalInfo === 'string'
+              ? additionalInfo
+              : String(additionalInfo)}
           </Text>
         )}
       </View>
@@ -59,17 +61,17 @@ export default function Card({
 const styles = StyleSheet.create({
   card: {
     borderRadius: 20,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     padding: 12,
     marginVertical: 6,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
   quickAction: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   image: {
     width: 40,
@@ -87,14 +89,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: "semibold",
+    fontWeight: 'semibold',
   },
   subtitle: {
     fontSize: 14,
-    color: "#666",
+    color: '#666',
   },
   additionalInfo: {
     fontSize: 12,
-    color: "#888",
+    color: '#888',
   },
 });

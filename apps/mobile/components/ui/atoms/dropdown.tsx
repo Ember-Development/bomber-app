@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,9 +6,9 @@ import {
   Pressable,
   FlatList,
   StyleSheet,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useThemeColor } from "@/hooks/useThemeColor";
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 interface SelectOption {
   label: string;
@@ -30,11 +30,11 @@ export default function CustomSelect({
   const [isModalVisible, setModalVisible] = useState(false);
 
   // **Apply Theme Colors**
-  const borderColor = useThemeColor({}, "border");
-  const backgroundColor = useThemeColor({}, "component");
-  const textColor = useThemeColor({}, "text");
-  const placeholderColor = useThemeColor({}, "secondaryText");
-  const modalBackground = useThemeColor({}, "background");
+  const borderColor = useThemeColor({}, 'border');
+  const backgroundColor = useThemeColor({}, 'component');
+  const textColor = useThemeColor({}, 'text');
+  const placeholderColor = useThemeColor({}, 'secondaryText');
+  const modalBackground = useThemeColor({}, 'background');
 
   const handleSelect = (value: string) => {
     setSelectedValue(value);
@@ -101,26 +101,26 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   inputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    height: 50,
-    justifyContent: "space-between",
+    height: 40,
+    justifyContent: 'space-between',
   },
   text: {
     fontSize: 16,
   },
   icon: {
-    position: "absolute",
+    position: 'absolute',
     right: 10,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContent: {
     width: 300,
@@ -133,6 +133,6 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    textAlign: "center",
+    textAlign: 'center',
   },
 });

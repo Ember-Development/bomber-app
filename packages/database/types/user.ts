@@ -33,3 +33,36 @@ export type UserFE = UserDynamic<
 >;
 
 export type UserDB = UserDynamic<[]>;
+
+export type ChatUser = Pick<UserFE, 'id' | 'fname' | 'lname' | 'primaryRole'>;
+
+// Small version for frontend
+export type PublicUserFE = Omit<
+  UserFE,
+  | 'pass'
+  | 'notifications'
+  | 'sentMessages'
+  | 'events'
+  | 'chats'
+  | 'admin'
+  | 'regCoach'
+  | 'parent'
+  | 'fan'
+> & {
+  player?: {
+    pos1: string;
+    pos2: string;
+    ageGroup: string;
+    team?: {
+      id: string;
+      name: string;
+      ageGroup: string;
+    };
+  };
+  coach?: {
+    teams: {
+      id: string;
+      name: string;
+    }[];
+  };
+};
