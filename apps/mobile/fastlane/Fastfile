@@ -2,7 +2,8 @@ default_platform(:ios)
 platform :ios do
   desc "Build and upload to TestFlight"
   lane :beta do
-    # Ensure proper code signing setup
+    setup_ci if ENV['CI']
+
     update_code_signing_settings(
       use_automatic_signing: false,
       path: "ios/bomberapp.xcodeproj",
@@ -10,6 +11,8 @@ platform :ios do
       code_sign_identity: "iPhone Distribution",
       profile_name: "match AppStore com.bomberfastpitch.bomberapp"
     )
+
+    match(type: 'appstore')
 
     # Build the app with explicit provisioning
     build_app(
