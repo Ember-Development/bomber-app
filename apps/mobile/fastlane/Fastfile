@@ -12,8 +12,6 @@ platform :ios do
       profile_name: "match AppStore com.bomberfastpitch.bomberapp"
     )
 
-    match(type: 'appstore')
-
     # Build the app with explicit provisioning
     build_app(
       workspace: "ios/bomberapp.xcworkspace",

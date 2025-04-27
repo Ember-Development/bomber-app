@@ -9,118 +9,128 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: macos-latest
-    defaults:
-      run:
-        working-directory: apps/mobile
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      - name: Install pnpm
+      - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
           version: 8
           run_install: false
 
-      - name: Install dependencies
-        run: pnpm install
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
-      - name: Set up Ruby
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install Dependencies
+        run: |
+          cd apps/mobile
+          pnpm install --strict-peer-dependencies=false
+          gem install bundler
+          bundle install
+
+      - name: Setup iOS certificates and profiles
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2'
-          bundler-cache: true
-          working-directory: apps/mobile
 
-      - name: Install Fastlane
-        run: gem install fastlane
-
-      - name: Set up code signing
+      - name: Install Apple certificate and provisioning profile
         env:
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.IOS_BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_P12_PASSWORD }}
+          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-          APPLE_ID: 'emberdevco@gmail.com'
         run: |
-          # Create a temporary keychain
-          fastlane run create_keychain name:"github_actions_keychain" password:"$KEYCHAIN_PASSWORD" unlock:true default_keychain:true
+          # Create temporary keychain
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
+          # Import certificate to keychain
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode --output $RUNNER_TEMP/build_certificate.p12
+          security import $RUNNER_TEMP/build_certificate.p12 -k $KEYCHAIN_PATH -P "$P12_PASSWORD" -A
 
-          # Set up certificates and provisioning profiles
-          fastlane run match \
-            type:appstore \
-            app_identifier:"com.bomberfastpitch.bomberapp" \
-            username:"$APPLE_ID" \
-            team_id:"56SR3FVFLU" \
-            readonly:false \
-            skip_git:true \
-            keychain_name:"github_actions_keychain" \
-            keychain_password:"$KEYCHAIN_PASSWORD"
+          # Make the keychain default
+          security list-keychains -d user -s $KEYCHAIN_PATH
+          security default-keychain -s $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-          # Set up provisioning profiles using match
-          # Since your git_url is the same as the repo, we don't need to specify it again
-          fastlane run match type:appstore app_identifier:"com.bomberfastpitch.bomberapp" username:"${{ secrets.APPLE_ID }}" team_id:"56SR3FVFLU" readonly:true keychain_name:"github_actions_keychain" keychain_password:"$KEYCHAIN_PASSWORD"
+          # Import provisioning profile
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode --output ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+
+      - name: Update build number
+        run: |
+          cd apps/mobile
+          BUILD_NUMBER=$(($(date +%s) / 60))
+          jq --arg bn "$BUILD_NUMBER" '.expo.ios.buildNumber = $bn' app.json > app.json.tmp && mv app.json.tmp app.json
 
       - name: Setup App Store Connect API Key
         env:
-          APPLE_API_KEY_P8_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}
+          API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APPSTORE_API_ISSUER_ID }}
+          API_KEY_CONTENT: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
         run: |
-          # Decode and save the API key
-          mkdir -p $RUNNER_TEMP/private_keys
-          echo -n "$APPLE_API_KEY_P8_BASE64" | base64 --decode > $RUNNER_TEMP/private_keys/AuthKey_P928568HLS.p8
+          mkdir -p ~/.appstoreconnect/private_keys/
+          echo -n "$API_KEY_CONTENT" > ~/.appstoreconnect/private_keys/AuthKey_$API_KEY_ID.p8
 
-      - name: Deploy to TestFlight
+      - name: Setup certificates and provisioning profiles
         env:
-          APPLE_API_KEY_ID: P928568HLS
-          APPLE_API_ISSUER_ID: 425b5653-6bc0-4e0d-8e8d-a3456d7828d7
+          CERTIFICATE_BASE64: ${{ secrets.IOS_BUILD_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.IOS_P12_PASSWORD }}
+          PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          PROVISIONING_PROFILE_NAME: ${{ secrets.IOS_PROVISIONING_PROFILE_NAME }}
+          KEYCHAIN_PASSWORD: 'temp_password'
         run: |
-          # Create a modified Fastfile with correct path
-          cat > Fastfile.modified << 'EOL'
-          default_platform(:ios)
-          platform :ios do
-            desc "Build and upload to TestFlight"
-            lane :beta do
-              # Ensure proper code signing setup
-              update_code_signing_settings(
-                use_automatic_signing: false,
-                path: "ios/bomberapp.xcodeproj",
-                team_id: "56SR3FVFLU", 
-                code_sign_identity: "iPhone Distribution",
-                profile_name: "match AppStore com.bomberfastpitch.bomberapp"
-              )
-              # Build the app with explicit provisioning
-              build_app(
-                workspace: "ios/bomberapp.xcworkspace",
-                scheme: "bomberapp",
-                xcargs: "-allowProvisioningUpdates",
-                export_method: "app-store",
-                export_options: {
-                  provisioningProfiles: {
-                    "com.bomberfastpitch.bomberapp" => "match AppStore com.bomberfastpitch.bomberapp"
-                  }
-                }
-              )
-              api_key = app_store_connect_api_key(
-                key_id: "P928568HLS",
-                issuer_id: "425b5653-6bc0-4e0d-8e8d-a3456d7828d7",
-                key_filepath: "$RUNNER_TEMP/private_keys/AuthKey_P928568HLS.p8"
-              )
-              upload_to_testflight(
-                skip_waiting_for_build_processing: true,
-                api_key: api_key
-              )
-            end
-          end
-          EOL
+          # Create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security set-keychain-settings -t 3600 -u build.keychain
 
-          # Use the modified Fastfile
-          mv Fastfile.modified Fastfile
+          # Import certificate to keychain
+          echo -n "$CERTIFICATE_BASE64" | base64 --decode > certificate.p12
+          security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
 
-          # Run the beta lane
-          fastlane ios beta
+          # Setup provisioning profile
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          PROFILE_PATH=~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+          echo -n "$PROVISIONING_PROFILE_BASE64" | base64 --decode > "$PROFILE_PATH"
+          echo "CERTIFICATE_PATH=certificate.p12" >> $GITHUB_ENV
+          echo "PROVISIONING_PROFILE_PATH=$PROFILE_PATH" >> $GITHUB_ENV
+          echo "KEYCHAIN_PASSWORD=$KEYCHAIN_PASSWORD" >> $GITHUB_ENV
+
+      - name: Build and Deploy to TestFlight
+        env:
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          PROVISIONING_PROFILE_NAME: ${{ secrets.IOS_PROVISIONING_PROFILE_NAME }}
+          APP_IDENTIFIER: 'com.bomberfastpitch.bomberapp'
+          APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          APPSTORE_API_ISSUER_ID: ${{ secrets.APPSTORE_API_ISSUER_ID }}
+        run: |
+          cd apps/mobile
+          pnpm exec expo prebuild --clean
+          cd ios && pod install
+          cd ..
+          bundle install
+          bundle exec fastlane ios beta
