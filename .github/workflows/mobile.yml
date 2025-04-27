@@ -29,7 +29,7 @@ jobs:
         with:
           version: 8
 
-      - name: 📦 Install dependencies
+      - name: 📦 Install dependencies!
         run: |
           cd apps/mobile
           pnpm install --strict-peer-dependencies=false
