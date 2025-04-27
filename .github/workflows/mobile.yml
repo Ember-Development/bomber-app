@@ -34,18 +34,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: 🏗 Setup EAS
-        uses: expo/expo-github-action@v8
-        with:
-          expo-version: latest
-          eas-version: latest
-          expo-cache: true
-          token: ${{ secrets.EXPO_TOKEN }}
+      - name: 🔐 Install EAS CLI
+        run: npm install -g eas-cli
 
       - name: Build iOS app
         run: |
-          eas credentials --platform ios
           eas build --local -p ios --profile production --non-interactive --output app.ipa
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: 'Upload app to TestFlight'
         uses: apple-actions/upload-testflight-build@v1
