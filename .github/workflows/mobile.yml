@@ -43,7 +43,9 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Build iOS app
-        run: eas build --local -p ios --profile production --non-interactive --output app.ipa --credentials auto
+        run: eas build --local -p ios --profile production --non-interactive --output app.ipa
+        env:
+          EXPO_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: 'Upload app to TestFlight'
         uses: apple-actions/upload-testflight-build@v1
