@@ -39,7 +39,7 @@ jobs:
 
       - name: Build iOS app
         run: |
-          eas build --local -p ios --profile production --non-interactive --output app.ipa
+          eas build --platform ios --profile preview --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
