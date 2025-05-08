@@ -4,6 +4,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { GlobalColors } from '@/constants/Colors';
+import { getCountdown } from '@/utils/FormatEvents';
 
 interface EventCardProps {
   events: {
@@ -13,13 +14,6 @@ interface EventCardProps {
     time: string;
   }[];
 }
-
-// const eventData: Event = {
-//   date: '2025-05-12T19:00:00',
-//   title: 'Texas Bombers 16U - Hitting Practice',
-//   location: 'Bomber Lab Facility',
-//   time: '7:00 PM - 8:30 PM',
-// };
 
 export default function EventCardContainer({ events }: EventCardProps) {
   const [selectedTab, setSelectedTab] = useState<'Upcoming' | 'Past'>(
@@ -31,11 +25,11 @@ export default function EventCardContainer({ events }: EventCardProps) {
   // **Apply Theme Colors**
   const cardBackground = useThemeColor({}, 'component');
   const toggleBackground = useThemeColor({}, 'background');
-  const activeIndicatorColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const secondaryColor = useThemeColor({}, 'component');
   const eventTitleColor = useThemeColor({}, 'buttonText');
 
+  // formatting events
   const now = new Date();
 
   const upcomingEvents = events
@@ -57,19 +51,12 @@ export default function EventCardContainer({ events }: EventCardProps) {
       const now = new Date().getTime();
       const diff = eventTime - now;
 
-      if (diff <= 0) {
-        setCountdown('Event Started');
+      if (!eventTime || isNaN(eventTime)) {
+        setCountdown('Invalid Date');
         return;
       }
 
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor(
-        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-      );
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+      setCountdown(getCountdown(diff));
     };
 
     updateCountdown();
@@ -77,6 +64,7 @@ export default function EventCardContainer({ events }: EventCardProps) {
     return () => clearInterval(interval);
   }, [activeEvent]);
 
+  // tab toggle
   const toggleTab = (tab: 'Upcoming' | 'Past') => {
     setSelectedTab(tab);
     Animated.timing(animatedValue, {
@@ -92,6 +80,10 @@ export default function EventCardContainer({ events }: EventCardProps) {
       outputRange: ['0%', '50%'],
     }),
   };
+
+  if (!events.length) {
+    return <ThemedText style={{ padding: 16 }}>No events available</ThemedText>;
+  }
 
   return (
     <View style={[styles.eventCard, { backgroundColor: cardBackground }]}>
@@ -176,7 +168,7 @@ export default function EventCardContainer({ events }: EventCardProps) {
 
 const styles = StyleSheet.create({
   eventCard: {
-    borderRadius: 12,
+    borderRadius: 18,
     padding: 16,
     marginVertical: 10,
     shadowColor: '#000',

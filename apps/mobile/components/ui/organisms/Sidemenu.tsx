@@ -6,15 +6,15 @@ import {
   Pressable,
   Modal,
   TouchableOpacity,
-  Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Separator from '../atoms/Seperator';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { GlobalColors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+// import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { SIDEMENU_ITEMS } from '@/constants/sidebarItems';
 
 interface UserAvatarProps {
   firstName: string;
@@ -23,7 +23,7 @@ interface UserAvatarProps {
 
 export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
   const [menuVisible, setMenuVisible] = useState(false);
-  const { theme, toggleTheme } = useColorScheme();
+  // const { theme, toggleTheme } = useColorScheme();
 
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 
@@ -34,7 +34,12 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
 
   return (
     <>
-      <Pressable onPress={() => setMenuVisible(true)} style={styles.avatar}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`open menu for ${firstName} ${lastName}`}
+        onPress={() => setMenuVisible(true)}
+        style={styles.avatar}
+      >
         <Text style={[styles.avatarText, { color: textColor }]}>
           {initials}
         </Text>
@@ -62,7 +67,11 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
                 </View>
               </View>
 
-              <TouchableOpacity onPress={() => setMenuVisible(false)}>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Close menu"
+                onPress={() => setMenuVisible(false)}
+              >
                 <Ionicons name="close" size={26} color={textColor} />
               </TouchableOpacity>
             </View>
@@ -70,32 +79,7 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
             <Separator marginVertical={4} />
 
             <View style={styles.menuItems}>
-              {[
-                {
-                  name: 'Teams',
-                  icon: 'people-outline' as keyof typeof Ionicons.glyphMap,
-                },
-                {
-                  name: 'Media',
-                  icon: 'play-outline' as keyof typeof Ionicons.glyphMap,
-                },
-                {
-                  name: 'Legacy',
-                  icon: 'school-outline' as keyof typeof Ionicons.glyphMap,
-                },
-                {
-                  name: 'Bomber Portal',
-                  icon: 'book-outline' as keyof typeof Ionicons.glyphMap,
-                },
-                {
-                  name: 'About Us',
-                  icon: 'flag-outline' as keyof typeof Ionicons.glyphMap,
-                },
-                {
-                  name: 'Player Development',
-                  icon: 'star-outline' as keyof typeof Ionicons.glyphMap,
-                },
-              ].map((item, index) => (
+              {SIDEMENU_ITEMS.map((item, index) => (
                 <Pressable key={index} style={styles.menuItem}>
                   <Ionicons name={item.icon} size={24} color={icons} />
                   <ThemedText style={[styles.menuText, { color: textColor }]}>
@@ -221,7 +205,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 16,
-    fontWeight: 'semibold',
+    fontWeight: '600',
     color: '#6D6D6D',
   },
   themeToggleContainer: {

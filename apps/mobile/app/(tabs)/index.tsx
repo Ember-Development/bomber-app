@@ -19,15 +19,36 @@ import { legacyItems, mockArticles, mockVideos } from '@/constants/items';
 import { createHomeStyles } from '@/styles/homeStyle';
 import { Ionicons } from '@expo/vector-icons';
 
+const QUICK_ACTIONS = [
+  {
+    title: 'Payments',
+    icon: require('@/assets/images/react-logo.png'),
+    onPress: () => alert('Payments Clicked!'),
+  },
+  {
+    title: 'My Teams',
+    icon: require('@/assets/images/react-logo.png'),
+    onPress: () => alert('My Teams Clicked!'),
+  },
+];
+
 export default function HomeScreen() {
   const user = useCurrentUser();
   const { data: rawEvents } = useUserEvents(user?.id);
   const { data: userChats } = useUserChats(user?.id);
-  const styles = createHomeStyles('light');
+  const styles = createHomeStyles();
   const router = useRouter();
+
+  // Inline hardcoded functions (TODO: add true logic)
+  const handlePaymentPress = () => alert('Payment Reroute Clicked');
+  const handleTeamsPress = () => alert('Teams Reroute Clicked');
+  const seeAllEvents = () => alert('See All Events Clicked');
+  const seeAllGroups = () => alert('See All Groups Clicked');
+  const seeAllMedia = () => alert('See All Media Clicked');
 
   const formattedEvents = formatEvents(rawEvents ?? []);
 
+  // scroll animation
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const headerHeight = scrollY.interpolate({
@@ -41,6 +62,15 @@ export default function HomeScreen() {
     outputRange: [1, 0.9],
     extrapolate: 'clamp',
   });
+
+  // fallback
+  if (!user || !rawEvents || !userChats) {
+    return (
+      <SafeAreaView style={styles.safeContainer}>
+        <ThemedText type="title">Loading...</ThemedText>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeContainer}>
@@ -76,28 +106,16 @@ export default function HomeScreen() {
                 {user?.fname} {user?.lname}
               </ThemedText>
             </View>
-            <UserAvatar
-              firstName={user?.fname ?? 'First'}
-              lastName={user?.lname ?? 'Last'}
-            />
+            <UserAvatar firstName={user?.fname} lastName={user?.lname} />
           </View>
         </Animated.View>
 
         {/* Quick Actions */}
         <View style={styles.quickAction}>
           <View style={styles.myActions}>
-            <Card
-              type="quickAction"
-              title="Payments"
-              icon={require('@/assets/images/react-logo.png')}
-              onPress={() => alert('Payments Clicked!')}
-            />
-            <Card
-              type="quickAction"
-              title="My Teams"
-              icon={require('@/assets/images/react-logo.png')}
-              onPress={() => alert('My Teams Clicked!')}
-            />
+            {QUICK_ACTIONS.map((item) => (
+              <Card key={item.title} type="quickAction" {...item} />
+            ))}
           </View>
           <View style={styles.notifications}>
             <NotificationCard />
@@ -111,7 +129,7 @@ export default function HomeScreen() {
             <CustomButton
               title="See All"
               variant="text"
-              onPress={() => console.log('See All Events')}
+              onPress={seeAllEvents}
               fullWidth={false}
             />
           </View>
@@ -125,7 +143,7 @@ export default function HomeScreen() {
             <CustomButton
               title="See All"
               variant="text"
-              onPress={() => console.log('See All Groups')}
+              onPress={seeAllGroups}
               fullWidth={false}
             />
           </View>
@@ -169,10 +187,12 @@ export default function HomeScreen() {
           <View style={styles.legacyList}>
             {legacyItems.map((item) => (
               <TouchableOpacity style={styles.legacyCard} key={item.title}>
-                <View style={styles.iconWrapper}>
-                  <Ionicons name={item.icon} size={24} color="#000" />
+                <View style={styles.legacyItems}>
+                  <View style={styles.iconWrapper}>
+                    <Ionicons name={item.icon} size={24} color="#000" />
+                  </View>
+                  <ThemedText type="default">{item.title}</ThemedText>
                 </View>
-                <ThemedText type="default">{item.title}</ThemedText>
                 <Ionicons name="chevron-forward" size={20} color="#ccc" />
               </TouchableOpacity>
             ))}
@@ -186,7 +206,7 @@ export default function HomeScreen() {
             <CustomButton
               title="See All"
               variant="text"
-              onPress={() => console.log('See All Media')}
+              onPress={seeAllMedia}
               fullWidth={false}
             />
           </View>

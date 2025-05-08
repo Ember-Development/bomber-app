@@ -1,7 +1,6 @@
 import { Platform, StyleSheet } from 'react-native';
-import { Colors, GlobalColors } from '@/constants/Colors';
 
-export const createHomeStyles = (theme: 'light' | 'dark') =>
+export const createHomeStyles = () =>
   StyleSheet.create({
     safeContainer: {
       flex: 1,
@@ -36,7 +35,7 @@ export const createHomeStyles = (theme: 'light' | 'dark') =>
       alignItems: 'flex-start',
       gap: 8,
       paddingHorizontal: 20,
-      marginVertical: 10,
+      marginVertical: 6,
     },
     myActions: {
       width: '50%',
@@ -50,7 +49,7 @@ export const createHomeStyles = (theme: 'light' | 'dark') =>
     event: {
       flexDirection: 'column',
       paddingHorizontal: 20,
-      marginVertical: 10,
+      marginVertical: 6,
     },
     EventText: {
       width: '100%',
@@ -61,7 +60,7 @@ export const createHomeStyles = (theme: 'light' | 'dark') =>
     groups: {
       flexDirection: 'column',
       paddingHorizontal: 20,
-      marginVertical: 10,
+      marginVertical: 6,
     },
     legacy: {
       flexDirection: 'column',
@@ -77,6 +76,7 @@ export const createHomeStyles = (theme: 'light' | 'dark') =>
     legacyCard: {
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'space-between',
       backgroundColor: '#fff',
       borderRadius: 20,
       padding: 16,
@@ -86,6 +86,11 @@ export const createHomeStyles = (theme: 'light' | 'dark') =>
       shadowOpacity: 0.3,
       shadowRadius: 4,
       elevation: 3,
+    },
+    legacyItems: {
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
     },
     iconWrapper: {
       backgroundColor: '#bebebe',
