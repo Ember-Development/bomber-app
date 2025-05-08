@@ -1,14 +1,21 @@
 import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import React from 'react';
-import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  Pressable,
+  StyleSheet,
+  ImageSourcePropType,
+} from 'react-native';
 
 interface CardProps {
   type: 'info' | 'quickAction' | 'groupChat' | 'trophy';
   title?: string;
   subtitle?: string;
-  image?: any;
-  icon?: any;
+  image?: ImageSourcePropType;
+  icon?: ImageSourcePropType;
   onPress?: () => void;
   additionalInfo?: string;
 }
@@ -25,14 +32,18 @@ export default function Card({
   const component = useThemeColor({}, 'component');
   const textColor = useThemeColor({}, 'text');
   const secondaryTextColor = useThemeColor({}, 'secondaryText');
+
+  const safeTitle = title?.toString() ?? '';
+
   return (
     <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={title}
       style={[
         styles.card,
         { backgroundColor: component },
         type === 'quickAction' && styles.quickAction,
         type === 'groupChat' && { width: 220, marginRight: 10 },
-        { flex: 1 },
       ]}
       onPress={onPress}
     >
@@ -40,13 +51,15 @@ export default function Card({
       {icon && <Image source={icon} style={styles.icon} />}
 
       <View style={styles.textContainer}>
-        <ThemedText
-          style={[styles.title, { color: textColor }]}
-          numberOfLines={1}
-          ellipsizeMode="tail"
-        >
-          {typeof title === 'string' ? title : String(title)}
-        </ThemedText>
+        {safeTitle && (
+          <ThemedText
+            style={[styles.title, { color: textColor }]}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {safeTitle}
+          </ThemedText>
+        )}
         {subtitle && (
           <Text style={[styles.subtitle, { color: secondaryTextColor }]}>
             {typeof subtitle === 'string' ? subtitle : String(subtitle)}
@@ -72,9 +85,10 @@ const styles = StyleSheet.create({
     marginVertical: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.5,
     shadowRadius: 4,
     elevation: 3,
+    flex: 1,
   },
   quickAction: {
     flexDirection: 'row',

@@ -1,39 +1,69 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
   ImageBackground,
   StyleSheet,
   Pressable,
+  Animated,
+  ImageSourcePropType,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 interface VideoCardProps {
-  image: any;
+  image: ImageSourcePropType;
   title: string;
   onPress: () => void;
 }
 
 export default function VideoCard({ image, title, onPress }: VideoCardProps) {
+  const onScale = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(onScale, {
+      toValue: 0.96,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 10,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(onScale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 20,
+      bounciness: 8,
+    }).start();
+  };
+
   return (
-    <Pressable style={styles.card} onPress={onPress}>
-      <ImageBackground
-        source={image}
-        style={styles.image}
-        imageStyle={{ borderRadius: 20 }}
-      >
-        <View style={styles.content}>
-          <Ionicons
-            name="play-circle-sharp"
-            size={40}
-            color="#5194E5"
-            style={styles.playIcon}
-          />
+    <Pressable
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+    >
+      <Animated.View style={[styles.card, { transform: [{ scale: onScale }] }]}>
+        <View style={styles.imageWrapper}>
+          <ImageBackground
+            source={image}
+            style={styles.image}
+            imageStyle={{ borderRadius: 20 }}
+          >
+            <View style={styles.content}>
+              <Ionicons
+                name="play-circle-sharp"
+                size={40}
+                color="#5194E5"
+                style={styles.playIcon}
+              />
+            </View>
+            <View style={styles.bottomFade}>
+              <Text style={styles.title}>{title}</Text>
+            </View>
+          </ImageBackground>
         </View>
-        <View style={styles.bottomFade}>
-          <Text style={styles.title}>{title}</Text>
-        </View>
-      </ImageBackground>
+      </Animated.View>
     </Pressable>
   );
 }
@@ -43,6 +73,10 @@ const styles = StyleSheet.create({
     width: 160,
     height: 210,
     marginRight: 12,
+    borderRadius: 20,
+  },
+  imageWrapper: {
+    flex: 1,
     borderRadius: 20,
     overflow: 'hidden',
   },

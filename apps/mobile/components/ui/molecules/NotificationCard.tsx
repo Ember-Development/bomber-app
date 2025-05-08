@@ -13,6 +13,7 @@ import Separator from '../atoms/Seperator';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { GlobalColors } from '@/constants/Colors';
 
+// todo: change to database type and add isNew Property
 interface Notification {
   id: string;
   message: string;
@@ -20,6 +21,7 @@ interface Notification {
   isNew: boolean;
 }
 
+// TODO: Replace with real notifications from backend
 const notifications: Notification[] = [
   {
     id: '1',
@@ -73,6 +75,8 @@ export default function NotificationCard() {
   return (
     <View>
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="View Notifications"
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onPress={() => setModalVisible(true)}
@@ -127,7 +131,10 @@ export default function NotificationCard() {
                     <Ionicons name="trash-outline" size={22} color="red" />
                   </Pressable>
                 )}
-                <Pressable onPress={() => setModalVisible(false)}>
+                <Pressable
+                  accessibilityLabel="Close notifications"
+                  onPress={() => setModalVisible(false)}
+                >
                   <Ionicons name="close" size={24} color={iconColor} />
                 </Pressable>
               </View>
@@ -137,8 +144,10 @@ export default function NotificationCard() {
 
             {notificationsData.length > 0 ? (
               <FlatList
-                data={notifications}
+                data={notificationsData}
                 keyExtractor={(item) => item.id}
+                initialNumToRender={5}
+                windowSize={10}
                 renderItem={({ item }) => (
                   <View
                     style={[
@@ -195,12 +204,13 @@ export default function NotificationCard() {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 15,
+    marginVertical: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
     elevation: 3,
   },
   cardHeader: {
