@@ -103,4 +103,48 @@ export const userService = {
       .map((userChat) => userChat.user)
       .filter((u) => u !== null);
   },
+
+  getUserEvents: async (userId: string) => {
+    return await prisma.eventAttendance.findMany({
+      where: { userID: userId },
+      include: {
+        event: {
+          include: {
+            tournament: true,
+          },
+        },
+      },
+    });
+  },
+
+  getUserChats: async (userId: string) => {
+    return await prisma.chat.findMany({
+      where: {
+        users: {
+          some: { userID: userId },
+        },
+      },
+      include: {
+        users: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                fname: true,
+                lname: true,
+                primaryRole: true,
+              },
+            },
+          },
+        },
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  },
 };
