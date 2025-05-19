@@ -1,4 +1,5 @@
-import { prisma } from '@bomber-app/database';
+import { prisma, User } from '@bomber-app/database';
+import { updateUser } from '../controllers/userController';
 
 //FIXME: replace the any once we have full types
 const validateUser = (user: any) => {
@@ -145,6 +146,46 @@ export const userService = {
       orderBy: {
         createdAt: 'desc',
       },
+    });
+  },
+
+  updateUser: async (userId: string, data: any) => {
+    return await prisma.user.update({
+      where: { id: userId },
+      data: {
+        fname: data.fname,
+        lname: data.lname,
+        email: data.email,
+        phone: data.phone,
+        ...(data.player && {
+          player: {
+            update: {
+              pos1: data.player.pos1,
+              pos2: data.player.pos2,
+              jerseyNum: data.player.jerseyNum,
+              gradYear: data.player.gradYear,
+              college: data.player.college,
+              jerseySize: data.player.jerseySize,
+              pantSize: data.player.pantSize,
+              stirrupSize: data.player.stirrupSize,
+              shortSize: data.player.shortSize,
+              practiceShortSize: data.player.practiceShortSize,
+              ...(data.player.address && {
+                address: {
+                  update: {
+                    address1: data.player.address.address1,
+                    address2: data.player.address.address2,
+                    city: data.player.address.city,
+                    state: data.player.address.state,
+                    zip: data.player.address.zip,
+                  },
+                },
+              }),
+            },
+          },
+        }),
+      },
+      include: { player: { include: { address: true } } },
     });
   },
 };

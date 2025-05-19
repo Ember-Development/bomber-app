@@ -46,3 +46,16 @@ export const getUserChats = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch user chats' });
   }
 };
+
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    console.log('🧭 req.params.id:', req.params.id); // 👈 Check this
+    console.log('🔧 Update payload received:', req.body); // 👈 log payload
+    const user = await userService.updateUser(req.params.id, req.body);
+    console.log('✅ Updated user:', user); // 👈 log result
+    return res.json(user);
+  } catch (err) {
+    console.error('❌ Error updating user:', err);
+    return res.status(500).json({ error: 'Failed to update user' });
+  }
+};
