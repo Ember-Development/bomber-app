@@ -10,13 +10,17 @@ import {
   StatusBar,
   Dimensions,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCurrentUser } from '@/hooks/user/useCurrentUser';
 import ProfileTabs from '../profile/profile-tab';
+import FullScreenModal from '@/components/ui/organisms/FullSheetModal';
+import EditProfileContent from '../profile/edit-profile';
+import { useQueryClient } from '@tanstack/react-query';
 
-const HEADER_MAX_HEIGHT = 200;
-const HEADER_MIN_HEIGHT = 130;
+const HEADER_MAX_HEIGHT = 250;
+const HEADER_MIN_HEIGHT = 110;
 const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 const AVATAR_MAX = 67;
 const AVATAR_MIN = 36;
@@ -25,23 +29,38 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const avatarCenteredX = (SCREEN_WIDTH - AVATAR_MAX) / 2;
 
 export default function ProfileScreen() {
-  const user = useCurrentUser();
+  const { data: user, isLoading } = useCurrentUser();
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   const [scrollEnabled, setScrollEnabled] = useState(false);
+  const [editVisible, setEditVisible] = useState(false);
+  const queryClient = useQueryClient();
 
-  if (!user) return null;
+  if (isLoading || !user) {
+    return (
+      <SafeAreaView
+        style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+      >
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 12 }}>Loading Profile...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <StatusBar barStyle="light-content" />
-      <AnimatedHeader user={user} scrollY={scrollY} />
+      <AnimatedHeader
+        user={user}
+        scrollY={scrollY}
+        onEditPress={() => setEditVisible(true)}
+      />
       <Animated.ScrollView
         ref={scrollViewRef}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         scrollEnabled={scrollEnabled}
-        contentContainerStyle={{ paddingTop: 180 }}
+        contentContainerStyle={{ paddingTop: 220 }}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: false }
@@ -58,19 +77,42 @@ export default function ProfileScreen() {
             scrollViewRef.current?.scrollTo({ y: 0, animated: true });
           } else if (offsetY < HEADER_SCROLL_DISTANCE) {
             scrollViewRef.current?.scrollTo({
-              y: HEADER_SCROLL_DISTANCE + 12,
+              y: HEADER_MAX_HEIGHT,
               animated: true,
             });
           }
         }}
       >
         <ProfileTabs user={user} />
+        <View style={{ height: 40 }} />
       </Animated.ScrollView>
+
+      <FullScreenModal
+        isVisible={editVisible}
+        onClose={() => setEditVisible(false)}
+        title="Edit Profile"
+      >
+        <EditProfileContent
+          user={user}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['current-user'] });
+            setEditVisible(false);
+          }}
+        />
+      </FullScreenModal>
     </SafeAreaView>
   );
 }
 
-function AnimatedHeader({ user, scrollY }: any) {
+function AnimatedHeader({
+  user,
+  scrollY,
+  onEditPress,
+}: {
+  user: any;
+  scrollY: Animated.Value;
+  onEditPress: () => void;
+}) {
   const headerHeight = scrollY.interpolate({
     inputRange: [0, HEADER_SCROLL_DISTANCE],
     outputRange: [HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
@@ -85,7 +127,7 @@ function AnimatedHeader({ user, scrollY }: any) {
 
   const avatarTop = scrollY.interpolate({
     inputRange: [0, HEADER_SCROLL_DISTANCE],
-    outputRange: [40, 10],
+    outputRange: [80, 10],
     extrapolate: 'clamp',
   });
 
@@ -108,7 +150,7 @@ function AnimatedHeader({ user, scrollY }: any) {
   });
 
   const compactOpacity = scrollY.interpolate({
-    inputRange: [HEADER_SCROLL_DISTANCE - 40, HEADER_SCROLL_DISTANCE],
+    inputRange: [HEADER_SCROLL_DISTANCE, HEADER_SCROLL_DISTANCE],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
@@ -163,7 +205,7 @@ function AnimatedHeader({ user, scrollY }: any) {
       <Animated.View
         style={[styles.editButtonCenter, { opacity: fullEditOpacity }]}
       >
-        <TouchableOpacity style={styles.editButton} onPress={() => {}}>
+        <TouchableOpacity style={styles.editButton} onPress={onEditPress}>
           <Text style={styles.editButtonText}>Edit Profile</Text>
         </TouchableOpacity>
       </Animated.View>
@@ -196,7 +238,10 @@ function AnimatedHeader({ user, scrollY }: any) {
               {user.fname} {user.lname}
             </Text>
           </View>
-          <TouchableOpacity style={styles.compactEditButton} onPress={() => {}}>
+          <TouchableOpacity
+            style={styles.compactEditButton}
+            onPress={onEditPress}
+          >
             <Text style={styles.editButtonTextSmall}>Edit</Text>
           </TouchableOpacity>
         </View>

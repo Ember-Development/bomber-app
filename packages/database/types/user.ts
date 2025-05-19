@@ -4,7 +4,7 @@ type Relations = {
   admin: { admin: true };
   coach: { coach: true };
   regCoach: { regCoach: true };
-  player: { player: true };
+  player: { player: { include: { address: true; team: true } } };
   parent: { parent: true };
   fan: { fan: true };
   sentMessages: { sentMessages: true };

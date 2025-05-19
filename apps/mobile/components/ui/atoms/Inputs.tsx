@@ -105,12 +105,12 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    marginBottom: 5, // Add spacing between label and input
+    marginBottom: 5,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: 20,
     paddingHorizontal: 10,
     borderWidth: 0.5,
     height: 50,
