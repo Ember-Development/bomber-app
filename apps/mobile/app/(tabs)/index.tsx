@@ -18,7 +18,7 @@ import EventCardContainer from '@/components/ui/molecules/EventCard/SpotlightEve
 import ArticleCard from '@/components/ui/molecules/ArticleCard';
 import VideoCard from '@/components/ui/molecules/MediaCards';
 
-import { useCurrentUser } from '@/hooks/user/useCurrentUser';
+import { useUserContext } from '@/context/useUserContext';
 import { useUserEvents, useUserChats } from '@/hooks/useUser';
 import { formatEvents } from '@/utils/FormatEvents';
 import { legacyItems, mockArticles, mockVideos } from '@/constants/items';
@@ -39,7 +39,7 @@ const QUICK_ACTIONS = [
 ];
 
 export default function HomeScreen() {
-  const { data: user, isLoading: isUserLoading } = useCurrentUser();
+  const { user, refetch } = useUserContext();
   const { data: rawEvents, isLoading: isEventsLoading } = useUserEvents(
     user?.id
   );
@@ -69,7 +69,7 @@ export default function HomeScreen() {
     extrapolate: 'clamp',
   });
 
-  if (isUserLoading || isEventsLoading || isChatsLoading || !user) {
+  if (!user || isEventsLoading || isChatsLoading || !user) {
     return (
       <SafeAreaView style={styles.safeContainer}>
         <ActivityIndicator size="large" />

@@ -157,33 +157,29 @@ export const userService = {
         lname: data.lname,
         email: data.email,
         phone: data.phone,
-        ...(data.player && {
-          player: {
-            update: {
-              pos1: data.player.pos1,
-              pos2: data.player.pos2,
-              jerseyNum: data.player.jerseyNum,
-              gradYear: data.player.gradYear,
-              college: data.player.college,
-              jerseySize: data.player.jerseySize,
-              pantSize: data.player.pantSize,
-              stirrupSize: data.player.stirrupSize,
-              shortSize: data.player.shortSize,
-              practiceShortSize: data.player.practiceShortSize,
-              ...(data.player.address && {
-                address: {
-                  update: {
-                    address1: data.player.address.address1,
-                    address2: data.player.address.address2,
-                    city: data.player.address.city,
-                    state: data.player.address.state,
-                    zip: data.player.address.zip,
-                  },
-                },
-              }),
+        player: {
+          update: {
+            pos1: data.pos1,
+            pos2: data.pos2,
+            jerseyNum: data.jerseyNum,
+            gradYear: data.gradYear,
+            college: data.college,
+            jerseySize: data.jerseySize,
+            pantSize: data.pantSize,
+            stirrupSize: data.stirrupSize,
+            shortSize: data.shortSize,
+            practiceShortSize: data.practiceShortSize,
+            address: {
+              update: {
+                address1: data.address1,
+                address2: data.address2,
+                city: data.city,
+                state: data.state,
+                zip: data.zip,
+              },
             },
           },
-        }),
+        },
       },
       include: { player: { include: { address: true } } },
     });

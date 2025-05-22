@@ -13,7 +13,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCurrentUser } from '@/hooks/user/useCurrentUser';
+import { useUserContext } from '@/context/useUserContext';
 import ProfileTabs from '../profile/profile-tab';
 import FullScreenModal from '@/components/ui/organisms/FullSheetModal';
 import EditProfileContent from '../profile/edit-profile';
@@ -29,14 +29,14 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const avatarCenteredX = (SCREEN_WIDTH - AVATAR_MAX) / 2;
 
 export default function ProfileScreen() {
-  const { data: user, isLoading } = useCurrentUser();
+  const { user, refetch } = useUserContext();
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   const [scrollEnabled, setScrollEnabled] = useState(false);
   const [editVisible, setEditVisible] = useState(false);
   const queryClient = useQueryClient();
 
-  if (isLoading || !user) {
+  if (!user) {
     return (
       <SafeAreaView
         style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
