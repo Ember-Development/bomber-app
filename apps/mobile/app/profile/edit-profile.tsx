@@ -25,6 +25,7 @@ import {
 import { US_STATES } from '@/utils/state';
 import CustomSelect from '@/components/ui/atoms/dropdown';
 import { useUpdateUser } from '@/hooks/useUser';
+import { useUserContext } from '@/context/useUserContext';
 
 interface Props {
   user: UserFE;
@@ -35,11 +36,11 @@ const EditProfileContent: React.FC<Props> = ({ user, onSuccess }) => {
   const [activeTab, setActiveTab] = useState<'info' | 'contact' | 'gear'>(
     'info'
   );
+  const { refetch } = useUserContext();
+  const [isPending, setIsPending] = useState(false);
 
-  const { mutate: updateUser, isPending } = useUpdateUser(user.id, {
-    onSuccess: () => {
-      onSuccess?.();
-    },
+  const { mutate: updateUser } = useUpdateUser(user.id, {
+    onSuccess: () => console.log('Update successful'),
   });
 
   const [formData, setFormData] = useState({
@@ -63,6 +64,20 @@ const EditProfileContent: React.FC<Props> = ({ user, onSuccess }) => {
     shortSize: user.player?.shortSize,
     practiceShortSize: user.player?.practiceShortSize,
   });
+
+  const handleSubmit = () => {
+    setIsPending(true);
+    updateUser(formData, {
+      onSuccess: () => {
+        console.log('✅ User updated!');
+        refetch();
+        onSuccess?.();
+      },
+      onSettled: () => {
+        setIsPending(false);
+      },
+    });
+  };
 
   const renderTab = () => {
     switch (activeTab) {
@@ -284,11 +299,7 @@ const EditProfileContent: React.FC<Props> = ({ user, onSuccess }) => {
           <TouchableOpacity
             style={[styles.updateButton, isPending && { opacity: 0.6 }]}
             disabled={isPending}
-            onPress={() => {
-              console.log('🟢 Submitting update for ID:', user.id);
-              console.log('📦 Payload:', formData);
-              updateUser(formData);
-            }}
+            onPress={handleSubmit}
           >
             <Text style={styles.updateText}>
               {isPending ? 'Updating...' : 'Update Account'}

@@ -1,7 +1,7 @@
 import React, { createContext, useContext } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { UserFE } from '@bomber-app/database';
+import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/hooks/user/useCurrentUser';
+import { UserFE } from '@bomber-app/database';
 
 const UserContext = createContext<{
   user: UserFE | undefined;
@@ -16,16 +16,13 @@ export const useUserContext = () => useContext(UserContext);
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const queryClient = useQueryClient();
-  const { data, refetch } = useQuery({
+  const { data, refetch } = useQuery<UserFE | undefined>({
     queryKey: ['currentUser'],
     queryFn: useCurrentUser,
   });
 
-  const user = data as UserFE | undefined;
-
   return (
-    <UserContext.Provider value={{ user, refetch }}>
+    <UserContext.Provider value={{ user: data, refetch }}>
       {children}
     </UserContext.Provider>
   );
