@@ -18,6 +18,8 @@ import ProfileTabs from '../profile/profile-tab';
 import FullScreenModal from '@/components/ui/organisms/FullSheetModal';
 import EditProfileContent from '../profile/edit-profile';
 import { useQueryClient } from '@tanstack/react-query';
+import { UserFE } from '@bomber-app/database';
+import BomberIcon from '@/assets/images/bomber-icon.png';
 
 const HEADER_MAX_HEIGHT = 250;
 const HEADER_MIN_HEIGHT = 110;
@@ -29,7 +31,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const avatarCenteredX = (SCREEN_WIDTH - AVATAR_MAX) / 2;
 
 export default function ProfileScreen() {
-  const { user, refetch } = useUserContext();
+  const { user } = useUserContext();
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   const [scrollEnabled, setScrollEnabled] = useState(false);
@@ -109,7 +111,7 @@ function AnimatedHeader({
   scrollY,
   onEditPress,
 }: {
-  user: any;
+  user: UserFE;
   scrollY: Animated.Value;
   onEditPress: () => void;
 }) {
@@ -186,9 +188,7 @@ function AnimatedHeader({
         ]}
       >
         <Animated.Image
-          source={{
-            uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Baseball_icon.svg/1024px-Baseball_icon.svg.png',
-          }}
+          source={BomberIcon}
           style={[styles.avatar, { width: avatarSize, height: avatarSize }]}
         />
       </Animated.View>
@@ -228,12 +228,7 @@ function AnimatedHeader({
               gap: 8,
             }}
           >
-            <Image
-              source={{
-                uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Baseball_icon.svg/1024px-Baseball_icon.svg.png',
-              }}
-              style={styles.compactAvatar}
-            />
+            <Image source={BomberIcon} style={styles.compactAvatar} />
             <Text style={styles.compactRowName}>
               {user.fname} {user.lname}
             </Text>
@@ -263,13 +258,13 @@ const styles = StyleSheet.create({
   },
   avatarWrapper: {
     position: 'absolute',
-    backgroundColor: '#fff',
+    backgroundColor: '#000',
     borderRadius: 999,
     overflow: 'hidden',
   },
   avatar: {
     borderRadius: 999,
-    backgroundColor: '#fff',
+    backgroundColor: '#000',
   },
   nameRow: {
     flexDirection: 'row',
@@ -317,7 +312,7 @@ const styles = StyleSheet.create({
     width: AVATAR_MIN,
     height: AVATAR_MIN,
     borderRadius: AVATAR_MIN / 2,
-    backgroundColor: '#fff',
+    backgroundColor: '#000',
   },
   compactEditButton: {
     backgroundColor: '#fff',

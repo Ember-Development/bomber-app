@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 interface ProfileTabsProps {
-  user: any; // Replace with UserFE type later
+  user: any;
 }
 
 export default function ProfileTabs({ user }: ProfileTabsProps) {
