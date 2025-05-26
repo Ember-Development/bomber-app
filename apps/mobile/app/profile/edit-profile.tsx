@@ -69,7 +69,6 @@ const EditProfileContent: React.FC<Props> = ({ user, onSuccess }) => {
     setIsPending(true);
     updateUser(formData, {
       onSuccess: () => {
-        console.log('✅ User updated!');
         refetch();
         onSuccess?.();
       },
