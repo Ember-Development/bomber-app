@@ -30,7 +30,6 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 
   // theme
-  const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const icons = useThemeColor({}, 'icon');
 
@@ -49,7 +48,7 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
 
       <Modal visible={menuVisible} animationType="fade" transparent>
         <View style={styles.modalContainer}>
-          <ThemedView style={[styles.sidebar, { backgroundColor }]}>
+          <ThemedView style={[styles.sidebar]}>
             <View style={styles.profileHeader}>
               <View style={styles.profileDetails}>
                 <View style={styles.avatarLarge}>
@@ -159,6 +158,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     paddingTop: 50,
+
     paddingHorizontal: 20,
   },
   profileHeader: {

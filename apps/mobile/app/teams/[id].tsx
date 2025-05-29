@@ -13,11 +13,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { useTeamById } from '@/hooks/teams/useTeams';
 import { US_STATES } from '@/utils/state';
-import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { getRegionLabel } from '@/utils/region';
 import ProfileModal from './components/profileModal';
 import { usePlayerById } from '@/hooks/teams/usePlayerById';
+import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 
 const { width } = Dimensions.get('window');
 
@@ -77,187 +77,174 @@ export default function TeamPage() {
   const regionLabel = getRegionLabel(team.region);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView>
-        {/* Hero Image Banner */}
-        <View style={styles.heroContainer}>
-          <Image
-            source={require('@/assets/images/bomberback.jpg')}
-            style={styles.heroImage}
-          />
-          <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.85)']}
-            style={styles.heroOverlay}
-          />
+    <BackgroundWrapper>
+      <SafeAreaView style={styles.container}>
+        <ScrollView>
           <View style={styles.heroTextWrap}>
             <Text style={styles.heroTitle}>{team.name}</Text>
             <Text style={styles.heroSubtitle}>
               {team.ageGroup} • {regionLabel} • {stateLabel}
             </Text>
           </View>
-        </View>
 
-        {/* Tabs */}
-        <View style={styles.segmentTabs}>
-          {['Info', 'Roster', 'Staff'].map((tab) => (
-            <TabButton
-              key={tab}
-              label={tab}
-              active={activeTab === tab}
-              onPress={() => setActiveTab(tab as any)}
-            />
-          ))}
-        </View>
-
-        {/* Info Tab Layout */}
-        {activeTab === 'Info' && (
-          <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>Team Overview</Text>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Coach</Text>
-              <Text style={styles.infoValue}>{coachName}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Region</Text>
-              <Text style={styles.infoValue}>{regionLabel}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Age Group</Text>
-              <Text style={styles.infoValue}>{team.ageGroup}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>State</Text>
-              <Text style={styles.infoValue}>{stateLabel}</Text>
-            </View>
-
-            <Text style={[styles.infoTitle, { marginTop: 24 }]}>
-              Trophy Case
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {team.trophyCase.length > 0 ? (
-                team.trophyCase.map((trophy) => (
-                  <BlurView
-                    key={trophy.id}
-                    intensity={50}
-                    tint="dark"
-                    style={styles.trophyCard}
-                  >
-                    <Image
-                      source={{ uri: trophy.imageURL }}
-                      style={styles.trophyImage}
-                    />
-                    <Text style={styles.trophyText}>{trophy.title}</Text>
-                  </BlurView>
-                ))
-              ) : (
-                <Text style={styles.empty}>No trophies yet.</Text>
-              )}
-            </ScrollView>
-          </View>
-        )}
-
-        {/* Roster Tab Layout */}
-        {activeTab === 'Roster' && (
-          <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>Team Roster</Text>
-            {team.players.map((player) => (
-              <TouchableOpacity
-                key={player.id}
-                style={styles.playerCard}
-                onPress={() => openPlayerModal(player.id)}
-              >
-                <View style={styles.playerAvatar} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.playerName}>
-                    {player.user?.fname} {player.user?.lname}
-                  </Text>
-                  <Text style={styles.playerDetails}>
-                    #{player.jerseyNum} • {player.pos1} / {player.pos2} • Grad{' '}
-                    {player.gradYear}
-                  </Text>
-                </View>
-              </TouchableOpacity>
+          <View style={styles.segmentTabs}>
+            {['Info', 'Roster', 'Staff'].map((tab) => (
+              <TabButton
+                key={tab}
+                label={tab}
+                active={activeTab === tab}
+                onPress={() => setActiveTab(tab as any)}
+              />
             ))}
           </View>
-        )}
-        {activeTab === 'Staff' && (
-          <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>Coaching Staff</Text>
-            {team.coaches.map((coach) => (
-              <View key={coach.id} style={styles.playerCard}>
-                <View style={styles.playerAvatar} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.playerName}>
-                    {coach.user?.fname} {coach.user?.lname}
-                  </Text>
-                  <Text style={styles.playerDetails}>
-                    {coach.id === team.headCoachID
-                      ? 'Head Coach'
-                      : 'Assistant Coach'}
-                  </Text>
-                </View>
+
+          {activeTab === 'Info' && (
+            <View style={styles.infoCard}>
+              <Text style={styles.infoTitle}>Team Overview</Text>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Coach</Text>
+                <Text style={styles.infoValue}>{coachName}</Text>
               </View>
-            ))}
-          </View>
-        )}
-      </ScrollView>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Region</Text>
+                <Text style={styles.infoValue}>{regionLabel}</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Age Group</Text>
+                <Text style={styles.infoValue}>{team.ageGroup}</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>State</Text>
+                <Text style={styles.infoValue}>{stateLabel}</Text>
+              </View>
 
-      <TouchableOpacity
-        style={styles.floatingBack}
-        onPress={() => router.back()}
-      >
-        <Ionicons name="arrow-back" size={20} color="black" />
-      </TouchableOpacity>
+              <Text style={[styles.infoTitle, { marginTop: 24 }]}>
+                Trophy Case
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {team.trophyCase.length > 0 ? (
+                  team.trophyCase.map((trophy) => (
+                    <BlurView
+                      key={trophy.id}
+                      intensity={50}
+                      tint="dark"
+                      style={styles.trophyCard}
+                    >
+                      <Image
+                        source={{ uri: trophy.imageURL }}
+                        style={styles.trophyImage}
+                      />
+                      <Text style={styles.trophyText}>{trophy.title}</Text>
+                    </BlurView>
+                  ))
+                ) : (
+                  <Text style={styles.empty}>No trophies yet.</Text>
+                )}
+              </ScrollView>
+            </View>
+          )}
 
-      <ProfileModal
-        isVisible={isModalVisible}
-        onClose={closePlayerModal}
-        player={selectedPlayer ?? null}
-      />
-    </SafeAreaView>
+          {activeTab === 'Roster' && (
+            <View style={styles.infoCard}>
+              <Text style={styles.infoTitle}>Team Roster</Text>
+              {team.players.map((player) => (
+                <TouchableOpacity
+                  key={player.id}
+                  style={styles.playerCard}
+                  onPress={() => openPlayerModal(player.id)}
+                >
+                  <View style={styles.playerAvatar} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.playerName}>
+                      {player.user?.fname} {player.user?.lname}
+                    </Text>
+                    <Text style={styles.playerDetails}>
+                      #{player.jerseyNum} • {player.pos1} / {player.pos2} • Grad{' '}
+                      {player.gradYear}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          {activeTab === 'Staff' && (
+            <View style={styles.infoCard}>
+              <Text style={styles.infoTitle}>Coaching Staff</Text>
+              {team.coaches.map((coach) => (
+                <View key={coach.id} style={styles.playerCard}>
+                  <View style={styles.playerAvatar} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.playerName}>
+                      {coach.user?.fname} {coach.user?.lname}
+                    </Text>
+                    <Text style={styles.playerDetails}>
+                      {coach.id === team.headCoachID
+                        ? 'Head Coach'
+                        : 'Assistant Coach'}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+        </ScrollView>
+
+        <TouchableOpacity
+          style={styles.floatingBack}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={20} color="black" />
+        </TouchableOpacity>
+
+        <ProfileModal
+          isVisible={isModalVisible}
+          onClose={closePlayerModal}
+          player={selectedPlayer ?? null}
+        />
+      </SafeAreaView>
+    </BackgroundWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
-  heroContainer: { width, height: 260, position: 'relative' },
-  heroImage: { width: '100%', height: '100%', resizeMode: 'cover' },
-  heroOverlay: { ...StyleSheet.absoluteFillObject },
+  container: { flex: 1 },
   heroTextWrap: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
+    marginTop: 80,
+    paddingHorizontal: 24,
+    marginBottom: 12,
   },
-  heroTitle: { color: '#fff', fontSize: 24, fontWeight: 'bold' },
-  heroSubtitle: { color: '#ddd', fontSize: 14, marginTop: 4 },
+  heroTitle: { color: '#fff', fontSize: 26, fontWeight: 'bold' },
+  heroSubtitle: { color: '#ccc', fontSize: 14, marginTop: 4 },
   segmentTabs: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#0d0d0d',
-    paddingVertical: 10,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 28,
+    padding: 6,
+    marginHorizontal: 20,
+    marginTop: 12,
+    justifyContent: 'space-between',
   },
   tabButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 20,
-    borderRadius: 16,
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 20,
+    alignItems: 'center',
   },
   tabButtonActive: {
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   tabText: {
+    fontSize: 14,
     color: '#ccc',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   tabTextActive: {
-    color: '#000',
+    color: '#fff',
   },
   infoCard: {
-    backgroundColor: '#0d0d0d',
     padding: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    paddingBottom: 32,
   },
   infoTitle: {
     color: '#fff',
@@ -273,8 +260,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   infoLabel: {
-    color: '#aaa',
+    color: 'rgba(255,255,255,0.9)',
     fontWeight: '500',
+    fontSize: 13,
+    letterSpacing: 0.3,
   },
   infoValue: {
     color: '#fff',
@@ -288,7 +277,7 @@ const styles = StyleSheet.create({
     padding: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#111',
+    backgroundColor: 'rgba(255,255,255,0.08)',
   },
   trophyImage: {
     width: 80,
@@ -305,7 +294,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: '#111',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     padding: 16,
     borderRadius: 10,
     marginBottom: 12,

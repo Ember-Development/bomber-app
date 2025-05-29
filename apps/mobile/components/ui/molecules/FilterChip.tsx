@@ -46,22 +46,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingVertical: 8,
     gap: 8,
+    paddingHorizontal: 4,
   },
   chip: {
     paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: '#eee',
+    paddingHorizontal: 18,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
   },
   activeChip: {
-    backgroundColor: '#111',
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderColor: 'rgba(255,255,255,0.4)',
   },
   chipText: {
     fontSize: 14,
-    color: '#333',
+    color: '#ccc',
   },
   activeChipText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
 });
