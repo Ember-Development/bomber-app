@@ -15,6 +15,7 @@ import { GlobalColors } from '@/constants/Colors';
 // import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { SIDEMENU_ITEMS } from '@/constants/sidebarItems';
+import { useRouter } from 'expo-router';
 
 interface UserAvatarProps {
   firstName: string;
@@ -23,6 +24,7 @@ interface UserAvatarProps {
 
 export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
   const [menuVisible, setMenuVisible] = useState(false);
+  const router = useRouter();
   // const { theme, toggleTheme } = useColorScheme();
 
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
@@ -80,7 +82,14 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
 
             <View style={styles.menuItems}>
               {SIDEMENU_ITEMS.map((item, index) => (
-                <Pressable key={index} style={styles.menuItem}>
+                <Pressable
+                  key={index}
+                  style={styles.menuItem}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    router.push(item.routes);
+                  }}
+                >
                   <Ionicons name={item.icon} size={24} color={icons} />
                   <ThemedText style={[styles.menuText, { color: textColor }]}>
                     {item.name}
