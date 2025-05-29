@@ -68,8 +68,8 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedIcon name="chatbox" color={color} focused={focused} />
           ),
         }}
       />
