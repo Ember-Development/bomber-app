@@ -6,6 +6,7 @@ import {
   Text,
   TextInputProps,
   Pressable,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -18,6 +19,14 @@ interface CustomInputProps extends TextInputProps {
   placeholder?: string;
 }
 
+const GLASS_COLORS = {
+  background: 'rgba(255, 255, 255, 0.1)',
+  border: 'rgba(255, 255, 255, 0.3)',
+  text: '#fff',
+  placeholder: 'rgba(255, 255, 255, 0.5)',
+  icon: '#fff',
+};
+
 export default function CustomInput({
   label,
   variant = 'default',
@@ -29,13 +38,6 @@ export default function CustomInput({
 }: CustomInputProps) {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
 
-  // **Apply Theme Colors**
-  const borderColor = useThemeColor({}, 'border');
-  const backgroundColor = useThemeColor({}, 'component');
-  const textColor = useThemeColor({}, 'text');
-  const iconColor = useThemeColor({}, 'icon');
-
-  // Determine Placeholder Based on Variant
   const getPlaceholder = () => {
     switch (variant) {
       case 'password':
@@ -51,42 +53,36 @@ export default function CustomInput({
 
   return (
     <View style={[styles.container, fullWidth && styles.fullWidth]}>
-      {/* Static Label */}
-      <Text style={[styles.label, { color: textColor }]}>{label}</Text>
-
-      {/* Input Wrapper */}
+      <Text style={[styles.label, { color: GLASS_COLORS.text }]}>{label}</Text>
       <View
         style={[
           styles.inputWrapper,
-          { borderColor: borderColor, backgroundColor: backgroundColor },
+          {
+            borderColor: GLASS_COLORS.border,
+            backgroundColor: GLASS_COLORS.background,
+          },
         ]}
       >
         {iconName && (
           <Ionicons
             name={iconName}
             size={20}
-            style={[styles.icon, { color: iconColor }]}
+            style={[styles.icon, { color: GLASS_COLORS.icon }]}
           />
         )}
-
         <TextInput
-          style={[
-            styles.input,
-            iconName && styles.withIcon,
-            { color: textColor },
-          ]}
+          style={[styles.input, { color: GLASS_COLORS.text }]}
           placeholder={getPlaceholder()}
-          placeholderTextColor="#888"
+          placeholderTextColor={GLASS_COLORS.placeholder}
           secureTextEntry={variant === 'password' && !isPasswordVisible}
           {...props}
         />
-
         {variant === 'password' && (
           <Pressable onPress={() => setPasswordVisible(!isPasswordVisible)}>
             <Ionicons
               name={isPasswordVisible ? 'eye' : 'eye-off'}
               size={20}
-              style={[styles.icon, { color: iconColor }]}
+              style={[styles.icon, { color: GLASS_COLORS.icon }]}
             />
           </Pressable>
         )}
@@ -105,19 +101,18 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    marginBottom: 5,
+    marginBottom: 6,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 20,
-    paddingHorizontal: 10,
+    borderRadius: 14,
+    paddingHorizontal: 12,
     borderWidth: 0.5,
     height: 50,
   },
   input: {
     flex: 1,
-    height: 45,
     fontSize: 16,
   },
   withIcon: {

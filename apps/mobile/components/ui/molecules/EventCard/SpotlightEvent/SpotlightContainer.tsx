@@ -22,13 +22,6 @@ export default function EventCardContainer({ events }: EventCardProps) {
   const animatedValue = useRef(new Animated.Value(0)).current;
   const [countdown, setCountdown] = useState('');
 
-  // **Apply Theme Colors**
-  const cardBackground = useThemeColor({}, 'component');
-  const toggleBackground = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
-  const secondaryColor = useThemeColor({}, 'component');
-  const eventTitleColor = useThemeColor({}, 'buttonText');
-
   // formatting events
   const now = new Date();
 
@@ -86,17 +79,9 @@ export default function EventCardContainer({ events }: EventCardProps) {
   }
 
   return (
-    <View style={[styles.eventCard, { backgroundColor: cardBackground }]}>
-      <View
-        style={[styles.toggleContainer, { backgroundColor: toggleBackground }]}
-      >
-        <Animated.View
-          style={[
-            styles.activeIndicator,
-            slideStyle,
-            { backgroundColor: secondaryColor },
-          ]}
-        />
+    <View style={[styles.eventCard]}>
+      <View style={[styles.toggleContainer]}>
+        <Animated.View style={[styles.activeIndicator, slideStyle]} />
         <Pressable style={styles.tab} onPress={() => toggleTab('Upcoming')}>
           <ThemedText
             style={[
@@ -122,11 +107,8 @@ export default function EventCardContainer({ events }: EventCardProps) {
       {activeEvent && (
         <View style={styles.dateContainer}>
           <View style={styles.iconContainer}>
-            <Ionicons name="ticket-outline" size={20} color={textColor} />
-            <ThemedText
-              type="subtitle"
-              style={[styles.titleText, { color: textColor }]}
-            >
+            <Ionicons name="ticket-outline" size={20} />
+            <ThemedText type="subtitle" style={[styles.titleText]}>
               {activeEvent.date.split('T')[0]}
             </ThemedText>
           </View>
@@ -138,26 +120,18 @@ export default function EventCardContainer({ events }: EventCardProps) {
       <View style={styles.detailContainer}>
         {activeEvent ? (
           <>
-            <ThemedText
-              type="title"
-              style={[styles.eventTitle, { color: eventTitleColor }]}
-            >
+            <ThemedText type="title" style={[styles.eventTitle]}>
               {activeEvent.title}
             </ThemedText>
-            <ThemedText style={[styles.eventText, { color: eventTitleColor }]}>
+            <ThemedText style={[styles.eventText]}>
               {activeEvent.location}
             </ThemedText>
-            <ThemedText style={[styles.eventText, { color: eventTitleColor }]}>
+            <ThemedText style={[styles.eventText]}>
               {activeEvent.time}
             </ThemedText>
           </>
         ) : (
-          <ThemedText
-            style={[
-              styles.eventText,
-              { color: eventTitleColor, fontStyle: 'italic' },
-            ]}
-          >
+          <ThemedText style={[styles.eventText, { fontStyle: 'italic' }]}>
             No {selectedTab.toLowerCase()} events available
           </ThemedText>
         )}
@@ -168,45 +142,33 @@ export default function EventCardContainer({ events }: EventCardProps) {
 
 const styles = StyleSheet.create({
   eventCard: {
-    borderRadius: 18,
+    borderRadius: 20,
     padding: 16,
     marginVertical: 10,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255,255,255,0.18)',
+    borderWidth: 1,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 6,
   },
   toggleContainer: {
     flexDirection: 'row',
     borderRadius: 12,
-    position: 'relative',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     overflow: 'hidden',
     height: 40,
     marginBottom: 12,
-    paddingRight: 4,
-    paddingBottom: 4,
-  },
-  dateContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 10,
-    marginBottom: 8,
-  },
-  countdownText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: GlobalColors.blue,
   },
   activeIndicator: {
     position: 'absolute',
     width: '50%',
     height: '100%',
     borderRadius: 12,
-    marginTop: 2,
-    marginRight: 2,
-    marginLeft: 2,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    zIndex: 0,
   },
   tab: {
     flex: 1,
@@ -215,34 +177,55 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   tabText: {
-    fontSize: 12,
-    fontWeight: '500',
-    marginTop: 2,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#fff',
+    textShadowColor: 'rgba(0, 0, 0, 0.4)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+  },
+  activeText: {
+    color: GlobalColors.bomber,
+    fontWeight: '700',
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    marginBottom: 6,
+  },
+  iconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   titleText: {
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 8,
+    color: '#fff',
   },
-  activeText: {
-    fontWeight: 'bold',
+  countdownText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#66ccff',
   },
   detailContainer: {
-    marginTop: 12,
-    marginBottom: 10,
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: GlobalColors.dark,
+    marginTop: 10,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    padding: 14,
+    borderRadius: 14,
+    borderColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
   },
   eventTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    color: '#fff',
   },
   eventText: {
     fontSize: 14,
-  },
-  iconContainer: {
-    display: 'flex',
-    flexDirection: 'row',
+    color: GlobalColors.bomber,
+    marginTop: 4,
   },
 });

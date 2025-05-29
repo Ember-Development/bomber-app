@@ -6,6 +6,7 @@ import {
   Pressable,
   FlatList,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -22,23 +23,22 @@ interface CustomSelectProps {
   defaultValue?: string;
 }
 
+const GLASS_COLORS = {
+  background: 'rgba(255, 255, 255, 0.1)',
+  border: 'rgba(255, 255, 255, 0.3)',
+  text: '#fff',
+  placeholder: 'rgba(255, 255, 255, 0.5)',
+  modalBackground: 'rgba(20, 20, 20, 0.9)',
+};
+
 export default function CustomSelect({
   label,
   options,
   onSelect,
   defaultValue,
 }: CustomSelectProps) {
-  const [selectedValue, setSelectedValue] = useState<string | null>(
-    defaultValue ?? null
-  );
+  const [selectedValue, setSelectedValue] = useState(defaultValue ?? null);
   const [isModalVisible, setModalVisible] = useState(false);
-
-  // **Apply Theme Colors**
-  const borderColor = useThemeColor({}, 'border');
-  const backgroundColor = useThemeColor({}, 'component');
-  const textColor = useThemeColor({}, 'text');
-  const placeholderColor = useThemeColor({}, 'secondaryText');
-  const modalBackground = useThemeColor({}, 'background');
 
   const handleSelect = (value: string) => {
     setSelectedValue(value);
@@ -48,19 +48,26 @@ export default function CustomSelect({
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: textColor }]}>{label}</Text>
+      <Text style={[styles.label, { color: GLASS_COLORS.text }]}>{label}</Text>
 
       <Pressable
         style={[
           styles.inputWrapper,
-          { borderColor: borderColor, backgroundColor: backgroundColor },
+          {
+            borderColor: GLASS_COLORS.border,
+            backgroundColor: GLASS_COLORS.background,
+          },
         ]}
         onPress={() => setModalVisible(true)}
       >
         <Text
           style={[
             styles.text,
-            { color: selectedValue ? textColor : placeholderColor },
+            {
+              color: selectedValue
+                ? GLASS_COLORS.text
+                : GLASS_COLORS.placeholder,
+            },
           ]}
         >
           {selectedValue || label}
@@ -68,7 +75,7 @@ export default function CustomSelect({
         <Ionicons
           name="chevron-down"
           size={20}
-          color={textColor}
+          color={GLASS_COLORS.text}
           style={styles.icon}
         />
       </Pressable>
@@ -79,7 +86,10 @@ export default function CustomSelect({
           onPress={() => setModalVisible(false)}
         >
           <View
-            style={[styles.modalContent, { backgroundColor: modalBackground }]}
+            style={[
+              styles.modalContent,
+              { backgroundColor: GLASS_COLORS.modalBackground },
+            ]}
           >
             <FlatList
               data={options}
@@ -89,7 +99,9 @@ export default function CustomSelect({
                   style={styles.option}
                   onPress={() => handleSelect(item.value)}
                 >
-                  <Text style={[styles.optionText, { color: textColor }]}>
+                  <Text
+                    style={[styles.optionText, { color: GLASS_COLORS.text }]}
+                  >
                     {item.label}
                   </Text>
                 </Pressable>
@@ -103,17 +115,19 @@ export default function CustomSelect({
 }
 
 const styles = StyleSheet.create({
-  container: {},
+  container: {
+    marginBottom: 16,
+  },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    marginBottom: 5,
+    marginBottom: 6,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 20,
-    paddingHorizontal: 10,
+    borderRadius: 14,
+    paddingHorizontal: 12,
     borderWidth: 0.5,
     height: 50,
     justifyContent: 'space-between',
@@ -132,16 +146,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    width: 400,
-    borderRadius: 10,
-    padding: 45,
+    width: '85%',
+    borderRadius: 16,
+    padding: 30,
+    maxHeight: '80%',
   },
   option: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
+    paddingVertical: 14,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#ccc',
   },
   optionText: {
     fontSize: 16,
-    textAlign: 'left',
   },
 });

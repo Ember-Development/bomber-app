@@ -25,7 +25,7 @@ export default function CustomButton({
   fullWidth = false,
 }: CustomButtonProps) {
   const backgroundColor = useThemeColor({}, 'button');
-  const textColor = useThemeColor({}, 'buttonText');
+  const textColor = useThemeColor({}, 'secondaryText');
   const componentButton = useThemeColor({}, 'component');
   const icon = useThemeColor({}, 'icon');
 
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   textVariantText: {
-    color: GlobalColors.black,
+    color: GlobalColors.bomber,
     fontSize: 16,
     fontWeight: '500',
   },
