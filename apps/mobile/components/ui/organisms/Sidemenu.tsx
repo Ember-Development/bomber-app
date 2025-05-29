@@ -10,9 +10,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Separator from '../atoms/Seperator';
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { BlurView } from 'expo-blur';
 import { GlobalColors } from '@/constants/Colors';
-// import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { SIDEMENU_ITEMS } from '@/constants/sidebarItems';
 import { useRouter } from 'expo-router';
@@ -25,13 +24,10 @@ interface UserAvatarProps {
 export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
   const [menuVisible, setMenuVisible] = useState(false);
   const router = useRouter();
-  // const { theme, toggleTheme } = useColorScheme();
 
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 
-  // theme
   const textColor = useThemeColor({}, 'text');
-  const icons = useThemeColor({}, 'icon');
 
   return (
     <>
@@ -46,9 +42,9 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
         </Text>
       </Pressable>
 
-      <Modal visible={menuVisible} animationType="fade" transparent>
+      <Modal visible={menuVisible} animationType="slide" transparent>
         <View style={styles.modalContainer}>
-          <ThemedView style={[styles.sidebar]}>
+          <BlurView intensity={70} tint="dark" style={styles.sidebar}>
             <View style={styles.profileHeader}>
               <View style={styles.profileDetails}>
                 <View style={styles.avatarLarge}>
@@ -62,12 +58,9 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
                   <ThemedText style={[styles.nameText, { color: textColor }]}>
                     {firstName} {lastName}
                   </ThemedText>
-                  <ThemedText style={[styles.roleText, { color: textColor }]}>
-                    Coach
-                  </ThemedText>
+                  <ThemedText style={[styles.roleText]}>Coach</ThemedText>
                 </View>
               </View>
-
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel="Close menu"
@@ -89,7 +82,11 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
                     router.push(item.routes);
                   }}
                 >
-                  <Ionicons name={item.icon} size={24} color={icons} />
+                  <Ionicons
+                    name={item.icon}
+                    size={24}
+                    color={GlobalColors.bomber}
+                  />
                   <ThemedText style={[styles.menuText, { color: textColor }]}>
                     {item.name}
                   </ThemedText>
@@ -97,38 +94,20 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
               ))}
               <Separator />
               <View style={styles.footer}>
-                <Pressable style={styles.footerItem}>
-                  <Text style={[styles.footerText, { color: textColor }]}>
-                    Profile
-                  </Text>
-                </Pressable>
-                <Pressable style={styles.footerItem}>
-                  <Text style={[styles.footerText, { color: textColor }]}>
-                    Settings
-                  </Text>
-                </Pressable>
-                <Pressable style={styles.footerItem}>
-                  <Text style={[styles.footerText, { color: textColor }]}>
-                    Contact
-                  </Text>
-                </Pressable>
-                <Pressable style={styles.footerItem}>
-                  <Text style={[styles.footerText, { color: textColor }]}>
-                    Payment
-                  </Text>
-                </Pressable>
+                {['Profile', 'Settings', 'Contact', 'Payment'].map((text) => (
+                  <Pressable key={text} style={styles.footerItem}>
+                    <Text style={[styles.footerText, { color: textColor }]}>
+                      {text}
+                    </Text>
+                  </Pressable>
+                ))}
               </View>
             </View>
-
-            {/* <View style={styles.themeToggleContainer}>
-              <ThemedText>Dark Mode</ThemedText>
-              <Switch value={theme === "dark"} onValueChange={toggleTheme} />
-            </View> */}
 
             <Pressable style={styles.logoutButton}>
               <Text style={styles.logoutText}>Logout</Text>
             </Pressable>
-          </ThemedView>
+          </BlurView>
         </View>
       </Modal>
     </>
@@ -140,9 +119,11 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#EAEAEA',
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
   avatarText: {
     fontSize: 16,
@@ -152,14 +133,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   sidebar: {
     width: '100%',
     height: '100%',
     paddingTop: 50,
-
     paddingHorizontal: 20,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderTopRightRadius: 24,
+    borderBottomRightRadius: 24,
+    overflow: 'hidden',
   },
   profileHeader: {
     flexDirection: 'row',
@@ -173,13 +157,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarLarge: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#EAEAEA',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255,255,255,0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
   },
   avatarTextLarge: {
     fontSize: 20,
@@ -191,6 +177,7 @@ const styles = StyleSheet.create({
   },
   roleText: {
     fontSize: 16,
+    color: GlobalColors.bomber,
   },
   menuItems: {
     marginBottom: 0,
@@ -198,12 +185,15 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 15,
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    marginBottom: 8,
   },
   menuText: {
-    fontSize: 20,
-    marginLeft: 15,
-    fontWeight: 'bold',
+    fontSize: 18,
+    marginLeft: 12,
+    fontWeight: '600',
   },
   footer: {
     marginTop: 10,
@@ -213,25 +203,21 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   footerText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#6D6D6D',
-  },
-  themeToggleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 15,
-    borderTopWidth: 1,
-    borderColor: '#EAEAEA',
-    marginTop: 10,
+    color: 'rgba(255,255,255,0.8)',
   },
   logoutButton: {
-    backgroundColor: GlobalColors.red,
-    padding: 15,
-    borderRadius: 10,
+    marginTop: 20,
+    backgroundColor: 'rgba(255,0,0,0.8)',
+    padding: 14,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
   },
   logoutText: {
     color: 'white',

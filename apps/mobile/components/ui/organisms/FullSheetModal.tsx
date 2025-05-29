@@ -5,9 +5,18 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
+  Platform,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
+import { GlobalColors } from '@/constants/Colors';
+
+const GLASS_COLORS = {
+  background: 'rgba(20, 20, 20, 0.7)',
+  border: 'rgba(255, 255, 255, 0.2)',
+  text: '#fff',
+  icon: '#fff',
+};
 
 interface Props {
   isVisible: boolean;
@@ -36,7 +45,7 @@ const FullScreenModal: React.FC<Props> = ({
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
           <TouchableOpacity onPress={onClose}>
-            <Ionicons name="close" size={24} color="black" />
+            <Ionicons name="close" size={24} color={GLASS_COLORS.icon} />
           </TouchableOpacity>
         </View>
         <View style={styles.content}>{children}</View>
@@ -48,17 +57,19 @@ const FullScreenModal: React.FC<Props> = ({
 const styles = StyleSheet.create({
   fullScreenStyle: {
     margin: 0,
-    backgroundColor: 'white',
     justifyContent: 'flex-start',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: GLASS_COLORS.background,
+    paddingTop: 20,
+    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(10px)' } : {}),
   },
   header: {
     padding: 20,
-    borderBottomWidth: 0.5,
-    borderColor: '#ccc',
+    borderBottomWidth: 1,
+    borderColor: GLASS_COLORS.border,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -66,6 +77,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: GlobalColors.bomber,
   },
   content: {
     flex: 1,

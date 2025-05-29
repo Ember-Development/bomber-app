@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Platform,
 } from 'react-native';
 import {
   JerseySize,
@@ -26,6 +27,7 @@ import { US_STATES } from '@/utils/state';
 import CustomSelect from '@/components/ui/atoms/dropdown';
 import { useUpdateUser } from '@/hooks/useUser';
 import { useUserContext } from '@/context/useUserContext';
+import { GlobalColors } from '@/constants/Colors';
 
 interface Props {
   user: UserFE;
@@ -272,7 +274,7 @@ const EditProfileContent: React.FC<Props> = ({ user, onSuccess }) => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.wrapper}>
       <View style={styles.tabs}>
         {['info', 'contact', 'gear'].map((key) => (
           <TouchableOpacity
@@ -293,7 +295,7 @@ const EditProfileContent: React.FC<Props> = ({ user, onSuccess }) => {
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 60 }}>
-        {renderTab()}
+        <View style={styles.formGlass}>{renderTab()}</View>
         <View style={styles.actions}>
           <TouchableOpacity
             style={[styles.updateButton, isPending && { opacity: 0.6 }]}
@@ -311,42 +313,53 @@ const EditProfileContent: React.FC<Props> = ({ user, onSuccess }) => {
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    paddingTop: 20,
+    paddingHorizontal: 10,
+  },
   tabs: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
     gap: 10,
-    marginVertical: 10,
+    marginBottom: 16,
   },
   tabButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 20,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderWidth: 1,
+    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(8px)' } : {}),
   },
   tabActive: {
-    backgroundColor: '#000',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   tabText: {
-    color: '#555',
+    color: '#eee',
     fontWeight: '500',
   },
   tabTextActive: {
     color: '#fff',
+    fontWeight: '700',
+  },
+  formGlass: {
+    backgroundColor: 'rgba(20, 20, 20, 0.85)', // matches notification modal
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 5,
   },
   section: {
-    paddingHorizontal: 16,
-    paddingTop: 10,
+    marginBottom: 20,
   },
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     gap: 10,
     marginBottom: 12,
   },
@@ -355,28 +368,18 @@ const styles = StyleSheet.create({
   },
   actions: {
     marginTop: 30,
-    paddingHorizontal: 16,
     gap: 14,
+    paddingHorizontal: 16,
   },
   updateButton: {
-    backgroundColor: '#000',
+    backgroundColor: '#111',
     paddingVertical: 14,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
   },
   updateText: {
-    color: '#fff',
+    color: GlobalColors.bomber,
     fontSize: 16,
-    fontWeight: '600',
-  },
-  removeButton: {
-    backgroundColor: '#eee',
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  removeText: {
-    color: 'red',
     fontWeight: '600',
   },
 });
