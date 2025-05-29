@@ -1,5 +1,3 @@
-import ReadOnlyField from '@/components/ui/atoms/ReadOnlyField';
-import { formatGearLabel, formatLabel } from '@/utils/formatDisplay';
 import React, { useState } from 'react';
 import {
   View,
@@ -8,9 +6,25 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import { formatGearLabel, formatLabel } from '@/utils/formatDisplay';
 
 interface ProfileTabsProps {
   user: any;
+}
+
+interface GlassCardProps {
+  label: string;
+  value: string;
+  isFullWidth?: boolean;
+}
+
+function GlassCard({ label, value, isFullWidth = false }: GlassCardProps) {
+  return (
+    <View style={[styles.card, isFullWidth && styles.fullWidthCard]}>
+      <Text style={styles.cardLabel}>{label}</Text>
+      <Text style={styles.cardValue}>{value}</Text>
+    </View>
+  );
 }
 
 export default function ProfileTabs({ user }: ProfileTabsProps) {
@@ -18,164 +32,94 @@ export default function ProfileTabs({ user }: ProfileTabsProps) {
     'info'
   );
 
+  const renderCards = (
+    data: {
+      label: string;
+      value: string | null | undefined;
+      fullWidth?: boolean;
+    }[]
+  ) => {
+    const processed = data.map((item, i) => ({
+      ...item,
+      value: formatLabel(item.value) || 'N/A',
+    }));
+
+    return (
+      <View style={styles.grid}>
+        {processed.map((item, index) => (
+          <GlassCard
+            key={item.label}
+            label={item.label}
+            value={item.value}
+            isFullWidth={item.fullWidth}
+          />
+        ))}
+      </View>
+    );
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'info':
-        return (
-          <View style={styles.container}>
-            <View style={styles.fullRow}>
-              <ReadOnlyField
-                label="Team"
-                value={formatLabel(user.player?.team?.name)}
-                fullWidth
-              />
-            </View>
-
-            <View style={styles.row}>
-              <View style={styles.half}>
-                <ReadOnlyField
-                  label="Grad Year"
-                  value={formatLabel(user.player?.gradYear)}
-                />
-              </View>
-              <View style={styles.half}>
-                <ReadOnlyField
-                  label="College Commitment"
-                  value={formatLabel(user.player?.college)}
-                />
-              </View>
-            </View>
-
-            <View style={styles.row}>
-              <View style={styles.third}>
-                <ReadOnlyField
-                  label="Pos 1"
-                  value={formatLabel(user.player?.pos1)}
-                />
-              </View>
-              <View style={styles.third}>
-                <ReadOnlyField
-                  label="Pos 2"
-                  value={formatLabel(user.player?.pos2)}
-                />
-              </View>
-              <View style={styles.third}>
-                <ReadOnlyField
-                  label="Age Group"
-                  value={formatLabel(user.player?.ageGroup)}
-                />
-              </View>
-            </View>
-          </View>
-        );
+        return renderCards([
+          { label: 'Team', value: user.player?.team?.name, fullWidth: true },
+          { label: 'Grad Year', value: user.player?.gradYear },
+          { label: 'Age Group', value: user.player?.ageGroup },
+          { label: 'Pos 1', value: user.player?.pos1 },
+          { label: 'Pos 2', value: user.player?.pos2 },
+          {
+            label: 'College Commitment',
+            value: user.player?.college,
+            fullWidth: true,
+          },
+        ]);
       case 'contact':
-        return (
-          <ScrollView
-            contentContainerStyle={[
-              styles.container,
-              { paddingBottom: 80, flexGrow: 1 },
-            ]}
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.fullRow}>
-              <ReadOnlyField
-                label="Email"
-                value={formatLabel(user.email)}
-                fullWidth
-              />
-            </View>
-            <View style={styles.row}>
-              <View style={styles.half}>
-                <ReadOnlyField label="Phone" value={user.phone || 'N/A'} />
-              </View>
-              <View style={styles.half}>
-                <ReadOnlyField
-                  label="Date of Birth"
-                  value={user.player?.dob || 'N/A'}
-                />
-              </View>
-            </View>
-
-            <View style={styles.fullRow}>
-              <ReadOnlyField
-                label="Street Address"
-                value={
-                  user.player?.address
-                    ? formatLabel(
-                        `${user.player.address.address1} ${user.player.address.address2 ?? ''}`.trim()
-                      )
-                    : 'N/A'
-                }
-                fullWidth
-              />
-            </View>
-
-            <View style={styles.fullRow}>
-              <ReadOnlyField
-                label="State"
-                value={formatLabel(user.player?.address?.state)}
-                fullWidth
-              />
-            </View>
-
-            <View style={styles.row}>
-              <View style={styles.half}>
-                <ReadOnlyField
-                  label="City"
-                  value={formatLabel(user.player?.address?.city)}
-                />
-              </View>
-              <View style={styles.half}>
-                <ReadOnlyField
-                  label="Zipcode"
-                  value={user.player?.address?.zip || 'N/A'}
-                />
-              </View>
-            </View>
-          </ScrollView>
-        );
+        return renderCards([
+          { label: 'Email', value: user.email, fullWidth: true },
+          { label: 'Phone', value: user.phone },
+          { label: 'Date of Birth', value: user.player?.dob },
+          {
+            label: 'Street Address',
+            value: user.player?.address
+              ? `${user.player.address.address1} ${user.player.address.address2 ?? ''}`.trim()
+              : undefined,
+            fullWidth: true,
+          },
+          {
+            label: 'State',
+            value: user.player?.address?.state,
+            fullWidth: true,
+          },
+          { label: 'City', value: user.player?.address?.city },
+          { label: 'Zipcode', value: user.player?.address?.zip },
+        ]);
       case 'gear':
-        return (
-          <View style={styles.container}>
-            <View style={styles.row}>
-              <View style={styles.half}>
-                <ReadOnlyField
-                  label="Jersey Size"
-                  value={formatGearLabel(user.player?.jerseySize)}
-                />
-              </View>
-              <View style={styles.half}>
-                <ReadOnlyField
-                  label="Pant Size"
-                  value={formatGearLabel(user.player?.pantSize)}
-                />
-              </View>
-            </View>
+        const gearItems = [
+          {
+            label: 'Jersey Size',
+            value: formatGearLabel(user.player?.jerseySize),
+          },
+          {
+            label: 'Pant Size',
+            value: formatGearLabel(user.player?.pantSize),
+          },
+          {
+            label: 'Stirrup Size',
+            value: formatGearLabel(user.player?.stirrupSize),
+          },
+          {
+            label: 'Short Size',
+            value: formatGearLabel(user.player?.shortSize),
+          },
+          {
+            label: 'Practice Short Size',
+            value: formatGearLabel(user.player?.practiceShortSize),
+          },
+        ];
 
-            <View style={styles.row}>
-              <View style={styles.half}>
-                <ReadOnlyField
-                  label="Stirrup Size"
-                  value={formatGearLabel(user.player?.stirrupSize)}
-                />
-              </View>
-              <View style={styles.half}>
-                <ReadOnlyField
-                  label="Short Size"
-                  value={formatGearLabel(user.player?.shortSize)}
-                />
-              </View>
-            </View>
-
-            <View style={styles.fullRow}>
-              <ReadOnlyField
-                label="Practice Short Size"
-                value={formatGearLabel(user.player?.practiceShortSize)}
-                fullWidth
-              />
-            </View>
-          </View>
-        );
+        const odd = gearItems.length % 2 !== 0;
+        if (odd) gearItems[gearItems.length - 1].fullWidth = true;
+        return renderCards(gearItems);
       default:
         return null;
     }
@@ -183,7 +127,7 @@ export default function ProfileTabs({ user }: ProfileTabsProps) {
 
   return (
     <View>
-      <View style={styles.tabButtons}>
+      <View style={styles.floatingTabsContainer}>
         <TabButton
           label="Info"
           active={activeTab === 'info'}
@@ -225,53 +169,61 @@ const TabButton = ({
 );
 
 const styles = StyleSheet.create({
-  tabButtons: {
+  floatingTabsContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    gap: 10,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 28,
+    padding: 6,
+    marginTop: 12,
+    justifyContent: 'space-between',
   },
   tabButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 30,
+    flex: 1,
+    paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 5,
+    alignItems: 'center',
   },
   tabButtonActive: {
-    backgroundColor: '#000',
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   tabText: {
     fontSize: 14,
-    color: '#555',
+    color: '#ccc',
+    fontWeight: '600',
   },
   tabTextActive: {
     color: '#fff',
   },
-  tabContent: {
-    padding: 20,
-  },
-  container: {
-    padding: 16,
-  },
-  row: {
+  grid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: 16,
+    paddingTop: 16,
+  },
+  card: {
+    width: '47%',
+    minHeight: 100,
+    padding: 16,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 12,
   },
-  fullRow: {
+  fullWidthCard: {
     width: '100%',
-    marginBottom: 12,
   },
-  half: {
-    width: '48%',
+  cardLabel: {
+    color: '#ccc',
+    fontSize: 13,
+    marginBottom: 4,
+    textAlign: 'center',
   },
-  third: {
-    width: '30%',
+  cardValue: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
