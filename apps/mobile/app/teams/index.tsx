@@ -14,6 +14,8 @@ import FilterChips from '@/components/ui/molecules/FilterChip';
 import { createTeamsScreenStyles } from '../../styles/teamscreenStyle';
 import { useRouter } from 'expo-router';
 import { US_STATES } from '@/utils/state';
+import SearchField from '@/components/ui/atoms/Search';
+import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 
 export default function TeamsScreen() {
   const { data: teams = [], isLoading } = useTeams();
@@ -36,50 +38,43 @@ export default function TeamsScreen() {
   });
 
   return (
-    <SafeAreaView style={styles.safeContainer}>
-      <View style={styles.headerName}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Find a Bomber Team</Text>
-      </View>
+    <BackgroundWrapper>
+      <SafeAreaView style={styles.safeContainer}>
+        <View style={styles.headerName}>
+          <TouchableOpacity
+            style={styles.floatingBack}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={20} color="black" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Find a Bomber Team</Text>
+        </View>
 
-      <View style={styles.header}>
-        <View style={styles.searchBox}>
-          <Ionicons
-            name="search"
-            size={20}
-            color="gray"
-            style={styles.searchIcon}
-          />
-          <TextInput
-            placeholder="Enter team name"
-            placeholderTextColor="#ccc"
-            style={styles.input}
-            value={search}
-            onChangeText={setSearch}
+        <View style={styles.header}>
+          <View style={styles.searchBox}>
+            <SearchField />
+          </View>
+          <FilterChips
+            selected={activeState}
+            onSelect={(label) => setActiveState(getFilterValue(label))}
+            options={stateOptions}
           />
         </View>
-        <FilterChips
-          selected={activeState}
-          onSelect={(label) => setActiveState(getFilterValue(label))}
-          options={stateOptions}
+
+        <Text style={styles.sectionTitle}>Teams</Text>
+
+        <FlatList
+          data={filteredTeams}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={{ paddingBottom: 60, paddingHorizontal: 16 }}
+          renderItem={({ item }) => (
+            <TeamCard
+              team={item}
+              onPress={() => router.push(`/teams/${item.id}`)}
+            />
+          )}
         />
-      </View>
-
-      <Text style={styles.sectionTitle}>Teams</Text>
-
-      <FlatList
-        data={filteredTeams}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={{ paddingBottom: 60, paddingHorizontal: 16 }}
-        renderItem={({ item }) => (
-          <TeamCard
-            team={item}
-            onPress={() => router.push(`/teams/${item.id}`)}
-          />
-        )}
-      />
-    </SafeAreaView>
+      </SafeAreaView>
+    </BackgroundWrapper>
   );
 }

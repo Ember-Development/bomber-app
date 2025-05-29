@@ -18,12 +18,12 @@ export const GlobalColors = {
 
 export const Colors = {
   light: {
-    text: '#282A29',
+    text: '#f6f6f6',
     button: '#282A29',
     buttonText: '#f6f6f6',
     border: '#282A29',
     secondaryText: '#666666',
-    background: '#f6f6f6',
+    background: '#282A29',
     tint: tintColorLight,
     icon: '#222222',
     component: '#ffffff',
