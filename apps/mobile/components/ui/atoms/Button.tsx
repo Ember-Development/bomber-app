@@ -3,6 +3,7 @@ import {
   Pressable,
   Text,
   StyleSheet,
+  Platform,
   GestureResponderEvent,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,34 +25,30 @@ export default function CustomButton({
   iconName,
   fullWidth = false,
 }: CustomButtonProps) {
-  const backgroundColor = useThemeColor({}, 'button');
-  const textColor = useThemeColor({}, 'secondaryText');
-  const componentButton = useThemeColor({}, 'component');
-  const icon = useThemeColor({}, 'component');
+  const bomber = useThemeColor({}, 'component');
+  const component = useThemeColor({}, 'component');
 
   return (
     <Pressable
+      onPress={onPress}
       style={[
         styles.button,
-        variant === 'primary' && { backgroundColor: backgroundColor },
         variant === 'secondary' && styles.secondary,
-        variant === 'secondary' && { backgroundColor: componentButton },
         variant === 'danger' && styles.danger,
         variant === 'icon' && styles.iconButton,
         variant === 'text' && styles.textButton,
         fullWidth && styles.fullWidth,
       ]}
-      onPress={onPress}
     >
       {variant === 'icon' && iconName ? (
-        <Ionicons name={iconName} size={20} style={{ color: icon }} />
+        <Ionicons name={iconName} size={20} color={component} />
       ) : (
         <Text
           style={[
             styles.buttonText,
-            { color: textColor },
             variant === 'secondary' && styles.secondaryText,
             variant === 'text' && styles.textVariantText,
+            variant === 'danger' && styles.dangerVariantText,
           ]}
         >
           {title}
@@ -64,44 +61,62 @@ export default function CustomButton({
 const styles = StyleSheet.create({
   button: {
     padding: 12,
+    minWidth: 120,
     borderRadius: 20,
     marginVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 120,
-  },
-  secondary: {
-    backgroundColor: GlobalColors.white,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderWidth: 1,
-    borderColor: 'black',
+    borderColor: 'rgba(255,255,255,0.20)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+    ...Platform.select({
+      web: { backdropFilter: 'blur(12px)' },
+      default: {},
+    }),
+  },
+
+  secondary: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(255,255,255,0.15)',
   },
   danger: {
-    backgroundColor: GlobalColors.red,
+    backgroundColor: 'rgba(255, 0, 0, 0.10)',
+    borderColor: 'rgba(255, 0, 0, 0.25)',
   },
   iconButton: {
     paddingHorizontal: 8,
-    paddingVertical: 0,
+    paddingVertical: 8,
     minWidth: 0,
-  },
-  buttonText: {
-    fontWeight: 'medium',
-    textAlign: 'center',
-  },
-  fullWidth: {
-    width: '100%',
-  },
-  secondaryText: {
-    color: GlobalColors.black,
   },
   textButton: {
     backgroundColor: 'transparent',
-    paddingVertical: 8,
+    borderWidth: 0,
     paddingHorizontal: 8,
+    paddingVertical: 8,
     minWidth: 0,
+  },
+  buttonText: {
+    fontWeight: '500',
+    textAlign: 'center',
+    color: GlobalColors.bomber,
+  },
+  secondaryText: {
+    color: GlobalColors.white,
+  },
+  dangerVariantText: {
+    color: GlobalColors.white,
   },
   textVariantText: {
     color: GlobalColors.bomber,
     fontSize: 16,
     fontWeight: '500',
+  },
+  fullWidth: {
+    width: '100%',
   },
 });

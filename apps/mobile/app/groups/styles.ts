@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { Colors, GlobalColors } from '@/constants/Colors';
 
 export const createMessageStyles = (theme: 'light' | 'dark') =>
@@ -177,6 +177,23 @@ export const createMessageStyles = (theme: 'light' | 'dark') =>
       padding: 20,
       borderRadius: 20,
       marginHorizontal: 20,
+    },
+    userCard: {
+      padding: 15,
+      marginBottom: 10,
+      borderRadius: 12,
+      backgroundColor: 'rgba(255,255,255,0.10)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.20)',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.25,
+      shadowRadius: 8,
+      elevation: 5,
+      ...Platform.select({
+        web: { backdropFilter: 'blur(12px)' },
+        default: {},
+      }),
     },
   });
 

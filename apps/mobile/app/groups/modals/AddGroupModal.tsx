@@ -16,6 +16,7 @@ import { Position, PublicUserFE } from '@bomber-app/database';
 import CustomButton from '../../../components/ui/atoms/Button';
 import { useAddUsersToGroup } from '@/hooks/groups/useChats';
 import UserList from '../components/UserList';
+import { GlobalColors } from '@/constants/Colors';
 
 interface CreateGroupModalProps {
   visible: boolean;
@@ -282,7 +283,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         <ScrollView
           ref={scrollViewRef}
           style={styles.scrollContainer}
-          contentContainerStyle={{ paddingBottom: 120 }}
+          contentContainerStyle={{ paddingBottom: 190 }}
           showsVerticalScrollIndicator={false}
         >
           <UserList
@@ -313,7 +314,6 @@ const styles = StyleSheet.create({
   container: {},
   fixedHeader: {
     paddingBottom: 5,
-    backgroundColor: 'white',
     paddingHorizontal: 10,
   },
   topSection: {
@@ -326,6 +326,7 @@ const styles = StyleSheet.create({
   counter: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: GlobalColors.bomber,
   },
   gridContainer: {
     flexDirection: 'row',

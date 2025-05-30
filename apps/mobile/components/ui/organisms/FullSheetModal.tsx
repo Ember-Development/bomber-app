@@ -10,6 +10,7 @@ import {
 import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
 import { GlobalColors } from '@/constants/Colors';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 const GLASS_COLORS = {
   background: 'rgba(20, 20, 20, 0.7)',
@@ -31,6 +32,8 @@ const FullScreenModal: React.FC<Props> = ({
   title = 'Modal Title',
   children,
 }) => {
+  const bgColor = useThemeColor({}, 'background');
+
   return (
     <Modal
       isVisible={isVisible}
@@ -41,7 +44,9 @@ const FullScreenModal: React.FC<Props> = ({
       useNativeDriver
       style={styles.fullScreenStyle}
     >
-      <SafeAreaView style={styles.modalContainer}>
+      <SafeAreaView
+        style={[styles.modalContainer, { backgroundColor: bgColor }]}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
           <TouchableOpacity onPress={onClose}>

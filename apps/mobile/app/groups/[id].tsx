@@ -41,7 +41,6 @@ export default function GroupChatScreen() {
   const chatId = Array.isArray(id) ? id[0] : id;
 
   const styles = createMessageStyles('light');
-  const component = useThemeColor({}, 'component');
   const iconColor = useThemeColor({}, 'component');
 
   const { data: users = [], isLoading: isUsersLoading } =
@@ -366,6 +365,7 @@ export default function GroupChatScreen() {
                               fontWeight: '700',
                               fontSize: 18,
                               marginBottom: 8,
+                              color: GlobalColors.white,
                             }}
                           >
                             {role.charAt(0) + role.slice(1).toLowerCase()}s
@@ -375,12 +375,7 @@ export default function GroupChatScreen() {
                             .map((user) => (
                               <TouchableOpacity
                                 key={user.id}
-                                style={{
-                                  padding: 15,
-                                  backgroundColor: '#eee',
-                                  marginBottom: 10,
-                                  borderRadius: 10,
-                                }}
+                                style={styles.userCard}
                               >
                                 <View
                                   style={{
@@ -393,6 +388,7 @@ export default function GroupChatScreen() {
                                       fontSize: 16,
                                       fontWeight: '500',
                                       marginRight: 8,
+                                      color: GlobalColors.white,
                                     }}
                                   >
                                     {user.fname} {user.lname}
@@ -428,7 +424,6 @@ export default function GroupChatScreen() {
                       paddingHorizontal: 20,
                       paddingTop: -30,
                       paddingBottom: 0, // extra space below buttons
-                      backgroundColor: 'white',
                     }}
                   >
                     <CustomButton

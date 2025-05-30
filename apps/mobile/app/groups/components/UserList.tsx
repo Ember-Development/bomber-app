@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { PublicUserFE } from '@bomber-app/database';
 import UserListItem from './UserListItem';
+import { GlobalColors } from '@/constants/Colors';
 
 interface UserListProps {
   users: PublicUserFE[];
@@ -53,6 +54,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: GlobalColors.bomber,
   },
   selectAllButton: {
     backgroundColor: '#000000',
