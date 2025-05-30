@@ -6,6 +6,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { PublicUserFE } from '@bomber-app/database';
+import { GlobalColors } from '@/constants/Colors';
 
 interface Props {
   user: PublicUserFE;
@@ -68,6 +69,7 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 16,
     flex: 1,
+    color: GlobalColors.white,
   },
   statusButton: {
     paddingVertical: 6,
@@ -79,13 +81,13 @@ const styles = StyleSheet.create({
   addButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: 'black',
+    borderColor: GlobalColors.white,
   },
   removeButton: {
     backgroundColor: '#dc3545',
   },
   addText: {
-    color: 'black',
+    color: GlobalColors.bomber,
   },
   removeText: {
     color: 'white',
