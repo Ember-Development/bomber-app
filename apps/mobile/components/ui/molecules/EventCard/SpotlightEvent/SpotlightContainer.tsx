@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, Pressable, Animated } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeColor } from '@/hooks/useThemeColor';
 import { GlobalColors } from '@/constants/Colors';
 import { getCountdown } from '@/utils/FormatEvents';
 
@@ -107,7 +106,11 @@ export default function EventCardContainer({ events }: EventCardProps) {
       {activeEvent && (
         <View style={styles.dateContainer}>
           <View style={styles.iconContainer}>
-            <Ionicons name="ticket-outline" size={20} />
+            <Ionicons
+              name="ticket-outline"
+              size={20}
+              color={GlobalColors.bomber}
+            />
             <ThemedText type="subtitle" style={[styles.titleText]}>
               {activeEvent.date.split('T')[0]}
             </ThemedText>

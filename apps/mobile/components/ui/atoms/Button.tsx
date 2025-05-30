@@ -27,7 +27,7 @@ export default function CustomButton({
   const backgroundColor = useThemeColor({}, 'button');
   const textColor = useThemeColor({}, 'secondaryText');
   const componentButton = useThemeColor({}, 'component');
-  const icon = useThemeColor({}, 'icon');
+  const icon = useThemeColor({}, 'component');
 
   return (
     <Pressable
