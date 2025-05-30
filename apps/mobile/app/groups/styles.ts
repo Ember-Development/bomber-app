@@ -15,7 +15,14 @@ export const createMessageStyles = (theme: 'light' | 'dark') =>
       paddingBottom: 15,
     },
     backButton: {
-      marginRight: 10,
+      backgroundColor: '#fff',
+      padding: 8,
+      borderRadius: 18,
+      shadowColor: '#000',
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      shadowOffset: { width: 0, height: 2 },
+      marginRight: 20,
     },
     buttonContainer: {
       backgroundColor:
@@ -38,11 +45,17 @@ export const createMessageStyles = (theme: 'light' | 'dark') =>
     chatTitle: {
       fontSize: 18,
       fontWeight: 'bold',
+      color: GlobalColors.white,
     },
-    senderName: {
+    userName: {
       fontSize: 12,
       fontWeight: 'bold',
-      color: GlobalColors.dark,
+      color: GlobalColors.bomber,
+    },
+    otherName: {
+      fontSize: 12,
+      fontWeight: 'bold',
+      color: GlobalColors.white,
     },
     messageWrapper: {
       marginBottom: 12,
@@ -69,22 +82,24 @@ export const createMessageStyles = (theme: 'light' | 'dark') =>
       marginTop: 10,
     },
     userAvatar: {
-      backgroundColor: GlobalColors.white,
-      borderColor: GlobalColors.dark,
+      backgroundColor: GlobalColors.bomber,
+      borderColor: GlobalColors.white,
       borderWidth: 1,
     },
     otherAvatar: {
-      backgroundColor: GlobalColors.black,
+      backgroundColor: GlobalColors.white,
+      borderColor: GlobalColors.dark,
+      borderWidth: 1,
     },
     avatarText: {
       fontWeight: 'bold',
       fontSize: 12,
     },
     otherInitial: {
-      color: GlobalColors.white,
+      color: GlobalColors.black,
     },
     userInitial: {
-      color: GlobalColors.black,
+      color: GlobalColors.white,
     },
     messageBubble: {
       maxWidth: '75%',
@@ -93,7 +108,7 @@ export const createMessageStyles = (theme: 'light' | 'dark') =>
       marginTop: 5,
     },
     userBubble: {
-      backgroundColor: GlobalColors.black,
+      backgroundColor: GlobalColors.bomber,
       alignSelf: 'flex-end',
     },
     otherBubble: {
@@ -117,7 +132,7 @@ export const createMessageStyles = (theme: 'light' | 'dark') =>
       paddingHorizontal: 15,
       paddingTop: 10,
       paddingBottom: 30,
-      backgroundColor: GlobalColors.white,
+      backgroundColor: 'rgba(255,255,255,0.08)',
       shadowColor: '#000',
       shadowOpacity: 10,
       shadowRadius: 4,
@@ -129,16 +144,17 @@ export const createMessageStyles = (theme: 'light' | 'dark') =>
       padding: 10,
       borderRadius: 20,
       borderWidth: 1,
-      borderColor: GlobalColors.black,
+      borderColor: GlobalColors.white,
       marginRight: 10,
       minHeight: 40,
       maxHeight: 120,
+      color: GlobalColors.white,
     },
     sendButton: {
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: GlobalColors.black,
+      backgroundColor: GlobalColors.white,
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -152,7 +168,7 @@ export const createMessageStyles = (theme: 'light' | 'dark') =>
     dateHeaderText: {
       fontSize: 12,
       fontWeight: 'bold',
-      color: GlobalColors.black,
+      color: GlobalColors.white,
     },
     noMessageContainer: {
       alignItems: 'center',
