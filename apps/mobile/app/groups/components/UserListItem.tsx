@@ -79,12 +79,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   addButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: GlobalColors.white,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(255,255,255,0.15)',
   },
   removeButton: {
-    backgroundColor: '#dc3545',
+    backgroundColor: 'rgba(255, 0, 0, 0.10)',
+    borderColor: 'rgba(255, 0, 0, 0.25)',
   },
   addText: {
     color: GlobalColors.bomber,
