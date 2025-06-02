@@ -30,7 +30,7 @@ export const SIDEMENU_ITEMS: {
   {
     name: 'About Us',
     icon: 'flag-outline',
-    routes: '',
+    routes: '/side/about',
   },
   {
     name: 'Player Development',

@@ -55,6 +55,7 @@ export default function RootLayout() {
                     options={{ headerShown: false }}
                   />
                   <Stack.Screen name="teams" options={{ headerShown: false }} />
+                  <Stack.Screen name="side" options={{ headerShown: false }} />
                   <Stack.Screen name="+not-found" />
                 </Stack>
               </View>

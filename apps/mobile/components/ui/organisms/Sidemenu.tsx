@@ -1,3 +1,5 @@
+// components/ui/organisms/UserAvatar.tsx
+
 import React, { useState } from 'react';
 import {
   View,
@@ -6,6 +8,7 @@ import {
   Pressable,
   Modal,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Separator from '../atoms/Seperator';
@@ -13,8 +16,9 @@ import { ThemedText } from '@/components/ThemedText';
 import { BlurView } from 'expo-blur';
 import { GlobalColors } from '@/constants/Colors';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { SIDEMENU_ITEMS } from '@/constants/sidebarItems';
 import { useRouter } from 'expo-router';
+
+import { SIDEMENU_ITEMS } from '@/constants/sidebarItems';
 
 interface UserAvatarProps {
   firstName: string;
@@ -23,11 +27,17 @@ interface UserAvatarProps {
 
 export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
   const [menuVisible, setMenuVisible] = useState(false);
+  const [mediaExpanded, setMediaExpanded] = useState(false);
+  const [legacyExpanded, setLegacyExpanded] = useState(false);
   const router = useRouter();
 
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-
   const textColor = useThemeColor({}, 'text');
+
+  const navigateAndClose = (path: string) => {
+    setMenuVisible(false);
+    router.push(path);
+  };
 
   return (
     <>
@@ -45,6 +55,7 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
       <Modal visible={menuVisible} animationType="slide" transparent>
         <View style={styles.modalContainer}>
           <BlurView intensity={70} tint="dark" style={styles.sidebar}>
+            {/* Profile Header */}
             <View style={styles.profileHeader}>
               <View style={styles.profileDetails}>
                 <View style={styles.avatarLarge}>
@@ -58,7 +69,7 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
                   <ThemedText style={[styles.nameText, { color: textColor }]}>
                     {firstName} {lastName}
                   </ThemedText>
-                  <ThemedText style={[styles.roleText]}>Coach</ThemedText>
+                  <ThemedText style={styles.roleText}>Coach</ThemedText>
                 </View>
               </View>
               <TouchableOpacity
@@ -72,30 +83,200 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
 
             <Separator marginVertical={4} />
 
+            {/* MAIN MENU (SIDEMENU_ITEMS) */}
             <View style={styles.menuItems}>
-              {SIDEMENU_ITEMS.map((item, index) => (
-                <Pressable
-                  key={index}
-                  style={styles.menuItem}
-                  onPress={() => {
-                    setMenuVisible(false);
-                    router.push(item.routes);
-                  }}
-                >
-                  <Ionicons
-                    name={item.icon}
-                    size={24}
-                    color={GlobalColors.bomber}
-                  />
-                  <ThemedText style={[styles.menuText, { color: textColor }]}>
-                    {item.name}
-                  </ThemedText>
-                </Pressable>
-              ))}
-              <Separator />
+              {SIDEMENU_ITEMS.map((item) => {
+                // If this is "Media", render an expandable header
+                if (item.name === 'Media') {
+                  return (
+                    <React.Fragment key="media-fragment">
+                      <Pressable
+                        style={styles.menuItem}
+                        onPress={() => setMediaExpanded((prev) => !prev)}
+                      >
+                        <Ionicons
+                          name={item.icon}
+                          size={24}
+                          color={GlobalColors.bomber}
+                        />
+                        <ThemedText
+                          style={[styles.menuText, { color: textColor }]}
+                        >
+                          {item.name}
+                        </ThemedText>
+                        <Ionicons
+                          name={mediaExpanded ? 'chevron-up' : 'chevron-down'}
+                          size={20}
+                          color={textColor}
+                          style={{ marginLeft: 'auto' }}
+                        />
+                      </Pressable>
+                      {mediaExpanded && (
+                        <View style={styles.subMenu}>
+                          <Pressable
+                            style={styles.subMenuItem}
+                            onPress={() => navigateAndClose('/side/videos')}
+                          >
+                            <Ionicons
+                              name="videocam-outline"
+                              size={20}
+                              color={GlobalColors.bomber}
+                            />
+                            <ThemedText
+                              style={[styles.subMenuText, { color: textColor }]}
+                            >
+                              Videos
+                            </ThemedText>
+                          </Pressable>
+                          <Pressable
+                            style={styles.subMenuItem}
+                            onPress={() => navigateAndClose('/side/articles')}
+                          >
+                            <Ionicons
+                              name="document-text-outline"
+                              size={20}
+                              color={GlobalColors.bomber}
+                            />
+                            <ThemedText
+                              style={[styles.subMenuText, { color: textColor }]}
+                            >
+                              Articles
+                            </ThemedText>
+                          </Pressable>
+                        </View>
+                      )}
+                    </React.Fragment>
+                  );
+                }
+
+                if (item.name === 'Legacy') {
+                  return (
+                    <React.Fragment key="legacy-fragment">
+                      <Pressable
+                        style={styles.menuItem}
+                        onPress={() => setLegacyExpanded((prev) => !prev)}
+                      >
+                        <Ionicons
+                          name={item.icon}
+                          size={24}
+                          color={GlobalColors.bomber}
+                        />
+                        <ThemedText
+                          style={[styles.menuText, { color: textColor }]}
+                        >
+                          {item.name}
+                        </ThemedText>
+                        <Ionicons
+                          name={legacyExpanded ? 'chevron-up' : 'chevron-down'}
+                          size={20}
+                          color={textColor}
+                          style={{ marginLeft: 'auto' }}
+                        />
+                      </Pressable>
+                      {legacyExpanded && (
+                        <View style={styles.subMenu}>
+                          <Pressable
+                            style={styles.subMenuItem}
+                            onPress={() => navigateAndClose('/side/history')}
+                          >
+                            <Ionicons
+                              name="book-outline"
+                              size={20}
+                              color={GlobalColors.bomber}
+                            />
+                            <ThemedText
+                              style={[styles.subMenuText, { color: textColor }]}
+                            >
+                              History
+                            </ThemedText>
+                          </Pressable>
+                          <Pressable
+                            style={styles.subMenuItem}
+                            onPress={() => navigateAndClose('/side/alumnis')}
+                          >
+                            <Ionicons
+                              name="people-outline"
+                              size={20}
+                              color={GlobalColors.bomber}
+                            />
+                            <ThemedText
+                              style={[styles.subMenuText, { color: textColor }]}
+                            >
+                              Alumnis
+                            </ThemedText>
+                          </Pressable>
+                          <Pressable
+                            style={styles.subMenuItem}
+                            onPress={() =>
+                              navigateAndClose('/side/commitments')
+                            }
+                          >
+                            <Ionicons
+                              name="checkmark-done-outline"
+                              size={20}
+                              color={GlobalColors.bomber}
+                            />
+                            <ThemedText
+                              style={[styles.subMenuText, { color: textColor }]}
+                            >
+                              Commitments
+                            </ThemedText>
+                          </Pressable>
+                        </View>
+                      )}
+                    </React.Fragment>
+                  );
+                }
+
+                return (
+                  <Pressable
+                    key={item.name}
+                    style={styles.menuItem}
+                    onPress={() => {
+                      if (item.routes) {
+                        navigateAndClose(item.routes);
+                      }
+                    }}
+                  >
+                    <Ionicons
+                      name={item.icon}
+                      size={24}
+                      color={GlobalColors.bomber}
+                    />
+                    <ThemedText style={[styles.menuText, { color: textColor }]}>
+                      {item.name}
+                    </ThemedText>
+                  </Pressable>
+                );
+              })}
+
+              {/* Separator before footer */}
+              <Separator marginVertical={12} />
+
+              {/* Footer Items */}
               <View style={styles.footer}>
                 {['Profile', 'Settings', 'Contact', 'Payment'].map((text) => (
-                  <Pressable key={text} style={styles.footerItem}>
+                  <Pressable
+                    key={text}
+                    style={styles.footerItem}
+                    onPress={() => {
+                      // You can customize these paths as needed:
+                      switch (text) {
+                        case 'Profile':
+                          navigateAndClose('/profile');
+                          break;
+                        case 'Settings':
+                          navigateAndClose('/settings');
+                          break;
+                        case 'Contact':
+                          navigateAndClose('/side/contact');
+                          break;
+                        case 'Payment':
+                          navigateAndClose('/payment');
+                          break;
+                      }
+                    }}
+                  >
                     <Text style={[styles.footerText, { color: textColor }]}>
                       {text}
                     </Text>
@@ -104,7 +285,13 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
               </View>
             </View>
 
-            <Pressable style={styles.logoutButton}>
+            {/* Logout Button */}
+            <Pressable
+              style={styles.logoutButton}
+              onPress={() => {
+                /* Add your logout logic here */
+              }}
+            >
               <Text style={styles.logoutText}>Logout</Text>
             </Pressable>
           </BlurView>
@@ -129,6 +316,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
   modalContainer: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -145,6 +333,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 24,
     overflow: 'hidden',
   },
+
   profileHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -179,6 +368,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: GlobalColors.bomber,
   },
+
   menuItems: {
     marginBottom: 0,
   },
@@ -195,9 +385,29 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontWeight: '600',
   },
+
+  // Submenu container
+  subMenu: {
+    marginLeft: 36, // indent for subitems
+    marginBottom: 12,
+  },
+  subMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    marginBottom: 6,
+  },
+  subMenuText: {
+    fontSize: 16,
+    marginLeft: 10,
+    fontWeight: '500',
+  },
+
   footer: {
-    marginTop: 10,
-    marginBottom: 10,
+    marginTop: 0,
+    marginBottom: 24,
   },
   footerItem: {
     paddingVertical: 10,
@@ -207,6 +417,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: 'rgba(255,255,255,0.8)',
   },
+
   logoutButton: {
     marginTop: 20,
     backgroundColor: 'rgba(255,0,0,0.8)',
