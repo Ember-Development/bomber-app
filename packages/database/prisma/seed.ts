@@ -25,8 +25,8 @@ import { PlayerDB } from '../types/player';
  *
  */
 
-const seed = faker.number.int({ min: 1, max: 1_000_000 }); // hardcode this if you want a particular seed
-// const seed = 283812;
+// const seed = faker.number.int({ min: 1, max: 1_000_000 }); // hardcode this if you want a particular seed
+const seed = 459398;
 
 //dont remove, this is used for debugging
 console.log(`Using seed: ${seed}`);

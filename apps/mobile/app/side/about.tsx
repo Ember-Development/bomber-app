@@ -25,7 +25,6 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_HORIZONTAL_PADDING = 20;
 const CARD_WIDTH = SCREEN_WIDTH - CARD_HORIZONTAL_PADDING * 2;
 
-// Replace these with your real staff data
 const TEAM_MEMBERS = [
   {
     id: 'scott',
@@ -129,24 +128,20 @@ const CULTURE_METRICS = [
   },
 ];
 
-const METRIC_CARD_WIDTH = CARD_WIDTH * 0.6; // roughly 60% of container
-const METRIC_CARD_SPACING = 16; // margin between cards
+const METRIC_CARD_WIDTH = CARD_WIDTH * 0.6;
+const METRIC_CARD_SPACING = 16;
 const SINGLE_SET_WIDTH =
   CULTURE_METRICS.length * (METRIC_CARD_WIDTH + METRIC_CARD_SPACING);
 
-// Duration for one full scroll of a single set (in ms)
-const SCROLL_DURATION = 20000; // 15 seconds for one full pass
+const SCROLL_DURATION = 24000;
 
 export default function AboutScreen() {
   const textColor = useThemeColor({}, 'text');
   const roleBadgeColor = useThemeColor({}, 'component');
-  const componentColor = useThemeColor({}, 'component');
 
   const translateX = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Looping animation: from 0 → -SINGLE_SET_WIDTH over SCROLL_DURATION,
-    // then reset to 0, repeat forever.
     Animated.loop(
       Animated.sequence([
         Animated.timing(translateX, {
