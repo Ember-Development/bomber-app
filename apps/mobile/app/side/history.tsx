@@ -79,7 +79,6 @@ export default function HistoryScreen() {
   const textColor = useThemeColor({}, 'text');
   const scrollRef = useRef<import('react-native').ScrollView | null>(null);
 
-  // Ken Burns: continuous slow zoom in and out
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -150,7 +149,6 @@ export default function HistoryScreen() {
           contentContainerStyle={styles.scrollContent}
         >
           {TIMELINE_EVENTS.map((event, index) => {
-            // Parallax: image shifts slightly with scroll
             const inputRange = [
               (index - 1) * SCREEN_HEIGHT,
               index * SCREEN_HEIGHT,
@@ -162,7 +160,6 @@ export default function HistoryScreen() {
               extrapolate: 'clamp',
             });
 
-            // Combine Ken Burns zoom + parallax
             const imageStyle = {
               transform: [{ scale: animScale }, { translateY }],
             };
@@ -176,7 +173,6 @@ export default function HistoryScreen() {
                 />
                 <View style={styles.overlay} />
 
-                {/* Static gradient panel at top */}
                 <View style={styles.gradientContainer}>
                   <LinearGradient
                     colors={['rgba(0,0,0,0.6)', 'rgba(0,0,0,0)']}
@@ -209,7 +205,6 @@ export default function HistoryScreen() {
           })}
         </Animated.ScrollView>
 
-        {/* Year Indicators (dots + current year) */}
         <View style={styles.indicatorContainer}>
           {TIMELINE_EVENTS.map((_, idx) => (
             <View
@@ -228,7 +223,6 @@ export default function HistoryScreen() {
           </ThemedText>
         </View>
 
-        {/* Floating UP button */}
         <TouchableOpacity
           style={[styles.floatingButton, styles.topButton]}
           onPress={scrollToPrevious}
@@ -240,7 +234,6 @@ export default function HistoryScreen() {
           />
         </TouchableOpacity>
 
-        {/* Floating DOWN button: move to next page */}
         <TouchableOpacity
           style={[styles.floatingButton, styles.bottomButton]}
           onPress={scrollToNext}
@@ -261,15 +254,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000',
   },
-  scrollContent: {
-    // Each child is SCREEN_HEIGHT tall
-  },
+  scrollContent: {},
   pageContainer: {
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT,
     overflow: 'hidden',
   },
-  // Background image slightly oversized for zoom buffer
   fullImage: {
     position: 'absolute',
     width: SCREEN_WIDTH * 1.2,
@@ -282,12 +272,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.35)',
   },
 
-  // Top gradient panel (static)
   gradientContainer: {
     position: 'absolute',
     top: 0,
     width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT * 0.45, // shows top 45% of screen
+    height: SCREEN_HEIGHT * 0.45,
   },
   gradient: {
     flex: 1,
@@ -318,7 +307,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // Floating buttons
   floatingButton: {
     position: 'absolute',
     right: 24,
@@ -338,7 +326,6 @@ const styles = StyleSheet.create({
     bottom: 40,
   },
 
-  // Year indicators
   indicatorContainer: {
     position: 'absolute',
     bottom: SCREEN_HEIGHT * 0.05,

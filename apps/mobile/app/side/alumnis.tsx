@@ -1,5 +1,3 @@
-// app/side/alumnis.tsx
-
 import React, { useRef, useState } from 'react';
 import {
   SafeAreaView,
@@ -288,7 +286,6 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
 
-  // FlipCard wrapper
   cardWrapper: {
     flex: 1,
     margin: 8,
@@ -296,12 +293,10 @@ const styles = StyleSheet.create({
     height: CARD_HEIGHT,
     borderRadius: 16,
     overflow: 'hidden',
-    // iOS shadow
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
-    // Android elevation
     elevation: 4,
   },
   cardBlur: {
