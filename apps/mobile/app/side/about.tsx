@@ -238,15 +238,10 @@ export default function AboutScreen() {
               activeOpacity={0.8}
               style={styles.cardOuterWrapper}
               onPress={() => {
-                // in case you want to navigate to a detail screen:
-                // router.push(`/team/${member.id}`);
                 console.log('Tapped', member.name);
               }}
             >
-              {/* Glassmorphic background */}
-              {/* Content */}
               <View style={styles.cardContent}>
-                {/* Circular photo */}
                 <View style={styles.photoWrapper}>
                   <Image
                     source={{ uri: member.imageUri }}
@@ -254,7 +249,6 @@ export default function AboutScreen() {
                   />
                 </View>
 
-                {/* Role badge */}
                 <View
                   style={[styles.roleBadge, { borderColor: roleBadgeColor }]}
                 >
@@ -265,12 +259,10 @@ export default function AboutScreen() {
                   </ThemedText>
                 </View>
 
-                {/* Name */}
                 <ThemedText style={[styles.nameText, { color: textColor }]}>
                   {member.name}
                 </ThemedText>
 
-                {/* Bio */}
                 <ThemedText style={[styles.bioText, { color: textColor }]}>
                   {member.bio}
                 </ThemedText>
@@ -395,7 +387,7 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH - 40,
     height: 100,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.05)', // fallback
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.15)',
     overflow: 'hidden',
@@ -418,7 +410,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
-  // HEADER
   headerContainer: {
     marginHorizontal: CARD_HORIZONTAL_PADDING,
     marginBottom: 20,
@@ -429,11 +420,9 @@ const styles = StyleSheet.create({
     lineHeight: 36,
   },
 
-  // CARD WRAPPER (touchable + margin)
   cardOuterWrapper: {
     marginHorizontal: CARD_HORIZONTAL_PADDING,
     marginBottom: 24,
-    // drop shadow:
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,
@@ -487,7 +476,6 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
 
-  // FLOATING BACK BUTTON
   backButton: {
     position: 'absolute',
     top: 86,

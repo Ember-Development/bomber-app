@@ -178,14 +178,12 @@ export default function CommitmentsScreen() {
           backgroundColor="transparent"
         />
 
-        {/* HEADER: “2025 Commitments” */}
         <View style={[styles.headerContainer, { paddingTop: insets.top + 12 }]}>
           <ThemedText style={[styles.headerText, { color: textColor }]}>
             {currentYear} Commitments
           </ThemedText>
         </View>
 
-        {/* If no commits for the year, show a message */}
         {YEARLY_COMMITS.length === 0 ? (
           <View style={styles.emptyContainer}>
             <ThemedText
@@ -209,7 +207,6 @@ export default function CommitmentsScreen() {
           />
         )}
 
-        {/* FLOATING SCROLL‐TO‐TOP BUTTON */}
         {showScrollButton && (
           <TouchableOpacity
             style={styles.floatingContainer}
@@ -234,7 +231,6 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? 40 : 0,
   },
 
-  // HEADER
   headerContainer: {
     paddingHorizontal: 20,
     paddingTop:
@@ -247,7 +243,6 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
 
-  // When there are no commits for the year
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -258,29 +253,25 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
 
-  // FlatList padding
   listContent: {
     paddingHorizontal: ROW_HORIZONTAL_PADDING,
     paddingVertical: 12,
   },
 
-  // Each “row” wrapper
   rowWrapper: {
     marginBottom: 16,
     height: ROW_HEIGHT,
     borderRadius: 16,
     overflow: 'hidden',
-    // shadow for iOS
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
-    // elevation for Android
     elevation: 4,
   },
   rowBlur: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.06)', // fallback if blur isn’t available
+    backgroundColor: 'rgba(255,255,255,0.06)',
     justifyContent: 'center',
   },
   rowContent: {
@@ -289,16 +280,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
 
-  // College logo (circular)
   logo: {
     width: ROW_HEIGHT * 0.6,
     height: ROW_HEIGHT * 0.6,
     borderRadius: (ROW_HEIGHT * 0.6) / 2,
-    backgroundColor: 'rgba(255,255,255,0.1)', // placeholder background
+    backgroundColor: 'rgba(255,255,255,0.1)',
     marginRight: 12,
   },
 
-  // Text container
   textContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -313,7 +302,6 @@ const styles = StyleSheet.create({
     color: '#ccc',
   },
 
-  // Floating “circle” scroll-to-top button
   floatingContainer: {
     position: 'absolute',
     bottom: 24,

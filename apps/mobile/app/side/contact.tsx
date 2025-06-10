@@ -1,5 +1,3 @@
-// app/side/contact.tsx
-
 import React, { useState } from 'react';
 import {
   SafeAreaView,
@@ -27,7 +25,6 @@ export default function ContactScreen() {
   const textColor = useThemeColor({}, 'text');
   const componentColor = useThemeColor({}, 'component');
 
-  // form state (you can hook these into your submission logic later)
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
@@ -35,7 +32,6 @@ export default function ContactScreen() {
 
   return (
     <BackgroundWrapper>
-      {/* Make the status bar translucent so our glass panels can extend under it */}
       <StatusBar
         barStyle="light-content"
         translucent
@@ -47,22 +43,14 @@ export default function ContactScreen() {
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
         >
-          {/* ─────────────────────────────────────────────────────────────
-               HEADER
-             ───────────────────────────────────────────────────────────── */}
           <ThemedText
             type="title"
             style={[styles.headerTitle, { color: textColor }]}
           >
             GET IN TOUCH
           </ThemedText>
-
-          {/* ─────────────────────────────────────────────────────────────
-               LEFT PANEL: OFFICE ADDRESS + SOCIAL LINKS
-             ───────────────────────────────────────────────────────────── */}
           <BlurView intensity={40} tint="light" style={styles.glassPanel}>
             <View style={styles.panelInner}>
-              {/* Office Address */}
               <ThemedText style={[styles.sectionTitle, { color: textColor }]}>
                 OFFICE ADDRESS
               </ThemedText>
@@ -71,7 +59,6 @@ export default function ContactScreen() {
                 {'\n'}San Antonio, TX 78219
               </ThemedText>
 
-              {/* Divider line */}
               <View
                 style={[
                   styles.divider,
@@ -79,7 +66,6 @@ export default function ContactScreen() {
                 ]}
               />
 
-              {/* Social / Contact Items */}
               <View style={styles.socialItem}>
                 <Ionicons
                   name="logo-instagram"
@@ -162,12 +148,8 @@ export default function ContactScreen() {
             </View>
           </BlurView>
 
-          {/* ─────────────────────────────────────────────────────────────
-               RIGHT PANEL: CONTACT FORM
-             ───────────────────────────────────────────────────────────── */}
           <BlurView intensity={40} tint="light" style={styles.glassPanel}>
             <View style={styles.panelInner}>
-              {/* Name Field */}
               <ThemedText style={[styles.fieldLabel, { color: textColor }]}>
                 Your Name
               </ThemedText>
@@ -179,7 +161,6 @@ export default function ContactScreen() {
                 style={[styles.input, { borderColor: componentColor + '55' }]}
               />
 
-              {/* Email Field */}
               <ThemedText style={[styles.fieldLabel, { color: textColor }]}>
                 Your Email
               </ThemedText>
@@ -192,7 +173,6 @@ export default function ContactScreen() {
                 style={[styles.input, { borderColor: componentColor + '55' }]}
               />
 
-              {/* Subject Field */}
               <ThemedText style={[styles.fieldLabel, { color: textColor }]}>
                 Subject
               </ThemedText>
@@ -204,7 +184,6 @@ export default function ContactScreen() {
                 style={[styles.input, { borderColor: componentColor + '55' }]}
               />
 
-              {/* Message Field */}
               <ThemedText style={[styles.fieldLabel, { color: textColor }]}>
                 Your Message
               </ThemedText>
@@ -221,7 +200,6 @@ export default function ContactScreen() {
                 ]}
               />
 
-              {/* Send Button */}
               <CustomButton
                 title="SEND YOUR MESSAGE"
                 onPress={() => {
@@ -248,7 +226,6 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  // Header “Get In Touch”
   headerTitle: {
     fontSize: 28,
     fontWeight: '700',
@@ -257,17 +234,15 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
 
-  // Each glass panel (shared by left & right)
   glassPanel: {
     width: PANEL_WIDTH,
     borderRadius: 20,
     marginBottom: 24,
     overflow: 'hidden',
     alignSelf: 'center',
-    backgroundColor: 'rgba(255,255,255,0.05)', // fallback on Android
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.15)',
-    // drop shadow
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -278,7 +253,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
 
-  // Section title inside left panel
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
@@ -291,14 +265,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  // Divider between address & social
   divider: {
     height: 1,
     marginVertical: 12,
     width: '100%',
   },
 
-  // Social / contact row
   socialItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -308,7 +280,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     marginLeft: 12,
-    flex: 1, // take up remaining space
+    flex: 1,
   },
   socialLabel: {
     fontSize: 12,
@@ -317,7 +289,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
-  // “Fields” inside right panel
   fieldLabel: {
     fontSize: 14,
     fontWeight: '600',
@@ -344,13 +315,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.08)',
     minHeight: 100,
     textAlignVertical: 'top',
-  },
-
-  // reCAPTCHA placeholder row
-  recaptchaPlaceholder: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 16,
   },
   recaptchaText: {
     marginLeft: 8,
