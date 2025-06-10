@@ -11,6 +11,9 @@ import {
   TouchableOpacity,
   Animated,
   StatusBar,
+  Platform,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,10 +22,10 @@ import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import CustomSelect from '@/components/ui/atoms/dropdown';
+import CustomButton from '@/components/ui/atoms/Button';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Mock alumni entries
 const ALUMNI_DATA = [
   {
     id: '1',
@@ -73,7 +76,6 @@ const ALUMNI_DATA = [
   },
 ];
 
-// Build distinct year options + “All”
 const YEAR_OPTIONS = [
   { label: 'All', value: 'All' },
   ...Array.from(new Set(ALUMNI_DATA.map((a) => a.year)))
@@ -81,7 +83,6 @@ const YEAR_OPTIONS = [
     .map((yr) => ({ label: yr, value: yr })),
 ];
 
-// Each flip card: front shows logo + name/school, back shows achievements
 function FlipCard({
   item,
   textColor,
@@ -92,13 +93,11 @@ function FlipCard({
   const flipAnim = useRef(new Animated.Value(0)).current;
   const [isFlipped, setIsFlipped] = useState(false);
 
-  // Interpolate rotateY: 0° → 180°
   const rotateY = flipAnim.interpolate({
     inputRange: [0, 180],
     outputRange: ['0deg', '180deg'],
   });
 
-  // On press, animate flip
   const handleFlip = () => {
     if (isFlipped) {
       Animated.timing(flipAnim, {
@@ -122,14 +121,12 @@ function FlipCard({
       style={styles.cardWrapper}
     >
       <BlurView intensity={30} tint="light" style={styles.cardBlur}>
-        {/* Perspective container */}
         <Animated.View
           style={[
             styles.flipContainer,
             { transform: [{ perspective: 1000 }, { rotateY }] },
           ]}
         >
-          {/* FRONT FACE */}
           <View
             style={[styles.faceContainer, { backfaceVisibility: 'hidden' }]}
           >
@@ -156,7 +153,6 @@ function FlipCard({
             </LinearGradient>
           </View>
 
-          {/* BACK FACE */}
           <View
             style={[
               styles.faceContainer,
@@ -175,40 +171,45 @@ function FlipCard({
 export default function AlumnisScreen() {
   const textColor = useThemeColor({}, 'text');
   const [selectedYear, setSelectedYear] = useState<string>('All');
+  const [showScrollButton, setShowScrollButton] = useState(false);
+
   const listRef = useRef<FlatList<any>>(null);
 
-  // Filter based on selectedYear
   const filteredData =
     selectedYear === 'All'
       ? ALUMNI_DATA
       : ALUMNI_DATA.filter((a) => a.year === selectedYear);
 
-  // Move FlatList to top
   const scrollToTop = () => {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
   };
 
-  // “Load More” placeholder
   const handleLoadMore = () => {
     console.log('Load more alumni...');
   };
 
-  // Render each alumni flip card
+  const onScrollHandler = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const yOffset = e.nativeEvent.contentOffset.y;
+    if (yOffset > 100 && !showScrollButton) {
+      setShowScrollButton(true);
+    } else if (yOffset <= 100 && showScrollButton) {
+      setShowScrollButton(false);
+    }
+  };
+
   const renderAlumniCard = ({ item }: { item: (typeof ALUMNI_DATA)[0] }) => (
     <FlipCard item={item} textColor={textColor} />
   );
 
   return (
     <BackgroundWrapper>
-      <SafeAreaView style={[styles.container]}>
-        {/* Header */}
-        <View style={styles.headerContainer}>
+      <SafeAreaView style={styles.container}>
+        <View style={[styles.headerContainer, { paddingTop: 20 }]}>
           <ThemedText style={[styles.headerText, { color: textColor }]}>
             Bomber Alumni
           </ThemedText>
         </View>
 
-        {/* Year Dropdown */}
         <View style={styles.dropdownContainer}>
           <CustomSelect
             label="Select Year"
@@ -218,7 +219,6 @@ export default function AlumnisScreen() {
           />
         </View>
 
-        {/* Alumni Grid */}
         <FlatList
           ref={listRef}
           data={filteredData}
@@ -227,52 +227,57 @@ export default function AlumnisScreen() {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           renderItem={renderAlumniCard}
+          onScroll={onScrollHandler}
+          scrollEventThrottle={16}
         />
 
-        {/* “Load More” Button */}
         <View style={styles.loadMoreContainer}>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={handleLoadMore}
-            style={styles.loadMoreButton}
-          >
-            <ThemedText style={styles.loadMoreText}>Load More</ThemedText>
-          </TouchableOpacity>
+          <CustomButton
+            title="LOAD MORE"
+            onPress={() => {
+              /* TODO: hook up send logic */
+            }}
+            variant="primary"
+          />
         </View>
 
-        {/* Floating Scroll-to-Top Button (glassy “squircle”) */}
-        <TouchableOpacity
-          style={styles.floatingContainer}
-          onPress={scrollToTop}
-          activeOpacity={0.8}
-        >
-          <BlurView intensity={50} tint="light" style={styles.floatingBlur}>
-            <Ionicons name="arrow-up" size={24} color="#fff" />
-          </BlurView>
-        </TouchableOpacity>
+        {showScrollButton && (
+          <TouchableOpacity
+            style={styles.floatingContainer}
+            onPress={scrollToTop}
+            activeOpacity={0.8}
+          >
+            <View style={styles.floatingMask}>
+              <BlurView intensity={50} tint="light" style={styles.floatingBlur}>
+                <Ionicons name="arrow-up" size={24} color="#fff" />
+              </BlurView>
+            </View>
+          </TouchableOpacity>
+        )}
       </SafeAreaView>
     </BackgroundWrapper>
   );
 }
 
-const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2; // two columns, 16px side padding + 16px between
+const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2;
 const CARD_HEIGHT = CARD_WIDTH * 1.2;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: Platform.OS === 'android' ? 40 : 0,
   },
   headerContainer: {
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop:
+      Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 12 : 12,
     paddingBottom: 8,
-    marginTop: 10,
   },
   headerText: {
     fontSize: 28,
     fontWeight: '700',
+    paddingVertical: 20,
   },
-
   dropdownContainer: {
     marginHorizontal: 20,
     marginBottom: 16,
@@ -301,11 +306,10 @@ const styles = StyleSheet.create({
   },
   cardBlur: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.06)', // fallback if blur isn’t available
+    backgroundColor: 'rgba(255,255,255,0.06)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Container that is rotated (3D)
   flipContainer: {
     width: '100%',
     height: '100%',
@@ -344,14 +348,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 6,
   },
-  achievementsFull: {
-    marginTop: 12,
-    width: '100%',
-  },
-  achievementText: {
-    fontSize: 10,
-    marginBottom: 4,
-  },
 
   loadMoreContainer: {
     alignItems: 'center',
@@ -362,7 +358,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 24,
     borderRadius: 24,
-    // Shadow
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
@@ -375,19 +370,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  // Floating “squircle” scroll-to-top button
   floatingContainer: {
     position: 'absolute',
-    bottom: 24,
+    bottom: 32,
     right: 24,
-  },
-  floatingBlur: {
     width: 52,
     height: 52,
     borderRadius: 26,
+    overflow: 'hidden',
+  },
+
+  floatingMask: {
+    flex: 1,
+    borderRadius: 26,
+    overflow: 'hidden',
+  },
+
+  floatingBlur: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    // Outer shadow so it really hovers
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
