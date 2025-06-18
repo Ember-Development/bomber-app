@@ -15,6 +15,7 @@ import { GlobalColors } from '@/constants/Colors';
 // import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { SIDEMENU_ITEMS } from '@/constants/sidebarItems';
+import { useRouter } from 'expo-router';
 
 interface UserAvatarProps {
   firstName: string;
@@ -23,12 +24,12 @@ interface UserAvatarProps {
 
 export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
   const [menuVisible, setMenuVisible] = useState(false);
+  const router = useRouter();
   // const { theme, toggleTheme } = useColorScheme();
 
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 
   // theme
-  const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const icons = useThemeColor({}, 'icon');
 
@@ -47,7 +48,7 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
 
       <Modal visible={menuVisible} animationType="fade" transparent>
         <View style={styles.modalContainer}>
-          <ThemedView style={[styles.sidebar, { backgroundColor }]}>
+          <ThemedView style={[styles.sidebar]}>
             <View style={styles.profileHeader}>
               <View style={styles.profileDetails}>
                 <View style={styles.avatarLarge}>
@@ -80,7 +81,14 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
 
             <View style={styles.menuItems}>
               {SIDEMENU_ITEMS.map((item, index) => (
-                <Pressable key={index} style={styles.menuItem}>
+                <Pressable
+                  key={index}
+                  style={styles.menuItem}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    router.push(item.routes);
+                  }}
+                >
                   <Ionicons name={item.icon} size={24} color={icons} />
                   <ThemedText style={[styles.menuText, { color: textColor }]}>
                     {item.name}
@@ -150,6 +158,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     paddingTop: 50,
+
     paddingHorizontal: 20,
   },
   profileHeader: {

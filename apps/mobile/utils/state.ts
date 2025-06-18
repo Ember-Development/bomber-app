@@ -50,3 +50,8 @@ export const US_STATES = [
   { label: 'Wisconsin', value: 'WI' },
   { label: 'Wyoming', value: 'WY' },
 ];
+
+export const getStateName = (abbrev: string): string => {
+  const match = US_STATES.find((s) => s.value === abbrev);
+  return match ? match.label : abbrev;
+};

@@ -24,6 +24,7 @@ import { formatEvents } from '@/utils/FormatEvents';
 import { legacyItems, mockArticles, mockVideos } from '@/constants/items';
 import { createHomeStyles } from '@/styles/homeStyle';
 import { Ionicons } from '@expo/vector-icons';
+import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 
 const QUICK_ACTIONS = [
   {
@@ -79,157 +80,158 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeContainer}>
-      <Animated.ScrollView
-        contentContainerStyle={{ paddingBottom: 60, flexGrow: 1 }}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
-        horizontal={false}
-        showsHorizontalScrollIndicator={false}
-        bounces={false}
-        decelerationRate="fast"
-        overScrollMode="never"
-      >
-        <Animated.View
-          style={[
-            styles.titleContainer,
-            {
-              backgroundColor: '#f6f6f6',
-              zIndex: 10,
-              height: headerHeight,
-              transform: [{ scale: headerScale }],
-            },
-          ]}
+    <BackgroundWrapper>
+      <SafeAreaView style={styles.safeContainer}>
+        <Animated.ScrollView
+          contentContainerStyle={{ paddingBottom: 60, flexGrow: 1 }}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
+          horizontal={false}
+          showsHorizontalScrollIndicator={false}
+          bounces={false}
+          decelerationRate="fast"
+          overScrollMode="never"
         >
-          <View style={styles.title}>
-            <View style={styles.titleText}>
-              <ThemedText type="defaultSemiBold">Welcome Back,</ThemedText>
-              <ThemedText type="title">
-                {user?.fname} {user?.lname}
+          <Animated.View
+            style={[
+              styles.titleContainer,
+              {
+                zIndex: 10,
+                height: headerHeight,
+                transform: [{ scale: headerScale }],
+              },
+            ]}
+          >
+            <View style={styles.title}>
+              <View style={styles.titleText}>
+                <ThemedText type="defaultSemiBold">Welcome Back,</ThemedText>
+                <ThemedText type="title">
+                  {user?.fname} {user?.lname}
+                </ThemedText>
+              </View>
+              <UserAvatar firstName={user?.fname} lastName={user?.lname} />
+            </View>
+          </Animated.View>
+
+          <View style={styles.quickAction}>
+            <View style={styles.myActions}>
+              {QUICK_ACTIONS.map((item) => (
+                <Card key={item.title} type="quickAction" {...item} />
+              ))}
+            </View>
+            <View style={styles.notifications}>
+              <NotificationCard />
+            </View>
+          </View>
+
+          <View style={styles.event}>
+            <View style={styles.EventText}>
+              <ThemedText type="title">Events</ThemedText>
+              <CustomButton
+                title="See All"
+                variant="text"
+                onPress={seeAllEvents}
+                fullWidth={false}
+              />
+            </View>
+            <EventCardContainer events={formattedEvents} />
+          </View>
+
+          <Animated.View style={styles.groups}>
+            <View style={styles.EventText}>
+              <ThemedText type="title">Groups</ThemedText>
+              <CustomButton
+                title="See All"
+                variant="text"
+                onPress={seeAllGroups}
+                fullWidth={false}
+              />
+            </View>
+
+            <Animated.ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 5, paddingBottom: 5 }}
+              decelerationRate={0.8}
+              snapToAlignment="start"
+              snapToInterval={230}
+              bounces={false}
+              overScrollMode="never"
+            >
+              {userChats?.map((chat) => (
+                <Card
+                  key={chat.id}
+                  type="groupChat"
+                  title={chat.title}
+                  additionalInfo={`${chat.users.length} Members`}
+                  onPress={() => {
+                    router.push({
+                      pathname: '/groups/[id]',
+                      params: { id: chat.id.toString() },
+                    });
+                  }}
+                />
+              ))}
+            </Animated.ScrollView>
+          </Animated.View>
+
+          <View style={styles.legacy}>
+            <View style={styles.legacyText}>
+              <ThemedText type="title">Bombers Legacy</ThemedText>
+              <ThemedText type="defaultSemiBold">
+                See how the Bombers program has built champions.
               </ThemedText>
             </View>
-            <UserAvatar firstName={user?.fname} lastName={user?.lname} />
-          </View>
-        </Animated.View>
 
-        <View style={styles.quickAction}>
-          <View style={styles.myActions}>
-            {QUICK_ACTIONS.map((item) => (
-              <Card key={item.title} type="quickAction" {...item} />
-            ))}
-          </View>
-          <View style={styles.notifications}>
-            <NotificationCard />
-          </View>
-        </View>
-
-        <View style={styles.event}>
-          <View style={styles.EventText}>
-            <ThemedText type="title">Events</ThemedText>
-            <CustomButton
-              title="See All"
-              variant="text"
-              onPress={seeAllEvents}
-              fullWidth={false}
-            />
-          </View>
-          <EventCardContainer events={formattedEvents} />
-        </View>
-
-        <Animated.View style={styles.groups}>
-          <View style={styles.EventText}>
-            <ThemedText type="title">Groups</ThemedText>
-            <CustomButton
-              title="See All"
-              variant="text"
-              onPress={seeAllGroups}
-              fullWidth={false}
-            />
-          </View>
-
-          <Animated.ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 5, paddingBottom: 5 }}
-            decelerationRate={0.8}
-            snapToAlignment="start"
-            snapToInterval={230}
-            bounces={false}
-            overScrollMode="never"
-          >
-            {userChats?.map((chat) => (
-              <Card
-                key={chat.id}
-                type="groupChat"
-                title={chat.title}
-                additionalInfo={`${chat.users.length} Members`}
-                onPress={() => {
-                  router.push({
-                    pathname: '/groups/[id]',
-                    params: { id: chat.id.toString() },
-                  });
-                }}
-              />
-            ))}
-          </Animated.ScrollView>
-        </Animated.View>
-
-        <View style={styles.legacy}>
-          <View style={styles.legacyText}>
-            <ThemedText type="title">Bombers Legacy</ThemedText>
-            <ThemedText type="defaultSemiBold">
-              See how the Bombers program has built champions.
-            </ThemedText>
-          </View>
-
-          <View style={styles.legacyList}>
-            {legacyItems.map((item) => (
-              <TouchableOpacity style={styles.legacyCard} key={item.title}>
-                <View style={styles.legacyItems}>
-                  <View style={styles.iconWrapper}>
-                    <Ionicons name={item.icon} size={24} color="#000" />
+            <View style={styles.legacyList}>
+              {legacyItems.map((item) => (
+                <TouchableOpacity style={styles.legacyCard} key={item.title}>
+                  <View style={styles.legacyItems}>
+                    <View style={styles.iconWrapper}>
+                      <Ionicons name={item.icon} size={24} color="#000" />
+                    </View>
+                    <ThemedText type="default">{item.title}</ThemedText>
                   </View>
-                  <ThemedText type="default">{item.title}</ThemedText>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#ccc" />
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.mediaSection}>
-          <View style={styles.EventText}>
-            <ThemedText type="title">Media</ThemedText>
-            <CustomButton
-              title="See All"
-              variant="text"
-              onPress={seeAllMedia}
-              fullWidth={false}
-            />
+                  <Ionicons name="chevron-forward" size={20} color="#ccc" />
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
 
-          <Animated.ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 5, paddingBottom: 5 }}
-            decelerationRate={0.8}
-            snapToAlignment="start"
-            snapToInterval={200}
-            bounces={false}
-            overScrollMode="never"
-          >
-            {mockArticles.map((item, idx) => (
-              <ArticleCard key={`article-${idx}`} {...item} />
-            ))}
-            {mockVideos.map((item, idx) => (
-              <VideoCard key={`video-${idx}`} {...item} />
-            ))}
-          </Animated.ScrollView>
-        </View>
-      </Animated.ScrollView>
-    </SafeAreaView>
+          <View style={styles.mediaSection}>
+            <View style={styles.EventText}>
+              <ThemedText type="title">Media</ThemedText>
+              <CustomButton
+                title="See All"
+                variant="text"
+                onPress={seeAllMedia}
+                fullWidth={false}
+              />
+            </View>
+
+            <Animated.ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 5, paddingBottom: 5 }}
+              decelerationRate={0.8}
+              snapToAlignment="start"
+              snapToInterval={200}
+              bounces={false}
+              overScrollMode="never"
+            >
+              {mockArticles.map((item, idx) => (
+                <ArticleCard key={`article-${idx}`} {...item} />
+              ))}
+              {mockVideos.map((item, idx) => (
+                <VideoCard key={`video-${idx}`} {...item} />
+              ))}
+            </Animated.ScrollView>
+          </View>
+        </Animated.ScrollView>
+      </SafeAreaView>
+    </BackgroundWrapper>
   );
 }

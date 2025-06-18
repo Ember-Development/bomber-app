@@ -12,6 +12,8 @@ import { ThemeProvider, useColorScheme } from '@/hooks/useColorScheme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UserProvider } from '@/context/useUserContext';
+import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
+import { View } from 'react-native';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -22,6 +24,15 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+  const TransparentTheme = {
+    ...(colorScheme.theme === 'dark' ? DarkTheme : DefaultTheme),
+    colors: {
+      ...(colorScheme.theme === 'dark'
+        ? DarkTheme.colors
+        : DefaultTheme.colors),
+      background: 'transparent',
+    },
+  };
 
   useEffect(() => {
     if (loaded) {
@@ -29,22 +40,24 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
+  if (!loaded) return null;
 
   return (
     <ThemeProvider>
-      <NavigationThemeProvider
-        value={colorScheme.theme === 'dark' ? DarkTheme : DefaultTheme}
-      >
+      <NavigationThemeProvider value={TransparentTheme}>
         <QueryClientProvider client={queryClient}>
           <UserProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="+not-found" />
-              </Stack>
+              <View style={{ flex: 1 }}>
+                <Stack>
+                  <Stack.Screen
+                    name="(tabs)"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen name="teams" options={{ headerShown: false }} />
+                  <Stack.Screen name="+not-found" />
+                </Stack>
+              </View>
             </GestureHandlerRootView>
           </UserProvider>
         </QueryClientProvider>

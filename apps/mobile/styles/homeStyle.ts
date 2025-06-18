@@ -7,7 +7,6 @@ export const createHomeStyles = () =>
       paddingTop: Platform.OS === 'android' ? 40 : 0,
       paddingHorizontal: 0,
       alignItems: 'stretch',
-      backgroundColor: '#f6f6f6',
     },
     titleContainer: {
       flexDirection: 'row',
