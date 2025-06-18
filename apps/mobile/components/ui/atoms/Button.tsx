@@ -64,7 +64,7 @@ export default function CustomButton({
 const styles = StyleSheet.create({
   button: {
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 20,
     marginVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',

@@ -1,4 +1,10 @@
-import { SafeAreaView, Animated, View, TouchableOpacity } from 'react-native';
+import {
+  SafeAreaView,
+  Animated,
+  View,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import { useRef } from 'react';
 import { useRouter } from 'expo-router';
 
@@ -12,7 +18,7 @@ import EventCardContainer from '@/components/ui/molecules/EventCard/SpotlightEve
 import ArticleCard from '@/components/ui/molecules/ArticleCard';
 import VideoCard from '@/components/ui/molecules/MediaCards';
 
-import { useCurrentUser } from '@/hooks/user/useCurrentUser';
+import { useUserContext } from '@/context/useUserContext';
 import { useUserEvents, useUserChats } from '@/hooks/useUser';
 import { formatEvents } from '@/utils/FormatEvents';
 import { legacyItems, mockArticles, mockVideos } from '@/constants/items';
@@ -33,13 +39,14 @@ const QUICK_ACTIONS = [
 ];
 
 export default function HomeScreen() {
-  const user = useCurrentUser();
-  const { data: rawEvents } = useUserEvents(user?.id);
-  const { data: userChats } = useUserChats(user?.id);
+  const { user, refetch } = useUserContext();
+  const { data: rawEvents, isLoading: isEventsLoading } = useUserEvents(
+    user?.id
+  );
+  const { data: userChats, isLoading: isChatsLoading } = useUserChats(user?.id);
   const styles = createHomeStyles();
   const router = useRouter();
 
-  // Inline hardcoded functions (TODO: add true logic)
   const handlePaymentPress = () => alert('Payment Reroute Clicked');
   const handleTeamsPress = () => alert('Teams Reroute Clicked');
   const seeAllEvents = () => alert('See All Events Clicked');
@@ -48,7 +55,6 @@ export default function HomeScreen() {
 
   const formattedEvents = formatEvents(rawEvents ?? []);
 
-  // scroll animation
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const headerHeight = scrollY.interpolate({
@@ -63,10 +69,10 @@ export default function HomeScreen() {
     extrapolate: 'clamp',
   });
 
-  // fallback
-  if (!user || !rawEvents || !userChats) {
+  if (!user || isEventsLoading || isChatsLoading || !user) {
     return (
       <SafeAreaView style={styles.safeContainer}>
+        <ActivityIndicator size="large" />
         <ThemedText type="title">Loading...</ThemedText>
       </SafeAreaView>
     );
@@ -87,7 +93,6 @@ export default function HomeScreen() {
         decelerationRate="fast"
         overScrollMode="never"
       >
-        {/* Header */}
         <Animated.View
           style={[
             styles.titleContainer,
@@ -110,7 +115,6 @@ export default function HomeScreen() {
           </View>
         </Animated.View>
 
-        {/* Quick Actions */}
         <View style={styles.quickAction}>
           <View style={styles.myActions}>
             {QUICK_ACTIONS.map((item) => (
@@ -122,7 +126,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Events */}
         <View style={styles.event}>
           <View style={styles.EventText}>
             <ThemedText type="title">Events</ThemedText>
@@ -136,7 +139,6 @@ export default function HomeScreen() {
           <EventCardContainer events={formattedEvents} />
         </View>
 
-        {/* Groups */}
         <Animated.View style={styles.groups}>
           <View style={styles.EventText}>
             <ThemedText type="title">Groups</ThemedText>
@@ -175,7 +177,6 @@ export default function HomeScreen() {
           </Animated.ScrollView>
         </Animated.View>
 
-        {/* Legacy */}
         <View style={styles.legacy}>
           <View style={styles.legacyText}>
             <ThemedText type="title">Bombers Legacy</ThemedText>
@@ -199,7 +200,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Media */}
         <View style={styles.mediaSection}>
           <View style={styles.EventText}>
             <ThemedText type="title">Media</ThemedText>
