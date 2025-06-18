@@ -7,6 +7,8 @@ import groupRoutes from './routes/groupRoutes';
 import messageRoutes from './routes/messageRoutes';
 import userRoutes from './routes/userRoutes';
 import authRoutes from './routes/authRoutes';
+import teamRoutes from './routes/teamRoutes';
+import playerRoutes from './routes/playerRoutes';
 
 const app = express();
 const server = http.createServer(app);
@@ -22,6 +24,8 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/teams', teamRoutes);
+app.use('/api/players', playerRoutes);
 
 const io = initializeSocket(server);
 
