@@ -6,6 +6,7 @@ import {
   Pressable,
   FlatList,
   Animated,
+  Platform,
 } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
@@ -48,10 +49,9 @@ export default function NotificationCard() {
   const [notificationsData, setNotificationsData] = useState(notifications);
   const cardScale = useRef(new Animated.Value(1)).current;
 
-  const cardBackground = useThemeColor({}, 'component');
   const modalBackground = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
-  const iconColor = useThemeColor({}, 'icon');
+  const iconColor = useThemeColor({}, 'component');
   const borderColor = useThemeColor({}, 'border');
 
   const handlePressIn = () => {
@@ -85,7 +85,6 @@ export default function NotificationCard() {
           style={[
             styles.card,
             {
-              backgroundColor: cardBackground,
               transform: [{ scale: cardScale }],
             },
           ]}
@@ -116,9 +115,7 @@ export default function NotificationCard() {
 
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalContainer}>
-          <View
-            style={[styles.modalContent, { backgroundColor: modalBackground }]}
-          >
+          <View style={[styles.modalContent]}>
             <View style={styles.dragHandle} />
 
             <View style={styles.modalHeader}>
@@ -163,7 +160,7 @@ export default function NotificationCard() {
                           { color: textColor },
                           item.isNew && {
                             fontWeight: '700',
-                            color: GlobalColors.blue,
+                            color: GlobalColors.bomber,
                           },
                         ]}
                       >
@@ -204,6 +201,7 @@ export default function NotificationCard() {
 
 const styles = StyleSheet.create({
   card: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 18,
     padding: 15,
     marginVertical: 6,
@@ -212,6 +210,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 4,
     elevation: 3,
+    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(10px)' } : {}),
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -232,28 +232,43 @@ const styles = StyleSheet.create({
   },
   timeAgo: {
     fontSize: 12,
-    color: GlobalColors.blue,
+    color: GlobalColors.bomber,
   },
   modalContainer: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
   },
   modalContent: {
     height: '75%',
     width: '100%',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    padding: 18,
-    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 1,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(16px)',
+      },
+      default: {
+        backgroundColor: 'rgba(30, 30, 30, 0.9)',
+      },
+    }),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 12,
   },
   dragHandle: {
     alignSelf: 'center',
     width: 50,
     height: 5,
-    backgroundColor: '#ccc',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
     borderRadius: 5,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -264,7 +279,16 @@ const styles = StyleSheet.create({
   },
   notificationItem: {
     borderBottomWidth: 1,
-    paddingVertical: 12,
+    borderBottomColor: 'rgba(255, 255, 255, 0.15)',
+    paddingVertical: 14,
+    paddingHorizontal: 4,
+  },
+  emptyNotifications: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 60,
+    opacity: 0.8,
   },
   notificationRow: {
     flexDirection: 'row',
@@ -275,12 +299,6 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: GlobalColors.blue,
-  },
-  emptyNotifications: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 60,
+    backgroundColor: GlobalColors.bomber,
   },
 });

@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Platform,
 } from 'react-native';
 import FullsheetModal from '../../../components/ui/organisms/FullSheetModal';
 import Checkbox from '../../../components/ui/atoms/Checkbox';
@@ -16,6 +17,7 @@ import { Position, PublicUserFE } from '@bomber-app/database';
 import CustomButton from '../../../components/ui/atoms/Button';
 import { useAddUsersToGroup } from '@/hooks/groups/useChats';
 import UserList from '../components/UserList';
+import { GlobalColors } from '@/constants/Colors';
 
 interface CreateGroupModalProps {
   visible: boolean;
@@ -282,7 +284,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         <ScrollView
           ref={scrollViewRef}
           style={styles.scrollContainer}
-          contentContainerStyle={{ paddingBottom: 120 }}
+          contentContainerStyle={{ paddingBottom: 190 }}
           showsVerticalScrollIndicator={false}
         >
           <UserList
@@ -313,7 +315,6 @@ const styles = StyleSheet.create({
   container: {},
   fixedHeader: {
     paddingBottom: 5,
-    backgroundColor: 'white',
     paddingHorizontal: 10,
   },
   topSection: {
@@ -326,6 +327,7 @@ const styles = StyleSheet.create({
   counter: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: GlobalColors.bomber,
   },
   gridContainer: {
     flexDirection: 'row',
@@ -354,14 +356,30 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   clearButton: {
-    backgroundColor: '#f0f0f0',
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.20)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(12px)',
+      },
+      default: {},
+    }),
+
+    alignItems: 'center',
+    marginVertical: 8,
   },
   clearButtonText: {
     fontSize: 14,
-    color: '#000000',
+    color: '#fff',
     fontWeight: '600',
   },
 });

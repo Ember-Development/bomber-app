@@ -16,6 +16,7 @@ import {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { GlobalColors } from '@/constants/Colors';
 
 interface NameModalProps {
   isVisible: boolean;
@@ -120,6 +121,7 @@ const styles = StyleSheet.create({
   },
   input: {
     width: '100%',
+    color: GlobalColors.white,
   },
 });
 

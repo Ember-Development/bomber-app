@@ -1,7 +1,14 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+} from 'react-native';
 import { PublicUserFE } from '@bomber-app/database';
 import UserListItem from './UserListItem';
+import { GlobalColors } from '@/constants/Colors';
 
 interface UserListProps {
   users: PublicUserFE[];
@@ -53,12 +60,28 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: GlobalColors.bomber,
   },
   selectAllButton: {
-    backgroundColor: '#000000',
     paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 6,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.20)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(12px)',
+      },
+      default: {},
+    }),
+    alignItems: 'center',
+    marginVertical: 8,
   },
   buttonText: {
     color: 'white',
