@@ -19,14 +19,18 @@ interface CustomSelectProps {
   label: string;
   options: SelectOption[];
   onSelect?: (value: string) => void;
+  defaultValue?: string;
 }
 
 export default function CustomSelect({
   label,
   options,
   onSelect,
+  defaultValue,
 }: CustomSelectProps) {
-  const [selectedValue, setSelectedValue] = useState<string | null>(null);
+  const [selectedValue, setSelectedValue] = useState<string | null>(
+    defaultValue ?? null
+  );
   const [isModalVisible, setModalVisible] = useState(false);
 
   // **Apply Theme Colors**
@@ -44,6 +48,8 @@ export default function CustomSelect({
 
   return (
     <View style={styles.container}>
+      <Text style={[styles.label, { color: textColor }]}>{label}</Text>
+
       <Pressable
         style={[
           styles.inputWrapper,
@@ -97,16 +103,19 @@ export default function CustomSelect({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 15,
+  container: {},
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 5,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 20,
     paddingHorizontal: 10,
-    height: 40,
+    borderWidth: 0.5,
+    height: 50,
     justifyContent: 'space-between',
   },
   text: {
@@ -123,9 +132,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    width: 300,
+    width: 400,
     borderRadius: 10,
-    padding: 15,
+    padding: 45,
   },
   option: {
     paddingVertical: 12,
@@ -133,6 +142,6 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: 'left',
   },
 });
