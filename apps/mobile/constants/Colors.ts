@@ -13,7 +13,8 @@ export const GlobalColors = {
   blue: '#5AA5FF',
   red: '#FF0505',
   dark: '#282A29',
-  gray: '#666666',
+  gray: '#a1a1a1',
+  bomber: '#57a4ff',
 };
 
 export const Colors = {
@@ -22,7 +23,7 @@ export const Colors = {
     button: '#282A29',
     buttonText: '#f6f6f6',
     border: '#282A29',
-    secondaryText: '#666666',
+    secondaryText: '#a1a1a1',
     background: '#282A29',
     tint: tintColorLight,
     icon: '#222222',

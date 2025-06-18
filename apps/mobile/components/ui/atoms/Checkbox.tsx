@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, Text, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { GlobalColors } from '@/constants/Colors';
 
 interface CheckboxProps {
   label: string;
@@ -10,7 +11,6 @@ interface CheckboxProps {
 }
 
 export default function Checkbox({ label, onChange, checked }: CheckboxProps) {
-  const checkBoxColor = useThemeColor({}, 'border');
   const textColor = useThemeColor({}, 'secondaryText');
 
   const toggleCheckbox = () => {
@@ -22,7 +22,7 @@ export default function Checkbox({ label, onChange, checked }: CheckboxProps) {
       <Ionicons
         name={checked ? 'checkbox' : 'square-outline'}
         size={24}
-        color={checkBoxColor}
+        color={GlobalColors.bomber}
       />
       <Text style={[styles.label, { color: textColor }]}>{label}</Text>
     </Pressable>

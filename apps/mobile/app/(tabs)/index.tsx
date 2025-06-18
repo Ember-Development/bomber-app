@@ -25,6 +25,7 @@ import { legacyItems, mockArticles, mockVideos } from '@/constants/items';
 import { createHomeStyles } from '@/styles/homeStyle';
 import { Ionicons } from '@expo/vector-icons';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
+import { GlobalColors } from '@/constants/Colors';
 
 const QUICK_ACTIONS = [
   {
@@ -191,7 +192,11 @@ export default function HomeScreen() {
                 <TouchableOpacity style={styles.legacyCard} key={item.title}>
                   <View style={styles.legacyItems}>
                     <View style={styles.iconWrapper}>
-                      <Ionicons name={item.icon} size={24} color="#000" />
+                      <Ionicons
+                        name={item.icon}
+                        size={24}
+                        color={GlobalColors.bomber}
+                      />
                     </View>
                     <ThemedText type="default">{item.title}</ThemedText>
                   </View>

@@ -10,7 +10,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { createGroupStyles } from '@/styles/groupsStyle';
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import CustomButton from '@/components/ui/atoms/Button';
 import NameModal from '@/app/groups/modals/NameModal';
 import CreateGroupModal from '@/app/groups/modals/AddGroupModal';
@@ -18,6 +17,8 @@ import { formatRelativeTime } from '@/utils/DateTimeUtil';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { usePaginatedChats } from '@/hooks/groups/useChats';
 import { useCreateGroup } from '@/hooks/groups/useCreateGroup';
+import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
+import { BlurView } from 'expo-blur';
 
 export default function GroupsScreen() {
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -34,7 +35,7 @@ export default function GroupsScreen() {
   const router = useRouter();
 
   const styles = createGroupStyles('light');
-  const iconColor = useThemeColor({}, 'icon');
+  const iconColor = useThemeColor({}, 'component');
   // const component = useThemeColor({}, 'component');
 
   const { mutate: createGroup } = useCreateGroup();
@@ -58,78 +59,79 @@ export default function GroupsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeContainer}>
-      <ThemedView style={styles.container}>
-        <View style={styles.headerContainer}>
-          <ThemedText style={styles.headerText}>Groups</ThemedText>
-          <View style={styles.iconContainer}>
-            <CustomButton
-              variant="icon"
-              iconName="add"
-              onPress={() => setModalStep('name')}
-            />
-            {/* IMPLEMENT LATER */}
-            {/* <CustomButton
+    <BackgroundWrapper>
+      <SafeAreaView style={styles.safeContainer}>
+        <View style={styles.container}>
+          <View style={styles.headerContainer}>
+            <ThemedText style={styles.headerText}>Groups</ThemedText>
+            <View style={styles.iconContainer}>
+              <CustomButton
+                variant="icon"
+                iconName="add"
+                onPress={() => setModalStep('name')}
+              />
+              {/* IMPLEMENT LATER */}
+              {/* <CustomButton
               variant="icon"
               iconName="search"
               onPress={() => alert('Searching!')}
             /> */}
+            </View>
           </View>
-        </View>
 
-        {/* Modals */}
-        {modalStep === 'name' && (
-          <NameModal
-            isVisible
-            onClose={() => setModalStep(null)}
-            onNext={handleNext}
-          />
-        )}
-        {modalStep === 'group' && (
-          <CreateGroupModal
-            visible
-            groupName={groupName}
-            onClose={() => setModalStep(null)}
-            onCreate={handleCreateGroup}
-            existingGroupUserIds={[]}
-          />
-        )}
+          {/* Modals */}
+          {modalStep === 'name' && (
+            <NameModal
+              isVisible
+              onClose={() => setModalStep(null)}
+              onNext={handleNext}
+            />
+          )}
+          {modalStep === 'group' && (
+            <CreateGroupModal
+              visible
+              groupName={groupName}
+              onClose={() => setModalStep(null)}
+              onCreate={handleCreateGroup}
+              existingGroupUserIds={[]}
+            />
+          )}
 
-        {/* Group List */}
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={iconColor} />
-            <ThemedText style={styles.loadingText}>Loading Groups</ThemedText>
-          </View>
-        ) : chats.length === 0 ? (
-          <View style={styles.noGroupsContainer}>
-            <ThemedText style={styles.noGroupsText}>
-              No Groups Found.
-            </ThemedText>
-          </View>
-        ) : (
-          <FlatList
-            data={chats}
-            keyExtractor={(item) => `chat-${item.id ?? Math.random()}`}
-            refreshing={isLoading}
-            contentContainerStyle={{ paddingBottom: 50 }}
-            onEndReached={() => hasNextPage && fetchNextPage()}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              hasNextPage && isFetchingNextPage ? (
-                <ActivityIndicator style={{ marginVertical: 16 }} />
-              ) : null
-            }
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() =>
-                  router.push({
-                    pathname: '/groups/[id]',
-                    params: { id: item.id },
-                  })
-                }
-              >
-                <View style={styles.groupItem}>
+          {/* Group List */}
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={iconColor} />
+              <ThemedText style={styles.loadingText}>Loading Groups</ThemedText>
+            </View>
+          ) : chats.length === 0 ? (
+            <View style={styles.noGroupsContainer}>
+              <ThemedText style={styles.noGroupsText}>
+                No Groups Found.
+              </ThemedText>
+            </View>
+          ) : (
+            <FlatList
+              data={chats}
+              keyExtractor={(item) => `chat-${item.id ?? Math.random()}`}
+              refreshing={isLoading}
+              contentContainerStyle={{ paddingBottom: 50 }}
+              onEndReached={() => hasNextPage && fetchNextPage()}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={
+                hasNextPage && isFetchingNextPage ? (
+                  <ActivityIndicator style={{ marginVertical: 16 }} />
+                ) : null
+              }
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  onPress={() =>
+                    router.push({
+                      pathname: '/groups/[id]',
+                      params: { id: item.id },
+                    })
+                  }
+                  style={styles.glassCard}
+                >
                   <View style={styles.textContainer}>
                     <ThemedText style={styles.groupText}>
                       {item.title}
@@ -145,12 +147,12 @@ export default function GroupsScreen() {
                       )}
                     </Text>
                   </View>
-                </View>
-              </TouchableOpacity>
-            )}
-          />
-        )}
-      </ThemedView>
-    </SafeAreaView>
+                </TouchableOpacity>
+              )}
+            />
+          )}
+        </View>
+      </SafeAreaView>
+    </BackgroundWrapper>
   );
 }
