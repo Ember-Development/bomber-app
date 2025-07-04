@@ -1,25 +1,3 @@
-import {
-  AttendanceStatus,
-  EventDynamic,
-  TournamentDynamic,
-} from '@bomber-app/database';
-
-// Frontend type created with backend Types
-export type UserEvent = {
-  id: number;
-  eventID: number;
-  userID: number;
-  status: AttendanceStatus;
-
-  event: Pick<
-    EventDynamic<['tournament', 'attendees']>,
-    'start' | 'end' | 'eventType'
-  > & {
-    tournament?: Pick<TournamentDynamic<[]>, 'title'>;
-  };
-};
-
-//Role
 export type Role =
   | 'ADMIN'
   | 'COACH'
@@ -53,5 +31,5 @@ export const roleToActions: Record<Role, Action[]> = {
   REGIONAL_COACH: ['view-my-team'],
   PLAYER: ['view-my-team'],
   PARENT: ['view-my-team'],
-  FAN: [],
+  FAN: ['view-my-team'],
 };

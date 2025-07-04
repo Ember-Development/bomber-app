@@ -1,5 +1,3 @@
-// components/ui/organisms/UserAvatar.tsx
-
 import React, { useState } from 'react';
 import {
   View,
@@ -8,7 +6,6 @@ import {
   Pressable,
   Modal,
   TouchableOpacity,
-  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Separator from '../atoms/Seperator';
@@ -23,9 +20,14 @@ import { SIDEMENU_ITEMS } from '@/constants/sidebarItems';
 interface UserAvatarProps {
   firstName: string;
   lastName: string;
+  primaryRole: string;
 }
 
-export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
+export default function UserAvatar({
+  firstName,
+  lastName,
+  primaryRole,
+}: UserAvatarProps) {
   const [menuVisible, setMenuVisible] = useState(false);
   const [mediaExpanded, setMediaExpanded] = useState(false);
   const [legacyExpanded, setLegacyExpanded] = useState(false);
@@ -33,6 +35,11 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
 
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   const textColor = useThemeColor({}, 'text');
+  const displayRole =
+    primaryRole.charAt(0).toUpperCase() + primaryRole.slice(1).toLowerCase();
+
+  // hide certain items if user is a FAN
+  const isFan = primaryRole.toUpperCase() === 'FAN';
 
   const navigateAndClose = (path: string) => {
     setMenuVisible(false);
@@ -69,7 +76,7 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
                   <ThemedText style={[styles.nameText, { color: textColor }]}>
                     {firstName} {lastName}
                   </ThemedText>
-                  <ThemedText style={styles.roleText}>Coach</ThemedText>
+                  <ThemedText style={styles.roleText}>{displayRole}</ThemedText>
                 </View>
               </View>
               <TouchableOpacity
@@ -83,16 +90,20 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
 
             <Separator marginVertical={4} />
 
-            {/* MAIN MENU (SIDEMENU_ITEMS) */}
             <View style={styles.menuItems}>
-              {SIDEMENU_ITEMS.map((item) => {
-                // If this is "Media", render an expandable header
+              {SIDEMENU_ITEMS.filter(
+                (item) =>
+                  !(
+                    isFan &&
+                    ['Bomber Portal', 'Player Development'].includes(item.name)
+                  )
+              ).map((item) => {
                 if (item.name === 'Media') {
                   return (
                     <React.Fragment key="media-fragment">
                       <Pressable
                         style={styles.menuItem}
-                        onPress={() => setMediaExpanded((prev) => !prev)}
+                        onPress={() => setMediaExpanded((p) => !p)}
                       >
                         <Ionicons
                           name={item.icon}
@@ -154,7 +165,7 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
                     <React.Fragment key="legacy-fragment">
                       <Pressable
                         style={styles.menuItem}
-                        onPress={() => setLegacyExpanded((prev) => !prev)}
+                        onPress={() => setLegacyExpanded((p) => !p)}
                       >
                         <Ionicons
                           name={item.icon}
@@ -228,15 +239,12 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
                   );
                 }
 
+                // Default item
                 return (
                   <Pressable
                     key={item.name}
                     style={styles.menuItem}
-                    onPress={() => {
-                      if (item.routes) {
-                        navigateAndClose(item.routes);
-                      }
-                    }}
+                    onPress={() => item.routes && navigateAndClose(item.routes)}
                   >
                     <Ionicons
                       name={item.icon}
@@ -250,46 +258,44 @@ export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
                 );
               })}
 
-              {/* Separator before footer */}
               <Separator marginVertical={12} />
 
-              {/* Footer Items */}
               <View style={styles.footer}>
-                {['Profile', 'Settings', 'Contact', 'Payment'].map((text) => (
-                  <Pressable
-                    key={text}
-                    style={styles.footerItem}
-                    onPress={() => {
-                      // You can customize these paths as needed:
-                      switch (text) {
-                        case 'Profile':
-                          navigateAndClose('/profile');
-                          break;
-                        case 'Settings':
-                          navigateAndClose('/settings');
-                          break;
-                        case 'Contact':
-                          navigateAndClose('/side/contact');
-                          break;
-                        case 'Payment':
-                          navigateAndClose('/payment');
-                          break;
-                      }
-                    }}
-                  >
-                    <Text style={[styles.footerText, { color: textColor }]}>
-                      {text}
-                    </Text>
-                  </Pressable>
-                ))}
+                {['Profile', 'Settings', 'Contact', 'Payment']
+                  .filter((text) => !(isFan && text === 'Payment'))
+                  .map((text) => (
+                    <Pressable
+                      key={text}
+                      style={styles.footerItem}
+                      onPress={() => {
+                        switch (text) {
+                          case 'Profile':
+                            navigateAndClose('/profile');
+                            break;
+                          case 'Settings':
+                            navigateAndClose('/settings');
+                            break;
+                          case 'Contact':
+                            navigateAndClose('/side/contact');
+                            break;
+                          case 'Payment':
+                            navigateAndClose('/payment');
+                            break;
+                        }
+                      }}
+                    >
+                      <Text style={[styles.footerText, { color: textColor }]}>
+                        {text}
+                      </Text>
+                    </Pressable>
+                  ))}
               </View>
             </View>
 
-            {/* Logout Button */}
             <Pressable
               style={styles.logoutButton}
               onPress={() => {
-                /* Add your logout logic here */
+                /* Add logout logic here */
               }}
             >
               <Text style={styles.logoutText}>Logout</Text>
@@ -316,7 +322,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-
   modalContainer: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -333,7 +338,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 24,
     overflow: 'hidden',
   },
-
   profileHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -368,7 +372,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: GlobalColors.bomber,
   },
-
   menuItems: {
     marginBottom: 0,
   },
@@ -385,10 +388,8 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontWeight: '600',
   },
-
-  // Submenu container
   subMenu: {
-    marginLeft: 36, // indent for subitems
+    marginLeft: 36,
     marginBottom: 12,
   },
   subMenuItem: {
@@ -404,7 +405,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontWeight: '500',
   },
-
   footer: {
     marginTop: 0,
     marginBottom: 24,
@@ -417,7 +417,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: 'rgba(255,255,255,0.8)',
   },
-
   logoutButton: {
     marginTop: 20,
     backgroundColor: 'rgba(255,0,0,0.8)',

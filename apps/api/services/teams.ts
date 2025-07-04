@@ -1,4 +1,4 @@
-import { prisma } from '@bomber-app/database';
+import { Prisma, prisma } from '@bomber-app/database';
 
 export const teamService = {
   getAllTeams: async () => {
@@ -38,6 +38,54 @@ export const teamService = {
           },
         },
       },
+    });
+  },
+
+  getMyTeams: async (userId: string) => {
+    return prisma.team.findMany({
+      where: {
+        OR: [
+          { headCoach: { userID: userId } },
+          { coaches: { some: { userID: userId } } },
+        ],
+      },
+      include: {
+        trophyCase: true,
+        players: {
+          include: { user: true },
+        },
+        coaches: {
+          include: { user: true },
+        },
+        headCoach: {
+          include: { user: true },
+        },
+      },
+    });
+  },
+
+  updateTeam: async (teamId: string, data: Prisma.TeamUpdateInput) => {
+    return prisma.team.update({
+      where: { id: teamId },
+      data,
+      include: {
+        trophyCase: true,
+        players: {
+          include: { user: true },
+        },
+        coaches: {
+          include: { user: true },
+        },
+        headCoach: {
+          include: { user: true },
+        },
+      },
+    });
+  },
+
+  deleteTeam: async (teamId: string) => {
+    return prisma.team.delete({
+      where: { id: teamId },
     });
   },
 };
