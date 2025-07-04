@@ -67,7 +67,7 @@ export const createHomeStyles = () =>
       marginVertical: 15,
     },
     legacyList: {
-      marginTop: 16,
+      marginTop: 5,
       width: '100%',
       flexDirection: 'column',
       gap: 8,
