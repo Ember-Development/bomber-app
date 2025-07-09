@@ -9,6 +9,7 @@ import userRoutes from './routes/userRoutes';
 import authRoutes from './routes/authRoutes';
 import teamRoutes from './routes/teamRoutes';
 import playerRoutes from './routes/playerRoutes';
+import eventRoutes from './routes/eventRoutes';
 
 const app = express();
 const server = http.createServer(app);
@@ -26,6 +27,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/players', playerRoutes);
+app.use('/api/events', eventRoutes);
 
 const io = initializeSocket(server);
 
