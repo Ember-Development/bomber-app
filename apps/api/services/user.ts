@@ -1,4 +1,4 @@
-import { prisma, User } from '@bomber-app/database';
+import { Prisma, prisma, User, UserFE } from '@bomber-app/database';
 import { updateUser } from '../controllers/userController';
 
 //FIXME: replace the any once we have full types
@@ -41,6 +41,21 @@ const validateUser = (user: any) => {
 };
 
 export { validateUser };
+
+export interface CreateUserInput {
+  email: string;
+  pass: string;
+  fname: string;
+  lname: string;
+  phone?: string;
+  primaryRole: Prisma.UserCreateInput['primaryRole'];
+  adminID?: string;
+  coachID?: string;
+  regCoachID?: string;
+  playerID?: string;
+  parentID?: string;
+  fanID?: string;
+}
 
 export const userService = {
   getAllUsers: async () => {
@@ -145,6 +160,60 @@ export const userService = {
       },
       orderBy: {
         createdAt: 'desc',
+      },
+    });
+  },
+
+  createUser: async (data: CreateUserInput): Promise<UserFE> => {
+    return prisma.user.create({
+      data: {
+        email: data.email,
+        pass: data.pass,
+        fname: data.fname,
+        lname: data.lname,
+        phone: data.phone,
+        primaryRole: data.primaryRole,
+        admin: data.adminID ? { connect: { id: data.adminID } } : undefined,
+        coach: data.coachID ? { connect: { id: data.coachID } } : undefined,
+        regCoach: data.regCoachID
+          ? { connect: { id: data.regCoachID } }
+          : undefined,
+        player: data.playerID ? { connect: { id: data.playerID } } : undefined,
+        parent: data.parentID ? { connect: { id: data.parentID } } : undefined,
+        fan: data.fanID ? { connect: { id: data.fanID } } : undefined,
+      },
+      include: {
+        admin: true,
+        coach: true,
+        regCoach: true,
+        player: true,
+        parent: true,
+        fan: true,
+        notifications: true,
+        sentMessages: true,
+        chats: true,
+        events: true,
+      },
+    });
+  },
+
+  softDeleteUser: async (id: string): Promise<UserFE> => {
+    return prisma.user.update({
+      where: { id },
+      data: {
+        isDeleted: true,
+      },
+      include: {
+        admin: true,
+        coach: true,
+        regCoach: true,
+        player: true,
+        parent: true,
+        fan: true,
+        notifications: true,
+        sentMessages: true,
+        chats: true,
+        events: true,
       },
     });
   },
