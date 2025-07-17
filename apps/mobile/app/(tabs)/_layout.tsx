@@ -47,6 +47,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="events"
+        options={{
+          title: 'Events',
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedIcon name="calendar" color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="component"
         options={{
           title: 'Components',
