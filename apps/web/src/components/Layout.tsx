@@ -1,27 +1,32 @@
+// src/pages/Layout.tsx
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { MENU, FOOTER_MENU } from '@/constants/menu';
 import { BellIcon } from '@heroicons/react/24/outline';
+import logoSrc from '@/assets/images/Bomber Script-White-ADMIN.png';
 
-const SIDEBAR_WIDTH = 288; // 72 * 4 (w-72)
-const HEADER_HEIGHT = 80; // px-8 py-4 (about 80px)
+const SIDEBAR_WIDTH = 288; // px
+const HEADER_HEIGHT = 80; // px
 
 export default function Layout() {
   return (
     <div className="min-h-screen w-screen bg-gradient-to-br from-[#5AA5FF] to-[#000000]">
-      {/* Glassmorphic Sidebar - fixed */}
+      {/* Sidebar */}
       <aside
-        className="fixed left-0 top-0 z-30 w-72 h-screen bg-[rgba(255,255,255,0.1)] backdrop-blur-xl border border-white/20 flex flex-col shadow-xl overflow-hidden"
+        className="fixed top-0 left-0 z-30 h-screen bg-[rgba(255,255,255,0.1)] backdrop-blur-xl border border-white/20 flex flex-col shadow-xl overflow-hidden"
         style={{ width: SIDEBAR_WIDTH }}
       >
         <div className="flex flex-col h-full">
-          {/* Logo / Brand */}
-          <div className="px-6 py-8 border-b border-white/20 shrink-0">
-            <span className="text-3xl font-bold text-white">
-              Bombers Fastpitch
-            </span>
+          {/* Logo */}
+          <div className="px-6 py-4 border-b border-white/20 flex items-center justify-center shrink-0">
+            <img
+              src={logoSrc}
+              alt="Bombers Fastpitch"
+              className="h-10 w-auto object-contain"
+            />
           </div>
-          {/* Navigation - scrolls if too many items */}
+
+          {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-3 overflow-y-auto custom-scrollbar">
             {MENU.map(({ name, path, Icon }) => (
               <NavLink
@@ -40,7 +45,8 @@ export default function Layout() {
               </NavLink>
             ))}
           </nav>
-          {/* Footer Menu: always at the bottom */}
+
+          {/* Footer Menu */}
           <div className="px-4 py-6 border-t border-white/20 space-y-2 shrink-0">
             {FOOTER_MENU.map(({ name, path, Icon }) => (
               <NavLink
@@ -56,12 +62,12 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Glassmorphic Header - fixed */}
+      {/* Header */}
       <header
-        className="fixed left-0 top-0 z-20 w-full pl-[296px] pr-0 border-b border-white/20 bg-[rgba(255,255,255,0.05)] backdrop-blur-lg flex items-center justify-between"
-        style={{ height: HEADER_HEIGHT }}
+        className="fixed top-0 left-0 z-20 w-full border-b border-white/20 bg-[rgba(255,255,255,0.05)] backdrop-blur-lg flex items-center justify-between"
+        style={{ paddingLeft: SIDEBAR_WIDTH + 16, height: HEADER_HEIGHT }}
       >
-        <div /> {/* Placeholder for logo or breadcrumbs */}
+        <div /> {/* spacer */}
         <div className="flex items-center space-x-4 mr-10">
           <button className="p-2 rounded-lg bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.2)] transition-colors">
             <BellIcon className="w-6 h-6 text-white" />
@@ -72,27 +78,25 @@ export default function Layout() {
         </div>
       </header>
 
-      {/* Main Content - scrolls only here */}
+      {/* Main Content */}
       <main
-        className="relative"
+        className="relative flex flex-col"
         style={{
-          marginLeft: SIDEBAR_WIDTH + 16, // 16px margin
+          marginLeft: SIDEBAR_WIDTH + 16,
           paddingTop: HEADER_HEIGHT,
-          minHeight: '100vh',
+          height: `calc(100vh - ${HEADER_HEIGHT}px)`,
         }}
       >
-        <div className="flex-1 overflow-y-auto p-8 min-h-screen">
+        <div className="flex-1 overflow-y-auto p-8">
           <div className="backdrop-blur-xl rounded-3xl h-full p-6">
             <Outlet />
           </div>
         </div>
       </main>
 
-      {/* Optional: Custom scrollbar styling */}
+      {/* Custom scrollbar */}
       <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-thumb {
           background: rgba(255,255,255,0.12);
           border-radius: 4px;

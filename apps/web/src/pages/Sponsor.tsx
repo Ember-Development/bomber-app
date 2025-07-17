@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeftIcon,
@@ -6,265 +6,272 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/outline';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import SideDialog from '@/components/sideDialog';
+import SideDialog from '@/components/SideDialog';
+import {
+  fetchSponsors,
+  createSponsor,
+  updateSponsor,
+  deleteSponsor,
+  CreateSponsorDTO,
+  UpdateSponsorDTO,
+} from '@/api/sponsor';
 
-interface SponsorItem {
+export interface SponsorItem {
   id: string;
-  name: string;
-  website: string;
-  logoUrl: string;
-  createdAt: Date;
+  title: string;
+  url: string;
+  logoUrl?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function Sponsors() {
   const navigate = useNavigate();
   const [sponsors, setSponsors] = useState<SponsorItem[]>([]);
-  const [newName, setNewName] = useState('');
-  const [newWebsite, setNewWebsite] = useState('');
+
+  const [newTitle, setNewTitle] = useState('');
+  const [newUrl, setNewUrl] = useState('');
   const [newLogoUrl, setNewLogoUrl] = useState('');
 
-  // Side dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<'edit' | 'delete' | null>(null);
   const [selectedSponsor, setSelectedSponsor] = useState<SponsorItem | null>(
     null
   );
 
-  // Edit form fields
-  const [editName, setEditName] = useState('');
-  const [editWebsite, setEditWebsite] = useState('');
+  const [editTitle, setEditTitle] = useState('');
+  const [editUrl, setEditUrl] = useState('');
   const [editLogoUrl, setEditLogoUrl] = useState('');
 
-  // Add Sponsor
-  const addSponsor = () => {
-    if (!newName || !newWebsite) return;
-    setSponsors([
-      {
-        id: Date.now().toString(),
-        name: newName,
-        website: newWebsite,
-        logoUrl: newLogoUrl,
-        createdAt: new Date(),
-      },
-      ...sponsors,
-    ]);
-    setNewName('');
-    setNewWebsite('');
-    setNewLogoUrl('');
+  useEffect(() => {
+    fetchSponsors().then(setSponsors).catch(console.error);
+  }, []);
+
+  const handleAddSponsor = async () => {
+    if (!newTitle || !newUrl) return;
+    const dto: CreateSponsorDTO = {
+      title: newTitle,
+      url: newUrl,
+      logoUrl: newLogoUrl || undefined,
+    };
+    const created = await createSponsor(dto);
+    if (created) {
+      setSponsors((prev) => [created, ...prev]);
+      setNewTitle('');
+      setNewUrl('');
+      setNewLogoUrl('');
+    }
   };
 
-  // Dialog Openers
-  const handleOpenEdit = (s: SponsorItem) => {
+  const openEdit = (s: SponsorItem) => {
     setDialogType('edit');
     setSelectedSponsor(s);
-    setEditName(s.name);
-    setEditWebsite(s.website);
-    setEditLogoUrl(s.logoUrl);
+    setEditTitle(s.title);
+    setEditUrl(s.url);
+    setEditLogoUrl(s.logoUrl || '');
     setDialogOpen(true);
   };
-  const handleOpenDelete = (s: SponsorItem) => {
+  const openDelete = (s: SponsorItem) => {
     setDialogType('delete');
     setSelectedSponsor(s);
     setDialogOpen(true);
   };
-  const handleCloseDialog = () => {
+  const closeDialog = () => {
     setDialogOpen(false);
-    setDialogType(null);
     setSelectedSponsor(null);
+    setDialogType(null);
   };
 
-  // Save Edit
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!selectedSponsor) return;
-    setSponsors((prev) =>
-      prev.map((s) =>
-        s.id === selectedSponsor.id
-          ? { ...s, name: editName, website: editWebsite, logoUrl: editLogoUrl }
-          : s
-      )
-    );
-    handleCloseDialog();
+    const dto: UpdateSponsorDTO = {
+      title: editTitle,
+      url: editUrl,
+      logoUrl: editLogoUrl,
+    };
+    const updated = await updateSponsor(selectedSponsor.id, dto);
+    if (updated) {
+      setSponsors((prev) =>
+        prev.map((s) => (s.id === updated.id ? updated : s))
+      );
+    }
+    closeDialog();
   };
 
-  // Delete
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!selectedSponsor) return;
-    setSponsors((prev) => prev.filter((s) => s.id !== selectedSponsor.id));
-    handleCloseDialog();
+    const ok = await deleteSponsor(selectedSponsor.id);
+    if (ok) {
+      setSponsors((prev) => prev.filter((s) => s.id !== selectedSponsor.id));
+    }
+    closeDialog();
   };
 
   return (
-    <div className="flex relative min-h-screen">
-      {/* Main Content */}
+    <div className="flex relative text-white p-4">
       <div
-        className={`flex-1 flex flex-col space-y-6 transition-all text-white duration-300 ${dialogOpen ? 'pr-[50px]' : ''}`}
+        className={`flex-1 flex flex-col space-y-6 ${dialogOpen ? 'pr-[50px]' : ''}`}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
           <div className="flex items-center space-x-3">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 bg-[rgba(255,255,255,0.1)] backdrop-blur-lg rounded-lg hover:bg-[rgba(255,255,255,0.2)] transition"
+              className="p-2 bg-[rgba(255,255,255,0.1)] rounded-lg hover:bg-[rgba(255,255,255,0.2)] transition"
             >
-              <ArrowLeftIcon className="w-5 h-5 text-white" />
+              <ArrowLeftIcon className="w-5 h-5" />
             </button>
             <h1 className="text-2xl font-bold">Sponsors</h1>
           </div>
         </div>
 
-        {/* Create Sponsor */}
-        <div className="bg-[rgba(255,255,255,0.05)] backdrop-blur-lg rounded-2xl p-4 shadow-inner space-y-4">
-          <input
-            type="text"
-            placeholder="Sponsor Name"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            className="w-full px-4 py-2 bg-transparent border border-white/30 rounded-lg placeholder-white/70 text-white focus:outline-none"
-          />
-          <input
-            type="text"
-            placeholder="Website URL"
-            value={newWebsite}
-            onChange={(e) => setNewWebsite(e.target.value)}
-            className="w-full px-4 py-2 bg-transparent border border-white/30 rounded-lg placeholder-white/70 text-white focus:outline-none"
-          />
-          <input
-            type="text"
-            placeholder="Logo Image URL"
-            value={newLogoUrl}
-            onChange={(e) => setNewLogoUrl(e.target.value)}
-            className="w-full px-4 py-2 bg-transparent border border-white/30 rounded-lg placeholder-white/70 text-white focus:outline-none"
-          />
-          <button
-            onClick={addSponsor}
-            className="px-4 py-2 bg-[#5AA5FF] text-white rounded-lg hover:bg-[#5AA5FF]/90 transition"
-          >
-            Add Sponsor
-          </button>
+        <div className="bg-[rgba(255,255,255,0.05)] rounded-2xl p-4 shadow-inner space-y-4">
+          <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
+            <input
+              type="text"
+              placeholder="Sponsor Name"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              className="flex-1 px-4 py-2 bg-transparent border border-white/30 rounded-lg placeholder-white/70"
+            />
+            <input
+              type="text"
+              placeholder="Website URL"
+              value={newUrl}
+              onChange={(e) => setNewUrl(e.target.value)}
+              className="flex-1 px-4 py-2 bg-transparent border border-white/30 rounded-lg placeholder-white/70"
+            />
+          </div>
+          <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
+            <input
+              type="text"
+              placeholder="Logo Image URL"
+              value={newLogoUrl}
+              onChange={(e) => setNewLogoUrl(e.target.value)}
+              className="flex-1 px-4 py-2 bg-transparent border border-white/30 rounded-lg placeholder-white/70"
+            />
+            <button
+              onClick={handleAddSponsor}
+              className="flex-1 px-4 py-2 bg-[#5AA5FF] rounded-lg hover:bg-[#5AA5FF]/90 transition text-center"
+            >
+              Add Sponsor
+            </button>
+          </div>
         </div>
 
-        {/* Sponsor List */}
-        <div className="flex-1 bg-[rgba(255,255,255,0.05)] backdrop-blur-lg rounded-2xl shadow-inner">
-          <ScrollArea className="h-[400px] p-4">
-            {sponsors.map((s) => (
-              <div
-                key={s.id}
-                className="flex items-center justify-between p-4 mb-3 bg-[rgba(255,255,255,0.1)] backdrop-blur-lg rounded-lg transition hover:bg-[rgba(255,255,255,0.2)]"
-              >
-                <div className="flex items-center space-x-4">
-                  <img
-                    src={s.logoUrl}
-                    alt={s.name}
-                    className="w-16 h-8 object-contain rounded"
-                  />
-                  <div>
-                    <div className="font-semibold text-white text-lg">
-                      {s.name}
+        <div className="bg-[rgba(255,255,255,0.05)] rounded-2xl shadow-inner">
+          <ScrollArea className="p-4 h-64 sm:h-80 lg:h-96">
+            {sponsors.length === 0 ? (
+              <div className="text-center text-white/70 py-20">No sponsors</div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {sponsors.map((s) => (
+                  <div
+                    key={s.id}
+                    className="flex flex-col sm:flex-row items-center sm:justify-between p-4 bg-[rgba(255,255,255,0.1)] rounded-lg hover:bg-[rgba(255,255,255,0.2)] transition space-y-4 sm:space-y-0"
+                  >
+                    <div className="flex items-center space-x-4">
+                      {s.logoUrl && (
+                        <img
+                          src={s.logoUrl}
+                          alt={s.title}
+                          className="w-24 h-12 object-contain rounded"
+                        />
+                      )}
+                      <div className="text-center sm:text-left">
+                        <div className="font-semibold">{s.title}</div>
+                        <a
+                          href={s.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[#5AA5FF] hover:underline text-sm block"
+                        >
+                          {s.url}
+                        </a>
+                      </div>
                     </div>
-                    <a
-                      href={s.website}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-[#5AA5FF] hover:underline"
-                    >
-                      {s.website}
-                    </a>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => openEdit(s)}
+                        className="p-2 bg-[rgba(255,255,255,0.1)] rounded-lg hover:bg-[rgba(255,255,255,0.2)] transition"
+                      >
+                        <PencilSquareIcon className="w-5 h-5 text-white" />
+                      </button>
+                      <button
+                        onClick={() => openDelete(s)}
+                        className="p-2 bg-red-600 rounded-lg hover:bg-red-500 transition"
+                      >
+                        <TrashIcon className="w-5 h-5 text-white" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handleOpenEdit(s)}
-                    className="p-2 bg-[rgba(255,255,255,0.1)] text-white rounded-lg hover:bg-[rgba(255,255,255,0.2)] transition"
-                  >
-                    <PencilSquareIcon className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => handleOpenDelete(s)}
-                    className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-500/90 transition"
-                  >
-                    <TrashIcon className="w-5 h-5" />
-                  </button>
-                </div>
+                ))}
               </div>
-            ))}
+            )}
           </ScrollArea>
         </div>
       </div>
 
-      {/* SideDialog */}
       <SideDialog
         open={dialogOpen}
-        onClose={handleCloseDialog}
-        title={
-          dialogType === 'edit'
-            ? 'Edit Sponsor'
-            : dialogType === 'delete'
-              ? 'Remove Sponsor'
-              : ''
-        }
+        onClose={closeDialog}
+        title={dialogType === 'edit' ? 'Edit Sponsor' : 'Remove Sponsor'}
       >
-        {/* Edit Sponsor */}
         {dialogType === 'edit' && selectedSponsor && (
           <div className="space-y-4">
-            <label className="block text-sm text-white font-semibold">
-              Sponsor Name
-            </label>
+            <label className="block text-sm font-semibold">Sponsor Name</label>
             <input
               type="text"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              className="w-full px-4 py-2 bg-[rgba(255,255,255,0.1)] border border-white/30 rounded-lg placeholder-white/70 text-white focus:outline-none"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className="w-full px-4 py-2 bg-[rgba(255,255,255,0.1)] rounded-lg"
             />
-            <label className="block text-sm text-white font-semibold">
-              Website URL
-            </label>
+            <label className="block text-sm font-semibold">Website URL</label>
             <input
               type="text"
-              value={editWebsite}
-              onChange={(e) => setEditWebsite(e.target.value)}
-              className="w-full px-4 py-2 bg-[rgba(255,255,255,0.1)] border border-white/30 rounded-lg placeholder-white/70 text-white focus:outline-none"
+              value={editUrl}
+              onChange={(e) => setEditUrl(e.target.value)}
+              className="w-full px-4 py-2 bg-[rgba(255,255,255,0.1)] rounded-lg"
             />
-            <label className="block text-sm text-white font-semibold">
+            <label className="block text-sm font-semibold">
               Logo Image URL
             </label>
             <input
               type="text"
               value={editLogoUrl}
               onChange={(e) => setEditLogoUrl(e.target.value)}
-              className="w-full px-4 py-2 bg-[rgba(255,255,255,0.1)] border border-white/30 rounded-lg placeholder-white/70 text-white focus:outline-none"
+              className="w-full px-4 py-2 bg-[rgba(255,255,255,0.1)] rounded-lg"
             />
-            <div className="flex space-x-4 mt-6">
+            <div className="flex flex-col sm:flex-row sm:space-x-4 mt-6">
               <button
-                className="px-4 py-2 bg-[#5AA5FF] text-white rounded-lg hover:bg-[#3C8CE7] transition"
                 onClick={saveEdit}
+                className="flex-1 px-4 py-2 bg-[#5AA5FF] rounded-lg text-white"
               >
                 Save
               </button>
               <button
-                className="px-4 py-2 bg-[rgba(255,255,255,0.14)] text-white rounded-lg hover:bg-[#5AA5FF] transition"
-                onClick={handleCloseDialog}
+                onClick={closeDialog}
+                className="flex-1 mt-2 sm:mt-0 px-4 py-2 bg-[rgba(255,255,255,0.14)] rounded-lg text-white"
               >
                 Cancel
               </button>
             </div>
           </div>
         )}
-        {/* Remove Sponsor */}
         {dialogType === 'delete' && selectedSponsor && (
-          <div>
-            <p className="text-white">
-              Are you sure you want to remove <b>{selectedSponsor.name}</b>?
+          <div className="space-y-4">
+            <p>
+              Are you sure you want to remove <b>{selectedSponsor.title}</b>?
             </p>
-            <div className="flex space-x-4 mt-6">
+            <div className="flex flex-col sm:flex-row sm:space-x-4 mt-6">
               <button
-                className="px-4 py-2 bg-[#5AA5FF] text-white rounded-lg hover:bg-[#3C8CE7] transition"
-                onClick={handleCloseDialog}
+                onClick={closeDialog}
+                className="flex-1 px-4 py-2 bg-[#5AA5FF] rounded-lg text-white"
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 transition"
                 onClick={confirmDelete}
+                className="flex-1 mt-2 sm:mt-0 px-4 py-2 bg-red-600 rounded-lg text-white"
               >
                 Confirm
               </button>
