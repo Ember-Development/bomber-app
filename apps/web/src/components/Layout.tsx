@@ -18,11 +18,11 @@ export default function Layout() {
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="px-6 py-4 border-b border-white/20 flex items-center justify-center shrink-0">
+          <div className="px-6 border-b border-white/20 flex items-center justify-center shrink-0">
             <img
               src={logoSrc}
               alt="Bombers Fastpitch"
-              className="h-10 w-auto object-contain"
+              className="h-30 w-50  object-fill"
             />
           </div>
 
