@@ -1,4 +1,7 @@
-import { prisma } from '@bomber-app/database';
+import { Prisma, prisma } from '@bomber-app/database';
+
+export interface CreatePlayerInput extends Prisma.PlayerCreateInput {}
+export interface UpdatePlayerInput extends Prisma.PlayerUpdateInput {}
 
 //FIXME: replace the any once we have full types
 const validatePlayer = (player: any) => {
@@ -26,6 +29,24 @@ const validatePlayer = (player: any) => {
 
 export { validatePlayer };
 
+export interface CreatePlayerInput
+  extends Omit<Prisma.PlayerCreateInput, 'address'> {
+  address1?: string;
+  address2?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+}
+
+export interface UpdatePlayerInput
+  extends Omit<Prisma.PlayerUpdateInput, 'address'> {
+  address1?: string;
+  address2?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+}
+
 export const playerService = {
   getPlayerById: async (id: string) => {
     return prisma.player.findUnique({
@@ -36,6 +57,82 @@ export const playerService = {
         parents: true,
         address: true,
       },
+    });
+  },
+
+  getAllPlayers: async () => {
+    return prisma.player.findMany({
+      include: {
+        user: true,
+        team: true,
+        parents: true,
+        address: true,
+      },
+    });
+  },
+
+  createPlayer: async (data: CreatePlayerInput) => {
+    const errors = validatePlayer(data as any);
+    if (errors) throw new Error(errors.join('; '));
+
+    const { address1, address2, city, state, zip, ...playerData } = data as any;
+
+    return prisma.player.create({
+      data: {
+        ...playerData,
+        address: address1
+          ? {
+              create: {
+                address1,
+                address2,
+                city,
+                state,
+                zip,
+              },
+            }
+          : undefined,
+      },
+      include: {
+        user: true,
+        team: true,
+        parents: true,
+        address: true,
+      },
+    });
+  },
+
+  updatePlayer: async (id: string, data: UpdatePlayerInput) => {
+    const errors = validatePlayer(data as any);
+    if (errors) throw new Error(errors.join('; '));
+
+    const { addressID, address1, address2, city, state, zip, ...playerData } =
+      data as any;
+
+    return prisma.player.update({
+      where: { id },
+      data: {
+        ...playerData,
+        address: address1
+          ? {
+              upsert: {
+                create: { address1, address2, city, state, zip },
+                update: { address1, address2, city, state, zip },
+              },
+            }
+          : undefined,
+      },
+      include: {
+        user: true,
+        team: true,
+        parents: true,
+        address: true,
+      },
+    });
+  },
+
+  deletePlayer: async (id: string) => {
+    return prisma.player.delete({
+      where: { id },
     });
   },
 };

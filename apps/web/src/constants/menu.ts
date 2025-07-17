@@ -19,6 +19,7 @@ export const MENU: MenuItem[] = [
   { name: 'Dashboard', path: '/', Icon: HomeIcon },
   { name: 'Teams', path: '/teams', Icon: UsersIcon },
   { name: 'Users', path: '/users', Icon: PhotoIcon },
+  { name: 'Players', path: '/players', Icon: PhotoIcon },
   { name: 'Events', path: '/events', Icon: CalendarIcon },
   { name: 'Media', path: '/media', Icon: PhotoIcon },
   // { name: 'Legacy', path: '/legacy', Icon: PhotoIcon },

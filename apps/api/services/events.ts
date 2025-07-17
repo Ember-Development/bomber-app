@@ -24,18 +24,64 @@ export { validateEvent };
 
 export const eventService = {
   getAllEvents: async () => {
-    return await prisma.event.findMany({
+    return prisma.event.findMany({
       include: {
-        tournament: true, // includes title, body, imageURL
-        attendees: {
-          include: {
-            user: true, // includes the user on each attendance row
-          },
-        },
+        tournament: true,
+        attendees: { include: { user: true } },
       },
-      orderBy: {
-        start: 'desc',
+      orderBy: { start: 'desc' },
+    });
+  },
+
+  getEventById: async (id: string) => {
+    return prisma.event.findUnique({
+      where: { id },
+      include: {
+        tournament: true,
+        attendees: { include: { user: true } },
       },
     });
+  },
+
+  createEvent: async (data: any) => {
+    const errors = validateEvent(data);
+    if (errors) throw new Error(errors.join('; '));
+
+    return prisma.event.create({
+      data: {
+        eventType: data.eventType,
+        start: new Date(data.start),
+        end: new Date(data.end),
+        tournamentID: data.tournamentID || undefined,
+      },
+      include: {
+        tournament: true,
+        attendees: { include: { user: true } },
+      },
+    });
+  },
+
+  updateEvent: async (id: string, data: any) => {
+    const errors = validateEvent(data);
+    if (errors) throw new Error(errors.join('; '));
+
+    return prisma.event.update({
+      where: { id },
+      data: {
+        eventType: data.eventType,
+        start: new Date(data.start),
+        end: new Date(data.end),
+        tournamentID: data.tournamentID || undefined,
+      },
+      include: {
+        tournament: true,
+        attendees: { include: { user: true } },
+      },
+    });
+  },
+
+  deleteEvent: async (id: string) => {
+    await prisma.event.delete({ where: { id } });
+    return true;
   },
 };
