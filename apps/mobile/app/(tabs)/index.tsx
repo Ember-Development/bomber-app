@@ -5,8 +5,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
+import BannerModal, { BannerData } from '@/components/ui/organisms/Banner';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Components
 import { ThemedText } from '@/components/ThemedText';
@@ -26,6 +28,7 @@ import { createHomeStyles } from '@/styles/homeStyle';
 import { Ionicons } from '@expo/vector-icons';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { GlobalColors } from '@/constants/Colors';
+import { useBanners } from '@/hooks/banner/useBanner';
 
 const QUICK_ACTIONS = [
   {
@@ -42,10 +45,13 @@ const QUICK_ACTIONS = [
 
 export default function HomeScreen() {
   const { user, refetch } = useUserContext();
+  const { data: banners, isLoading: bannersLoading } = useBanners();
   const { data: rawEvents, isLoading: isEventsLoading } = useUserEvents(
     user?.id
   );
   const { data: userChats, isLoading: isChatsLoading } = useUserChats(user?.id);
+  const [showBanner, setShowBanner] = useState(true);
+  const [currentBanner, setCurrentBanner] = useState<BannerData | null>(null);
   const styles = createHomeStyles();
   const router = useRouter();
 
@@ -58,6 +64,42 @@ export default function HomeScreen() {
   const formattedEvents = formatEvents(rawEvents ?? []);
 
   const scrollY = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    (async () => {
+      if (bannersLoading || !banners) return;
+
+      const now = new Date();
+      const active = banners.find((b) => new Date(b.expiresAt) > now);
+      if (!active) return;
+
+      const seenJson = await AsyncStorage.getItem('seenBanners');
+      const seen: string[] = seenJson ? JSON.parse(seenJson) : [];
+
+      if (!seen.includes(active.id)) {
+        setCurrentBanner({
+          id: active.id,
+          imageUrl: active.imageUrl,
+          duration: active.duration,
+          expiresAt: new Date(active.expiresAt),
+        });
+        setShowBanner(true);
+      }
+    })();
+  }, [banners, bannersLoading]);
+
+  // mark banner as seen and hide it
+  const handleCloseBanner = async () => {
+    if (currentBanner) {
+      const seenJson = await AsyncStorage.getItem('seenBanners');
+      const seen: string[] = seenJson ? JSON.parse(seenJson) : [];
+      if (!seen.includes(currentBanner.id)) {
+        seen.push(currentBanner.id);
+        await AsyncStorage.setItem('seenBanners', JSON.stringify(seen));
+      }
+    }
+    setShowBanner(false);
+  };
 
   const headerHeight = scrollY.interpolate({
     inputRange: [0, 80],
@@ -83,6 +125,14 @@ export default function HomeScreen() {
   return (
     <BackgroundWrapper>
       <SafeAreaView style={styles.safeContainer}>
+        {currentBanner && showBanner && (
+          <BannerModal
+            visible={showBanner}
+            data={currentBanner}
+            onClose={handleCloseBanner}
+          />
+        )}
+
         <Animated.ScrollView
           contentContainerStyle={{ paddingBottom: 60, flexGrow: 1 }}
           onScroll={Animated.event(
