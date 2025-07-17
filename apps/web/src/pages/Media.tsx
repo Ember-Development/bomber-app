@@ -32,7 +32,6 @@ export default function Media() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabType>('Articles');
 
-  // --- Articles state ---
   const [articles, setArticles] = useState<ArticleFE[]>([]);
   const [editingArticle, setEditingArticle] = useState<ArticleFE | null>(null);
   const [newTitle, setNewTitle] = useState('');
@@ -40,7 +39,6 @@ export default function Media() {
   const [newLink, setNewLink] = useState('');
   const [newImageUrl, setNewImageUrl] = useState('');
 
-  // --- Videos state & dialog for Videos ---
   const [videos, setVideos] = useState<MediaFE[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<
@@ -55,7 +53,6 @@ export default function Media() {
     fetchMedia().then(setVideos);
   }, []);
 
-  /*** ARTICLE HANDLERS ***/
   const openArticleCreate = () => {
     setEditingArticle({
       id: '',
@@ -89,9 +86,7 @@ export default function Media() {
         link: newLink || undefined,
         imageUrl: newImageUrl || undefined,
       });
-      if (art) {
-        setArticles([art, ...articles]);
-      }
+      if (art) setArticles([art, ...articles]);
     } else {
       const update = await updateArticle(editingArticle.id, {
         title: newTitle,
@@ -99,9 +94,8 @@ export default function Media() {
         link: newLink || undefined,
         imageUrl: newImageUrl || undefined,
       });
-      if (update) {
+      if (update)
         setArticles(articles.map((a) => (a.id === update.id ? update : a)));
-      }
     }
     closeArticleEditor();
   };
@@ -112,7 +106,6 @@ export default function Media() {
     if (editingArticle?.id === id) closeArticleEditor();
   };
 
-  /*** VIDEO DIALOG HANDLERS ***/
   const openVideoCreate = () => {
     setDialogType('create');
     setSelectedMedia(null);
@@ -144,17 +137,14 @@ export default function Media() {
         title: newVideoTitle,
         videoUrl: newVideoUrl,
       });
-      if (vid) {
-        setVideos([vid, ...videos]);
-      }
+      if (vid) setVideos([vid, ...videos]);
     } else if (dialogType === 'edit' && selectedMedia) {
       const update = await updateMedia(selectedMedia.id, {
         title: newVideoTitle,
         videoUrl: newVideoUrl,
       });
-      if (update) {
+      if (update)
         setVideos(videos.map((v) => (v.id === update.id ? update : v)));
-      }
     }
     closeVideoDialog();
   };
@@ -166,12 +156,23 @@ export default function Media() {
     closeVideoDialog();
   };
 
+  function isYouTubeUrl(url: string) {
+    return /youtu\.be\/|youtube\.com\/watch/.test(url);
+  }
+
+  function toEmbedUrl(url: string) {
+    const m = url.match(
+      /(?:youtu\.be\/([^?]+))|(?:youtube\.com\/watch\?v=([^&]+))/
+    );
+    const id = m ? m[1] || m[2] : null;
+    return id ? `https://www.youtube.com/embed/${id}` : url;
+  }
+
   return (
     <div className="flex relative p-4 text-white">
       <div
         className={`flex-1 flex flex-col space-y-6 ${dialogOpen ? 'pr-[50px]' : ''}`}
       >
-        {/* HEADER */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
           <div className="flex items-center space-x-3">
             <button
@@ -182,7 +183,6 @@ export default function Media() {
             </button>
             <h1 className="text-2xl font-bold">Media</h1>
           </div>
-
           <div className="flex space-x-2">
             <button
               onClick={() => setTab('Articles')}
@@ -207,10 +207,9 @@ export default function Media() {
           </div>
         </div>
 
-        {/* ARTICLES MODE */}
         {tab === 'Articles' && (
           <>
-            {!editingArticle ? (
+            {!editingArticle && (
               <div className="flex justify-end">
                 <button
                   onClick={openArticleCreate}
@@ -219,9 +218,8 @@ export default function Media() {
                   <PlusIcon className="w-5 h-5 mr-2" /> New Article
                 </button>
               </div>
-            ) : null}
+            )}
 
-            {/* SHOW LIST only when NOT editing */}
             {!editingArticle && (
               <div className="bg-[rgba(255,255,255,0.05)] backdrop-blur-lg rounded-2xl p-4">
                 <ScrollArea className="h-64">
@@ -252,10 +250,8 @@ export default function Media() {
               </div>
             )}
 
-            {/* INLINE EDITOR + PREVIEW (full width) */}
             {editingArticle && (
               <div className="bg-[rgba(255,255,255,0.05)] backdrop-blur-lg rounded-2xl grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
-                {/* Editor */}
                 <div className="space-y-4">
                   <h2 className="font-semibold">
                     {editingArticle.id ? 'Edit Article' : 'New Article'}
@@ -303,17 +299,12 @@ export default function Media() {
                   </div>
                 </div>
 
-                {/* Preview */}
                 <div className="relative h-[60vh] sm:h-[75vh] overflow-hidden">
-                  {/* Background Image */}
                   <div
                     className="absolute inset-0 bg-cover bg-center will-change-transform"
                     style={{ backgroundImage: `url(${newImageUrl})` }}
                   />
-                  {/* Parallax overlay (via simple translateY on scroll) */}
                   <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/10 pointer-events-none" />
-
-                  {/* Content Container */}
                   <div className="relative z-10 max-w-3xl mx-auto ml-4 h-full flex flex-col justify-center px-6 sm:px-0">
                     <small className="text-white/60 uppercase tracking-wide mb-2">
                       {new Date(editingArticle!.createdAt).toLocaleDateString(
@@ -339,7 +330,6 @@ export default function Media() {
           </>
         )}
 
-        {/* VIDEOS MODE (unchanged, still uses dialog + grid) */}
         {tab === 'Videos' && (
           <>
             <div className="flex justify-end">
@@ -392,7 +382,6 @@ export default function Media() {
         )}
       </div>
 
-      {/* VIDEO DIALOG */}
       <SideDialog
         open={dialogOpen}
         onClose={closeVideoDialog}
@@ -420,6 +409,29 @@ export default function Media() {
               onChange={(e) => setNewVideoUrl(e.target.value)}
               className="w-full px-4 py-2 bg-[rgba(255,255,255,0.1)] rounded-lg text-white"
             />
+            {newVideoUrl && (
+              <div className="mt-4">
+                {isYouTubeUrl(newVideoUrl) ? (
+                  <div className="w-full aspect-video">
+                    <iframe
+                      src={toEmbedUrl(newVideoUrl)}
+                      title="YouTube preview"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="w-full h-full rounded-lg"
+                    />
+                  </div>
+                ) : (
+                  <video
+                    src={newVideoUrl}
+                    controls
+                    className="w-full rounded-lg bg-black"
+                  >
+                    Your browser does not support the video element.
+                  </video>
+                )}
+              </div>
+            )}
             <div className="flex space-x-4 mt-6">
               <button
                 onClick={saveVideo}
