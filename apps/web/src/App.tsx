@@ -1,35 +1,37 @@
-import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
-import './App.css';
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Layout from '@/components/Layout';
 
-function App() {
-  const [count, setCount] = useState(0);
+import Dashboard from '@/pages/Dashboard';
+import Teams from '@/pages/Teams';
+import Events from '@/pages/Events';
+import Media from '@/pages/Media';
+import MessageLogs from '@/pages/Messages';
+import Users from './pages/User';
+import Legacy from './pages/Legacy';
+import Notifications from './pages/Notifications';
+import Sponsor from './pages/Sponsor';
+import Players from './pages/Player';
+import TeamDetails from './components/TeamDetails';
 
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank" rel="noreferrer">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="teams" element={<Teams />} />
+          <Route path="teams/:id" element={<TeamDetails />} />
+          <Route path="users" element={<Users />} />
+          <Route path="players" element={<Players />} />
+          <Route path="events" element={<Events />} />
+          <Route path="media" element={<Media />} />
+          <Route path="legacy" element={<Legacy />} />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="sponsor" element={<Sponsor />} />
+          <Route path="logs" element={<MessageLogs />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App;

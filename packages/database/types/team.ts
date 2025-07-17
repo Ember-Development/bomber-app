@@ -14,6 +14,7 @@ export type TeamDynamic<R extends (keyof Relations)[]> = Prisma.TeamGetPayload<{
 
 export interface TeamFE extends Team {
   trophyCase: Trophy[];
+  teamCode: string;
   players: (Player & { user: User | null })[];
   coaches: (Coach & { user: User | null })[];
   headCoach: (Coach & { user: User }) | null;
