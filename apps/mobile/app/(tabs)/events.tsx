@@ -8,6 +8,19 @@ import {
 import { Calendar, ICalendarEventBase } from 'react-native-big-calendar';
 import { Dimensions } from 'react-native';
 
+// TODO: temp event and reference type in the code for now
+const events: ICalendarEventBase[] = [
+  {
+    title: 'Meeting',
+    start: new Date(2025, 6, 18, 10, 0),
+    end: new Date(2025, 6, 18, 10, 30),
+  },
+  {
+    title: 'Coffee break',
+    start: new Date(2025, 6, 18, 15, 45),
+    end: new Date(2025, 6, 18, 16, 30),
+  },
+];
 // export interface ICalendarEventBase {
 //     start: Date;
 //     end: Date;
@@ -34,19 +47,6 @@ export default function EventsScreen() {
   const calendarHeight =
     screenHeight - insets.top - insets.bottom - headerHeight;
 
-  const events: ICalendarEventBase[] = [
-    {
-      title: 'Meeting',
-      start: new Date(2025, 6, 18, 10, 0),
-      end: new Date(2025, 6, 18, 10, 30),
-    },
-    {
-      title: 'Coffee break',
-      start: new Date(2025, 6, 18, 15, 45),
-      end: new Date(2025, 6, 18, 16, 30),
-    },
-  ];
-
   const curDate = new Date();
   const curMinutes = curDate.getMinutes();
   const curHours = curDate.getHours();
@@ -62,6 +62,7 @@ export default function EventsScreen() {
             events={events}
             height={calendarHeight}
             scrollOffsetMinutes={offsetMinutes}
+            ampm={true}
           />
         </View>
       </SafeAreaView>
