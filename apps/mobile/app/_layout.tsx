@@ -49,13 +49,16 @@ export default function RootLayout() {
           <UserProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <View style={{ flex: 1 }}>
-                <Stack>
-                  <Stack.Screen
-                    name="(tabs)"
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen name="teams" options={{ headerShown: false }} />
-                  <Stack.Screen name="side" options={{ headerShown: false }} />
+                <Stack screenOptions={{ headerShown: false }}>
+                  {/* auth screens */}
+                  <Stack.Screen name="login" />
+
+                  {/* main app */}
+                  {/* <Stack.Screen name="(tabs)" />
+                  <Stack.Screen name="teams" />
+                  <Stack.Screen name="side" /> */}
+
+                  {/* fallback */}
                   <Stack.Screen name="+not-found" />
                 </Stack>
               </View>
