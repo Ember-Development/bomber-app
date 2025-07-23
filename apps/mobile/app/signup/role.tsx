@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
-import GlassCard from '@/components/ui/molecules/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
 import { GlobalColors } from '@/constants/Colors';
 
@@ -28,7 +27,7 @@ interface Role {
 
 const roles: Role[] = [
   { key: 'PLAYER', label: 'Player', icon: 'person-outline' },
-  { key: 'PARENT', label: 'Parent', icon: 'people-outline' },
+  { key: 'PARENT', label: 'Parent/Guardian', icon: 'people-outline' },
   { key: 'COACH', label: 'Coach', icon: 'clipboard-outline' },
   { key: 'FAN', label: 'Fan', icon: 'heart-outline' },
 ];
@@ -39,10 +38,17 @@ export default function SignUpRole() {
 
   const onSelectRole = (role: string) => {
     setSelectedRole(role);
+
+    // build the base params object
+    const params = { role };
+
     if (role === 'FAN') {
-      router.push('/signup/FanSignup');
-    } else {
-      router.push('/signup/TeamCode');
+      router.push({ pathname: '/signup/FanSignup', params });
+    } else if (role === 'COACH' || role === 'PARENT') {
+      // parent or coach
+      router.push({ pathname: '/signup/parent/parentform', params });
+    } else if (role === 'PLAYER') {
+      router.push({ pathname: '/signup/TeamCode', params });
     }
   };
 
@@ -69,6 +75,7 @@ export default function SignUpRole() {
                   key={r.key}
                   style={styles.card}
                   onPress={() => onSelectRole(r.key)}
+                  activeOpacity={0.7}
                 >
                   <Ionicons
                     name={r.icon}
@@ -142,6 +149,7 @@ const styles = StyleSheet.create({
     color: GlobalColors.white,
     fontSize: 16,
     fontWeight: '600',
+    textAlign: 'center',
   },
   footer: {
     marginTop: 'auto',

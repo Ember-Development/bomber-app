@@ -7,6 +7,7 @@ import {
   FlatList,
   StyleSheet,
   Platform,
+  ViewStyle,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -21,6 +22,7 @@ interface CustomSelectProps {
   options: SelectOption[];
   onSelect?: (value: string) => void;
   defaultValue?: string;
+  style?: ViewStyle;
 }
 
 const GLASS_COLORS = {
@@ -36,6 +38,7 @@ export default function CustomSelect({
   options,
   onSelect,
   defaultValue,
+  style,
 }: CustomSelectProps) {
   const [selectedValue, setSelectedValue] = useState(defaultValue ?? null);
   const [isModalVisible, setModalVisible] = useState(false);
@@ -47,7 +50,7 @@ export default function CustomSelect({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       <Text style={[styles.label, { color: GLASS_COLORS.text }]}>{label}</Text>
 
       <Pressable
@@ -69,6 +72,8 @@ export default function CustomSelect({
                 : GLASS_COLORS.placeholder,
             },
           ]}
+          numberOfLines={1}
+          ellipsizeMode="tail"
         >
           {selectedValue || label}
         </Text>

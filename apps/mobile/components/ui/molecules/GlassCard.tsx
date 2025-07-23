@@ -40,7 +40,7 @@ export default function GlassCard({ children }: GlassCardProps) {
   return (
     <Animated.View style={[styles.wrapper, { borderColor }]}>
       <LinearGradient
-        colors={['rgba(255,255,255,0.15)', 'rgba(255,255,255,0.05)']}
+        colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.08)']}
         style={styles.gradientBackground}
       >
         <BlurView intensity={70} tint="light" style={styles.card}>

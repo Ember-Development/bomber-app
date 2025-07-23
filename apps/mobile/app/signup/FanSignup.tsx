@@ -10,8 +10,10 @@ import {
   Platform,
   ScrollView,
   SafeAreaView,
+  TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import CustomInput from '@/components/ui/atoms/Inputs';
 import PhoneInput from '@/components/ui/atoms/PhoneInput';
@@ -43,7 +45,17 @@ export default function FanSignup() {
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <ScrollView contentContainerStyle={styles.container}>
               <View style={styles.header}>
-                <Text style={styles.title}>Fan</Text>
+                <View style={styles.headerRow}>
+                  <View style={styles.backWrapper}>
+                    <Ionicons
+                      name="arrow-back"
+                      size={24}
+                      color={GlobalColors.white}
+                      onPress={() => router.back()}
+                    />
+                  </View>
+                  <Text style={styles.title}>Fan Signup</Text>
+                </View>
                 <Text style={styles.subTitle}>
                   This section we will need your info as the parent of the
                   bomber athlete
@@ -75,9 +87,9 @@ export default function FanSignup() {
                 <CustomInput
                   label="Phone Number"
                   variant="default"
-                  keyboardType="phone-pad"
+                  placeholder="Enter Your Phone Number"
+                  keyboardType="number-pad"
                   fullWidth
-                  placeholder="e.g. +1 555-555-5555"
                   value={phone}
                   onChangeText={setPhone}
                 />
@@ -122,13 +134,28 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 24,
+  },
+  headerRow: {
+    position: 'relative',
     alignItems: 'center',
+    marginBottom: 38,
+  },
+  backWrapper: {
+    position: 'absolute',
+    left: 0,
+    height: '100%',
+    justifyContent: 'center',
+    paddingHorizontal: 12, // same as your old marginRight
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
     color: GlobalColors.white,
-    marginBottom: 8,
+    letterSpacing: 1,
+    textAlign: 'center',
+  },
+  backButton: {
+    marginRight: 12,
   },
   subTitle: {
     fontSize: 16,

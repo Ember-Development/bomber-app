@@ -12,85 +12,192 @@ import {
   ScrollView,
   SafeAreaView,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import CodeInput from '@/components/ui/organisms/TeamCode';
 import CustomButton from '@/components/ui/atoms/Button';
+import Checkbox from '@/components/ui/atoms/Checkbox';
 import { GlobalColors } from '@/constants/Colors';
+
+type Team = {
+  teamCode: string;
+  teamName: string;
+  ageDivision: '12U' | '14U' | '16U' | '18U';
+};
+
+const DUMMY_TEAMS: Record<string, Team> = {
+  '12431': {
+    teamCode: '12431',
+    teamName: 'Texas Bombers Gold',
+    ageDivision: '12U',
+  },
+  '12345': {
+    teamCode: '12345',
+    teamName: 'Lone Star Bombers',
+    ageDivision: '14U',
+  },
+  '83121': {
+    teamCode: '83121',
+    teamName: 'Austin Bombers',
+    ageDivision: '16U',
+  },
+  '67890': {
+    teamCode: '67890',
+    teamName: 'Austin Aces',
+    ageDivision: '18U',
+  },
+};
 
 export default function TeamCode() {
   const router = useRouter();
+  const { role, count, coachPlayer } = useLocalSearchParams<{
+    role?: string;
+    count?: string;
+    coachPlayer?: string;
+  }>();
+  const num = parseInt(count ?? '1', 10);
+  const isCoach = role?.toLowerCase() === 'coach';
+  const isParent = role?.toLowerCase() === 'parent';
+  const hasPlayers = coachPlayer === 'true';
+
   const [teamCode, setTeamCode] = useState('');
+  const [sameCode, setSameCode] = useState<boolean | null>(
+    hasPlayers ? null : true
+  );
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+  const [ageDivision, setAgeDivision] = useState<Team['ageDivision'] | null>(
+    null
+  );
+
+  const selectedTeamName = selectedTeam
+    ? DUMMY_TEAMS[selectedTeam]?.teamName
+    : null;
 
   useEffect(() => {
-    if (teamCode.length === 5) Keyboard.dismiss();
+    if (teamCode.length === 5) {
+      Keyboard.dismiss();
+      setSelectedTeam(teamCode);
+
+      const team = DUMMY_TEAMS[teamCode];
+      setAgeDivision(team?.ageDivision ?? null);
+    } else {
+      setSelectedTeam(null);
+      setAgeDivision(null);
+    }
   }, [teamCode]);
 
+  const codeFilled = teamCode.length === 5;
+  const canContinue =
+    codeFilled && (!isCoach || (isCoach && (!hasPlayers || sameCode !== null)));
+
   const handleComplete = () => {
-    router.push('/signup/parent/parentform');
+    const params: Record<string, string> = {
+      role: role ?? '',
+      count: count ?? '',
+      teamCode,
+    };
+    if (isCoach && hasPlayers) {
+      params.coachPlayerCodeMatches = sameCode ? 'true' : 'false';
+    }
+
+    let pathname: string;
+    if (isCoach) {
+      pathname = '/signup/coach/coach-players';
+    } else if (isParent) {
+      pathname = '/signup/parent/parentform';
+    } else {
+      // PLAYER: branch by ageDivision
+      if (ageDivision === '18U' || ageDivision === '16U') {
+        pathname = '/signup/athlete/athleteInfo';
+      } else {
+        pathname = '/signup/athlete/athleteRestrictions';
+      }
+    }
+
+    router.push({ pathname, params });
   };
 
-  const codeFilled = teamCode.length === 5;
+  let instruction =
+    num > 1
+      ? 'Each Bomber Team has a unique code. Enter your first player’s code below.'
+      : 'Each Bomber Team has a unique code. Enter your team code below.';
+  if (isCoach) {
+    instruction = hasPlayers
+      ? 'Enter your team code and whether it applies to your players.'
+      : 'Enter the team code for the team you coach.';
+  }
+
+  const buttonText = isCoach
+    ? 'Continue to Player Info'
+    : isParent
+      ? 'Parent: Continue'
+      : 'Player: Continue';
 
   return (
     <BackgroundWrapper>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={styles.safe}>
         <KeyboardAvoidingView
-          style={{ flex: 1 }}
+          style={styles.flex}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 20}
+          keyboardVerticalOffset={80}
         >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <ScrollView
               contentContainerStyle={styles.container}
               keyboardShouldPersistTaps="handled"
             >
-              {/* header */}
               <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()}>
+                <TouchableOpacity
+                  onPress={() => router.back()}
+                  style={styles.backButton}
+                >
                   <Ionicons
                     name="arrow-back"
-                    size={24}
+                    size={28}
                     color={GlobalColors.white}
                   />
                 </TouchableOpacity>
                 <Text style={styles.title}>Bomber Team Code</Text>
               </View>
 
-              {/* instructions */}
-              <Text style={styles.instruction}>
-                Each Bomber Team has a unique code. To ensure you are on the
-                correct team please enter your team code.
-              </Text>
+              <Text style={styles.instruction}>{instruction}</Text>
               <Text style={styles.subInstruction}>
-                Check your Bomber welcome email to find team code.
+                Check your welcome email for the code.
               </Text>
 
-              {/* code inputs */}
               <View style={styles.codeWrapper}>
                 <CodeInput length={5} onChange={setTeamCode} />
               </View>
 
-              {/* only show once code filled */}
-              {codeFilled && (
-                <>
-                  <View style={styles.selectedTeamContainer}>
-                    <Text style={styles.selectedLabel}>Selected Team</Text>
-                    <Text style={styles.selectedName}>Team Alpha</Text>
-                  </View>
-
-                  <View style={styles.continueWrapper}>
-                    <CustomButton
-                      title="Continue"
-                      onPress={handleComplete}
-                      fullWidth
-                    />
-                  </View>
-                </>
+              {isCoach && hasPlayers && codeFilled && (
+                <View style={styles.checkboxRow}>
+                  <Checkbox
+                    label="Same code for coach & players?"
+                    checked={sameCode === true}
+                    onChange={setSameCode}
+                  />
+                </View>
               )}
 
-              {/* footer terms */}
+              {selectedTeam && (
+                <View style={styles.selectedTeamContainer}>
+                  <Text style={styles.selectedLabel}>Selected Team</Text>
+                  <Text style={styles.selectedTeamText}>
+                    {selectedTeamName}
+                  </Text>
+                </View>
+              )}
+
+              {codeFilled && (
+                <CustomButton
+                  title={buttonText}
+                  onPress={handleComplete}
+                  fullWidth
+                  disabled={!canContinue}
+                />
+              )}
+
               <View style={styles.footer}>
                 <Text style={styles.terms}>
                   By signing up you accept the{' '}
@@ -107,59 +214,52 @@ export default function TeamCode() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
+  safe: { flex: 1 },
+  flex: { flex: 1 },
+  container: { flexGrow: 1, padding: 24 },
+  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 32 },
+  backButton: { padding: 8 },
   title: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 24,
+    fontWeight: '700',
     color: GlobalColors.white,
-    marginRight: 24,
+    letterSpacing: 1,
   },
   instruction: {
     fontSize: 16,
-    color: GlobalColors.white,
+    color: GlobalColors.gray,
     textAlign: 'center',
-    marginTop: 24,
-    marginBottom: 8,
+    lineHeight: 22,
+    marginBottom: 4,
   },
   subInstruction: {
     fontSize: 14,
     color: GlobalColors.gray,
     textAlign: 'center',
-    marginTop: 12,
-    marginBottom: 32,
+    marginBottom: 24,
   },
-  codeWrapper: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
+  codeWrapper: { alignItems: 'center', marginBottom: 24 },
+  checkboxRow: { marginBottom: 24, alignItems: 'center' },
   selectedTeamContainer: {
+    backgroundColor: `${GlobalColors.bomber}20`,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
   },
   selectedLabel: {
-    fontSize: 14,
-    color: GlobalColors.gray,
+    fontSize: 12,
+    color: GlobalColors.white,
+    textTransform: 'uppercase',
     marginBottom: 4,
   },
-  selectedName: {
-    fontSize: 24,
-    color: GlobalColors.white,
+  selectedTeamText: {
+    fontSize: 20,
     fontWeight: '600',
-    marginBottom: 14,
-  },
-  continueWrapper: {
-    alignItems: 'center',
-    marginBottom: 32,
+    color: GlobalColors.white,
   },
   footer: {
     marginTop: 'auto',

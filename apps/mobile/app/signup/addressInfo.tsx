@@ -1,4 +1,4 @@
-// app/signup/parent.tsx
+// app/signup/address.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -9,40 +9,59 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import CustomInput from '@/components/ui/atoms/Inputs';
 import CustomButton from '@/components/ui/atoms/Button';
-import { Ionicons } from '@expo/vector-icons';
 import { GlobalColors } from '@/constants/Colors';
 
-const ROLE_LABELS: Record<string, string> = {
-  PARENT: 'Parent / Guardian',
-  COACH: 'Coach',
-};
-
-export default function ParentInfo() {
+export default function AddressInfo() {
   const router = useRouter();
-  const { role, count, teamCode } = useLocalSearchParams<{
+  const {
+    role = 'athlete',
+    count,
+    teamCode,
+  } = useLocalSearchParams<{
     role?: string;
     count?: string;
     teamCode?: string;
   }>();
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  // Form state
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [stateValue, setStateValue] = useState('');
+  const [zip, setZip] = useState('');
 
-  const title = ROLE_LABELS[role ?? 'PARENT'] ?? 'Contact Info';
-  const instruction = `Please enter your contact details as the ${title.toLowerCase()}.`;
-
+  // Determine next path based on role
   const handleContinue = () => {
+    let pathname: string;
+    switch (role) {
+      case 'COACH':
+        pathname = '/signup/TeamCode';
+        break;
+      case 'PARENT':
+        pathname = '/signup/add-player';
+        break;
+      default:
+        pathname = '/signup/add-player';
+    }
     router.push({
-      pathname: '/signup/addressInfo',
-      params: { role, count, teamCode },
+      pathname,
+      params: { role, count, teamCode, address, city, state: stateValue, zip },
     });
   };
+
+  const instruction = `Please enter your address information.`;
+
+  // Dynamic button text
+  const buttonText =
+    role === 'COACH'
+      ? 'Continue to Team Code'
+      : role === 'PARENT'
+        ? 'Continue to Player Info'
+        : 'Continue to Player Info';
 
   return (
     <BackgroundWrapper>
@@ -50,12 +69,11 @@ export default function ParentInfo() {
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 20}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 20}
         >
           <ScrollView
             contentContainerStyle={styles.container}
             keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="none"
           >
             {/* Header */}
             <View style={styles.header}>
@@ -65,58 +83,44 @@ export default function ParentInfo() {
                 color={GlobalColors.white}
                 onPress={() => router.back()}
               />
-              <Text style={styles.title}>{title} Info</Text>
+              <Text style={styles.title}>Address Info</Text>
             </View>
 
-            {/* Instruction */}
             <Text style={styles.instruction}>{instruction}</Text>
-            {/* 
-            Team display
-            <CustomInput
-              label="Selected Team"
-              variant="default"
-              placeholder="Texas Bombers Gold 18U"
-              fullWidth
-              editable={false}
-            /> */}
 
             {/* Form fields */}
             <View style={styles.form}>
               <CustomInput
-                label="First Name"
-                variant="name"
-                fullWidth
-                value={firstName}
-                onChangeText={setFirstName}
-              />
-              <CustomInput
-                label="Last Name"
-                variant="name"
-                fullWidth
-                value={lastName}
-                onChangeText={setLastName}
-              />
-              <CustomInput
-                label="Email"
-                variant="email"
-                fullWidth
-                value={email}
-                keyboardType="email-address"
-                onChangeText={setEmail}
-              />
-              <CustomInput
-                label="Phone Number"
+                label="Street Address"
                 variant="default"
-                keyboardType="number-pad"
                 fullWidth
-                value={phone}
-                onChangeText={setPhone}
+                value={address}
+                onChangeText={setAddress}
+              />
+              <CustomInput
+                label="City"
+                variant="default"
+                value={city}
+                onChangeText={setCity}
+              />
+              <CustomInput
+                label="State"
+                variant="default"
+                value={stateValue}
+                onChangeText={setStateValue}
+              />
+              <CustomInput
+                label="Zip Code"
+                variant="default"
+                fullWidth
+                value={zip}
+                onChangeText={setZip}
               />
             </View>
 
-            {/* Continue */}
+            {/* Continue button with dynamic text */}
             <CustomButton
-              title="Continue to Address Info"
+              title={buttonText}
               onPress={handleContinue}
               fullWidth
             />
@@ -144,7 +148,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 38,
+    marginBottom: 24,
   },
   title: {
     flex: 1,
