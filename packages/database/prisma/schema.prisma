@@ -244,6 +244,9 @@ model Coach {
     user   User   @relation(fields: [userID], references: [id])
     userID String @unique @db.Uuid
 
+    address   Address? @relation(fields: [addressID], references: [id])
+    addressID String?  @db.Uuid
+
     headTeams Team[]
     teams     Team[] @relation("CoachTeams")
 }
@@ -252,6 +255,7 @@ model RegCoach {
     id     String @id @default(uuid()) @db.Uuid
     user   User   @relation(fields: [userID], references: [id])
     userID String @unique @db.Uuid
+
 
     region Regions @unique //one regCoach per region, allows queries for team by regional coach
 }
@@ -308,6 +312,7 @@ model Address {
 
     players Player[]
     parents Parent[]
+    coaches Coach[]
 }
 
 model Chat {
