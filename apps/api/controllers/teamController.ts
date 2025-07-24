@@ -129,7 +129,10 @@ export const addPlayerToTeam = async (req: Request, res: Response) => {
   }
 };
 
-export const addTrophyToTeam = async (req: Request, res: Response) => {
+export const addTrophyToTeam = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   try {
     const { teamId } = req.params;
     const { title, imageURL } = req.body as { title: string; imageURL: string };
@@ -144,25 +147,40 @@ export const addTrophyToTeam = async (req: Request, res: Response) => {
   }
 };
 
-export const updateTrophy = async (req: Request, res: Response) => {
+export const updateTrophy = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   try {
     const { trophyId } = req.params;
     const payload = req.body as { title?: string; imageURL?: string };
-    const updated = await teamService.updateTrophy(trophyId, payload);
+    const updated = await teamService.updateTrophy(
+      trophyId,
+      payload,
+      req.user!.id,
+      req.user!.primaryRole
+    );
     res.json(updated);
   } catch (err) {
     console.error('[updateTrophy]', err);
-    res.status(500).json({ error: 'Failed to update trophy' });
+    res.status(403).json({ error: 'Unauthorized to update trophy' });
   }
 };
 
-export const deleteTrophy = async (req: Request, res: Response) => {
+export const deleteTrophy = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   try {
     const { trophyId } = req.params;
-    await teamService.deleteTrophy(trophyId);
+    await teamService.deleteTrophy(
+      trophyId,
+      req.user!.id,
+      req.user!.primaryRole
+    );
     res.status(204).send();
   } catch (err) {
     console.error('[deleteTrophy]', err);
-    res.status(500).json({ error: 'Failed to delete trophy' });
+    res.status(403).json({ error: 'Unauthorized to delete trophy' });
   }
 };

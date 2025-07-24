@@ -8,6 +8,11 @@ import EditPlayerModal from './components/update-player';
 import RemovePlayerModal from './components/remove-player';
 import { usePlayerById } from '@/hooks/teams/usePlayerById';
 import { useDeletePlayer } from '@/hooks/teams/usePlayerById';
+import EditCoachModal from './components/edit-coach-modal';
+import RemoveCoachModal from './components/remove-coach-modal';
+import { useCoachById, useDeleteCoach } from '@/hooks/teams/useCoach';
+import EditTrophyModal from './components/edit-trophy-modal';
+import RemoveTrophyModal from './components/remove-trophy-modal';
 
 interface GlassCardProps {
   label: string;
@@ -36,8 +41,32 @@ export default function ProfileTabs() {
   const [view, setView] = useState('roster');
   const [editPlayerId, setEditPlayerId] = useState<string | null>(null);
   const [removePlayerId, setRemovePlayerId] = useState<string | null>(null);
+  const [editCoachId, setEditCoachId] = useState<string | null>(null);
+  const [removeCoachId, setRemoveCoachId] = useState<string | null>(null);
+  const [editTrophy, setEditTrophy] = useState<{
+    teamId: string;
+    trophy: any;
+  } | null>(null);
+  const [removeTrophy, setRemoveTrophy] = useState<{
+    teamId: string;
+    trophy: any;
+  } | null>(null);
+
   const { data: selectedPlayer } = usePlayerById(editPlayerId ?? '');
   const { data: selectedPlayerToRemove } = usePlayerById(removePlayerId ?? '');
+  const { data: selectedCoach } = useCoachById(editCoachId ?? '');
+  const { data: selectedCoachToRemove } = useCoachById(removeCoachId ?? '');
+
+  const { mutate: deletePlayer } = useDeletePlayer({
+    onSuccess: () => setRemovePlayerId(null),
+  });
+
+  const { mutate: deleteCoach } = useDeleteCoach({
+    onSuccess: () => {
+      console.log('[REMOVE COACH] success');
+      setRemoveCoachId(null);
+    },
+  });
 
   const renderCards = (
     data: {
@@ -118,10 +147,15 @@ export default function ProfileTabs() {
                     </Text>
                   </View>
                   <View style={styles.actionsRow}>
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        console.log('Editing coach ID:', c.id);
+                        setEditCoachId(c.id);
+                      }}
+                    >
                       <Text style={styles.action}>Edit</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => setRemoveCoachId(c.id)}>
                       <Text style={styles.actionDelete}>Remove</Text>
                     </TouchableOpacity>
                   </View>
@@ -134,10 +168,18 @@ export default function ProfileTabs() {
                     <Text style={styles.cellLarge}>{t.title}</Text>
                   </View>
                   <View style={styles.actionsRow}>
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() =>
+                        setEditTrophy({ teamId: team.id, trophy: t })
+                      }
+                    >
                       <Text style={styles.action}>Edit</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() =>
+                        setRemoveTrophy({ teamId: team.id, trophy: t })
+                      }
+                    >
                       <Text style={styles.actionDelete}>Remove</Text>
                     </TouchableOpacity>
                   </View>
@@ -391,10 +433,45 @@ export default function ProfileTabs() {
           visible={!!removePlayerId}
           playerName={`${selectedPlayerToRemove.user?.fname} ${selectedPlayerToRemove.user?.lname}`}
           onClose={() => setRemovePlayerId(null)}
+          onConfirm={() => deletePlayer(removePlayerId!)}
+        />
+      )}
+
+      {editCoachId && selectedCoach && (
+        <EditCoachModal
+          visible={!!editCoachId}
+          coach={selectedCoach}
+          onClose={() => setEditCoachId(null)}
+        />
+      )}
+
+      {removeCoachId && selectedCoachToRemove && (
+        <RemoveCoachModal
+          visible={!!removeCoachId}
+          coachName={`${selectedCoachToRemove.user?.fname} ${selectedCoachToRemove.user?.lname}`}
+          onClose={() => setRemoveCoachId(null)}
           onConfirm={() => {
-            useDeletePlayer(removePlayerId);
-            setRemovePlayerId(null);
+            console.log('[REMOVE COACH] triggering delete for:', removeCoachId);
+            if (removeCoachId) deleteCoach(removeCoachId);
           }}
+        />
+      )}
+
+      {editTrophy && (
+        <EditTrophyModal
+          visible
+          teamId={editTrophy.teamId}
+          trophy={editTrophy.trophy}
+          onClose={() => setEditTrophy(null)}
+        />
+      )}
+      {removeTrophy && (
+        <RemoveTrophyModal
+          visible
+          teamId={removeTrophy.teamId}
+          trophyId={removeTrophy.trophy.id}
+          trophyTitle={removeTrophy.trophy.title}
+          onClose={() => setRemoveTrophy(null)}
         />
       )}
     </>
@@ -531,7 +608,8 @@ const styles = StyleSheet.create({
   },
   rowContent: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 8,
+    justifyContent: 'flex-start',
     marginBottom: 12,
   },
   cellLarge: {

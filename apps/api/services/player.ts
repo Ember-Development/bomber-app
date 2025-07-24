@@ -84,7 +84,7 @@ const canAccessPlayer = async (
       return regionalCoach?.region === player.team.region;
 
     case 'PARENT':
-      return player.parents.length > 0;
+      return player.parents.some((p) => p.userID === actingUserId);
 
     default:
       return false;
@@ -154,13 +154,32 @@ export const playerService = {
     const authorized = await canAccessPlayer(actingUserId, playerId, role);
     if (!authorized) throw new Error('Not authorized to update this player.');
 
-    const { addressID, address1, address2, city, state, zip, ...playerData } =
-      data;
+    const {
+      addressID,
+      address1,
+      address2,
+      city,
+      state,
+      zip,
+      fname,
+      lname,
+      email,
+      phone,
+      ...playerData
+    } = data;
 
     return prisma.player.update({
       where: { id: playerId },
       data: {
         ...playerData,
+        user: {
+          update: {
+            fname,
+            lname,
+            email,
+            phone,
+          },
+        },
         address: address1
           ? {
               upsert: {
