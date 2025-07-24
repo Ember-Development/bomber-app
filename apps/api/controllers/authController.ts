@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import { authService } from '../services/auth';
 import { roleToActions, Role, Action } from '../auth/permissions';
+import { AuthenticatedRequest } from '../auth/devAuth';
 
 export const getMockLogins = async (
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response
 ): Promise<Response | void> => {
   try {

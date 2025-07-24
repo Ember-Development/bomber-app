@@ -5,3 +5,15 @@ export const getPlayerById = async (id: string): Promise<PlayerFE> => {
   const res = await api.get(`/api/players/${id}`);
   return res.data;
 };
+
+export const updatePlayer = async (
+  id: string,
+  data: Partial<PlayerFE>
+): Promise<PlayerFE> => {
+  const res = await api.put(`/api/players/${id}`, data);
+  return res.data;
+};
+
+export const deletePlayer = async (id: string): Promise<void> => {
+  await api.delete(`/api/players/${id}`);
+};

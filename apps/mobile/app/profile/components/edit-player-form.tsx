@@ -13,9 +13,11 @@ import {
   Position,
   ShortsSize,
   StirrupSize,
-  UserFE,
+  PlayerFE,
 } from '@bomber-app/database';
 import CustomInput from '@/components/ui/atoms/Inputs';
+import CustomSelect from '@/components/ui/atoms/dropdown';
+import { US_STATES } from '@/utils/state';
 import {
   POSITIONS,
   JERSEY_SIZES,
@@ -23,84 +25,54 @@ import {
   STIRRUP_SIZES,
   SHORTS_SIZES,
 } from '@/utils/enumOptions';
-import { US_STATES } from '@/utils/state';
-import CustomSelect from '@/components/ui/atoms/dropdown';
-import { useUpdateUser } from '@/hooks/useUser';
-import { useUserContext } from '@/context/useUserContext';
 import { GlobalColors } from '@/constants/Colors';
-import { useNormalizedUser } from '@/utils/user';
+import { useUpdatePlayer } from '@/hooks/teams/usePlayerById';
 
 interface Props {
-  user: UserFE;
+  player: PlayerFE;
   onSuccess?: () => void;
 }
 
-const EditProfileContent: React.FC<Props> = ({
-  user: intitialUser,
-  onSuccess,
-}) => {
-  const { user, primaryRole } = useNormalizedUser();
-  const isCoach =
-    primaryRole === 'COACH' ||
-    primaryRole === 'PARENT' ||
-    primaryRole === 'FAN';
+const EditPlayerContent: React.FC<Props> = ({ player, onSuccess }) => {
   const [activeTab, setActiveTab] = useState<'info' | 'contact' | 'gear'>(
-    isCoach ? 'info' : 'info'
+    'info'
   );
-  const { refetch } = useUserContext();
   const [isPending, setIsPending] = useState(false);
 
-  const { mutate: updateUser } = useUpdateUser(intitialUser.id, {
-    onSuccess: () => console.log('Update successful'),
+  const user = player.user;
+  if (!user)
+    return <Text style={{ color: '#fff' }}>Missing player user data</Text>;
+
+  const { mutate: updatePlayer } = useUpdatePlayer(player.id, {
+    onSuccess: () => onSuccess?.(),
   });
 
   const [formData, setFormData] = useState({
-    fname: intitialUser.fname,
-    lname: intitialUser.lname,
-    email: intitialUser.email,
-    phone: intitialUser.phone || '',
-    pos1: intitialUser.player?.pos1,
-    pos2: intitialUser.player?.pos2,
-    jerseyNum: intitialUser.player?.jerseyNum,
-    gradYear: intitialUser.player?.gradYear,
-    college: intitialUser.player?.college,
-    address1:
-      intitialUser.player?.address?.address1 ||
-      intitialUser.coach?.address?.address1 ||
-      intitialUser.parent?.address?.address1,
-    address2:
-      intitialUser.player?.address?.address2 ||
-      intitialUser.coach?.address?.address2 ||
-      intitialUser.parent?.address?.address2,
-    city:
-      intitialUser.player?.address?.city ||
-      intitialUser.coach?.address?.city ||
-      intitialUser.parent?.address?.city,
-    zip:
-      intitialUser.player?.address?.zip ||
-      intitialUser.coach?.address?.zip ||
-      intitialUser.parent?.address?.zip,
-    state:
-      intitialUser.player?.address?.state ||
-      intitialUser.coach?.address?.state ||
-      intitialUser.parent?.address?.state,
-    jerseySize: intitialUser.player?.jerseySize,
-    pantSize: intitialUser.player?.pantSize,
-    stirrupSize: intitialUser.player?.stirrupSize,
-    shortSize: intitialUser.player?.shortSize,
-    practiceShortSize: intitialUser.player?.practiceShortSize,
+    fname: user.fname,
+    lname: user.lname,
+    email: user.email,
+    phone: user.phone || '',
+    pos1: player.pos1,
+    pos2: player.pos2,
+    jerseyNum: player.jerseyNum,
+    gradYear: player.gradYear,
+    college: player.college || '',
+    address1: player.address?.address1 || '',
+    address2: player.address?.address2 || '',
+    city: player.address?.city || '',
+    zip: player.address?.zip || '',
+    state: player.address?.state || '',
+    jerseySize: player.jerseySize,
+    pantSize: player.pantSize,
+    stirrupSize: player.stirrupSize,
+    shortSize: player.shortSize,
+    practiceShortSize: player.practiceShortSize,
   });
 
   const handleSubmit = () => {
     setIsPending(true);
-    updateUser(formData, {
-      onSuccess: () => {
-        refetch();
-        onSuccess?.();
-      },
-      onSettled: () => {
-        setIsPending(false);
-      },
+    updatePlayer(formData, {
+      onSettled: () => setIsPending(false),
     });
   };
 
@@ -121,56 +93,52 @@ const EditProfileContent: React.FC<Props> = ({
               fullWidth
               onChangeText={(text) => setFormData({ ...formData, lname: text })}
             />
-            {!isCoach && (
-              <>
-                <View style={styles.row}>
-                  <View style={styles.half}>
-                    <CustomSelect
-                      label="Position 1"
-                      options={POSITIONS}
-                      defaultValue={formData.pos1}
-                      onSelect={(value) =>
-                        setFormData({ ...formData, pos1: value as Position })
-                      }
-                    />
-                  </View>
-                  <View style={styles.half}>
-                    <CustomSelect
-                      label="Position 2"
-                      options={POSITIONS}
-                      defaultValue={formData.pos2}
-                      onSelect={(value) =>
-                        setFormData({ ...formData, pos2: value as Position })
-                      }
-                    />
-                  </View>
-                </View>
-                <CustomInput
-                  label="Jersey #"
-                  defaultValue={formData.jerseyNum}
-                  fullWidth
-                  onChangeText={(text) =>
-                    setFormData({ ...formData, jerseyNum: text })
+            <View style={styles.row}>
+              <View style={styles.half}>
+                <CustomSelect
+                  label="Position 1"
+                  options={POSITIONS}
+                  defaultValue={formData.pos1}
+                  onSelect={(value) =>
+                    setFormData({ ...formData, pos1: value as Position })
                   }
                 />
-                <CustomInput
-                  label="Graduation Year"
-                  defaultValue={formData.gradYear}
-                  fullWidth
-                  onChangeText={(text) =>
-                    setFormData({ ...formData, gradYear: text })
+              </View>
+              <View style={styles.half}>
+                <CustomSelect
+                  label="Position 2"
+                  options={POSITIONS}
+                  defaultValue={formData.pos2}
+                  onSelect={(value) =>
+                    setFormData({ ...formData, pos2: value as Position })
                   }
                 />
-                <CustomInput
-                  label="College Committed"
-                  defaultValue={formData.college ?? undefined}
-                  fullWidth
-                  onChangeText={(text) =>
-                    setFormData({ ...formData, college: text })
-                  }
-                />
-              </>
-            )}
+              </View>
+            </View>
+            <CustomInput
+              label="Jersey #"
+              defaultValue={formData.jerseyNum}
+              fullWidth
+              onChangeText={(text) =>
+                setFormData({ ...formData, jerseyNum: text })
+              }
+            />
+            <CustomInput
+              label="Graduation Year"
+              defaultValue={formData.gradYear}
+              fullWidth
+              onChangeText={(text) =>
+                setFormData({ ...formData, gradYear: text })
+              }
+            />
+            <CustomInput
+              label="College Committed"
+              defaultValue={formData.college}
+              fullWidth
+              onChangeText={(text) =>
+                setFormData({ ...formData, college: text })
+              }
+            />
           </View>
         );
       case 'contact':
@@ -295,46 +263,24 @@ const EditProfileContent: React.FC<Props> = ({
 
   return (
     <View style={styles.wrapper}>
-      {!isCoach && (
-        <View style={styles.tabs}>
-          {['info', 'contact', 'gear'].map((key) => (
-            <TouchableOpacity
-              key={key}
-              style={[styles.tabButton, activeTab === key && styles.tabActive]}
-              onPress={() => setActiveTab(key as typeof activeTab)}
+      <View style={styles.tabs}>
+        {['info', 'contact', 'gear'].map((key) => (
+          <TouchableOpacity
+            key={key}
+            style={[styles.tabButton, activeTab === key && styles.tabActive]}
+            onPress={() => setActiveTab(key as typeof activeTab)}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === key && styles.tabTextActive,
+              ]}
             >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === key && styles.tabTextActive,
-                ]}
-              >
-                {key.charAt(0).toUpperCase() + key.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-      {isCoach && (
-        <View style={styles.tabs}>
-          {['info', 'contact'].map((key) => (
-            <TouchableOpacity
-              key={key}
-              style={[styles.tabButton, activeTab === key && styles.tabActive]}
-              onPress={() => setActiveTab(key as typeof activeTab)}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === key && styles.tabTextActive,
-                ]}
-              >
-                {key.charAt(0).toUpperCase() + key.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+              {key.charAt(0).toUpperCase() + key.slice(1)}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 60 }}>
         <View style={styles.formGlass}>{renderTab()}</View>
@@ -345,7 +291,7 @@ const EditProfileContent: React.FC<Props> = ({
             onPress={handleSubmit}
           >
             <Text style={styles.updateText}>
-              {isPending ? 'Updating...' : 'Update Account'}
+              {isPending ? 'Updating...' : 'Update Player'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -386,7 +332,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   formGlass: {
-    backgroundColor: 'rgba(20, 20, 20, 0.85)', // matches notification modal
+    backgroundColor: 'rgba(20, 20, 20, 0.85)',
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,
@@ -426,4 +372,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EditProfileContent;
+export default EditPlayerContent;

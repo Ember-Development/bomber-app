@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { PlayerFE } from '@bomber-app/database';
-import { getPlayerById } from '@/api/player/player';
+import { deletePlayer, getPlayerById, updatePlayer } from '@/api/player/player';
 
 export const usePlayerById = (id: string) => {
   return useQuery<PlayerFE>({
@@ -9,3 +9,27 @@ export const usePlayerById = (id: string) => {
     enabled: !!id,
   });
 };
+
+export const useUpdatePlayer = (
+  id: string,
+  options?: {
+    onSuccess?: (data: PlayerFE) => void;
+    onError?: (err: unknown) => void;
+  }
+) =>
+  useMutation({
+    mutationFn: (data: Partial<PlayerFE>) => updatePlayer(id, data),
+    ...options,
+  });
+
+export const useDeletePlayer = (
+  id: string,
+  options?: {
+    onSuccess?: () => void;
+    onError?: (err: unknown) => void;
+  }
+) =>
+  useMutation({
+    mutationFn: () => deletePlayer(id),
+    ...options,
+  });

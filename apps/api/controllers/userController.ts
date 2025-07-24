@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { CreateUserInput, userService } from '../services/user';
+import { AuthenticatedRequest } from '../auth/devAuth';
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -69,7 +70,7 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
-export const updateUser = async (req: Request, res: Response) => {
+export const updateUser = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = await userService.updateUser(req.params.id, req.body);
     return res.json(user);

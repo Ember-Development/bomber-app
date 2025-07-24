@@ -1,4 +1,5 @@
 import { Prisma, prisma } from '@bomber-app/database';
+import { Role } from '../auth/permissions';
 
 export interface CreatePlayerInput extends Prisma.PlayerCreateInput {}
 export interface UpdatePlayerInput extends Prisma.PlayerUpdateInput {}
@@ -45,7 +46,50 @@ export interface UpdatePlayerInput
   city?: string;
   state?: string;
   zip?: string;
+  [key: string]: any;
 }
+
+const canAccessPlayer = async (
+  actingUserId: string,
+  playerId: string,
+  role: Role
+) => {
+  if (role === 'ADMIN') return true;
+
+  const player = await prisma.player.findUnique({
+    where: { id: playerId },
+    include: {
+      team: {
+        select: {
+          region: true,
+          coaches: {
+            where: { userID: actingUserId },
+          },
+        },
+      },
+      parents: { where: { userID: actingUserId } },
+    },
+  });
+
+  if (!player || !player.team) return false;
+
+  switch (role) {
+    case 'COACH':
+      return player.team.coaches.length > 0;
+
+    case 'REGIONAL_COACH':
+      const regionalCoach = await prisma.regCoach.findUnique({
+        where: { userID: actingUserId },
+      });
+      return regionalCoach?.region === player.team.region;
+
+    case 'PARENT':
+      return player.parents.length > 0;
+
+    default:
+      return false;
+  }
+};
 
 export const playerService = {
   getPlayerById: async (id: string) => {
@@ -101,22 +145,39 @@ export const playerService = {
     });
   },
 
-  updatePlayer: async (id: string, data: UpdatePlayerInput) => {
-    const errors = validatePlayer(data as any);
-    if (errors) throw new Error(errors.join('; '));
+  updatePlayer: async (
+    playerId: string,
+    data: UpdatePlayerInput,
+    actingUserId: string,
+    role: Role
+  ) => {
+    const authorized = await canAccessPlayer(actingUserId, playerId, role);
+    if (!authorized) throw new Error('Not authorized to update this player.');
 
     const { addressID, address1, address2, city, state, zip, ...playerData } =
-      data as any;
+      data;
 
     return prisma.player.update({
-      where: { id },
+      where: { id: playerId },
       data: {
         ...playerData,
         address: address1
           ? {
               upsert: {
-                create: { address1, address2, city, state, zip },
-                update: { address1, address2, city, state, zip },
+                create: {
+                  address1: address1 ?? '',
+                  address2: address2 ?? '',
+                  city: city ?? '',
+                  state: state ?? '',
+                  zip: zip ?? '',
+                },
+                update: {
+                  address1: address1 ?? '',
+                  address2: address2 ?? '',
+                  city: city ?? '',
+                  state: state ?? '',
+                  zip: zip ?? '',
+                },
               },
             }
           : undefined,
@@ -130,9 +191,12 @@ export const playerService = {
     });
   },
 
-  deletePlayer: async (id: string) => {
+  deletePlayer: async (playerId: string, actingUserId: string, role: Role) => {
+    const authorized = await canAccessPlayer(actingUserId, playerId, role);
+    if (!authorized) throw new Error('Not authorized to remove this player.');
+
     return prisma.player.delete({
-      where: { id },
+      where: { id: playerId },
     });
   },
 };
