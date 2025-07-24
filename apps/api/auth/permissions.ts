@@ -20,6 +20,9 @@ export type Action =
   | 'update-team-event'
   | 'remove-team-event'
   | 'create-team-group'
+  | 'create-trophy'
+  | 'edit-trophy'
+  | 'remove-trophy'
   | 'edit-player-bathand'
   | 'cms:create-article'
   | 'cms:edit-article'
@@ -38,6 +41,9 @@ export const roleToActions: Record<Role, Action[]> = {
     'cms:edit-article',
     'cms:delete-article',
     'cms:publish-article',
+    'create-trophy',
+    'edit-trophy',
+    'remove-trophy',
   ],
   COACH: [
     'view-my-info',
@@ -47,13 +53,30 @@ export const roleToActions: Record<Role, Action[]> = {
     'edit-player',
     'remove-player',
     'edit-coach',
+    'remove-coach',
     'create-team-event',
     'update-team-event',
     'remove-team-event',
     'create-team-group',
+    'create-trophy',
+    'edit-trophy',
+    'remove-trophy',
   ],
-  REGIONAL_COACH: ['view-my-info', 'edit-my-info', 'view-my-team'],
+  REGIONAL_COACH: [
+    'view-my-info',
+    'edit-my-info',
+    'view-my-team',
+    'create-trophy',
+    'edit-trophy',
+    'remove-trophy',
+  ],
   PLAYER: ['view-my-info', 'edit-my-info', 'view-my-team'],
-  PARENT: ['view-my-info', 'edit-my-info', 'view-my-team'],
+  PARENT: [
+    'view-my-info',
+    'edit-my-info',
+    'view-my-team',
+    'edit-player',
+    'remove-player',
+  ],
   FAN: ['view-my-info', 'edit-my-info', 'view-my-team'],
 };

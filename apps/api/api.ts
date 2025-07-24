@@ -14,6 +14,7 @@ import sponsorRoutes from './routes/sponsorRoutes';
 import bannerRoutes from './routes/bannerRoutes';
 import mediaRoutes from './routes/mediaRoutes';
 import articleRoutes from './routes/articleRoutes';
+import coachRoutes from './routes/coachRoutes';
 
 const app = express();
 const server = http.createServer(app);
@@ -36,6 +37,7 @@ app.use('/api/sponsors', sponsorRoutes);
 app.use('/api/banners', bannerRoutes);
 app.use('/api/medias', mediaRoutes);
 app.use('/api/articles', articleRoutes);
+app.use('/api/coaches', coachRoutes);
 
 const io = initializeSocket(server);
 

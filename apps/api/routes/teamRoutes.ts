@@ -37,8 +37,23 @@ router.post('/:teamId/coaches', addCoachToTeam);
 router.post('/:teamId/players', addPlayerToTeam);
 
 // trophies
-router.post('/:teamId/trophies', addTrophyToTeam);
-router.put('/:teamId/trophies/:trophyId', updateTrophy);
-router.delete('/:teamId/trophies/:trophyId', deleteTrophy);
+router.post(
+  '/:teamId/trophies',
+  devAuth,
+  authorize('create-trophy'),
+  addTrophyToTeam
+);
+router.put(
+  '/:teamId/trophies/:trophyId',
+  devAuth,
+  authorize('edit-trophy'),
+  updateTrophy
+);
+router.delete(
+  '/:teamId/trophies/:trophyId',
+  devAuth,
+  authorize('remove-trophy'),
+  deleteTrophy
+);
 
 export default router;

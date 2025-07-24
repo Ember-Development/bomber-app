@@ -10,31 +10,22 @@ import {
   Keyboard,
   Platform,
 } from 'react-native';
-import { GlobalColors } from '@/constants/Colors';
-import { useNormalizedUser } from '@/utils/user';
 
 interface Props {
   visible: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  playerName: string;
+  coachName: string;
 }
 
-const RemovePlayerModal: React.FC<Props> = ({
+const RemoveCoachModal: React.FC<Props> = ({
   visible,
   onClose,
   onConfirm,
-  playerName,
+  coachName,
 }) => {
-  const { primaryRole } = useNormalizedUser();
-  const isParent = primaryRole === 'PARENT';
-
-  const message = isParent
-    ? `Are you sure you want to remove ${playerName} from your athlete list?`
-    : `Are you sure you want to remove ${playerName} from the team?`;
-
   return (
-    <Modal visible={visible} animationType="slide" transparent>
+    <Modal visible={visible} transparent animationType="slide">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.overlay}>
           <KeyboardAvoidingView
@@ -43,12 +34,16 @@ const RemovePlayerModal: React.FC<Props> = ({
           >
             <View style={styles.modal}>
               <View style={styles.header}>
-                <Text style={styles.title}>Remove Player</Text>
+                <Text style={styles.title}>Remove Coach</Text>
                 <Text style={styles.close} onPress={onClose}>
                   Close
                 </Text>
               </View>
-              <Text style={styles.message}>{message}</Text>
+
+              <Text style={styles.message}>
+                Are you sure you want to remove {coachName} from the team?
+              </Text>
+
               <View style={styles.actions}>
                 <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
                   <Text style={styles.cancelText}>Cancel</Text>
@@ -81,8 +76,8 @@ const styles = StyleSheet.create({
   modal: {
     backgroundColor: 'rgba(20, 20, 20, 0.95)',
     paddingTop: 60,
-    paddingHorizontal: 20,
     paddingBottom: 30,
+    paddingHorizontal: 20,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     borderWidth: 1,
@@ -135,4 +130,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RemovePlayerModal;
+export default RemoveCoachModal;

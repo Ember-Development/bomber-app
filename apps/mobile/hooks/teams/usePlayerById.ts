@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { PlayerFE } from '@bomber-app/database';
 import { deletePlayer, getPlayerById, updatePlayer } from '@/api/player/player';
+import { useNormalizedUser } from '@/utils/user';
 
 export const usePlayerById = (id: string) => {
   return useQuery<PlayerFE>({
@@ -16,20 +17,31 @@ export const useUpdatePlayer = (
     onSuccess?: (data: PlayerFE) => void;
     onError?: (err: unknown) => void;
   }
-) =>
-  useMutation({
-    mutationFn: (data: Partial<PlayerFE>) => updatePlayer(id, data),
-    ...options,
-  });
+) => {
+  const { refetch } = useNormalizedUser();
 
-export const useDeletePlayer = (
-  id: string,
-  options?: {
-    onSuccess?: () => void;
-    onError?: (err: unknown) => void;
-  }
-) =>
-  useMutation({
-    mutationFn: () => deletePlayer(id),
-    ...options,
+  return useMutation({
+    mutationFn: (data: Partial<PlayerFE>) => updatePlayer(id, data),
+    onSuccess: (data) => {
+      refetch();
+      options?.onSuccess?.(data);
+    },
+    onError: options?.onError,
   });
+};
+
+export const useDeletePlayer = (options?: {
+  onSuccess?: () => void;
+  onError?: (err: unknown) => void;
+}) => {
+  const { refetch } = useNormalizedUser();
+
+  return useMutation({
+    mutationFn: (id: string) => deletePlayer(id),
+    onSuccess: () => {
+      refetch();
+      options?.onSuccess?.();
+    },
+    onError: options?.onError,
+  });
+};
