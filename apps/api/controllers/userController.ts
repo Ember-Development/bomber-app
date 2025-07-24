@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { userService } from '../services/user';
+import { CreateUserInput, userService } from '../services/user';
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -44,6 +44,28 @@ export const getUserChats = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error fetching user chats', error);
     res.status(500).json({ error: 'Failed to fetch user chats' });
+  }
+};
+
+export const createUser = async (req: Request, res: Response) => {
+  try {
+    const payload = req.body as CreateUserInput;
+    const user = await userService.createUser(payload);
+    return res.status(201).json(user);
+  } catch (err) {
+    console.error('[createUser]', err);
+    return res.status(500).json({ error: 'Failed to create user' });
+  }
+};
+
+export const deleteUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    await userService.softDeleteUser(id);
+    return res.status(204).send();
+  } catch (err) {
+    console.error('[deleteUser]', err);
+    return res.status(500).json({ error: 'Failed to delete user' });
   }
 };
 

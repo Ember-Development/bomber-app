@@ -1,13 +1,21 @@
 import express from 'express';
-import {
-  deleteMyTeam,
-  getAllTeams,
-  getMyTeams,
-  getTeamById,
-  updateMyTeam,
-} from '../controllers/teamController';
 import { devAuth } from '../auth/devAuth';
 import { authorize } from '../middleware/authorize';
+import {
+  addCoachToTeam,
+  addPlayerToTeam,
+  addTrophyToTeam,
+  createTeam,
+  deleteTeam,
+  deleteTrophy,
+  getAllTeams,
+  getTeamById,
+  updateTeam,
+  updateTrophy,
+  deleteMyTeam,
+  getMyTeams,
+  updateMyTeam,
+} from '../controllers/teamController';
 
 const router = express.Router();
 
@@ -21,5 +29,16 @@ router.delete(
   authorize('delete-my-team'),
   deleteMyTeam
 );
+router.post('/', createTeam);
+router.put('/:id', updateTeam);
+router.delete('/:id', deleteTeam);
+
+router.post('/:teamId/coaches', addCoachToTeam);
+router.post('/:teamId/players', addPlayerToTeam);
+
+// trophies
+router.post('/:teamId/trophies', addTrophyToTeam);
+router.put('/:teamId/trophies/:trophyId', updateTrophy);
+router.delete('/:teamId/trophies/:trophyId', deleteTrophy);
 
 export default router;
