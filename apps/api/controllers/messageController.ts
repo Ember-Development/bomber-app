@@ -36,3 +36,13 @@ export const retryMessage = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Retry failed' });
   }
 };
+
+export const getAllMessages = async (_req: Request, res: Response) => {
+  try {
+    const messages = await messageService.getAllMessages();
+    res.json(messages);
+  } catch (err) {
+    console.error('Error fetching messages:', err);
+    res.status(500).json({ error: 'Failed to fetch messages' });
+  }
+};
