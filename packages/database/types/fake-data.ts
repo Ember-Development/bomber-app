@@ -78,6 +78,7 @@ export function fakeCoachComplete() {
   return {
     id: faker.string.uuid(),
     userID: faker.string.uuid(),
+    addressID: undefined,
   };
 }
 export function fakeRegCoach() {
