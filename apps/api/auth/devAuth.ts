@@ -9,6 +9,7 @@ export interface AuthenticatedRequest extends Request {
     id: string;
     roles: Role[];
     actions: Action[];
+    primaryRole: Role;
   };
 }
 
@@ -43,6 +44,7 @@ export async function devAuth(
       id: user.id,
       roles,
       actions,
+      primaryRole: roles[0],
     };
 
     next();

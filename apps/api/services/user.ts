@@ -219,6 +219,17 @@ export const userService = {
   },
 
   updateUser: async (userId: string, data: any) => {
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        player: true,
+        coach: true,
+        parent: true,
+      },
+    });
+
+    if (!existingUser) throw new Error('User not found');
+
     return await prisma.user.update({
       where: { id: userId },
       data: {
@@ -226,31 +237,94 @@ export const userService = {
         lname: data.lname,
         email: data.email,
         phone: data.phone,
-        player: {
-          update: {
-            pos1: data.pos1,
-            pos2: data.pos2,
-            jerseyNum: data.jerseyNum,
-            gradYear: data.gradYear,
-            college: data.college,
-            jerseySize: data.jerseySize,
-            pantSize: data.pantSize,
-            stirrupSize: data.stirrupSize,
-            shortSize: data.shortSize,
-            practiceShortSize: data.practiceShortSize,
-            address: {
-              update: {
-                address1: data.address1,
-                address2: data.address2,
-                city: data.city,
-                state: data.state,
-                zip: data.zip,
+        ...(existingUser.player && {
+          player: {
+            update: {
+              pos1: data.pos1,
+              pos2: data.pos2,
+              jerseyNum: data.jerseyNum,
+              gradYear: data.gradYear,
+              college: data.college,
+              jerseySize: data.jerseySize,
+              pantSize: data.pantSize,
+              stirrupSize: data.stirrupSize,
+              shortSize: data.shortSize,
+              practiceShortSize: data.practiceShortSize,
+              address: {
+                upsert: {
+                  create: {
+                    address1: data.address1,
+                    address2: data.address2,
+                    city: data.city,
+                    state: data.state,
+                    zip: data.zip,
+                  },
+                  update: {
+                    address1: data.address1,
+                    address2: data.address2,
+                    city: data.city,
+                    state: data.state,
+                    zip: data.zip,
+                  },
+                },
               },
             },
           },
-        },
+        }),
+        ...(existingUser.coach && {
+          coach: {
+            update: {
+              address: {
+                upsert: {
+                  create: {
+                    address1: data.address1,
+                    address2: data.address2,
+                    city: data.city,
+                    state: data.state,
+                    zip: data.zip,
+                  },
+                  update: {
+                    address1: data.address1,
+                    address2: data.address2,
+                    city: data.city,
+                    state: data.state,
+                    zip: data.zip,
+                  },
+                },
+              },
+            },
+          },
+        }),
+        ...(existingUser.parent && {
+          parent: {
+            update: {
+              address: {
+                upsert: {
+                  create: {
+                    address1: data.address1,
+                    address2: data.address2,
+                    city: data.city,
+                    state: data.state,
+                    zip: data.zip,
+                  },
+                  update: {
+                    address1: data.address1,
+                    address2: data.address2,
+                    city: data.city,
+                    state: data.state,
+                    zip: data.zip,
+                  },
+                },
+              },
+            },
+          },
+        }),
       },
-      include: { player: { include: { address: true } } },
+      include: {
+        player: { include: { address: true } },
+        coach: { include: { address: true } },
+        parent: { include: { address: true } },
+      },
     });
   },
 };

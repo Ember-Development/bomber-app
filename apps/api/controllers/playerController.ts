@@ -4,6 +4,8 @@ import {
   playerService,
   UpdatePlayerInput,
 } from '../services/player';
+import { AuthenticatedRequest } from '../auth/devAuth';
+import { Role } from '../auth/permissions';
 
 export const getPlayerById = async (req: Request, res: Response) => {
   try {
@@ -43,10 +45,19 @@ export const createPlayer = async (req: Request, res: Response) => {
   }
 };
 
-export const updatePlayer = async (req: Request, res: Response) => {
+export const updatePlayer = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   try {
     const payload = req.body as UpdatePlayerInput;
-    const player = await playerService.updatePlayer(req.params.id, payload);
+    const player = await playerService.updatePlayer(
+      req.params.id,
+      payload,
+      req.user!.id,
+      req.user!.primaryRole
+    );
+
     return res.status(200).json(player);
   } catch (error: any) {
     console.error('updatePlayer error:', error);
@@ -56,12 +67,20 @@ export const updatePlayer = async (req: Request, res: Response) => {
   }
 };
 
-export const deletePlayer = async (req: Request, res: Response) => {
+export const deletePlayer = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   try {
-    await playerService.deletePlayer(req.params.id);
+    const actingUserId = req.user!.id;
+    const role = req.user!.primaryRole;
+
+    await playerService.deletePlayer(req.params.id, actingUserId, role);
     return res.status(204).send();
-  } catch (error) {
+  } catch (error: any) {
     console.error('deletePlayer error:', error);
-    return res.status(500).json({ message: 'Failed to delete player' });
+    return res
+      .status(403)
+      .json({ message: error.message || 'Failed to delete player' });
   }
 };

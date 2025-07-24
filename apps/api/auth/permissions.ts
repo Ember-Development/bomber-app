@@ -7,9 +7,19 @@ export type Role =
   | 'FAN';
 
 export type Action =
+  | 'view-my-info'
+  | 'edit-my-info'
   | 'delete-my-team'
   | 'edit-my-team'
   | 'view-my-team'
+  | 'edit-player'
+  | 'remove-player'
+  | 'edit-coach'
+  | 'remove-coach'
+  | 'create-team-event'
+  | 'update-team-event'
+  | 'remove-team-event'
+  | 'create-team-group'
   | 'edit-player-bathand'
   | 'cms:create-article'
   | 'cms:edit-article'
@@ -18,8 +28,10 @@ export type Action =
 
 export const roleToActions: Record<Role, Action[]> = {
   ADMIN: [
+    'view-my-info',
     'delete-my-team',
     'edit-my-team',
+    'edit-my-info',
     'view-my-team',
     'edit-player-bathand',
     'cms:create-article',
@@ -27,9 +39,21 @@ export const roleToActions: Record<Role, Action[]> = {
     'cms:delete-article',
     'cms:publish-article',
   ],
-  COACH: ['delete-my-team', 'edit-my-team', 'view-my-team'],
-  REGIONAL_COACH: ['view-my-team'],
-  PLAYER: ['view-my-team'],
-  PARENT: ['view-my-team'],
-  FAN: ['view-my-team'],
+  COACH: [
+    'view-my-info',
+    'edit-my-team',
+    'edit-my-info',
+    'view-my-team',
+    'edit-player',
+    'remove-player',
+    'edit-coach',
+    'create-team-event',
+    'update-team-event',
+    'remove-team-event',
+    'create-team-group',
+  ],
+  REGIONAL_COACH: ['view-my-info', 'edit-my-info', 'view-my-team'],
+  PLAYER: ['view-my-info', 'edit-my-info', 'view-my-team'],
+  PARENT: ['view-my-info', 'edit-my-info', 'view-my-team'],
+  FAN: ['view-my-info', 'edit-my-info', 'view-my-team'],
 };

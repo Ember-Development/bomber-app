@@ -3,7 +3,7 @@ import { prisma } from '@bomber-app/database';
 export const authService = {
   getMockLogin: async () => {
     return await prisma.user.findUnique({
-      where: { id: '5ca9200a-ead4-47a9-a10a-b448bf43e302' }, // change if need to work with seeded database may be different than mine
+      where: { id: '32c565dc-cc22-4ad9-b9f4-517d7b2c0610' }, // your mock UUID
       include: {
         player: {
           include: {
@@ -19,10 +19,38 @@ export const authService = {
             address: true,
           },
         },
-        admin: true,
-        coach: true,
+        coach: {
+          include: {
+            headTeams: true,
+            address: true,
+            teams: {
+              include: {
+                players: {
+                  include: { user: true },
+                },
+                coaches: {
+                  include: { user: true },
+                },
+                trophyCase: true,
+                headCoach: true,
+              },
+            },
+          },
+        },
         regCoach: true,
-        parent: true,
+        parent: {
+          include: {
+            children: {
+              include: {
+                team: true,
+                address: true,
+                user: true,
+              },
+            },
+            address: true,
+          },
+        },
+        admin: true,
         fan: true,
       },
     });
