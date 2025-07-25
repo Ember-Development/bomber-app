@@ -6,6 +6,7 @@ import {
 } from '../services/player';
 import { AuthenticatedRequest } from '../auth/devAuth';
 import { Role } from '../auth/permissions';
+import { prisma } from '@bomber-app/database';
 
 export const getPlayerById = async (req: Request, res: Response) => {
   try {
@@ -28,6 +29,20 @@ export const getAllPlayers = async (_req: Request, res: Response) => {
     return res.status(200).json(players);
   } catch (error) {
     console.error('getAllPlayers error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getAlumniPlayers = async (req: Request, res: Response) => {
+  try {
+    const { cursor, limit = 20 } = req.query;
+    const players = await playerService.getAlumniPlayers({
+      cursor: cursor as string,
+      limit: parseInt(limit as string),
+    });
+    return res.status(200).json(players);
+  } catch (error) {
+    console.error('getAlumniPlayers error:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
