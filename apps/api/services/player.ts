@@ -93,6 +93,10 @@ const canAccessPlayer = async (
 
 export const playerService = {
   getPlayerById: async (id: string) => {
+    if (!id || id.length !== 36) {
+      throw new Error(`Invalid player ID format: ${id}`);
+    }
+
     return prisma.player.findUnique({
       where: { id },
       include: {
@@ -111,6 +115,30 @@ export const playerService = {
         team: true,
         parents: true,
         address: true,
+      },
+    });
+  },
+
+  getAlumniPlayers: async ({
+    cursor,
+    limit = 20,
+  }: {
+    cursor?: string;
+    limit?: number;
+  }) => {
+    return prisma.player.findMany({
+      take: limit,
+      skip: cursor ? 1 : 0,
+      cursor: cursor ? { id: cursor } : undefined,
+      where: { ageGroup: 'ALUMNI' },
+      include: {
+        user: true,
+        team: true,
+        parents: true,
+        address: true,
+      },
+      orderBy: {
+        gradYear: 'desc',
       },
     });
   },
