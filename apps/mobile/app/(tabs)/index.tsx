@@ -5,6 +5,9 @@ import {
   View,
   TouchableOpacity,
   ActivityIndicator,
+  Image,
+  ViewStyle,
+  StyleSheet,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 
@@ -17,6 +20,7 @@ import CustomButton from '@/components/ui/atoms/Button';
 import EventCardContainer from '@/components/ui/molecules/EventCard/SpotlightEvent/SpotlightContainer';
 import ArticleCard from '@/components/ui/molecules/ArticleCard';
 import VideoCard from '@/components/ui/molecules/MediaCards';
+import becomeBomberImage from '@/assets/images/bomberimage1.jpg';
 
 import { useUserContext } from '@/context/useUserContext';
 import { useUserEvents, useUserChats } from '@/hooks/useUser';
@@ -27,6 +31,8 @@ import { GlobalColors } from '@/constants/Colors';
 import { QuickAction, quickActionMap } from '@/constants/quickActions';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function HomeScreen() {
   const { user, refetch } = useUserContext();
@@ -247,6 +253,45 @@ export default function HomeScreen() {
                 <VideoCard key={`video-${idx}`} {...item} />
               ))}
             </Animated.ScrollView>
+          </View>
+
+          <View style={styles.becomeBomber}>
+            <ThemedText type="title">Become a Bomber</ThemedText>
+            <TouchableOpacity
+              style={styles.bomberCard}
+              onPress={() => router.push('/signup')}
+              activeOpacity={0.85}
+            >
+              <Image
+                source={becomeBomberImage}
+                style={styles.bomberImage}
+                resizeMode="cover"
+              />
+
+              {/* Bottom overlay bar */}
+              <View style={styles.bomberOverlay}>
+                {/* Bottom fade up into content */}
+                <LinearGradient
+                  colors={['transparent', 'rgba(0,0,0,0)']}
+                  style={StyleSheet.absoluteFill}
+                />
+                {/* Blur effect across the footer */}
+                <BlurView
+                  intensity={60}
+                  tint="dark"
+                  style={StyleSheet.absoluteFill}
+                />
+                {/* Top edge softener */}
+                <LinearGradient
+                  colors={['rgba(0,0,0,0)', 'transparent']}
+                  style={styles.bomberFadeTop}
+                />
+                {/* Centered Text */}
+                <ThemedText type="title" style={styles.bomberText}>
+                  FIND OUT HOW
+                </ThemedText>
+              </View>
+            </TouchableOpacity>
           </View>
         </Animated.ScrollView>
       </SafeAreaView>
