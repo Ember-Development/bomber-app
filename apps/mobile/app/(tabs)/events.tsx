@@ -15,11 +15,13 @@ import {
   Calendar,
   EventRenderer,
   formatStartEnd,
-  HourRenderer,
   ICalendarEventBase,
 } from 'react-native-big-calendar';
 import { Dimensions } from 'react-native';
 import { Text } from '@react-navigation/elements';
+import { Colors, EventColors } from '@/constants/Colors';
+import { EventType } from '@bomber-app/database';
+import { useColorScheme } from '@/hooks/useColorScheme';
 
 // TODO: temp event and reference type in the code for now
 const eventNotes = (
@@ -33,65 +35,6 @@ const eventNotes = (
   </View>
 );
 
-export interface MyCustomEventType extends ICalendarEventBase {
-  color?: string;
-}
-const events: Array<MyCustomEventType> = [
-  {
-    title: 'Watch Boxing',
-    start: dayjs().set('hour', 0).set('minute', 0).set('second', 0).toDate(),
-    end: dayjs().set('hour', 1).set('minute', 30).toDate(),
-    color: '#ffffff',
-  },
-  {
-    title: 'Meeting',
-    start: dayjs().set('hour', 10).set('minute', 0).toDate(),
-    end: dayjs().set('hour', 10).set('minute', 30).toDate(),
-  },
-  {
-    title: 'Coffee break',
-    start: dayjs().set('hour', 14).set('minute', 30).toDate(),
-    end: dayjs().set('hour', 15).set('minute', 30).toDate(),
-  },
-  {
-    title: 'with color prop',
-    start: dayjs().set('hour', 16).set('minute', 0).toDate(),
-    end: dayjs().set('hour', 18).set('minute', 30).toDate(),
-    color: 'purple',
-  },
-  {
-    title: 'Repair my car',
-    start: dayjs().add(1, 'day').set('hour', 7).set('minute', 45).toDate(),
-    end: dayjs().add(1, 'day').set('hour', 13).set('minute', 30).toDate(),
-  },
-  {
-    title: 'Meet Realtor',
-    start: dayjs().add(1, 'day').set('hour', 8).set('minute', 25).toDate(),
-    end: dayjs().add(1, 'day').set('hour', 9).set('minute', 55).toDate(),
-  },
-  {
-    title: 'Laundry',
-    start: dayjs().add(1, 'day').set('hour', 8).set('minute', 25).toDate(),
-    end: dayjs().add(1, 'day').set('hour', 11).set('minute', 0).toDate(),
-  },
-  {
-    title: "Doctor's appointment",
-    start: dayjs().set('hour', 13).set('minute', 0).toDate(),
-    end: dayjs().set('hour', 14).set('minute', 15).toDate(),
-    children: eventNotes,
-  },
-  {
-    title: 'Plan a holiday',
-    start: dayjs().set('hour', 13).set('minute', 0).add(1, 'month').toDate(),
-    end: dayjs().set('hour', 14).set('minute', 15).add(1, 'month').toDate(),
-  },
-
-  {
-    title: 'Go on holiday',
-    start: dayjs().set('hour', 13).set('minute', 0).add(3, 'month').toDate(),
-    end: dayjs().set('hour', 14).set('minute', 15).add(3, 'month').toDate(),
-  },
-];
 // export interface ICalendarEventBase {
 //     start: Date;
 //     end: Date;
@@ -109,47 +52,138 @@ const events: Array<MyCustomEventType> = [
 //     overlapCount?: number;
 // }
 
-export const customEventRenderer: EventRenderer<MyCustomEventType> = (
-  event,
-  touchableOpacityProps
-) => {
-  return (
-    <TouchableOpacity
-      {...touchableOpacityProps}
-      style={[
-        ...(touchableOpacityProps.style as RecursiveArray<ViewStyle>),
-        {
-          borderWidth: 1,
-          borderColor: 'lightgrey',
-          backgroundColor: event.color ? event.color : '#02edda',
-          borderStyle: 'solid',
-          borderRadius: 6,
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
-      ]}
-    >
-      {dayjs(event.end).diff(event.start, 'minute') < 32 ? (
-        <Text style={[{ color: 'black' }]}>
-          {event.title},
-          <Text style={[{ color: 'black' }]}>
-            {dayjs(event.start).format('HH:mm')}
-          </Text>
-        </Text>
-      ) : (
-        <>
-          <Text style={[{ color: 'black' }]}>{event.title}</Text>
-          <Text style={[{ color: 'black' }]}>
-            {formatStartEnd(event.start, event.end, 'HH:mm')}
-          </Text>
-          {event.children && event.children}
-        </>
-      )}
-    </TouchableOpacity>
-  );
-};
+export interface MyCustomEventType extends ICalendarEventBase {
+  color: string;
+  fill: boolean;
+}
+
+const events: Array<MyCustomEventType> = [
+  {
+    title: 'Watch Boxing',
+    start: dayjs().set('hour', 0).set('minute', 0).set('second', 0).toDate(),
+    end: dayjs().set('hour', 1).set('minute', 30).toDate(),
+    color: EventColors[EventType.GLOBAL],
+    fill: true,
+  },
+  {
+    title: 'Meeting',
+    start: dayjs().set('hour', 10).set('minute', 0).toDate(),
+    end: dayjs().set('hour', 10).set('minute', 30).toDate(),
+    color: EventColors[EventType.TOURNAMENT],
+    fill: true,
+  },
+  {
+    title: 'Coffee break',
+    start: dayjs().set('hour', 14).set('minute', 30).toDate(),
+    end: dayjs().set('hour', 15).set('minute', 30).toDate(),
+    color: EventColors[EventType.PRACTICE],
+    fill: false,
+  },
+  {
+    title: 'with color prop',
+    start: dayjs().set('hour', 16).set('minute', 0).toDate(),
+    end: dayjs().set('hour', 18).set('minute', 30).toDate(),
+    color: EventColors[EventType.PRACTICE],
+    fill: false,
+  },
+  {
+    title: 'Repair my car',
+    start: dayjs().add(1, 'day').set('hour', 7).set('minute', 45).toDate(),
+    end: dayjs().add(1, 'day').set('hour', 13).set('minute', 30).toDate(),
+    color: EventColors[EventType.PRACTICE],
+    fill: true,
+  },
+  {
+    title: 'Meet Realtor',
+    start: dayjs().add(1, 'day').set('hour', 8).set('minute', 25).toDate(),
+    end: dayjs().add(1, 'day').set('hour', 9).set('minute', 55).toDate(),
+    color: EventColors[EventType.PRACTICE],
+    fill: true,
+  },
+  {
+    title: 'Laundry',
+    start: dayjs().add(1, 'day').set('hour', 8).set('minute', 25).toDate(),
+    end: dayjs().add(1, 'day').set('hour', 11).set('minute', 0).toDate(),
+    color: EventColors[EventType.TOURNAMENT],
+    fill: true,
+  },
+  {
+    title: "Doctor's appointment",
+    start: dayjs().set('hour', 13).set('minute', 0).toDate(),
+    end: dayjs().set('hour', 14).set('minute', 15).toDate(),
+    color: EventColors[EventType.TOURNAMENT],
+    children: eventNotes,
+    fill: true,
+  },
+  {
+    title: 'Plan a holiday',
+    start: dayjs().set('hour', 13).set('minute', 0).add(1, 'month').toDate(),
+    end: dayjs().set('hour', 14).set('minute', 15).add(1, 'month').toDate(),
+    color: EventColors[EventType.TOURNAMENT],
+    fill: true,
+  },
+
+  {
+    title: 'Go on holiday',
+    start: dayjs().set('hour', 13).set('minute', 0).add(3, 'month').toDate(),
+    end: dayjs().set('hour', 14).set('minute', 15).add(3, 'month').toDate(),
+    color: EventColors[EventType.TOURNAMENT],
+    fill: false,
+  },
+];
+
+const MAX_READABLE_EVENT_MINUTES = 32;
 
 export default function EventsScreen() {
+  const colorScheme = useColorScheme();
+  // needs to be inside the component since it uses hooks to define the colors
+  const useCustomEventRenderer: EventRenderer<MyCustomEventType> = (
+    event,
+    touchableOpacityProps
+  ) => {
+    return (
+      <TouchableOpacity
+        {...touchableOpacityProps}
+        key={touchableOpacityProps.key}
+        style={[
+          ...(touchableOpacityProps.style as RecursiveArray<ViewStyle>),
+          {
+            borderWidth: 1,
+            borderColor: event.color,
+            backgroundColor: event.fill
+              ? event.color
+              : `${Colors[colorScheme.theme].background}40`,
+            borderStyle: 'solid',
+            borderRadius: 6,
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
+        ]}
+      >
+        {/* Render a shortened version of contents if a small event, otherwise give it all to me baby  */}
+        {dayjs(event.end).diff(event.start, 'minute') <
+        MAX_READABLE_EVENT_MINUTES ? (
+          <Text style={[{ color: Colors[colorScheme.theme].text }]}>
+            {event.title},
+            <Text style={[{ color: Colors[colorScheme.theme].text }]}>
+              {dayjs(event.start).format('HH:mm A')}
+            </Text>
+          </Text>
+        ) : (
+          <>
+            <Text style={[{ color: Colors[colorScheme.theme].text }]}>
+              {event.title}
+            </Text>
+            <Text style={[{ color: Colors[colorScheme.theme].text }]}>
+              {/* TODO: there's a tricky little feature here which is when we cross Noon or Midnight we would probably prefer to show AMPM on both but I'm fine with this for now */}
+              {`${dayjs(event.start).format('HH:mm')} - ${dayjs(event.end).format('HH:mm A')}`}
+            </Text>
+            {event.children && event.children}
+          </>
+        )}
+      </TouchableOpacity>
+    );
+  };
   // TODO: figure out why the calc for the height isn't quite right
   const insets = useSafeAreaInsets();
   const styles = createGroupStyles('light');
@@ -193,7 +227,7 @@ export default function EventsScreen() {
             scrollOffsetMinutes={offsetMinutes}
             ampm={true}
             mode={'3days'}
-            renderEvent={customEventRenderer}
+            renderEvent={useCustomEventRenderer}
           />
         </View>
       </SafeAreaView>

@@ -1,4 +1,4 @@
-import { State, AttendanceStatus, EventType, UserRole, Regions, PantsSize, AgeGroup, Position, JerseySize, StirrupSize, ShortsSize } from 'C:\Users\gunna\Desktop\Bomber\bomber-app\packages\database\generated\client';
+import { State, AttendanceStatus, EventType, UserRole, Regions, PantsSize, AgeGroup, Position, JerseySize, StirrupSize, ShortsSize } from '/Users/braedon/ember/bomber-app/packages/database/generated/client';
 import { faker } from '@faker-js/faker';
 import Decimal from 'decimal.js';
 
