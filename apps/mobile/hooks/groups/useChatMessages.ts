@@ -6,6 +6,7 @@ import { retryMessage, useChatMessages } from '@/api/groups/chat';
 import { useLocalMessages } from '@/hooks/useLocalMessages';
 import socket from '@/hooks/socket';
 import { MessageFE } from '@bomber-app/database';
+import { useNormalizedUser } from '@/utils/user';
 
 export function useChatMessagesWithOptimism(chatId: string) {
   const scrollViewRef = useRef<ScrollView>(null);
@@ -23,7 +24,8 @@ export function useChatMessagesWithOptimism(chatId: string) {
   const local = useLocalMessages(serverMessages);
 
   const [messageText, setMessageText] = useState('');
-  const currentUserId = '379cf0ba-a1fd-4df0-b2a3-5fc0649f137b'; // make dynamic later
+  const { user } = useNormalizedUser();
+  const currentUserId = user?.id;
 
   useEffect(() => {
     if (!chatId) return;
@@ -52,7 +54,7 @@ export function useChatMessagesWithOptimism(chatId: string) {
 
   // Send a new message
   const handleSendMessage = () => {
-    if (!messageText.trim() || !chatId) return;
+    if (!messageText.trim() || !chatId || !user?.id) return;
 
     const tempId = `${Date.now()}-temp`;
 
@@ -61,16 +63,17 @@ export function useChatMessagesWithOptimism(chatId: string) {
       id: tempId,
       text: messageText,
       chatID: chatId,
-      userID: currentUserId,
+      userID: user?.id || '',
       createdAt: new Date(),
       sender: {
-        id: currentUserId,
-        email: '',
-        phone: null,
+        id: user?.id || '',
+        email: user?.email || '',
+        phone: user?.phone || null,
         pass: '',
-        fname: 'Temp',
-        lname: 'User',
-        primaryRole: 'ADMIN',
+        fname: user?.fname || '',
+        lname: user?.lname || '',
+        primaryRole: user?.primaryRole || 'PLAYER',
+        isDeleted: false,
       },
       chat: {
         id: chatId,
@@ -108,6 +111,7 @@ export function useChatMessagesWithOptimism(chatId: string) {
   // Retry failed message
   const handleRetrySendMessage = (msg: MessageFE) => {
     if (!chatId) return;
+    if (!currentUserId) return;
 
     const payload = {
       messageId: msg.id,

@@ -18,9 +18,12 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { usePaginatedChats } from '@/hooks/groups/useChats';
 import { useCreateGroup } from '@/hooks/groups/useCreateGroup';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
-import { BlurView } from 'expo-blur';
+import { useUserPermissions } from '@/hooks/useUserPermission';
 
 export default function GroupsScreen() {
+  const { can } = useUserPermissions();
+  const canCreateGroup = can('create-team-group');
+
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     usePaginatedChats();
   const chats = useMemo(() => {
@@ -65,11 +68,13 @@ export default function GroupsScreen() {
           <View style={styles.headerContainer}>
             <ThemedText style={styles.headerText}>Groups</ThemedText>
             <View style={styles.iconContainer}>
-              <CustomButton
-                variant="icon"
-                iconName="add"
-                onPress={() => setModalStep('name')}
-              />
+              {canCreateGroup && (
+                <CustomButton
+                  variant="icon"
+                  iconName="add"
+                  onPress={() => setModalStep('name')}
+                />
+              )}
               {/* IMPLEMENT LATER */}
               {/* <CustomButton
               variant="icon"

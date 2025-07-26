@@ -77,6 +77,7 @@ export const userService = {
                 id: true,
                 name: true,
                 ageGroup: true,
+                region: true, // ✅ Needed for regional coach filtering
               },
             },
           },
@@ -88,10 +89,31 @@ export const userService = {
               select: {
                 id: true,
                 name: true,
+                region: true, // ✅ Needed for regional coach filtering
               },
             },
           },
         },
+
+        parent: {
+          select: {
+            children: {
+              select: {
+                team: {
+                  select: {
+                    id: true,
+                    name: true,
+                    region: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+
+        admin: true,
+        regCoach: true,
+        fan: true,
       },
     });
   },
