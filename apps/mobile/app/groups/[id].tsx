@@ -33,6 +33,7 @@ import {
 import { ChatUser, MessageFE, UserRole } from '@bomber-app/database';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { GlobalColors } from '@/constants/Colors';
+import { useNormalizedUser } from '@/utils/user';
 
 export default function GroupChatScreen() {
   const { id } = useLocalSearchParams();
@@ -47,6 +48,8 @@ export default function GroupChatScreen() {
     useUsersInGroup(chatId);
   const { data: chatDetails, isLoading: chatLoading } = useChatDetails(chatId);
   const { mutate: addUsersToGroup } = useAddUsersToGroup();
+
+  const { user } = useNormalizedUser();
 
   const {
     scrollViewRef,
@@ -195,15 +198,18 @@ export default function GroupChatScreen() {
                   >
                     Start Sending Messages Now
                   </ThemedText>
-                  <CustomButton
-                    title="Add People to Group"
-                    onPress={() => setAddUserModal(true)}
-                  />
+                  {['ADMIN', 'REGIONAL_COACH', 'COACH'].includes(
+                    user?.primaryRole || ''
+                  ) && (
+                    <CustomButton
+                      title="Add People to Group"
+                      onPress={() => setAddUserModal(true)}
+                    />
+                  )}
                 </View>
               ) : (
                 allMessages.map((msg: MessageFE, index: number) => {
-                  const isUser =
-                    msg.sender.id === '379cf0ba-a1fd-4df0-b2a3-5fc0649f137b';
+                  const isUser = msg.sender.id === user?.id;
                   const initials = getInitials(
                     msg.sender.fname,
                     msg.sender.lname
@@ -419,30 +425,34 @@ export default function GroupChatScreen() {
                     })}
                   </ScrollView>
 
-                  <View
-                    style={{
-                      paddingHorizontal: 20,
-                      paddingTop: -30,
-                      paddingBottom: 0, // extra space below buttons
-                    }}
-                  >
-                    <CustomButton
-                      title="Add Person to Group"
-                      onPress={() => {
-                        if (chatDetails) {
-                          setShowUsers(false);
-                          InteractionManager.runAfterInteractions(() => {
-                            setAddUserModal(true);
-                          });
-                        }
+                  {['ADMIN', 'REGIONAL_COACH', 'COACH'].includes(
+                    user?.primaryRole || ''
+                  ) && (
+                    <View
+                      style={{
+                        paddingHorizontal: 20,
+                        paddingTop: -30,
+                        paddingBottom: 0,
                       }}
-                    />
-                    <CustomButton
-                      title="End Group"
-                      variant="danger"
-                      onPress={() => alert('Canceled!')}
-                    />
-                  </View>
+                    >
+                      <CustomButton
+                        title="Add Person to Group"
+                        onPress={() => {
+                          if (chatDetails) {
+                            setShowUsers(false);
+                            InteractionManager.runAfterInteractions(() => {
+                              setAddUserModal(true);
+                            });
+                          }
+                        }}
+                      />
+                      <CustomButton
+                        title="End Group"
+                        variant="danger"
+                        onPress={() => alert('Canceled!')}
+                      />
+                    </View>
+                  )}
                 </View>
               </View>
             </BottomSheetModal>

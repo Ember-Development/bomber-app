@@ -20,7 +20,7 @@ export const fetchGroups = async ({
   const { data } = await api.get('/api/groups', {
     params: {
       take,
-      cursor: cursor?.id,
+      cursor: cursor ? JSON.stringify(cursor) : undefined,
     },
   });
 

@@ -14,6 +14,9 @@ interface Props {
   onToggle: (userId: string) => void;
 }
 
+const capitalize = (str: string) =>
+  str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+
 const UserListItem: React.FC<Props> = ({ user, isSelected, onToggle }) => {
   const scale = useSharedValue(1);
 
@@ -28,13 +31,20 @@ const UserListItem: React.FC<Props> = ({ user, isSelected, onToggle }) => {
   return (
     <Animated.View style={[styles.userRow, animatedStyle]}>
       <TouchableOpacity
-        style={{ flex: 1 }}
+        style={styles.userInfo}
         onPress={() => onToggle(user.id)}
         activeOpacity={0.8}
       >
-        <Text style={styles.userName}>
-          {user.fname} {user.lname}
-        </Text>
+        <View style={styles.nameRoleContainer}>
+          <Text style={styles.userName}>
+            {user.fname} {user.lname}
+          </Text>
+          <View style={styles.rolePill}>
+            <Text style={styles.roleText}>
+              {capitalize(user.primaryRole.replace('_', ' '))}
+            </Text>
+          </View>
+        </View>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -66,10 +76,30 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderColor: '#ccc',
   },
+  userInfo: {
+    flex: 1,
+  },
+  nameRoleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   userName: {
     fontSize: 16,
-    flex: 1,
     color: GlobalColors.white,
+  },
+  rolePill: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  roleText: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: '600',
   },
   statusButton: {
     paddingVertical: 6,
