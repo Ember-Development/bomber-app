@@ -5,7 +5,7 @@ import { useKeyboardVisibility } from '@/hooks/useKeyboardVisibility';
 import { retryMessage, useChatMessages } from '@/api/groups/chat';
 import { useLocalMessages } from '@/hooks/useLocalMessages';
 import socket from '@/hooks/socket';
-import { MessageFE } from '@bomber-app/database';
+import { LocalMessage, MessageFE } from '@bomber-app/database';
 import { useNormalizedUser } from '@/utils/user';
 
 export function useChatMessagesWithOptimism(chatId: string) {
@@ -59,7 +59,7 @@ export function useChatMessagesWithOptimism(chatId: string) {
     const tempId = `${Date.now()}-temp`;
 
     // TODO: replace with real user data
-    const localMessage: MessageFE = {
+    const localMessage: LocalMessage = {
       id: tempId,
       text: messageText,
       chatID: chatId,
@@ -69,9 +69,9 @@ export function useChatMessagesWithOptimism(chatId: string) {
         id: user?.id || '',
         email: user?.email || '',
         phone: user?.phone || null,
-        pass: '',
         fname: user?.fname || '',
         lname: user?.lname || '',
+        pass: '',
         primaryRole: user?.primaryRole || 'PLAYER',
         isDeleted: false,
       },

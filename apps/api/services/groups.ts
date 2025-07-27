@@ -30,7 +30,12 @@ export const groupService = {
     actingUserId: string,
     role: Role
   ) => {
-    const validatedIds = await validateGroupAccess(actingUserId, role, userIds);
+    const validatedIds = Array.from(
+      new Set([
+        ...(await validateGroupAccess(actingUserId, role, userIds)),
+        actingUserId,
+      ])
+    );
     return prisma.chat.create({
       data: {
         title,

@@ -1,7 +1,9 @@
 import {
   AttendanceStatus,
   EventDynamic,
+  MessageFE,
   TournamentDynamic,
+  UserRole,
 } from '@bomber-app/database';
 
 // Frontend type created with backend Types
@@ -22,6 +24,7 @@ export type UserEvent = {
 export type CreateGroupPayload = {
   title: string;
   userIds: string[];
+  creatorId: string;
 };
 
 //Role
