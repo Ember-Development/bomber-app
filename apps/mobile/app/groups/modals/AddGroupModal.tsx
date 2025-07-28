@@ -76,58 +76,68 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   const users: PublicUserFE[] = useMemo(() => {
     if (!user || !user.primaryRole) return [];
 
-    // --- 1. Admin sees all users ---
-    if (user.primaryRole === 'ADMIN') return AllUsers;
+    // 1. ADMIN sees everyone
+    if (user.primaryRole === 'ADMIN') {
+      return AllUsers;
+    }
 
-    // --- 2. Regional Coach: anyone on teams in their region ---
+    // 2. REGIONAL_COACH sees everyone in their region
+    //    —and if they also have a coach profile, anyone on their coached teams.
     if (user.primaryRole === 'REGIONAL_COACH') {
       const region = user.regCoach?.region;
+      const coachTeamIds = user.coach?.teams.map((t: TeamFE) => t.id) ?? [];
 
       return AllUsers.filter((u) => {
+        // region membership
         const playerRegion = u.player?.team?.region;
         const coachRegion = u.coach?.teams?.[0]?.region;
         const parentRegion = u.parent?.children?.[0]?.team?.region;
-
-        return (
+        const inRegion =
           playerRegion === region ||
           coachRegion === region ||
-          parentRegion === region
-        );
+          parentRegion === region;
+
+        // coach-of-team membership
+        let inCoachTeam = false;
+        if (coachTeamIds.length > 0) {
+          const playerTeamId = u.player?.team?.id;
+          const coachTeamIdsOfUser = u.coach?.teams.map((t) => t.id) ?? [];
+          const parentChildTeamIds =
+            u.parent?.children.map((ch) => ch.team?.id) ?? [];
+
+          const parentOnCoachTeam = parentChildTeamIds.some((tid: any) =>
+            tid ? coachTeamIds.includes(tid) : false
+          );
+
+          inCoachTeam =
+            (playerTeamId ? coachTeamIds.includes(playerTeamId) : false) ||
+            coachTeamIdsOfUser.some((tid) => coachTeamIds.includes(tid)) ||
+            parentOnCoachTeam;
+        }
+
+        return inRegion || inCoachTeam;
       });
     }
 
-    // --- 3. Coach: players, coaches, and parents on their teams ---
+    // 3. COACH sees players, coaches, parents on their teams
     if (user.primaryRole === 'COACH') {
       const coachTeamIds = user.coach?.teams.map((t: TeamFE) => t.id) ?? [];
 
       return AllUsers.filter((u) => {
         const playerTeamId = u.player?.team?.id;
-        const coachTeamIdsOfUser = u.coach?.teams?.map((t) => t.id) ?? [];
+        const coachTeamIdsOfUser = u.coach?.teams.map((t) => t.id) ?? [];
         const parentChildTeamIds =
-          u.parent?.children?.map(
-            (child: { team: { id: any } }) => child.team?.id
-          ) ?? [];
+          u.parent?.children.map((ch: { team: { id: any } }) => ch.team?.id) ??
+          [];
 
-        // DEBUG LOGGING
-        if (u.primaryRole === 'PARENT') {
-          console.log('Checking Parent:', {
-            name: `${u.fname} ${u.lname}`,
-            teamIds: parentChildTeamIds,
-            coachTeamIds,
-            match: parentChildTeamIds.some(
-              (tid: any) => tid && coachTeamIds.includes(tid)
-            ),
-          });
-        }
-
-        const parentHasChildOnTeam = parentChildTeamIds.some(
-          (tid: any) => tid && coachTeamIds.includes(tid)
+        const parentOnCoachTeam = parentChildTeamIds.some((tid: any) =>
+          tid ? coachTeamIds.includes(tid) : false
         );
 
         return (
-          (playerTeamId && coachTeamIds.includes(playerTeamId)) ||
+          (playerTeamId ? coachTeamIds.includes(playerTeamId) : false) ||
           coachTeamIdsOfUser.some((tid) => coachTeamIds.includes(tid)) ||
-          parentHasChildOnTeam
+          parentOnCoachTeam
         );
       });
     }

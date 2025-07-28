@@ -1,44 +1,41 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { formatGearLabel, formatLabel } from '@/utils/formatDisplay';
+import React, { useMemo, useState } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Dimensions,
+} from 'react-native';
 import { useNormalizedUser } from '@/utils/user';
-import { PlayerFE, TeamFE } from '@bomber-app/database';
 import { GlobalColors } from '@/constants/Colors';
+import { PlayerFE, TeamFE } from '@bomber-app/database';
+import { usePlayerById, useDeletePlayer } from '@/hooks/teams/usePlayerById';
+import { useCoachById, useDeleteCoach } from '@/hooks/teams/useCoach';
+import { useTeams } from '@/hooks/teams/useTeams';
+import Separator from '@/components/ui/atoms/Seperator';
+import RenderCards, { CardItem } from './components/render-content';
+import ProfileModal from './components/profile-role-modal';
 import EditPlayerModal from './components/update-player';
 import RemovePlayerModal from './components/remove-player';
-import { usePlayerById } from '@/hooks/teams/usePlayerById';
-import { useDeletePlayer } from '@/hooks/teams/usePlayerById';
 import EditCoachModal from './components/edit-coach-modal';
 import RemoveCoachModal from './components/remove-coach-modal';
-import { useCoachById, useDeleteCoach } from '@/hooks/teams/useCoach';
 import EditTrophyModal from './components/edit-trophy-modal';
 import RemoveTrophyModal from './components/remove-trophy-modal';
-
-interface GlassCardProps {
-  label: string;
-  value: string;
-  isFullWidth?: boolean;
-}
-
-function GlassCard({ label, value, isFullWidth = false }: GlassCardProps) {
-  return (
-    <View style={[styles.card, isFullWidth && styles.fullWidthCard]}>
-      <Text style={styles.cardLabel}>{label}</Text>
-      <Text style={styles.cardValue}>{value}</Text>
-    </View>
-  );
-}
 
 export default function ProfileTabs() {
   const { user, primaryRole } = useNormalizedUser();
   const isCoach = primaryRole === 'COACH';
   const isParent = primaryRole === 'PARENT';
   const isFan = primaryRole === 'FAN';
+  const isRegionalCoach = primaryRole === 'REGIONAL_COACH';
+  const isAlsoCoach = !!user?.coach?.teams?.length;
+  const isAlsoParent = !!user?.parent?.children?.length;
 
-  const [activeTab, setActiveTab] = useState<'info' | 'contact' | 'gear'>(
-    isFan ? 'contact' : isCoach ? 'contact' : 'info'
-  );
-  const [view, setView] = useState('roster');
+  const [activeTab, setActiveTab] = useState<
+    'info' | 'contact' | 'gear' | 'region'
+  >(isFan ? 'contact' : isCoach ? 'contact' : 'info');
+  const [view, setView] = useState<'roster' | 'staff' | 'trophies'>('roster');
   const [editPlayerId, setEditPlayerId] = useState<string | null>(null);
   const [removePlayerId, setRemovePlayerId] = useState<string | null>(null);
   const [editCoachId, setEditCoachId] = useState<string | null>(null);
@@ -51,56 +48,38 @@ export default function ProfileTabs() {
     teamId: string;
     trophy: any;
   } | null>(null);
+  const [selectedRegionTeamId, setSelectedRegionTeamId] = useState<
+    string | null
+  >(null);
+  const [selectedProfile, setSelectedProfile] = useState<PlayerFE | null>(null);
 
   const { data: selectedPlayer } = usePlayerById(editPlayerId ?? '');
   const { data: selectedPlayerToRemove } = usePlayerById(removePlayerId ?? '');
   const { data: selectedCoach } = useCoachById(editCoachId ?? '');
   const { data: selectedCoachToRemove } = useCoachById(removeCoachId ?? '');
+  const { data: allTeams = [] } = useTeams();
+
+  const regionTeams = useMemo(() => {
+    if (!user?.regCoach?.region) return [];
+    return allTeams.filter((t) => t.region === user?.regCoach?.region);
+  }, [allTeams, user?.regCoach?.region]);
 
   const { mutate: deletePlayer } = useDeletePlayer({
     onSuccess: () => setRemovePlayerId(null),
   });
-
   const { mutate: deleteCoach } = useDeleteCoach({
-    onSuccess: () => {
-      console.log('[REMOVE COACH] success');
-      setRemoveCoachId(null);
-    },
+    onSuccess: () => setRemoveCoachId(null),
   });
 
-  const renderCards = (
-    data: {
-      label: string;
-      value: string | null | undefined;
-      fullWidth?: boolean;
-    }[]
-  ) => {
-    const processed = data.map((item) => ({
-      ...item,
-      value: formatLabel(item.value) || 'N/A',
-    }));
-
-    return (
-      <View style={styles.grid}>
-        {processed.map((item) => (
-          <GlassCard
-            key={item.label}
-            label={item.label}
-            value={item.value}
-            isFullWidth={item.fullWidth}
-          />
-        ))}
-      </View>
-    );
-  };
-
+  // Coach team view
   const renderTeamTabs = () => {
     const teams = user?.coach?.teams || [];
+    const tabs = ['roster', 'staff', 'trophies'] as const;
 
     return (
       <View style={{ marginTop: 24 }}>
         <View style={styles.teamTabRow}>
-          {['roster', 'staff', 'trophies'].map((key) => (
+          {tabs.map((key) => (
             <TouchableOpacity
               key={key}
               style={[styles.teamTab, view === key && styles.activeTab]}
@@ -115,279 +94,342 @@ export default function ProfileTabs() {
           ))}
         </View>
 
-        {teams.map((team: TeamFE) => (
-          <View key={team.id} style={styles.tableSection}>
-            <Text style={styles.teamTitle}>{team.name}</Text>
+        {teams.map((team: TeamFE) => {
+          const teamData: Record<typeof view, CardItem[]> = {
+            roster:
+              team.players?.map((p) => ({
+                label:
+                  `${p.user?.fname ?? ''} ${p.user?.lname ?? ''}`.trim() ||
+                  `Player ${p.id}`,
+                value: `#${p.jerseyNum}`,
+                fullWidth: true,
+                player: p,
+                onEdit: () => setEditPlayerId(p.id),
+                onRemove: () => setRemovePlayerId(p.id),
+              })) || [],
+            staff:
+              team.coaches?.map((c) => ({
+                label:
+                  `${c.user?.fname ?? ''} ${c.user?.lname ?? ''}`.trim() ||
+                  `Coach ${c.id}`,
+                value: 'Coach',
+                fullWidth: true,
+                onEdit: () => setEditCoachId(c.id),
+                onRemove: () => setRemoveCoachId(c.id),
+              })) || [],
+            trophies:
+              team.trophyCase?.map((t) => ({
+                label: t.title || `Trophy ${t.id}`,
+                value: '🏆',
+                fullWidth: true,
+                onEdit: () => setEditTrophy({ teamId: team.id, trophy: t }),
+                onRemove: () => setRemoveTrophy({ teamId: team.id, trophy: t }),
+              })) || [],
+          };
 
-            {view === 'roster' && team.players?.length ? (
-              team.players.map((p) => (
-                <View key={p.id} style={styles.rowLarge}>
-                  <View style={styles.rowContent}>
-                    <Text style={styles.cellLarge}>
-                      {p.user?.fname} {p.user?.lname}
-                    </Text>
-                    <Text style={styles.cellLarge}>#{p.jerseyNum}</Text>
-                  </View>
-                  <View style={styles.actionsRow}>
-                    <TouchableOpacity onPress={() => setEditPlayerId(p.id)}>
-                      <Text style={styles.action}>Edit</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setRemovePlayerId(p.id)}>
-                      <Text style={styles.actionDelete}>Remove</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ))
-            ) : view === 'staff' && team.coaches?.length ? (
-              team.coaches.map((c) => (
-                <View key={c.id} style={styles.rowLarge}>
-                  <View style={styles.rowContent}>
-                    <Text style={styles.cellLarge}>
-                      {c.user?.fname} {c.user?.lname}
-                    </Text>
-                  </View>
-                  <View style={styles.actionsRow}>
-                    <TouchableOpacity
-                      onPress={() => {
-                        console.log('Editing coach ID:', c.id);
-                        setEditCoachId(c.id);
-                      }}
-                    >
-                      <Text style={styles.action}>Edit</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setRemoveCoachId(c.id)}>
-                      <Text style={styles.actionDelete}>Remove</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ))
-            ) : view === 'trophies' && team.trophyCase?.length ? (
-              team.trophyCase.map((t) => (
-                <View key={t.id} style={styles.rowLarge}>
-                  <View style={styles.rowContent}>
-                    <Text style={styles.cellLarge}>{t.title}</Text>
-                  </View>
-                  <View style={styles.actionsRow}>
-                    <TouchableOpacity
-                      onPress={() =>
-                        setEditTrophy({ teamId: team.id, trophy: t })
-                      }
-                    >
-                      <Text style={styles.action}>Edit</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() =>
-                        setRemoveTrophy({ teamId: team.id, trophy: t })
-                      }
-                    >
-                      <Text style={styles.actionDelete}>Remove</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.empty}>No data available</Text>
-            )}
-          </View>
-        ))}
+          return (
+            <View key={team.id} style={styles.tableSection}>
+              <Text style={styles.teamTitle}>Coach for {team.name}</Text>
+              <RenderCards
+                data={teamData[view]}
+                onSelectPlayer={(p) => setSelectedProfile(p)}
+              />
+            </View>
+          );
+        })}
       </View>
     );
   };
 
+  // Regional coach view
+  const renderRegionTeams = () => {
+    if (selectedRegionTeamId) {
+      const team = regionTeams.find((t) => t.id === selectedRegionTeamId);
+      if (!team) return null;
+      const tabs = ['roster', 'staff', 'trophies'] as const;
+      const teamData: Record<typeof view, CardItem[]> = {
+        roster:
+          team.players?.map((p) => ({
+            label:
+              `${p.user?.fname ?? ''} ${p.user?.lname ?? ''}`.trim() ||
+              `Player ${p.id}`,
+            value: `#${p.jerseyNum}`,
+            fullWidth: true,
+            player: p,
+            onEdit: () => setEditPlayerId(p.id),
+            onRemove: () => setRemovePlayerId(p.id),
+          })) || [],
+        staff:
+          team.coaches?.map((c) => ({
+            label:
+              `${c.user?.fname ?? ''} ${c.user?.lname ?? ''}`.trim() ||
+              `Coach ${c.id}`,
+            value: 'Coach',
+            fullWidth: true,
+            onEdit: () => setEditCoachId(c.id),
+            onRemove: () => setRemoveCoachId(c.id),
+          })) || [],
+        trophies:
+          team.trophyCase?.map((t) => ({
+            label: t.title || `Trophy ${t.id}`,
+            value: '🏆',
+            fullWidth: true,
+            onEdit: () => setEditTrophy({ teamId: team.id, trophy: t }),
+            onRemove: () => setRemoveTrophy({ teamId: team.id, trophy: t }),
+          })) || [],
+      };
+
+      return (
+        <View style={{ marginTop: 16 }}>
+          <TouchableOpacity onPress={() => setSelectedRegionTeamId(null)}>
+            <Text style={styles.backLink}>← Back to Region Teams</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.sectionTitle}>{team.name}</Text>
+          <View style={styles.teamTabRow}>
+            {tabs.map((key) => (
+              <TouchableOpacity
+                key={key}
+                style={[styles.teamTab, view === key && styles.activeTab]}
+                onPress={() => setView(key)}
+              >
+                <Text
+                  style={[styles.tabText, view === key && styles.tabTextActive]}
+                >
+                  {key.charAt(0).toUpperCase() + key.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <RenderCards
+            data={teamData[view]}
+            onSelectPlayer={(p) => setSelectedProfile(p)}
+          />
+        </View>
+      );
+    }
+
+    const data: CardItem[] = regionTeams.map((t) => ({
+      label: t.name,
+      value: `${t.ageGroup} • ${t.region}`,
+      fullWidth: true,
+      onRemove: undefined,
+      onEdit: undefined,
+    }));
+
+    return (
+      <View style={{ marginTop: 24 }}>
+        <Text style={styles.sectionTitle}>Region Teams</Text>
+        <RenderCards
+          data={data}
+          onPress={(label) => {
+            const team = regionTeams.find((t) => t.name === label);
+            if (team) setSelectedRegionTeamId(team.id);
+          }}
+        />
+      </View>
+    );
+  };
+
+  // Main content renderer
   const renderContent = () => {
-    if (isCoach) {
-      switch (activeTab) {
-        case 'contact':
-          return renderCards([
-            { label: 'Email', value: user?.email, fullWidth: true },
-            { label: 'Phone', value: user?.phone, fullWidth: true },
+    if (isRegionalCoach) {
+      if (activeTab === 'contact') {
+        return (
+          <RenderCards
+            data={[
+              { label: 'Email', value: user?.email ?? 'N/A', fullWidth: true },
+              { label: 'Phone', value: user?.phone ?? 'N/A', fullWidth: true },
+            ]}
+          />
+        );
+      }
+      if (activeTab === 'info') {
+        return (
+          <>
+            {isAlsoCoach && renderTeamTabs()}
+            <Separator />
+            {isAlsoParent && (
+              <View style={{ marginTop: 20 }}>
+                <Text style={styles.sectionTitle}>My Athletes</Text>
+                <RenderCards
+                  data={
+                    user?.parent?.children?.map((c) => ({
+                      label:
+                        `${c.user?.fname ?? ''} ${c.user?.lname ?? ''}`.trim() ||
+                        `Player ${c.id}`,
+                      value: `#${c.jerseyNum}`,
+                      fullWidth: true,
+                      player: c,
+                      onEdit: () => setEditPlayerId(c.id),
+                      onRemove: () => setRemovePlayerId(c.id),
+                    })) || []
+                  }
+                  onSelectPlayer={(p) => setSelectedProfile(p)}
+                />
+              </View>
+            )}
+          </>
+        );
+      }
+      if (activeTab === 'region') return renderRegionTeams();
+    }
+
+    if (isCoach && activeTab === 'contact') {
+      return (
+        <RenderCards
+          data={[
+            { label: 'Email', value: user?.email ?? 'N/A', fullWidth: true },
+            { label: 'Phone', value: user?.phone ?? 'N/A', fullWidth: true },
             {
               label: 'Street Address',
               value: user?.coach?.address
                 ? `${user.coach.address.address1} ${user.coach.address.address2 ?? ''}`.trim()
-                : undefined,
+                : 'N/A',
               fullWidth: true,
             },
-            {
-              label: 'State',
-              value: user?.coach?.address?.state,
-              fullWidth: true,
-            },
-            { label: 'City', value: user?.coach?.address?.city },
-            { label: 'Zipcode', value: user?.coach?.address?.zip },
-          ]);
-        case 'info':
-          return (
-            <>
-              {renderCards([
-                ...(user?.coach?.headTeams?.length
-                  ? [
-                      {
-                        label: 'Head Coach Of',
-                        value: user.coach.headTeams
-                          .filter((t: TeamFE) => t.headCoach)
-                          .map((t: TeamFE) => t.name)
-                          .join(', '),
-                        fullWidth: true,
-                      },
-                    ]
-                  : []),
-                {
-                  label: 'Coaching On',
-                  value:
-                    user?.coach?.teams?.map((t: TeamFE) => t.name).join(', ') ||
-                    'N/A',
-                  fullWidth: true,
-                },
-              ])}
-              {renderTeamTabs()}
-            </>
-          );
-      }
-    } else if (isParent) {
-      switch (activeTab) {
-        case 'contact':
-          return renderCards([
-            { label: 'Email', value: user?.email, fullWidth: true },
-            { label: 'Phone', value: user?.phone, fullWidth: true },
+            { label: 'City', value: user?.coach?.address?.city ?? 'N/A' },
+            { label: 'State', value: user?.coach?.address?.state ?? 'N/A' },
+            { label: 'Zipcode', value: user?.coach?.address?.zip ?? 'N/A' },
+          ]}
+        />
+      );
+    }
+    if (isCoach && activeTab === 'info') {
+      return renderTeamTabs();
+    }
+
+    if (isParent && activeTab === 'contact') {
+      return (
+        <RenderCards
+          data={[
+            { label: 'Email', value: user?.email ?? 'N/A', fullWidth: true },
+            { label: 'Phone', value: user?.phone ?? 'N/A', fullWidth: true },
             {
               label: 'Street Address',
               value: user?.parent?.address
                 ? `${user.parent.address.address1} ${user.parent.address.address2 ?? ''}`.trim()
-                : undefined,
+                : 'N/A',
               fullWidth: true,
             },
-            {
-              label: 'State',
-              value: user?.parent?.address?.state,
-              fullWidth: true,
-            },
-            { label: 'City', value: user?.parent?.address?.city },
-            { label: 'Zipcode', value: user?.parent?.address?.zip },
-          ]);
-        case 'info':
-          return (
-            <View style={{ marginTop: 20 }}>
-              {renderCards([
-                {
-                  label: 'Teams',
-                  value:
-                    [
-                      ...new Set(
-                        user?.parent?.children
-                          ?.map((child: PlayerFE) => child.team?.name)
-                          .filter(Boolean)
-                      ),
-                    ].join(', ') || 'N/A',
-                  fullWidth: true,
-                },
-              ])}
+            { label: 'City', value: user?.parent?.address?.city ?? 'N/A' },
+            { label: 'State', value: user?.parent?.address?.state ?? 'N/A' },
+            { label: 'Zipcode', value: user?.parent?.address?.zip ?? 'N/A' },
+          ]}
+        />
+      );
+    }
+    if (isParent && activeTab === 'info') {
+      return (
+        <View style={{ marginTop: 20 }}>
+          <RenderCards
+            data={[
+              {
+                label: 'Teams',
+                value:
+                  [
+                    ...new Set(
+                      user?.parent?.children
+                        ?.map((ch) => ch.team?.name)
+                        .filter(Boolean) || []
+                    ),
+                  ].join(', ') || 'N/A',
+                fullWidth: true,
+              },
+            ]}
+          />
+          <Text style={styles.sectionTitle}>My Athletes</Text>
+          <RenderCards
+            data={
+              user?.parent?.children?.map((c) => ({
+                label:
+                  `${c.user?.fname ?? ''} ${c.user?.lname ?? ''}`.trim() ||
+                  `Player ${c.id}`,
+                value: `#${c.jerseyNum}`,
+                fullWidth: true,
+                player: c,
+                onEdit: () => setEditPlayerId(c.id),
+                onRemove: () => setRemovePlayerId(c.id),
+              })) || []
+            }
+            onSelectPlayer={(p) => setSelectedProfile(p)}
+          />
+        </View>
+      );
+    }
 
-              <Text style={styles.sectionTitle}>My Athletes</Text>
-
-              {/* Player Rows */}
-              {user?.parent?.children?.length ? (
-                user.parent.children.map((child: PlayerFE) => (
-                  <View key={child.id} style={styles.rowLarge}>
-                    <View style={styles.rowContent}>
-                      <View>
-                        <Text style={styles.cellLarge}>
-                          {child.user?.fname} {child.user?.lname}
-                        </Text>
-                        <Text style={styles.teamLabel}>
-                          {child.team
-                            ? `${child.team.name} • ${child.team.ageGroup} • ${child.team.region}`
-                            : 'No team assigned'}
-                        </Text>
-                      </View>
-                      <Text style={styles.cellLarge}>#{child.jerseyNum}</Text>
-                    </View>
-                    <View style={styles.actionsRow}>
-                      <TouchableOpacity
-                        onPress={() => setEditPlayerId(child.id)}
-                      >
-                        <Text style={styles.action}>Edit</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => setRemovePlayerId(child.id)}
-                      >
-                        <Text style={styles.actionDelete}>Remove</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                ))
-              ) : (
-                <Text style={styles.empty}>
-                  No players linked to this account.
-                </Text>
-              )}
-            </View>
-          );
+    if (!isCoach && !isParent && !isRegionalCoach && !isFan) {
+      // Player view
+      if (activeTab === 'info') {
+        return (
+          <RenderCards
+            data={[
+              {
+                label: 'Team',
+                value: user?.player?.team?.name ?? 'N/A',
+                fullWidth: true,
+              },
+              { label: 'Grad Year', value: user?.player?.gradYear ?? 'N/A' },
+              { label: 'Age Group', value: user?.player?.ageGroup ?? 'N/A' },
+              { label: 'Pos 1', value: user?.player?.pos1 ?? 'N/A' },
+              { label: 'Pos 2', value: user?.player?.pos2 ?? 'N/A' },
+              {
+                label: 'College Commitment',
+                value: user?.player?.college ?? 'Uncommitted',
+                fullWidth: true,
+              },
+            ]}
+          />
+        );
       }
-    } else {
-      switch (activeTab) {
-        case 'info':
-          return renderCards([
-            { label: 'Team', value: user?.player?.team?.name, fullWidth: true },
-            { label: 'Grad Year', value: user?.player?.gradYear },
-            { label: 'Age Group', value: user?.player?.ageGroup },
-            { label: 'Pos 1', value: user?.player?.pos1 },
-            { label: 'Pos 2', value: user?.player?.pos2 },
-            {
-              label: 'College Commitment',
-              value: user?.player?.college,
-              fullWidth: true,
-            },
-          ]);
-        case 'contact':
-          return renderCards([
-            { label: 'Email', value: user?.email, fullWidth: true },
-            { label: 'Phone', value: user?.phone },
-            { label: 'Date of Birth', value: user?.player?.dob },
-            {
-              label: 'Street Address',
-              value: user?.player?.address
-                ? `${user.player.address.address1} ${user.player.address.address2 ?? ''}`.trim()
-                : undefined,
-              fullWidth: true,
-            },
-            {
-              label: 'State',
-              value: user?.player?.address?.state,
-              fullWidth: true,
-            },
-            { label: 'City', value: user?.player?.address?.city },
-            { label: 'Zipcode', value: user?.player?.address?.zip },
-          ]);
-        case 'gear':
-          const gearItems = [
-            {
-              label: 'Jersey Size',
-              value: formatGearLabel(user?.player?.jerseySize),
-            },
-            {
-              label: 'Pant Size',
-              value: formatGearLabel(user?.player?.pantSize),
-            },
-            {
-              label: 'Stirrup Size',
-              value: formatGearLabel(user?.player?.stirrupSize),
-            },
-            {
-              label: 'Short Size',
-              value: formatGearLabel(user?.player?.shortSize),
-            },
-            {
-              label: 'Practice Short Size',
-              value: formatGearLabel(user?.player?.practiceShortSize),
-            },
-          ];
-
-          if (gearItems.length % 2 !== 0)
-            gearItems[gearItems.length - 1].fullWidth = true;
-
-          return renderCards(gearItems);
+      if (activeTab === 'contact') {
+        return (
+          <RenderCards
+            data={[
+              { label: 'Email', value: user?.email ?? 'N/A', fullWidth: true },
+              { label: 'Phone', value: user?.phone ?? 'N/A' },
+              { label: 'Date of Birth', value: user?.player?.dob ?? 'N/A' },
+              {
+                label: 'Street Address',
+                value: user?.player?.address
+                  ? `${user.player.address.address1} ${user.player.address.address2 ?? ''}`.trim()
+                  : 'N/A',
+                fullWidth: true,
+              },
+              { label: 'City', value: user?.player?.address?.city ?? 'N/A' },
+              { label: 'State', value: user?.player?.address?.state ?? 'N/A' },
+              { label: 'Zipcode', value: user?.player?.address?.zip ?? 'N/A' },
+            ]}
+          />
+        );
       }
+      if (activeTab === 'gear') {
+        const gearItems = [
+          { label: 'Jersey Size', value: user?.player?.jerseySize ?? 'N/A' },
+          { label: 'Pant Size', value: user?.player?.pantSize ?? 'N/A' },
+          { label: 'Stirrup Size', value: user?.player?.stirrupSize ?? 'N/A' },
+          { label: 'Short Size', value: user?.player?.shortSize ?? 'N/A' },
+          {
+            label: 'Practice Short Size',
+            value: user?.player?.practiceShortSize ?? 'N/A',
+          },
+        ];
+        if (gearItems.length % 2 !== 0)
+          gearItems[gearItems.length - 1].fullWidth = true;
+        return <RenderCards data={gearItems} />;
+      }
+    }
+
+    if (isFan && activeTab === 'contact') {
+      return (
+        <RenderCards
+          data={[
+            { label: 'Email', value: user?.email ?? 'N/A', fullWidth: true },
+            { label: 'Phone', value: user?.phone ?? 'N/A', fullWidth: true },
+          ]}
+        />
+      );
     }
 
     return null;
@@ -399,7 +441,7 @@ export default function ProfileTabs() {
         {!isFan && (
           <View style={styles.floatingTabsContainer}>
             <TabButton
-              label={isCoach ? 'Team' : 'Info'}
+              label={isCoach || isRegionalCoach ? 'Team' : 'Info'}
               active={activeTab === 'info'}
               onPress={() => setActiveTab('info')}
             />
@@ -408,55 +450,65 @@ export default function ProfileTabs() {
               active={activeTab === 'contact'}
               onPress={() => setActiveTab('contact')}
             />
-            {!isCoach && !isParent && (
+            {!isCoach && !isParent && !isRegionalCoach && (
               <TabButton
                 label="Gear"
                 active={activeTab === 'gear'}
                 onPress={() => setActiveTab('gear')}
               />
             )}
+            {isRegionalCoach && (
+              <TabButton
+                label="Region"
+                active={activeTab === 'region'}
+                onPress={() => setActiveTab('region')}
+              />
+            )}
           </View>
         )}
-        {renderContent()}
+        <ScrollView>{renderContent()}</ScrollView>
       </View>
 
-      {/* Modals */}
+      {/* Profile Preview Modal */}
+      {selectedProfile && (
+        <ProfileModal
+          isVisible
+          onClose={() => setSelectedProfile(null)}
+          player={selectedProfile}
+        />
+      )}
+
+      {/* Coach/Player/Trophy Modals */}
       {editPlayerId && selectedPlayer && (
         <EditPlayerModal
-          visible={!!editPlayerId}
+          visible
           player={selectedPlayer}
           onClose={() => setEditPlayerId(null)}
         />
       )}
       {removePlayerId && selectedPlayerToRemove && (
         <RemovePlayerModal
-          visible={!!removePlayerId}
+          visible
           playerName={`${selectedPlayerToRemove.user?.fname} ${selectedPlayerToRemove.user?.lname}`}
           onClose={() => setRemovePlayerId(null)}
           onConfirm={() => deletePlayer(removePlayerId!)}
         />
       )}
-
       {editCoachId && selectedCoach && (
         <EditCoachModal
-          visible={!!editCoachId}
+          visible
           coach={selectedCoach}
           onClose={() => setEditCoachId(null)}
         />
       )}
-
       {removeCoachId && selectedCoachToRemove && (
         <RemoveCoachModal
-          visible={!!removeCoachId}
+          visible
           coachName={`${selectedCoachToRemove.user?.fname} ${selectedCoachToRemove.user?.lname}`}
           onClose={() => setRemoveCoachId(null)}
-          onConfirm={() => {
-            console.log('[REMOVE COACH] triggering delete for:', removeCoachId);
-            if (removeCoachId) deleteCoach(removeCoachId);
-          }}
+          onConfirm={() => deleteCoach(removeCoachId!)}
         />
       )}
-
       {editTrophy && (
         <EditTrophyModal
           visible
@@ -517,59 +569,27 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 14,
-    color: '#ccc',
-    fontWeight: '600',
+    color: '#bbb',
+    fontWeight: '500',
   },
   tabTextActive: {
     color: '#fff',
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 16,
-    paddingTop: 16,
-  },
-  card: {
-    width: '47%',
-    minHeight: 100,
-    padding: 16,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  fullWidthCard: {
-    width: '100%',
-  },
-  cardLabel: {
-    color: '#ccc',
-    fontSize: 13,
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  cardValue: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-    textAlign: 'center',
+    fontWeight: 700,
   },
   teamTabRow: {
     flexDirection: 'row',
-    marginTop: 16,
-    marginBottom: 8,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 24,
-    overflow: 'hidden',
+    marginTop: 24,
+    marginBottom: 16,
   },
   teamTab: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 6,
     alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
   activeTab: {
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderBottomColor: GlobalColors.bomber,
   },
   tableSection: {
     marginBottom: 24,
@@ -581,23 +601,17 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     marginTop: 10,
   },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    paddingVertical: 6,
+  backLink: {
+    fontSize: 13,
+    color: '#ccc',
+    marginBottom: 8,
   },
-  cell: {
-    color: '#eee',
-    fontSize: 14,
-    flex: 1,
-  },
-  empty: {
-    color: '#999',
-    fontSize: 14,
-    fontStyle: 'italic',
-    paddingVertical: 4,
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 12,
+    paddingHorizontal: 4,
   },
   rowLarge: {
     flexDirection: 'column',
@@ -605,6 +619,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 14,
     marginBottom: 12,
+    marginTop: 14,
   },
   rowContent: {
     flexDirection: 'row',
@@ -633,12 +648,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
-    marginBottom: 12,
-    paddingHorizontal: 4,
+  empty: {
+    color: '#999',
+    fontSize: 14,
+    fontStyle: 'italic',
+    paddingVertical: 4,
   },
   teamLabel: {
     color: '#aaa',
