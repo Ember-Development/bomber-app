@@ -94,7 +94,7 @@ export default function GroupChatScreen() {
       {} as Record<UserRole, ChatUser[]>
     );
 
-  const roleOrder: UserRole[] = ['PLAYER', 'COACH', 'FAN', 'ADMIN'];
+  const roleOrder: UserRole[] = ['PLAYER', 'COACH', 'PARENT', 'ADMIN'];
 
   return (
     <>

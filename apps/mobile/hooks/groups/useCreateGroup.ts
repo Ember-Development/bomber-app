@@ -15,13 +15,13 @@ export const useCreateGroup = (userId?: string) => {
     mutationFn: createGroup,
     onSuccess: (newGroup: ChatFE) => {
       if (!userId) return;
-      queryClient.setQueryData(
-        ['user-chats', userId],
-        (old: ChatFE[] | undefined) => {
-          if (!old) return [newGroup];
-          return [newGroup, ...old];
-        }
-      );
+
+      queryClient.invalidateQueries({ queryKey: ['user-chats', userId] });
+
+      queryClient.setQueryData<ChatFE[]>(['user-chats', userId], (old = []) => [
+        newGroup,
+        ...old,
+      ]);
     },
     onError: (err: any) => {
       console.error('Failed to create group', err?.response?.data || err);

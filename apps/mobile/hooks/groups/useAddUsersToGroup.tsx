@@ -6,8 +6,14 @@ export const useAddUsersToGroup = () => {
 
   return useMutation({
     mutationFn: addUsersToGroup,
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['groups'] });
+
+      if (variables?.groupId) {
+        queryClient.invalidateQueries({
+          queryKey: ['users-in-group', variables.groupId],
+        });
+      }
     },
     onError: (err: any) => {
       console.error('Failed to add users to group', err?.response?.data || err);
