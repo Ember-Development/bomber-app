@@ -1,16 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   Image,
   Modal,
   StyleSheet,
+  Dimensions,
   TouchableOpacity,
   ScrollView,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { PlayerFE } from '@bomber-app/database';
+import { useNormalizedUser } from '@/utils/user';
+
+const { width } = Dimensions.get('window');
 
 interface ProfileModalProps {
   isVisible: boolean;
@@ -23,6 +29,13 @@ export default function ProfileModal({
   onClose,
   player,
 }: ProfileModalProps) {
+  const { primaryRole } = useNormalizedUser();
+  const canSeeContactAndGear = ['ADMIN', 'COACH', 'REGIONAL_COACH'].includes(
+    primaryRole
+  );
+
+  const [currentPage, setCurrentPage] = useState(0);
+
   if (!player) return null;
 
   const infoCards = [
@@ -32,6 +45,61 @@ export default function ProfileModal({
     { label: 'Grad Year', value: player.gradYear },
     { label: 'College Commitment', value: player.college ?? 'Uncommitted' },
   ];
+
+  const contactCards = [
+    { label: 'Email', value: player.user?.email ?? 'N/A', fullWidth: true },
+    { label: 'Phone', value: player.user?.phone ?? 'N/A' },
+    { label: 'Date of Birth', value: player.dob ?? 'N/A' },
+    {
+      label: 'Street Address',
+      value: player.address
+        ? `${player.address.address1} ${player.address.address2 ?? ''}`.trim()
+        : 'N/A',
+      fullWidth: true,
+    },
+    { label: 'City', value: player.address?.city ?? 'N/A' },
+    { label: 'State', value: player.address?.state ?? 'N/A' },
+    { label: 'Zipcode', value: player.address?.zip ?? 'N/A' },
+  ];
+
+  const gearCards = [
+    { label: 'Jersey Size', value: player.jerseySize },
+    { label: 'Pant Size', value: player.pantSize },
+    { label: 'Stirrup Size', value: player.stirrupSize },
+    { label: 'Short Size', value: player.shortSize },
+    { label: 'Practice Short Size', value: player.practiceShortSize },
+  ];
+
+  const renderCards = (
+    cards: { label: string; value: string; fullWidth?: boolean }[]
+  ) => (
+    <View style={styles.grid}>
+      {cards.map((card, i) => {
+        const isLast = i === cards.length - 1;
+        const isOdd = cards.length % 2 !== 0;
+        const fullWidth = card.fullWidth ?? (isOdd && isLast);
+        return (
+          <GlassCard
+            key={`${card.label}-${i}`}
+            label={card.label}
+            value={card.value}
+            isFullWidth={fullWidth}
+          />
+        );
+      })}
+    </View>
+  );
+
+  const slides = [
+    { key: 'info', cards: infoCards },
+    ...(canSeeContactAndGear ? [{ key: 'contact', cards: contactCards }] : []),
+    ...(canSeeContactAndGear ? [{ key: 'gear', cards: gearCards }] : []),
+  ];
+
+  const onScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const page = Math.round(e.nativeEvent.contentOffset.x / width);
+    setCurrentPage(page);
+  };
 
   return (
     <Modal visible={isVisible} animationType="fade" transparent>
@@ -63,24 +131,35 @@ export default function ProfileModal({
             {player.user?.fname} {player.user?.lname}
           </Text>
 
+          {/* Horizontal swiper with paging */}
           <ScrollView
-            contentContainerStyle={styles.grid}
-            showsVerticalScrollIndicator={false}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={onScrollEnd}
+            style={styles.swiper}
           >
-            {infoCards.map((card, i) => {
-              const isLast = i === infoCards.length - 1;
-              const isOdd = infoCards.length % 2 !== 0;
-              const isFullWidth = isOdd && isLast;
-              return (
-                <GlassCard
-                  key={`${card.label}-${i}`}
-                  label={card.label}
-                  value={card.value}
-                  isFullWidth={isFullWidth}
-                />
-              );
-            })}
+            {slides.map((slide) => (
+              <View key={slide.key} style={[styles.slideContainer, { width }]}>
+                <ScrollView
+                  nestedScrollEnabled
+                  contentContainerStyle={styles.slideContent}
+                >
+                  {renderCards(slide.cards)}
+                </ScrollView>
+              </View>
+            ))}
           </ScrollView>
+
+          {/* Page Indicator */}
+          <View style={styles.indicatorContainer}>
+            {slides.map((_, i) => (
+              <View
+                key={i}
+                style={[styles.dot, currentPage === i && styles.dotActive]}
+              />
+            ))}
+          </View>
         </View>
       </View>
     </Modal>
@@ -118,9 +197,9 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingTop: 140,
+    paddingTop: 100,
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 0,
   },
   closeBtn: {
     position: 'absolute',
@@ -153,14 +232,24 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '600',
     color: '#fff',
-    marginBottom: 24,
+    marginBottom: 16,
+  },
+  swiper: {
+    flex: 1,
+  },
+  slideContainer: {
+    flex: 1,
+    paddingTop: 8,
+  },
+  slideContent: {
+    paddingHorizontal: 24,
+    paddingBottom: 40,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: 16,
-    paddingBottom: 40,
   },
   card: {
     width: '47%',
@@ -186,5 +275,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
     textAlign: 'center',
+  },
+  indicatorContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: 34,
+    gap: 8,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#555',
+  },
+  dotActive: {
+    backgroundColor: '#fff',
   },
 });

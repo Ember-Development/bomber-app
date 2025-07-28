@@ -349,16 +349,18 @@ export default function GroupChatScreen() {
               onClose={() => setShowUsers(false)}
               title="Members"
             >
-              <View style={{ height: '95%' }}>
+              <View style={{ height: '95%', flexDirection: 'column' }}>
+                {/* Scrollable list of members */}
                 <View style={{ flex: 1 }}>
                   <ScrollView
+                    style={{ flex: 1 }}
                     contentContainerStyle={{
                       paddingHorizontal: 20,
                       paddingTop: 20,
                       paddingBottom: 20,
-                      marginBottom: 20,
                     }}
                     showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled" // ← added so taps on buttons still register
                   >
                     {roleOrder.map((role) => {
                       const usersForRole = groupedUsers[role];
@@ -374,7 +376,7 @@ export default function GroupChatScreen() {
                               color: GlobalColors.white,
                             }}
                           >
-                            {role.charAt(0) + role.slice(1).toLowerCase()}s
+                            {role.charAt(0) + role.slice(1).toLowerCase()}
                           </Text>
                           {usersForRole
                             .sort((a, b) => a.fname.localeCompare(b.fname))
@@ -424,36 +426,35 @@ export default function GroupChatScreen() {
                       );
                     })}
                   </ScrollView>
-
-                  {['ADMIN', 'REGIONAL_COACH', 'COACH'].includes(
-                    user?.primaryRole || ''
-                  ) && (
-                    <View
-                      style={{
-                        paddingHorizontal: 20,
-                        paddingTop: -30,
-                        paddingBottom: 0,
-                      }}
-                    >
-                      <CustomButton
-                        title="Add Person to Group"
-                        onPress={() => {
-                          if (chatDetails) {
-                            setShowUsers(false);
-                            InteractionManager.runAfterInteractions(() => {
-                              setAddUserModal(true);
-                            });
-                          }
-                        }}
-                      />
-                      <CustomButton
-                        title="End Group"
-                        variant="danger"
-                        onPress={() => alert('Canceled!')}
-                      />
-                    </View>
-                  )}
                 </View>
+
+                {/* Footer with Add/End buttons */}
+                {['ADMIN', 'REGIONAL_COACH', 'COACH'].includes(
+                  user?.primaryRole || ''
+                ) && (
+                  <View
+                    style={{
+                      padding: 16,
+                      borderTopWidth: 1,
+                      borderColor: '#333',
+                    }}
+                  >
+                    <CustomButton
+                      title="Add Person to Group"
+                      onPress={() => {
+                        setShowUsers(false);
+                        InteractionManager.runAfterInteractions(() => {
+                          setAddUserModal(true);
+                        });
+                      }}
+                    />
+                    <CustomButton
+                      title="End Group"
+                      variant="danger"
+                      onPress={() => alert('Canceled!')}
+                    />
+                  </View>
+                )}
               </View>
             </BottomSheetModal>
           </View>
