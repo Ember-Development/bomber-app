@@ -6,7 +6,43 @@ export const validateGroupAccess = async (
   role: Role,
   userIdsToAdd: string[]
 ): Promise<string[]> => {
-  if (role === 'ADMIN') return userIdsToAdd;
+  if (role === 'ADMIN') {
+    const users = await prisma.user.findMany({
+      where: {
+        id: { in: userIdsToAdd },
+        primaryRole: { not: 'FAN' },
+      },
+      include: {
+        player: {
+          include: {
+            team: true,
+            parents: true,
+          },
+        },
+      },
+    });
+
+    const finalIds = new Set<string>();
+
+    for (const user of users) {
+      finalIds.add(user.id);
+
+      const player = user.player;
+      if (player && player.team) {
+        const age = player.ageGroup;
+        const is12UorUnder = age === 'U8' || age === 'U10' || age === 'U12';
+        const is14UNotTrusted = age === 'U14' && !player.isTrusted;
+
+        if (is12UorUnder || is14UNotTrusted) {
+          for (const parent of player.parents) {
+            finalIds.add(parent.userID);
+          }
+        }
+      }
+    }
+
+    return Array.from(finalIds);
+  }
 
   const users = await prisma.user.findMany({
     where: { id: { in: userIdsToAdd } },
@@ -18,6 +54,9 @@ export const validateGroupAccess = async (
           },
           parents: true,
         },
+      },
+      coach: {
+        include: { teams: true },
       },
     },
   });
@@ -39,33 +78,79 @@ export const validateGroupAccess = async (
 
   for (const user of users) {
     const player = user.player;
-    if (!player || !player.team) continue;
+    const coach = user.coach;
 
-    const region = player.team.region;
-    const teamCoaches = player.team.coaches;
+    // ✅ 1. Handle players
+    if (player && player.team) {
+      const region = player.team.region;
 
-    if (
-      (role === 'REGIONAL_COACH' && actingRegCoach?.region !== region) ||
-      (role === 'COACH' &&
-        !actingCoach?.teams.some((t) => t.id === player.teamID))
-    ) {
-      throw new Error(
-        `User ${user.id} is not accessible to ${role.toLowerCase()}`
-      );
+      const isValid =
+        (role === 'REGIONAL_COACH' && actingRegCoach?.region === region) ||
+        (role === 'COACH' &&
+          actingCoach?.teams.some((t) => t.id === player.teamID));
+
+      if (!isValid) {
+        throw new Error(`Player ${user.id} is not accessible`);
+      }
+
+      finalUserIds.add(user.id);
+
+      const age = player.ageGroup;
+      const is12UorUnder = age === 'U8' || age === 'U10' || age === 'U12';
+      const is14UNotTrusted = age === 'U14' && !player.isTrusted;
+
+      if (is12UorUnder || is14UNotTrusted) {
+        for (const parent of player.parents) {
+          finalUserIds.add(parent.userID);
+        }
+      }
+
+      continue;
     }
 
-    finalUserIds.add(user.id);
+    // ✅ 2. Handle coaches
+    if (coach) {
+      const coachTeamIds = coach.teams.map((t) => t.id);
+      const allowed =
+        (role === 'REGIONAL_COACH' &&
+          actingRegCoach &&
+          coach.teams.some((t) => t.region === actingRegCoach.region)) ||
+        (role === 'COACH' &&
+          actingCoach &&
+          actingCoach.teams.some((t) => coachTeamIds.includes(t.id)));
 
-    const isUnder14U =
-      player.ageGroup === 'U8' ||
-      player.ageGroup === 'U10' ||
-      player.ageGroup === 'U12' ||
-      player.ageGroup === 'U14';
-
-    if (isUnder14U && !player.isTrusted) {
-      for (const parent of player.parents) {
-        finalUserIds.add(parent.userID);
+      if (!allowed) {
+        throw new Error(`Coach ${user.id} is not accessible`);
       }
+
+      finalUserIds.add(user.id);
+      continue;
+    }
+
+    // ✅ 3. Handle manually-added parents
+    if (user.primaryRole === 'PARENT') {
+      const parentPlayers = await prisma.player.findMany({
+        where: {
+          parents: { some: { userID: user.id } },
+          ...(role === 'COACH' && actingCoach
+            ? { teamID: { in: actingCoach.teams.map((t) => t.id) } }
+            : role === 'REGIONAL_COACH' && actingRegCoach
+              ? {
+                  team: {
+                    region: actingRegCoach.region,
+                  },
+                }
+              : {}),
+        },
+      });
+
+      if (parentPlayers.length === 0) {
+        throw new Error(
+          `Parent ${user.id} is not associated with accessible players`
+        );
+      }
+
+      finalUserIds.add(user.id);
     }
   }
 
