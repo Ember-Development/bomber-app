@@ -15,6 +15,7 @@ import bannerRoutes from './routes/bannerRoutes';
 import mediaRoutes from './routes/mediaRoutes';
 import articleRoutes from './routes/articleRoutes';
 import coachRoutes from './routes/coachRoutes';
+import commitRoutes from './routes/commitRoutes';
 
 const app = express();
 const server = http.createServer(app);
@@ -38,6 +39,7 @@ app.use('/api/banners', bannerRoutes);
 app.use('/api/medias', mediaRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/coaches', coachRoutes);
+app.use('/api/commits', commitRoutes);
 
 const io = initializeSocket(server);
 
