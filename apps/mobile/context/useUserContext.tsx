@@ -1,4 +1,10 @@
-import React, { createContext, ReactNode, useContext } from 'react';
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { useCurrentUser } from '@/hooks/user/useCurrentUser';
 import { UserFE } from '@bomber-app/database';
 
@@ -7,12 +13,18 @@ interface UserContextValue {
   isLoading: boolean;
   error: Error | null;
   refetch: () => void;
+  setUser: (user: UserFE | null) => void;
 }
 
 const UserContext = createContext<UserContextValue | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const { data, isLoading, error, refetch } = useCurrentUser();
+  const [userState, setUser] = useState<UserFE | null>(data ?? null);
+
+  useEffect(() => {
+    if (data) setUser(data);
+  }, [data]);
 
   return (
     <UserContext.Provider
@@ -21,6 +33,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         error: error ?? null,
         refetch,
+        setUser,
       }}
     >
       {children}
