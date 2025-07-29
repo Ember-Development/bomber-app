@@ -1,8 +1,20 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { authService } from '../services/auth';
+import { UserFE } from '@bomber-app/database';
+import { Action, Role } from '../auth/permissions';
+import { AuthenticatedRequest } from '../utils/express';
+
+type ExtendedRequest = {
+  user: {
+    id: string;
+    roles: Role[];
+    actions: Action[];
+    primaryRole: Role;
+  };
+} & Request;
 
 function validateSignup(body: any) {
-  const { email, password, fname, lname, role } = body;
+  const { email, password, fname, lname, role, phone } = body;
   if (!email || typeof email !== 'string' || !email.includes('@')) {
     throw { status: 400, message: 'Invalid or missing email' };
   }
@@ -15,11 +27,14 @@ function validateSignup(body: any) {
   if (!lname || typeof lname !== 'string') {
     throw { status: 400, message: 'Last name is required' };
   }
-  const roles = ['COACH', 'PLAYER', 'PARENT', 'FAN'];
+  const roles = ['ADMIN', 'COACH', 'REGIONAl_COACH', 'PLAYER', 'PARENT', 'FAN'];
   if (!role || !roles.includes(role)) {
     throw { status: 400, message: 'Invalid or missing role' };
   }
-  return { email, password, fname, lname, role };
+  if (!phone || typeof phone !== 'string') {
+    throw { status: 400, message: 'Phone number is required' };
+  }
+  return { email, password, fname, lname, role, phone };
 }
 
 function validateLogin(body: any) {
@@ -40,6 +55,43 @@ function validateRefresh(body: any) {
   }
   return { token };
 }
+
+export const getCurrentUser = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    console.log('[CONTROLLER] GET /api/auth/me hit');
+    console.log(
+      '[CONTROLLER] Authorization header:',
+      req.header('Authorization')
+    );
+
+    const user = req.user;
+    console.log('[CONTROLLER] req.user:', user);
+
+    if (!user || !user.id) {
+      console.log('[CONTROLLER] No user attached to request → 401');
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const fullProfile = await authService.getUserById(user.id);
+    if (!fullProfile) {
+      console.log(`[CONTROLLER] No user found in DB for id=${user.id} → 404`);
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log(
+      '[CONTROLLER] Returning full profile for user:',
+      fullProfile.id
+    );
+    return res.json(fullProfile);
+  } catch (err) {
+    console.error('[CONTROLLER] Error in getCurrentUser:', err);
+    next(err);
+  }
+};
 
 export const getMockLogins = async (
   req: Request,
@@ -64,8 +116,17 @@ export async function signupBase(
   next: NextFunction
 ) {
   try {
-    const input = validateSignup(req.body);
-    const user = await authService.signUpBase(input);
+    const { email, password, fname, lname, role, phone } = validateSignup(
+      req.body
+    );
+    const user = await authService.signUpBase({
+      email,
+      password,
+      fname,
+      lname,
+      role,
+      phone,
+    });
     return res.status(201).json(user);
   } catch (err) {
     next(err);

@@ -1,29 +1,37 @@
-import React, { createContext, useContext } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { createContext, ReactNode, useContext } from 'react';
 import { useCurrentUser } from '@/hooks/user/useCurrentUser';
 import { UserFE } from '@bomber-app/database';
 
-const UserContext = createContext<{
-  user: UserFE | undefined;
+interface UserContextValue {
+  user: UserFE | null;
+  isLoading: boolean;
+  error: Error | null;
   refetch: () => void;
-}>({
-  user: undefined,
-  refetch: () => {},
-});
+}
 
-export const useUserContext = () => useContext(UserContext);
+const UserContext = createContext<UserContextValue | undefined>(undefined);
 
-export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const { data, refetch } = useQuery<UserFE | undefined>({
-    queryKey: ['currentUser'],
-    queryFn: useCurrentUser,
-  });
+export const UserProvider = ({ children }: { children: ReactNode }) => {
+  const { data, isLoading, error, refetch } = useCurrentUser();
 
   return (
-    <UserContext.Provider value={{ user: data, refetch }}>
+    <UserContext.Provider
+      value={{
+        user: data ?? null,
+        isLoading,
+        error: error ?? null,
+        refetch,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );
 };
+
+export function useUserContext() {
+  const ctx = useContext(UserContext);
+  if (!ctx) {
+    throw new Error('useUserContext must be used within UserProvider');
+  }
+  return ctx;
+}

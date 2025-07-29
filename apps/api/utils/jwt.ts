@@ -1,10 +1,26 @@
 import jwt, { Secret } from 'jsonwebtoken';
+import dotenv from 'dotenv';
 
-const ACCESS_SECRET: Secret = process.env.JWT_ACCESS_SECRET!;
-const REFRESH_SECRET: Secret = process.env.JWT_REFRESH_SECRET!;
+dotenv.config();
 
-const ACCESS_EXPIRES_IN = process.env.ACCESS_EXPIRES_IN || '15m';
-const REFRESH_EXPIRES_IN = process.env.REFRESH_EXPIRES_IN || '7d';
+const {
+  JWT_ACCESS_SECRET,
+  JWT_REFRESH_SECRET,
+  ACCESS_EXPIRES_IN: ACCESS_EXPIRES_IN_RAW,
+  REFRESH_EXPIRES_IN: REFRESH_EXPIRES_IN_RAW,
+} = process.env;
+
+if (!JWT_ACCESS_SECRET) {
+  throw new Error('Missing environment variable: JWT_ACCESS_SECRET');
+}
+if (!JWT_REFRESH_SECRET) {
+  throw new Error('Missing environment variable: JWT_REFRESH_SECRET');
+}
+
+const ACCESS_SECRET: Secret = JWT_ACCESS_SECRET;
+const REFRESH_SECRET: Secret = JWT_REFRESH_SECRET;
+const ACCESS_EXPIRES_IN = ACCESS_EXPIRES_IN_RAW || '15m';
+const REFRESH_EXPIRES_IN = REFRESH_EXPIRES_IN_RAW || '7d';
 
 export function signAccess(payload: object): string {
   return jwt.sign(payload, ACCESS_SECRET, {
