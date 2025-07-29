@@ -1,4 +1,4 @@
-// app/login.tsx
+// app/login/index.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -11,18 +11,50 @@ import {
   Keyboard,
   Platform,
   ScrollView,
+  SafeAreaView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import CustomInput from '@/components/ui/atoms/Inputs';
 import GlassCard from '@/components/ui/molecules/GlassCard';
-import { GlobalColors } from '@/constants/Colors';
 import CustomButton from '@/components/ui/atoms/Button';
+import { GlobalColors } from '@/constants/Colors';
+import { api } from '@/api/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleLogin = async () => {
+    setError(null);
+    setLoading(true);
+
+    try {
+      const { data } = await api.post('/api/auth/login', { email, password });
+
+      // 1) store tokens
+      await AsyncStorage.setItem('accessToken', data.access);
+      await AsyncStorage.setItem('refreshToken', data.refresh);
+
+      // 3) navigate to home
+      router.replace('/');
+    } catch (err: any) {
+      console.error('Login error', err);
+      setError(
+        err.response?.data?.message || 'Invalid credentials. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <BackgroundWrapper>
@@ -64,12 +96,20 @@ export default function LoginScreen() {
                 onChangeText={setPassword}
                 fullWidth
               />
+
+              {error && <Text style={styles.errorText}>{error}</Text>}
+
               <CustomButton
                 variant="primary"
-                title="LOGIN"
-                onPress={() => router.replace('(tabs')}
+                title={loading ? 'Logging in…' : 'LOGIN'}
+                onPress={handleLogin}
+                disabled={loading}
               />
-              <TouchableOpacity onPress={() => router.push('/signup/role')}>
+
+              <TouchableOpacity
+                style={styles.footerLink}
+                onPress={() => router.push('/signup/role')}
+              >
                 <Text style={styles.switch}>
                   Don’t have an account?{' '}
                   <Text style={styles.switchHighlight}>Sign Up</Text>
@@ -106,23 +146,6 @@ const styles = StyleSheet.create({
     color: GlobalColors.gray,
     marginBottom: 32,
   },
-  button: {
-    backgroundColor: GlobalColors.bomber,
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: 'center',
-    marginTop: 24,
-    shadowColor: GlobalColors.bomber,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-  },
   footerLink: {
     marginTop: 16,
   },
@@ -133,5 +156,10 @@ const styles = StyleSheet.create({
   switchHighlight: {
     color: GlobalColors.bomber,
     fontWeight: '600',
+  },
+  errorText: {
+    color: GlobalColors.red,
+    textAlign: 'center',
+    marginVertical: 8,
   },
 });

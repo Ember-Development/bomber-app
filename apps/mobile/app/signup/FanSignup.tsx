@@ -19,21 +19,60 @@ import CustomInput from '@/components/ui/atoms/Inputs';
 import PhoneInput from '@/components/ui/atoms/PhoneInput';
 import CustomButton from '@/components/ui/atoms/Button';
 import { GlobalColors } from '@/constants/Colors';
+import { api } from '@/api/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function FanSignup() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSignup = () => {
-    // signup logic
-    router.replace('(tabs)');
+  const handleSignup = async () => {
+    if (password !== confirm) {
+      setError('Passwords do not match');
+      return;
+    }
+    setError(null);
+    setLoading(true);
+
+    try {
+      const { data } = await api.post('/api/auth/signup', {
+        email,
+        password,
+        fname: firstName,
+        lname: lastName,
+        phone,
+        role: 'FAN',
+      });
+
+      // 1) store tokens
+      await AsyncStorage.setItem('accessToken', data.access);
+      await AsyncStorage.setItem('refreshToken', data.refresh);
+
+      // 2) seed the currentUser cache so /me isn’t called until later
+      queryClient.setQueryData(['currentUser'], data.user);
+
+      // 3) navigate to home
+      router.replace('/');
+    } catch (err: any) {
+      console.error('Signup error', err);
+      setError(
+        err.response?.data?.message ||
+          'There was a problem signing up. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
-
   return (
     <BackgroundWrapper>
       <SafeAreaView style={{ flex: 1 }}>
@@ -57,8 +96,7 @@ export default function FanSignup() {
                   <Text style={styles.title}>Fan Signup</Text>
                 </View>
                 <Text style={styles.subTitle}>
-                  This section we will need your info as the parent of the
-                  bomber athlete
+                  Let’s create your Bomber Fan account!
                 </Text>
               </View>
 
@@ -109,7 +147,14 @@ export default function FanSignup() {
                 />
               </View>
 
-              <CustomButton title="Sign Up" onPress={handleSignup} fullWidth />
+              {error && <Text style={styles.error}>{error}</Text>}
+
+              <CustomButton
+                title={loading ? 'Signing up…' : 'Sign Up'}
+                onPress={handleSignup}
+                fullWidth
+                disabled={loading}
+              />
 
               <View style={styles.footer}>
                 <Text style={styles.terms}>
@@ -177,5 +222,10 @@ const styles = StyleSheet.create({
   link: {
     color: GlobalColors.bomber,
     textDecorationLine: 'underline',
+  },
+  error: {
+    color: GlobalColors.red,
+    textAlign: 'center',
+    marginBottom: 12,
   },
 });
