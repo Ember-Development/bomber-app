@@ -22,6 +22,7 @@ import { GlobalColors } from '@/constants/Colors';
 import { api } from '@/api/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
+import { useUserContext } from '@/context/useUserContext';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -33,6 +34,8 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { setUser } = useUserContext();
+
   const handleLogin = async () => {
     setError(null);
     setLoading(true);
@@ -43,6 +46,8 @@ export default function LoginScreen() {
       // 1) store tokens
       await AsyncStorage.setItem('accessToken', data.access);
       await AsyncStorage.setItem('refreshToken', data.refresh);
+
+      setUser(data.user);
 
       // 3) navigate to home
       router.replace('/');
