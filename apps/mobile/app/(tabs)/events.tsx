@@ -14,7 +14,6 @@ import {
 import {
   Calendar,
   EventRenderer,
-  formatStartEnd,
   ICalendarEventBase,
 } from 'react-native-big-calendar';
 import { Dimensions } from 'react-native';
@@ -22,6 +21,7 @@ import { Text } from '@react-navigation/elements';
 import { Colors, EventColors } from '@/constants/Colors';
 import { EventType } from '@bomber-app/database';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { lighten, toHex } from 'color2k';
 
 // TODO: temp event and reference type in the code for now
 const eventNotes = (
@@ -83,7 +83,7 @@ const events: Array<MyCustomEventType> = [
     title: 'with color prop',
     start: dayjs().set('hour', 16).set('minute', 0).toDate(),
     end: dayjs().set('hour', 18).set('minute', 30).toDate(),
-    color: EventColors[EventType.PRACTICE],
+    color: EventColors[EventType.TOURNAMENT],
     fill: false,
   },
   {
@@ -111,9 +111,9 @@ const events: Array<MyCustomEventType> = [
     title: "Doctor's appointment",
     start: dayjs().set('hour', 13).set('minute', 0).toDate(),
     end: dayjs().set('hour', 14).set('minute', 15).toDate(),
-    color: EventColors[EventType.TOURNAMENT],
+    color: EventColors[EventType.GLOBAL],
     children: eventNotes,
-    fill: true,
+    fill: false,
   },
   {
     title: 'Plan a holiday',
@@ -150,9 +150,7 @@ export default function EventsScreen() {
           {
             borderWidth: 1,
             borderColor: event.color,
-            backgroundColor: event.fill
-              ? event.color
-              : `${Colors[colorScheme.theme].background}40`,
+            backgroundColor: event.fill ? event.color : `${event.color}20`,
             borderStyle: 'solid',
             borderRadius: 6,
             alignItems: 'center',
