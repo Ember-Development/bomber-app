@@ -15,12 +15,14 @@ import {
   deleteMyTeam,
   getMyTeams,
   updateMyTeam,
+  getTeamByCode,
 } from '../controllers/teamController';
 
 const router = express.Router();
 
 router.get('/', getAllTeams);
 router.get('/:id', getTeamById);
+router.get('/code/:code', getTeamByCode);
 router.get('/my-team', devAuth, authorize('view-my-team'), getMyTeams);
 router.patch('/my-team/:id', devAuth, authorize('edit-my-team'), updateMyTeam);
 router.delete(

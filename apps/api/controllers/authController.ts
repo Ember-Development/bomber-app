@@ -14,7 +14,8 @@ type ExtendedRequest = {
 } & Request;
 
 function validateSignup(body: any) {
-  const { email, password, fname, lname, role, phone } = body;
+  const { email, password, fname, lname, role, phone, player } = body;
+
   if (!email || typeof email !== 'string' || !email.includes('@')) {
     throw { status: 400, message: 'Invalid or missing email' };
   }
@@ -27,14 +28,24 @@ function validateSignup(body: any) {
   if (!lname || typeof lname !== 'string') {
     throw { status: 400, message: 'Last name is required' };
   }
-  const roles = ['ADMIN', 'COACH', 'REGIONAl_COACH', 'PLAYER', 'PARENT', 'FAN'];
+  const roles = ['ADMIN', 'COACH', 'REGIONAL_COACH', 'PLAYER', 'PARENT', 'FAN'];
   if (!role || !roles.includes(role)) {
     throw { status: 400, message: 'Invalid or missing role' };
   }
   if (!phone || typeof phone !== 'string') {
     throw { status: 400, message: 'Phone number is required' };
   }
-  return { email, password, fname, lname, role, phone };
+
+  if (role === 'PLAYER') {
+    if (!player || !player.pos1 || !player.jerseyNum || !player.gradYear) {
+      throw {
+        status: 400,
+        message: 'Missing required player fields: pos1, jerseyNum, gradYear',
+      };
+    }
+  }
+
+  return { email, password, fname, lname, role, phone, player };
 }
 
 function validateLogin(body: any) {
@@ -136,9 +147,9 @@ export async function signupBase(
   next: NextFunction
 ) {
   try {
-    const { email, password, fname, lname, role, phone } = validateSignup(
-      req.body
-    );
+    const { email, password, fname, lname, role, phone, player } =
+      validateSignup(req.body);
+
     const user = await authService.signUpBase({
       email,
       password,
@@ -146,7 +157,9 @@ export async function signupBase(
       lname,
       role,
       phone,
+      player,
     });
+
     return res.status(201).json(user);
   } catch (err) {
     next(err);

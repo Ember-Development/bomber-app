@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  addPlayerToTeam,
   createPlayer,
   deletePlayer,
   getAllPlayers,
@@ -14,6 +15,7 @@ const router = express.Router();
 router.get('/', getAllPlayers);
 router.get('/:id', getPlayerById);
 router.post('/', createPlayer);
+router.post('/add-to-team', addPlayerToTeam);
 router.put('/:id', devAuth, authorize('edit-player'), updatePlayer);
 router.delete('/:id', devAuth, authorize('remove-player'), deletePlayer);
 

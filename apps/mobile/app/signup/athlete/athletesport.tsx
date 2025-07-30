@@ -1,5 +1,4 @@
-// app/signup/player-sport.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -19,16 +18,18 @@ import CustomButton from '@/components/ui/atoms/Button';
 import Checkbox from '@/components/ui/atoms/Checkbox';
 import { GlobalColors } from '@/constants/Colors';
 import { POSITIONS } from '@/utils/enumOptions';
+import { usePlayerSignup } from '@/context/PlayerSignupContext';
 
 export default function PlayerSportInfo() {
   const router = useRouter();
+  const { signupData, updateSignupData } = usePlayerSignup();
 
-  const [position1, setPosition1] = useState<string | null>(null);
-  const [position2, setPosition2] = useState<string | null>(null);
-  const [jersey, setJersey] = useState('');
-  const [gradYear, setGradYear] = useState('');
-  const [committed, setCommitted] = useState(false);
-  const [college, setCollege] = useState('');
+  const [position1, setPosition1] = useState(signupData.pos1 ?? '');
+  const [position2, setPosition2] = useState(signupData.pos2 ?? '');
+  const [jersey, setJersey] = useState(signupData.jerseyNum ?? '');
+  const [gradYear, setGradYear] = useState(signupData.gradYear ?? '');
+  const [committed, setCommitted] = useState(!!signupData.college);
+  const [college, setCollege] = useState(signupData.college ?? '');
 
   const allFilled =
     !!position1 &&
@@ -38,6 +39,13 @@ export default function PlayerSportInfo() {
     (!committed || !!college);
 
   const handleContinue = () => {
+    updateSignupData({
+      pos1: position1,
+      pos2: position2,
+      jerseyNum: jersey,
+      gradYear,
+      college: committed ? college : '',
+    });
     router.push('/signup/athlete/athletegear');
   };
 
@@ -53,7 +61,6 @@ export default function PlayerSportInfo() {
             contentContainerStyle={styles.container}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Header */}
             <View style={styles.header}>
               <TouchableOpacity onPress={() => router.back()}>
                 <Ionicons
@@ -65,7 +72,6 @@ export default function PlayerSportInfo() {
               <Text style={styles.title}>Athlete Sport Info</Text>
             </View>
 
-            {/* Subtitle */}
             <Text style={styles.line1}>
               We now need the athlete’s specific sport information
             </Text>
@@ -74,38 +80,37 @@ export default function PlayerSportInfo() {
               transparency of your athlete on the app.
             </Text>
 
-            {/* Team (readonly) */}
             <CustomInput
               label="Team"
               variant="default"
-              placeholder="Texas Bombers Gold 12U"
+              placeholder="Team Name"
               fullWidth
               editable={false}
+              value={signupData.teamName ?? ''}
             />
 
-            {/* Positions as dropdowns */}
             <View style={styles.row}>
               <CustomSelect
                 label="Position 1"
                 options={POSITIONS}
-                defaultValue={position1 ?? undefined}
-                onSelect={(v) => setPosition1(v)}
+                defaultValue={position1}
+                onSelect={setPosition1}
                 style={styles.half}
               />
               <CustomSelect
                 label="Position 2"
                 options={POSITIONS}
-                defaultValue={position2 ?? undefined}
-                onSelect={(v) => setPosition2(v)}
+                defaultValue={position2}
+                onSelect={setPosition2}
                 style={styles.half}
               />
             </View>
 
-            {/* Jersey & Graduation */}
             <CustomInput
               label="Jersey #"
               variant="default"
               fullWidth
+              keyboardType="number-pad"
               value={jersey}
               onChangeText={setJersey}
             />
@@ -118,14 +123,12 @@ export default function PlayerSportInfo() {
               onChangeText={setGradYear}
             />
 
-            {/* Committed checkbox */}
             <Checkbox
               label="Is this athlete committed to a college?"
               checked={committed}
               onChange={setCommitted}
             />
 
-            {/* College field */}
             {committed && (
               <CustomInput
                 label="College Committed"
@@ -136,7 +139,6 @@ export default function PlayerSportInfo() {
               />
             )}
 
-            {/* Continue */}
             <CustomButton
               title="Continue to Athlete Gear Info"
               onPress={handleContinue}
@@ -144,7 +146,6 @@ export default function PlayerSportInfo() {
               disabled={!allFilled}
             />
 
-            {/* Terms */}
             <View style={styles.footer}>
               <Text style={styles.terms}>
                 By signing up you accept the{' '}

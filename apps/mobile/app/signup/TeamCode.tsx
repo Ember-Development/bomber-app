@@ -1,4 +1,3 @@
-// app/signup/details.tsx
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -19,35 +18,9 @@ import CodeInput from '@/components/ui/organisms/TeamCode';
 import CustomButton from '@/components/ui/atoms/Button';
 import Checkbox from '@/components/ui/atoms/Checkbox';
 import { GlobalColors } from '@/constants/Colors';
-
-type Team = {
-  teamCode: string;
-  teamName: string;
-  ageDivision: '12U' | '14U' | '16U' | '18U';
-};
-
-const DUMMY_TEAMS: Record<string, Team> = {
-  '12431': {
-    teamCode: '12431',
-    teamName: 'Texas Bombers Gold',
-    ageDivision: '12U',
-  },
-  '12345': {
-    teamCode: '12345',
-    teamName: 'Lone Star Bombers',
-    ageDivision: '14U',
-  },
-  '83121': {
-    teamCode: '83121',
-    teamName: 'Austin Bombers',
-    ageDivision: '16U',
-  },
-  '67890': {
-    teamCode: '67890',
-    teamName: 'Austin Aces',
-    ageDivision: '18U',
-  },
-};
+import { useTeamByCode } from '@/hooks/teams/useTeams';
+import { Team } from '@bomber-app/database';
+import { usePlayerSignup } from '@/context/PlayerSignupContext';
 
 export default function TeamCode() {
   const router = useRouter();
@@ -66,26 +39,31 @@ export default function TeamCode() {
     hasPlayers ? null : true
   );
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
-  const [ageDivision, setAgeDivision] = useState<Team['ageDivision'] | null>(
-    null
-  );
+  const [ageDivision, setAgeDivision] = useState<Team['ageGroup'] | null>(null);
+  const { data: teamData, isFetching } = useTeamByCode(teamCode);
 
-  const selectedTeamName = selectedTeam
-    ? DUMMY_TEAMS[selectedTeam]?.teamName
-    : null;
+  const { setSignupData } = usePlayerSignup();
+  const selectedTeamName = selectedTeam;
 
   useEffect(() => {
-    if (teamCode.length === 5) {
-      Keyboard.dismiss();
-      setSelectedTeam(teamCode);
-
-      const team = DUMMY_TEAMS[teamCode];
-      setAgeDivision(team?.ageDivision ?? null);
+    if (teamData) {
+      setSelectedTeam(teamData.name);
+      setAgeDivision(teamData.ageGroup as Team['ageGroup']);
+      setSignupData({
+        teamName: teamData.name,
+        teamCode: teamData.teamCode ?? '',
+        ageDivision: teamData.ageGroup,
+      });
     } else {
       setSelectedTeam(null);
       setAgeDivision(null);
+      setSignupData({
+        teamName: '',
+        teamCode: '',
+        ageDivision: undefined,
+      });
     }
-  }, [teamCode]);
+  }, [teamData]);
 
   const codeFilled = teamCode.length === 5;
   const canContinue =
@@ -108,7 +86,7 @@ export default function TeamCode() {
       pathname = '/signup/parent/parentform';
     } else {
       // PLAYER: branch by ageDivision
-      if (ageDivision === '18U' || ageDivision === '16U') {
+      if (ageDivision === 'U18' || ageDivision === 'U16') {
         pathname = '/signup/athlete/athleteInfo';
       } else {
         pathname = '/signup/athlete/athleteRestrictions';

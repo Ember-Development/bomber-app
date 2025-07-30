@@ -25,6 +25,7 @@ const GLASS_COLORS = {
 interface DateOfBirthInputProps {
   onChangeText?: (date: string) => void;
   fullWidth?: boolean;
+  value?: string;
 }
 
 export default function DateOfBirthInput({

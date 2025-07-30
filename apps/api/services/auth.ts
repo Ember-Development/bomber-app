@@ -1,4 +1,4 @@
-import { prisma, UserRole } from '@bomber-app/database';
+import { PlayerFE, prisma, UserRole } from '@bomber-app/database';
 import { signAccess, signRefresh, verifyRefresh } from '../utils/jwt';
 import { hashPassword, verifyPassword } from '../utils/crypto';
 
@@ -110,6 +110,7 @@ export const authService = {
     lname,
     role,
     phone,
+    player,
   }: {
     email: string;
     password: string;
@@ -117,6 +118,7 @@ export const authService = {
     lname: string;
     role: string;
     phone: string;
+    player?: any;
   }) {
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) throw { status: 400, message: 'Email already in use' };
@@ -131,12 +133,20 @@ export const authService = {
       phone,
       primaryRole: role as UserRole,
     };
+
     switch (role) {
       case 'COACH':
         createData.coach = { create: {} };
         break;
       case 'PLAYER':
-        createData.player = { create: {} };
+        if (!player?.pos1 || !player?.jerseyNum || !player?.gradYear) {
+          throw {
+            status: 400,
+            message:
+              'Missing required player fields: pos1, jerseyNum, gradYear',
+          };
+        }
+        createData.player = { create: player };
         break;
       case 'PARENT':
         createData.parent = { create: {} };
@@ -145,21 +155,18 @@ export const authService = {
         createData.fan = { create: {} };
         break;
     }
+
     const user = await prisma.user.create({ data: createData });
+
     const access = signAccess({ sub: user.id, role: user.primaryRole });
     const refresh = signRefresh({ sub: user.id });
+
+    const fullProfile = await this.getUserById(user.id);
 
     return {
       access,
       refresh,
-      user: {
-        id: user.id,
-        email: user.email,
-        fname: user.fname,
-        lname: user.lname,
-        phone: user.phone,
-        role: user.primaryRole,
-      },
+      user: fullProfile,
     };
   },
 

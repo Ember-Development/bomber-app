@@ -1,4 +1,3 @@
-// app/signup/athlete.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -17,24 +16,46 @@ import CustomInput from '@/components/ui/atoms/Inputs';
 import CustomButton from '@/components/ui/atoms/Button';
 import { GlobalColors } from '@/constants/Colors';
 import DateOfBirthInput from '@/components/ui/atoms/DOBInput';
-import Checkbox from '@/components/ui/atoms/Checkbox';
+import { usePlayerSignup } from '@/context/PlayerSignupContext';
+import CustomSelect from '@/components/ui/atoms/dropdown';
+import { US_STATES } from '../../../utils/state';
 
 export default function AthleteInfo() {
   const router = useRouter();
+  const { signupData, setSignupData } = usePlayerSignup();
 
-  // form state
-  const [athleteFirst, setAthleteFirst] = useState('');
-  const [athleteLast, setAthleteLast] = useState('');
-  const [athleteEmail, setAthleteEmail] = useState('');
-  const [athletePhone, setAthletePhone] = useState('');
-  const [dob, setDob] = useState('');
-  const [sameAsParent, setSameAsParent] = useState(false);
-  const [address, setAddress] = useState('');
-  const [state, setState] = useState('');
-  const [city, setCity] = useState('');
-  const [zip, setZip] = useState('');
+  // Prefilled form state
+  const [athleteFirst, setAthleteFirst] = useState(signupData.firstName ?? '');
+  const [athleteLast, setAthleteLast] = useState(signupData.lastName ?? '');
+  const [athleteEmail, setAthleteEmail] = useState(signupData.email ?? '');
+  const [athletePhone, setAthletePhone] = useState(signupData.phone ?? '');
+  const [dob, setDob] = useState(signupData.dob ?? '');
+
+  const [password, setPassword] = useState(signupData.pass ?? '');
+  const [confirmPassword, setConfirmPassword] = useState(
+    signupData.confirmPass ?? ''
+  );
+
+  const [address, setAddress] = useState(signupData.address ?? '');
+  const [state, setState] = useState(signupData.state ?? '');
+  const [city, setCity] = useState(signupData.city ?? '');
+  const [zip, setZip] = useState(signupData.zip ?? '');
 
   const handleContinue = () => {
+    setSignupData({
+      firstName: athleteFirst,
+      lastName: athleteLast,
+      email: athleteEmail,
+      phone: athletePhone,
+      dob,
+      pass: password,
+      confirmPass: confirmPassword,
+      address,
+      state,
+      city,
+      zip,
+    });
+
     router.push('/signup/athlete/athletesport');
   };
 
@@ -44,7 +65,13 @@ export default function AthleteInfo() {
     !!athleteEmail &&
     !!athletePhone &&
     !!dob &&
-    (sameAsParent || (!!address && !!state && !!city && !!zip));
+    !!confirmPassword &&
+    password.length >= 8 &&
+    password === confirmPassword &&
+    !!address &&
+    !!state &&
+    !!city &&
+    !!zip;
 
   return (
     <BackgroundWrapper>
@@ -79,9 +106,10 @@ export default function AthleteInfo() {
             <CustomInput
               label="Team"
               variant="default"
-              placeholder="Texas Bombers Gold 12U"
+              placeholder={signupData.teamName ?? 'Nothing'}
               fullWidth
               editable={false}
+              value={signupData.teamName ?? ''}
             />
 
             {/* athlete fields */}
@@ -103,6 +131,7 @@ export default function AthleteInfo() {
                 />
               </View>
             </View>
+
             <CustomInput
               label="Athlete Email"
               variant="email"
@@ -111,6 +140,7 @@ export default function AthleteInfo() {
               value={athleteEmail}
               onChangeText={setAthleteEmail}
             />
+
             <CustomInput
               label="Athlete Phone Number"
               variant="default"
@@ -120,52 +150,60 @@ export default function AthleteInfo() {
               value={athletePhone}
               onChangeText={setAthletePhone}
             />
-            <DateOfBirthInput onChangeText={setDob} />
+
+            <DateOfBirthInput onChangeText={setDob} value={dob} />
+
+            <CustomInput
+              label="Password"
+              variant="password"
+              fullWidth
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+            <CustomInput
+              label="Confirm Password"
+              variant="password"
+              fullWidth
+              secureTextEntry
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
 
             {/* address */}
             <View style={styles.addressHeader}>
               <Text style={styles.addressLabel}>Address Info</Text>
-              {/* <Checkbox
-                label="Same as Parent/Guardian"
-                checked={sameAsParent}
-                onChange={setSameAsParent}
-              /> */}
             </View>
 
-            {!sameAsParent && (
-              <>
-                <CustomInput
-                  label="Address"
-                  variant="default"
-                  fullWidth
-                  value={address}
-                  onChangeText={setAddress}
-                />
-                <CustomInput
-                  label="State"
-                  variant="default"
-                  fullWidth
-                  value={state}
-                  onChangeText={setState}
-                />
-                <View style={styles.row}>
-                  <CustomInput
-                    label="City"
-                    variant="default"
-                    style={styles.half}
-                    value={city}
-                    onChangeText={setCity}
-                  />
-                  <CustomInput
-                    label="Zip Code"
-                    variant="default"
-                    style={styles.half}
-                    value={zip}
-                    onChangeText={setZip}
-                  />
-                </View>
-              </>
-            )}
+            <CustomInput
+              label="Address"
+              variant="default"
+              fullWidth
+              value={address}
+              onChangeText={setAddress}
+            />
+            <CustomSelect
+              label="State"
+              options={US_STATES}
+              defaultValue={state}
+              onSelect={setState}
+            />
+            <View style={styles.row}>
+              <CustomInput
+                label="City"
+                variant="default"
+                style={styles.half}
+                value={city}
+                onChangeText={setCity}
+              />
+              <CustomInput
+                label="Zip Code"
+                variant="default"
+                style={styles.half}
+                value={zip}
+                onChangeText={setZip}
+              />
+            </View>
 
             {/* continue */}
             <CustomButton
@@ -215,13 +253,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 8,
   },
-  line2: {
-    fontSize: 14,
-    color: GlobalColors.gray,
-    textAlign: 'center',
-    marginBottom: 24,
-    paddingHorizontal: 12,
-  },
   rowWrapper: {},
   row: {
     flexDirection: 'row',
@@ -245,13 +276,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: GlobalColors.bomber,
     fontWeight: '500',
-  },
-  checkbox: {
-    marginLeft: 12,
-  },
-  checkboxLabel: {
-    color: GlobalColors.white,
-    marginLeft: 4,
   },
   footer: {
     marginTop: 'auto',

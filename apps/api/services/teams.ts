@@ -113,6 +113,18 @@ export const teamService = {
     });
   },
 
+  getTeamByCode: async (code: string) => {
+    return prisma.team.findUnique({
+      where: { teamCode: code },
+      include: {
+        players: true,
+        coaches: true,
+        headCoach: true,
+        trophyCase: true,
+      },
+    });
+  },
+
   getMyTeams: async (userId: string) => {
     return prisma.team.findMany({
       where: {

@@ -210,8 +210,8 @@ model Player {
     user   User?   @relation(fields: [userID], references: [id]) // constrain: all players > 12u have user login
     userID String? @unique @db.Uuid
 
-    team   Team   @relation(fields: [teamID], references: [id])
-    teamID String @db.Uuid
+    team   Team?   @relation(fields: [teamID], references: [id])
+    teamID String? @db.Uuid
 
     //8-14u
     parents Parent[]

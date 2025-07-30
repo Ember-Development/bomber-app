@@ -26,7 +26,7 @@ export default function AthleteRestrictions() {
           <CustomButton
             title="Back to Home"
             fullWidth
-            onPress={() => router.replace('/')}
+            onPress={() => router.replace('/login')}
           />
         </View>
       </SafeAreaView>
