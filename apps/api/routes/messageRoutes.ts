@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  getAllMessages,
   getMessages,
   retryMessage,
   sendMessage,
@@ -11,5 +12,6 @@ const router = express.Router();
 router.get('/:groupId', getMessages);
 router.post('/', sendMessage);
 router.post('/:messageId/retry', retryMessage);
+router.get('/', getAllMessages);
 
 export default router;

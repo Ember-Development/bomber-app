@@ -9,6 +9,11 @@ import userRoutes from './routes/userRoutes';
 import authRoutes from './routes/authRoutes';
 import teamRoutes from './routes/teamRoutes';
 import playerRoutes from './routes/playerRoutes';
+import eventRoutes from './routes/eventRoutes';
+import sponsorRoutes from './routes/sponsorRoutes';
+import bannerRoutes from './routes/bannerRoutes';
+import mediaRoutes from './routes/mediaRoutes';
+import articleRoutes from './routes/articleRoutes';
 
 const app = express();
 const server = http.createServer(app);
@@ -26,6 +31,11 @@ app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/players', playerRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/sponsors', sponsorRoutes);
+app.use('/api/banners', bannerRoutes);
+app.use('/api/medias', mediaRoutes);
+app.use('/api/articles', articleRoutes);
 
 const io = initializeSocket(server);
 

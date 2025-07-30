@@ -23,6 +23,7 @@ export function fakeUserComplete() {
     fname: faker.lorem.words(5),
     lname: faker.lorem.words(5),
     primaryRole: faker.helpers.arrayElement([UserRole.ADMIN, UserRole.COACH, UserRole.REGIONAL_COACH, UserRole.PLAYER, UserRole.PARENT, UserRole.FAN] as const),
+    isDeleted: false,
   };
 }
 export function fakePlayer() {
@@ -94,6 +95,7 @@ export function fakeRegCoachComplete() {
 export function fakeTeam() {
   return {
     name: faker.person.fullName(),
+    teamCode: undefined,
     ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
     region: faker.helpers.arrayElement([Regions.NW, Regions.SW, Regions.S, Regions.SE, Regions.NE, Regions.MW] as const),
   };
@@ -102,6 +104,7 @@ export function fakeTeamComplete() {
   return {
     id: faker.string.uuid(),
     name: faker.person.fullName(),
+    teamCode: undefined,
     ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
     region: faker.helpers.arrayElement([Regions.NW, Regions.SW, Regions.S, Regions.SE, Regions.NE, Regions.MW] as const),
     state: State.TX,
@@ -250,5 +253,76 @@ export function fakeTournamentComplete() {
     title: faker.lorem.words(5),
     body: faker.lorem.words(5),
     imageURL: faker.lorem.words(5),
+  };
+}
+export function fakeSponsor() {
+  return {
+    title: faker.lorem.words(5),
+    url: faker.lorem.words(5),
+    logoUrl: faker.lorem.words(5),
+    updatedAt: faker.date.anytime(),
+  };
+}
+export function fakeSponsorComplete() {
+  return {
+    id: faker.string.uuid(),
+    title: faker.lorem.words(5),
+    url: faker.lorem.words(5),
+    logoUrl: faker.lorem.words(5),
+    createdAt: new Date(),
+    updatedAt: faker.date.anytime(),
+  };
+}
+export function fakeBanner() {
+  return {
+    imageUrl: faker.lorem.words(5),
+    duration: faker.number.int(),
+    updatedAt: faker.date.anytime(),
+  };
+}
+export function fakeBannerComplete() {
+  return {
+    id: faker.string.uuid(),
+    imageUrl: faker.lorem.words(5),
+    duration: faker.number.int(),
+    expiresAt: new Date(),
+    createdAt: new Date(),
+    updatedAt: faker.date.anytime(),
+  };
+}
+export function fakeMedia() {
+  return {
+    title: faker.lorem.words(5),
+    videoUrl: faker.lorem.words(5),
+    updatedAt: faker.date.anytime(),
+  };
+}
+export function fakeMediaComplete() {
+  return {
+    id: faker.string.uuid(),
+    title: faker.lorem.words(5),
+    videoUrl: faker.lorem.words(5),
+    createdAt: new Date(),
+    updatedAt: faker.date.anytime(),
+  };
+}
+export function fakeArticle() {
+  return {
+    title: faker.lorem.words(5),
+    body: faker.lorem.words(5),
+    link: undefined,
+    imageUrl: undefined,
+    updatedAt: faker.date.anytime(),
+  };
+}
+export function fakeArticleComplete() {
+  return {
+    id: faker.string.uuid(),
+    title: faker.lorem.words(5),
+    body: faker.lorem.words(5),
+    link: undefined,
+    imageUrl: undefined,
+    createdAt: new Date(),
+    updatedAt: faker.date.anytime(),
   };
 }

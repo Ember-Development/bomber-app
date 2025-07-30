@@ -1,6 +1,16 @@
 import { prisma } from '@bomber-app/database';
 
 export const messageService = {
+  getAllMessages: async () => {
+    return await prisma.message.findMany({
+      include: {
+        sender: true,
+        chat: true,
+      },
+      orderBy: { createdAt: 'desc' }, // Newest to oldest
+    });
+  },
+
   getMessages: async (
     chatId: string,
     options: { cursor?: string; limit?: number }
