@@ -187,6 +187,8 @@ model User {
     chats         UserChat[]
     events        EventAttendance[]
     notifications UserNotification[]
+
+    isDeleted Boolean @default(false)
 }
 
 model Player {
@@ -258,6 +260,7 @@ model Team {
     id String @id @default(uuid()) @db.Uuid
 
     name     String
+    teamCode String? @unique
     ageGroup AgeGroup
     region   Regions
     state    State    @default(TX)
@@ -412,3 +415,44 @@ model Tournament {
 
     events Event[]
 }
+
+model Sponsor {
+  id        String   @id @default(uuid()) @db.Uuid
+  title     String
+  url       String
+  logoUrl   String   // store path or full URL
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Banner {
+  id        String   @id @default(uuid()) @db.Uuid
+  imageUrl  String
+  // duration in hours, e.g. 6, 12, 24
+  duration  Int
+  expiresAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Media {
+  id        String   @id @default(uuid()) @db.Uuid
+  title     String
+  videoUrl  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Article {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String
+  body        String
+  link        String?  // optional external link
+  imageUrl    String?  // optional header image
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
