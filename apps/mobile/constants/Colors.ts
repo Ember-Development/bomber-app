@@ -17,7 +17,7 @@ export const GlobalColors = {
   dark: '#282A29',
   gray: '#a1a1a1',
   bomber: '#57a4ff',
-  gold: '#ffb257', // it's a bit orangey but this is complement of bomber blue!
+  gold: '#e9973a', // complement of bomber blue desaturated by 20% and darkened by 10%
 };
 
 export const EventColors = {
