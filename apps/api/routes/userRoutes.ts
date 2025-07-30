@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  createAddress,
   createUser,
   deleteUser,
   getAllUsers,
@@ -21,5 +22,6 @@ router.get('/:id/events', getUserEvents);
 router.get('/:id/chats', getUserChats);
 router.put('/:id', devAuth, authorize('edit-my-info'), updateUser);
 router.delete('/:id', deleteUser);
+router.post('/address', createAddress);
 
 export default router;

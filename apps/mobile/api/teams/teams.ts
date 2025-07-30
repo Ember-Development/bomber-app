@@ -17,6 +17,11 @@ export const getTeamById = async (id: string): Promise<TeamFE> => {
   return res.data;
 };
 
+export const fetchTeamByCode = async (code: string): Promise<TeamFE> => {
+  const { data } = await api.get(`/api/teams/code/${code}`);
+  return data;
+};
+
 export const addTrophy = async ({
   teamId,
   title,

@@ -1,4 +1,3 @@
-// app/signup/player-gear.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -23,16 +22,24 @@ import {
   STIRRUP_SIZES,
   SHORTS_SIZES,
 } from '@/utils/enumOptions';
+import { usePlayerSignup } from '@/context/PlayerSignupContext';
+import { api } from '@/api/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function PlayerGearInfo() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const { signupData, resetSignupData } = usePlayerSignup();
 
-  const [jerseySize, setJerseySize] = useState<string | null>(null);
-  const [pantSize, setPantSize] = useState<string | null>(null);
-  const [stirrupSize, setStirrupSize] = useState<string | null>(null);
-  const [shortSize, setShortSize] = useState<string | null>(null);
-  const [practiceShirtSize, setPracticeShirtSize] = useState<string | null>(
-    null
+  const [jerseySize, setJerseySize] = useState(signupData.jerseySize ?? null);
+  const [pantSize, setPantSize] = useState(signupData.pantSize ?? null);
+  const [stirrupSize, setStirrupSize] = useState(
+    signupData.stirrupSize ?? null
+  );
+  const [shortSize, setShortSize] = useState(signupData.shortSize ?? null);
+  const [practiceShirtSize, setPracticeShirtSize] = useState(
+    signupData.practiceShirtSize ?? null
   );
 
   const allFilled =
@@ -42,9 +49,84 @@ export default function PlayerGearInfo() {
     !!shortSize &&
     !!practiceShirtSize;
 
-  const handleSubmit = () => {
-    // final submit or navigate to confirmation
-    router.push('/signup/complete');
+  const handleSubmit = async () => {
+    try {
+      // 1. If address info is filled, create address first
+      let addressID: string | undefined;
+      if (
+        signupData.address &&
+        signupData.city &&
+        signupData.state &&
+        signupData.zip
+      ) {
+        console.log('[SIGNUP] Creating address with:', {
+          address1: signupData.address,
+          city: signupData.city,
+          state: signupData.state,
+          zip: signupData.zip,
+        });
+
+        const { data: address } = await api.post('/api/users/address', {
+          address1: signupData.address,
+          city: signupData.city,
+          state: signupData.state,
+          zip: signupData.zip,
+        });
+        addressID = address.id;
+      }
+
+      // 2. Create user with embedded player object
+      const { data } = await api.post('/api/auth/signup', {
+        email: signupData.email,
+        password: signupData.pass,
+        fname: signupData.firstName,
+        lname: signupData.lastName,
+        phone: signupData.phone,
+        role: 'PLAYER',
+        player: {
+          pos1: signupData.pos1,
+          pos2: signupData.pos2,
+          jerseyNum: signupData.jerseyNum,
+          gradYear: signupData.gradYear,
+          college: signupData.college,
+          ageGroup: signupData.ageDivision,
+          jerseySize: jerseySize,
+          pantSize: pantSize,
+          stirrupSize: stirrupSize,
+          shortSize: shortSize,
+          practiceShortSize: practiceShirtSize,
+          addressID,
+          isTrusted: true,
+        },
+      });
+
+      const playerId = data.user.player?.id;
+
+      // 3. Add to team
+      if (playerId && signupData.teamCode) {
+        console.log('[SIGNUP] Adding player to team:', {
+          playerId,
+          teamCode: signupData.teamCode,
+        });
+
+        await api.post('/api/players/add-to-team', {
+          playerId,
+          teamCode: signupData.teamCode,
+        });
+      }
+
+      console.log('[SIGNUP] Signup complete, resetting data and routing home.');
+      await AsyncStorage.setItem('accessToken', data.access);
+      await AsyncStorage.setItem('refreshToken', data.refresh);
+
+      // ✅ 5. Cache user to prevent extra /me call
+      queryClient.setQueryData(['currentUser'], data.user);
+
+      resetSignupData();
+      router.replace('/');
+    } catch (err) {
+      console.error('Signup error:', err);
+    }
   };
 
   return (
@@ -84,9 +166,10 @@ export default function PlayerGearInfo() {
             <CustomInput
               label="Team"
               variant="default"
-              placeholder="Texas Bombers Gold 12U"
+              placeholder={signupData.teamName ?? ''}
               fullWidth
               editable={false}
+              value={signupData.teamName ?? ''}
             />
 
             {/* Gear size dropdowns */}
@@ -115,8 +198,8 @@ export default function PlayerGearInfo() {
               onSelect={setShortSize}
             />
             <CustomSelect
-              label="Practice Shirt Size"
-              options={JERSEY_SIZES}
+              label="Practice Short Size"
+              options={SHORTS_SIZES}
               defaultValue={practiceShirtSize ?? undefined}
               onSelect={setPracticeShirtSize}
             />

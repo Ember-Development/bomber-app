@@ -1,6 +1,11 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { PlayerFE } from '@bomber-app/database';
-import { deletePlayer, getPlayerById, updatePlayer } from '@/api/player/player';
+import {
+  addPlayerToTeam,
+  deletePlayer,
+  getPlayerById,
+  updatePlayer,
+} from '@/api/player/player';
 import { useNormalizedUser } from '@/utils/user';
 
 export const usePlayerById = (id: string) => {
@@ -42,6 +47,23 @@ export const useDeletePlayer = (options?: {
       refetch();
       options?.onSuccess?.();
     },
+    onError: options?.onError,
+  });
+};
+
+export const useAddPlayerToTeam = (options?: {
+  onSuccess?: (data: PlayerFE) => void;
+  onError?: (err: unknown) => void;
+}) => {
+  return useMutation({
+    mutationFn: ({
+      playerId,
+      teamCode,
+    }: {
+      playerId: string;
+      teamCode: string;
+    }) => addPlayerToTeam({ playerId, teamCode }),
+    onSuccess: options?.onSuccess,
     onError: options?.onError,
   });
 };

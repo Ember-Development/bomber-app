@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState } from 'react';
 export type PlayerSignupData = {
   role?: string;
   teamCode?: string;
+  teamName?: string;
   ageDivision?: string;
 
   firstName?: string;
@@ -10,14 +11,16 @@ export type PlayerSignupData = {
   email?: string;
   phone?: string;
   dob?: string;
+  pass?: string;
+  confirmPass?: string;
   address?: string;
   state?: string;
   city?: string;
   zip?: string;
 
-  position1?: string;
-  position2?: string;
-  jersey?: string;
+  pos1?: string;
+  pos2?: string;
+  jerseyNum?: string;
   gradYear?: string;
   committed?: boolean;
   college?: string;
@@ -32,6 +35,7 @@ export type PlayerSignupData = {
 type PlayerSignupContextType = {
   signupData: PlayerSignupData;
   setSignupData: (data: Partial<PlayerSignupData>) => void;
+  updateSignupData: (data: Partial<PlayerSignupData>) => void;
   resetSignupData: () => void;
 };
 
@@ -50,11 +54,15 @@ export const PlayerSignupProvider = ({
     setSignupState((prev) => ({ ...prev, ...data }));
   };
 
+  const updateSignupData = (data: Partial<PlayerSignupData>) => {
+    setSignupState((prev) => ({ ...prev, ...data }));
+  };
+
   const resetSignupData = () => setSignupState({});
 
   return (
     <PlayerSignupContext.Provider
-      value={{ signupData, setSignupData, resetSignupData }}
+      value={{ signupData, setSignupData, updateSignupData, resetSignupData }}
     >
       {children}
     </PlayerSignupContext.Provider>
