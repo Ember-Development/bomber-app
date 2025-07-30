@@ -16,6 +16,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useRouter } from 'expo-router';
 
 import { SIDEMENU_ITEMS } from '@/constants/sidebarItems';
+import { useLogout } from '@/hooks/user/useLogout';
 
 interface UserAvatarProps {
   firstName: string;
@@ -32,6 +33,7 @@ export default function UserAvatar({
   const [mediaExpanded, setMediaExpanded] = useState(false);
   const [legacyExpanded, setLegacyExpanded] = useState(false);
   const router = useRouter();
+  const logout = useLogout();
 
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   const textColor = useThemeColor({}, 'text');
@@ -294,8 +296,9 @@ export default function UserAvatar({
 
             <Pressable
               style={styles.logoutButton}
-              onPress={() => {
-                /* Add logout logic here */
+              onPress={async () => {
+                setMenuVisible(false);
+                await logout();
               }}
             >
               <Text style={styles.logoutText}>Logout</Text>

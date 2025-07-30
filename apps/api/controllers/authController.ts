@@ -1,41 +1,179 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { authService } from '../services/auth';
-import { roleToActions, Role, Action } from '../auth/permissions';
-import { AuthenticatedRequest } from '../auth/devAuth';
+import { UserFE } from '@bomber-app/database';
+import { Action, Role } from '../auth/permissions';
+import { AuthenticatedRequest } from '../utils/express';
 
-export const getMockLogins = async (
+type ExtendedRequest = {
+  user: {
+    id: string;
+    roles: Role[];
+    actions: Action[];
+    primaryRole: Role;
+  };
+} & Request;
+
+function validateSignup(body: any) {
+  const { email, password, fname, lname, role, phone } = body;
+  if (!email || typeof email !== 'string' || !email.includes('@')) {
+    throw { status: 400, message: 'Invalid or missing email' };
+  }
+  if (!password || typeof password !== 'string' || password.length < 8) {
+    throw { status: 400, message: 'Password must be at least 8 characters' };
+  }
+  if (!fname || typeof fname !== 'string') {
+    throw { status: 400, message: 'First name is required' };
+  }
+  if (!lname || typeof lname !== 'string') {
+    throw { status: 400, message: 'Last name is required' };
+  }
+  const roles = ['ADMIN', 'COACH', 'REGIONAl_COACH', 'PLAYER', 'PARENT', 'FAN'];
+  if (!role || !roles.includes(role)) {
+    throw { status: 400, message: 'Invalid or missing role' };
+  }
+  if (!phone || typeof phone !== 'string') {
+    throw { status: 400, message: 'Phone number is required' };
+  }
+  return { email, password, fname, lname, role, phone };
+}
+
+function validateLogin(body: any) {
+  const { email, password } = body;
+  if (!email || typeof email !== 'string') {
+    throw { status: 400, message: 'Email is required' };
+  }
+  if (!password || typeof password !== 'string') {
+    throw { status: 400, message: 'Password is required' };
+  }
+  return { email, password };
+}
+
+function validateRefresh(body: any) {
+  const { token } = body;
+  if (!token || typeof token !== 'string') {
+    throw { status: 400, message: 'Refresh token is required' };
+  }
+  return { token };
+}
+
+export const getCurrentUser = async (
   req: AuthenticatedRequest,
-  res: Response
-): Promise<Response | void> => {
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const user = await authService.getMockLogin();
-    if (!user) {
-      return res.status(404).json({ message: 'Mock user not found' });
-    }
-
-    // get roles
-    const roles: Role[] = [];
-    if (user.admin) roles.push('ADMIN');
-    if (user.coach) roles.push('COACH');
-    if (user.regCoach) roles.push('REGIONAL_COACH');
-    if (user.player) roles.push('PLAYER');
-    if (user.parent) roles.push('PARENT');
-    if (user.fan) roles.push('FAN');
-
-    // actions a user has
-    const actions: Action[] = Array.from(
-      new Set(roles.flatMap((r) => roleToActions[r] || []))
+    console.log('[CONTROLLER] GET /api/auth/me hit');
+    console.log(
+      '[CONTROLLER] Authorization header:',
+      req.header('Authorization')
     );
 
-    // respond with user + roles + actions
-    console.log(user);
-    return res.json({
-      ...user,
-      roles,
-      actions,
-    });
-  } catch (error) {
-    console.error('Error fetching mock user:', error);
-    return res.status(500).json({ error: 'Failed to fetch mock user' });
+    const user = req.user;
+    console.log('[CONTROLLER] req.user:', user);
+
+    if (!user || !user.id) {
+      console.log('[CONTROLLER] No user attached to request → 401');
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const fullProfile = await authService.getUserById(user.id);
+    if (!fullProfile) {
+      console.log(`[CONTROLLER] No user found in DB for id=${user.id} → 404`);
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log(
+      '[CONTROLLER] Returning full profile for user:',
+      fullProfile.id
+    );
+    return res.json(fullProfile);
+  } catch (err) {
+    console.error('[CONTROLLER] Error in getCurrentUser:', err);
+    next(err);
   }
 };
+
+// export const getMockLogins = async (
+//   req: AuthenticatedRequest,
+//   res: Response
+// ): Promise<Response | void> => {
+//   try {
+//     const user = await authService.getMockLogin();
+//     if (!user) {
+//       return res.status(404).json({ message: 'Mock user not found' });
+//     }
+
+//     // get roles
+//     const roles: Role[] = [];
+//     if (user.admin) roles.push('ADMIN');
+//     if (user.coach) roles.push('COACH');
+//     if (user.regCoach) roles.push('REGIONAL_COACH');
+//     if (user.player) roles.push('PLAYER');
+//     if (user.parent) roles.push('PARENT');
+//     if (user.fan) roles.push('FAN');
+
+//     // actions a user has
+//     const actions: Action[] = Array.from(
+//       new Set(roles.flatMap((r) => roleToActions[r] || []))
+//     );
+
+//     // respond with user + roles + actions
+//     console.log(user);
+//     return res.json({
+//       ...user,
+//       roles,
+//       actions,
+//     });
+//   } catch (error) {
+//     console.error('Error fetching mock user:', error);
+//     return res.status(500).json({ error: 'Failed to fetch mock user' });
+//   }
+// };
+
+export async function signupBase(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { email, password, fname, lname, role, phone } = validateSignup(
+      req.body
+    );
+    const user = await authService.signUpBase({
+      email,
+      password,
+      fname,
+      lname,
+      role,
+      phone,
+    });
+    return res.status(201).json(user);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function login(req: Request, res: Response, next: NextFunction) {
+  try {
+    const input = validateLogin(req.body);
+    const data = await authService.login(input);
+    return res.json(data);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function refresh(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { token } = validateRefresh(req.body);
+    const data = await authService.refreshToken(token);
+    return res.json(data);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function logout(_req: Request, res: Response) {
+  // Optionally revoke refresh here
+  return res.sendStatus(204);
+}

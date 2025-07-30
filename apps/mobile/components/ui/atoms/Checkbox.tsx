@@ -6,7 +6,7 @@ import { GlobalColors } from '@/constants/Colors';
 
 interface CheckboxProps {
   label: string;
-  checked: boolean;
+  checked?: boolean;
   onChange?: (checked: boolean) => void;
 }
 
@@ -21,8 +21,8 @@ export default function Checkbox({ label, onChange, checked }: CheckboxProps) {
     <Pressable style={styles.container} onPress={toggleCheckbox}>
       <Ionicons
         name={checked ? 'checkbox' : 'square-outline'}
-        size={24}
-        color={GlobalColors.bomber}
+        size={20}
+        color={GlobalColors.white}
       />
       <Text style={[styles.label, { color: textColor }]}>{label}</Text>
     </Pressable>
@@ -37,6 +37,6 @@ const styles = StyleSheet.create({
   },
   label: {
     marginLeft: 8,
-    fontSize: 16,
+    fontSize: 12,
   },
 });
