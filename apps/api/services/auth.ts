@@ -112,7 +112,7 @@ export const authService = {
     phone,
     player,
     coach,
-    parent,
+    parent, // expect: { id: string } when connecting a player to an existing parent
   }: {
     email: string;
     password: string;
@@ -124,11 +124,14 @@ export const authService = {
     coach?: any;
     parent?: any;
   }) {
+    // 1) Prevent duplicate email
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) throw { status: 400, message: 'Email already in use' };
 
+    // 2) Hash password
     const passHash = await hashPassword(password);
 
+    // 3) Build the create payload
     const createData: any = {
       email,
       pass: passHash,
@@ -143,28 +146,36 @@ export const authService = {
         createData.coach = {
           create: {
             ...(coach?.addressID && {
-              address: {
-                connect: { id: coach.addressID },
-              },
+              address: { connect: { id: coach.addressID } },
             }),
             ...(coach?.teamCode && {
-              teams: {
-                connect: { teamCode: coach.teamCode },
-              },
+              teams: { connect: { teamCode: coach.teamCode } },
             }),
           },
         };
+        // **if** the client also passed `parent: { addressID }`, nest-create that too
+        if (parent) {
+          createData.parent = {
+            create: {
+              ...(parent.addressID && {
+                address: { connect: { id: parent.addressID } },
+              }),
+            },
+          };
+        }
         break;
 
       case 'PLAYER':
         if (!player?.pos1 || !player?.jerseyNum || !player?.gradYear) {
-          throw {
-            status: 400,
-            message:
-              'Missing required player fields: pos1, jerseyNum, gradYear',
-          };
+          throw { status: 400, message: 'Missing required player fields' };
         }
-        createData.player = { create: player };
+        createData.player = {
+          create: {
+            ...player,
+            // if `parent.id` was passed in, connect it:
+            ...(parent?.id && { parents: { connect: { id: parent.id } } }),
+          },
+        };
         break;
 
       case 'PARENT':
@@ -182,17 +193,41 @@ export const authService = {
         break;
     }
 
+    // 4) Create the User (and nested coach/player/parent/fan)
     const user = await prisma.user.create({ data: createData });
 
+    // 5) Issue tokens
     const access = signAccess({ sub: user.id, role: user.primaryRole });
     const refresh = signRefresh({ sub: user.id });
 
+    // 6) Fetch the newly created profile
     const fullProfile = await this.getUserById(user.id);
 
+    // 7) If we just added a PLAYER and connected to an existing parent, fetch the updated parent
+    let updatedParent = null;
+    if (role === 'PLAYER' && parent?.id) {
+      updatedParent = await prisma.parent.findUnique({
+        where: { id: parent.id },
+        include: {
+          user: true,
+          address: true,
+          children: {
+            include: {
+              user: true,
+              team: true,
+              address: true,
+            },
+          },
+        },
+      });
+    }
+
+    // 8) Return everything
     return {
       access,
       refresh,
       user: fullProfile,
+      parent: updatedParent, // will be null for non-player signups
     };
   },
 

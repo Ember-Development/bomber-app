@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -39,9 +39,21 @@ export default function ParentAddressInfo() {
   const [state, setState] = useState(signupData.state ?? '');
   const [city, setCity] = useState(signupData.city ?? '');
   const [zip, setZip] = useState(signupData.zip ?? '');
+  const [touched, setTouched] = useState(false);
+
+  const isFormValid = useMemo(
+    () =>
+      address.trim() !== '' &&
+      city.trim() !== '' &&
+      state.trim() !== '' &&
+      zip.trim() !== '',
+    [address, city, state, zip]
+  );
 
   const handleContinue = async () => {
-    // Persist address fields in context
+    setTouched(true);
+    if (!isFormValid) return;
+
     updateSignupData({ address, city, state, zip });
 
     try {
@@ -77,6 +89,7 @@ export default function ParentAddressInfo() {
         throw new Error('Parent record missing from signup response');
       }
       const parentId = parentRecord.id;
+      console.log(parentId);
       updateSignupData({ parentId });
 
       // 3) Store tokens and navigate to AddPlayers
@@ -155,11 +168,18 @@ export default function ParentAddressInfo() {
               />
             </View>
 
+            {touched && !isFormValid && (
+              <Text style={styles.errorText}>
+                All fields are required to continue.
+              </Text>
+            )}
+
             {/* Continue button */}
             <CustomButton
               title={buttonText}
               onPress={handleContinue}
               fullWidth
+              disabled={!isFormValid}
             />
 
             {/* Terms */}
@@ -216,5 +236,10 @@ const styles = StyleSheet.create({
   link: {
     color: GlobalColors.bomber,
     textDecorationLine: 'underline',
+  },
+  errorText: {
+    color: GlobalColors.red,
+    textAlign: 'center',
+    marginBottom: 12,
   },
 });

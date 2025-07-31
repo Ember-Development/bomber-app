@@ -119,8 +119,8 @@ export default function PlayerGearInfo() {
       await AsyncStorage.setItem('accessToken', data.access);
       await AsyncStorage.setItem('refreshToken', data.refresh);
 
-      // ✅ 5. Cache user to prevent extra /me call
-      queryClient.setQueryData(['currentUser'], data.user);
+      const { data: me } = await api.get('/api/auth/me');
+      queryClient.setQueryData(['currentUser'], me);
 
       resetSignupData();
       router.replace('/');
