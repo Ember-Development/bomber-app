@@ -14,7 +14,8 @@ type ExtendedRequest = {
 } & Request;
 
 function validateSignup(body: any) {
-  const { email, password, fname, lname, role, phone, player } = body;
+  const { email, password, fname, lname, role, phone, player, coach, parent } =
+    body;
 
   if (!email || typeof email !== 'string' || !email.includes('@')) {
     throw { status: 400, message: 'Invalid or missing email' };
@@ -45,7 +46,7 @@ function validateSignup(body: any) {
     }
   }
 
-  return { email, password, fname, lname, role, phone, player };
+  return { email, password, fname, lname, role, phone, player, coach, parent };
 }
 
 function validateLogin(body: any) {
@@ -147,8 +148,17 @@ export async function signupBase(
   next: NextFunction
 ) {
   try {
-    const { email, password, fname, lname, role, phone, player } =
-      validateSignup(req.body);
+    const {
+      email,
+      password,
+      fname,
+      lname,
+      role,
+      phone,
+      player,
+      coach,
+      parent,
+    } = validateSignup(req.body);
 
     const user = await authService.signUpBase({
       email,
@@ -158,6 +168,8 @@ export async function signupBase(
       role,
       phone,
       player,
+      coach,
+      parent,
     });
 
     return res.status(201).json(user);

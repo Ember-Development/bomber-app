@@ -30,6 +30,9 @@ export type PlayerSignupData = {
   stirrupSize?: string;
   shortSize?: string;
   practiceShirtSize?: string;
+  isTrusted?: boolean;
+
+  players?: PlayerSignupData[];
 };
 
 type PlayerSignupContextType = {

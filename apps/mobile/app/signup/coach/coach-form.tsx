@@ -1,3 +1,4 @@
+// app/signup/userinfo.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -15,6 +16,7 @@ import CustomButton from '@/components/ui/atoms/Button';
 import { Ionicons } from '@expo/vector-icons';
 import { GlobalColors } from '@/constants/Colors';
 import DateOfBirthInput from '@/components/ui/atoms/DOBInput';
+import { useCoachSignup } from '../../../context/CoachSignupContext';
 import { useParentSignup } from '@/context/ParentSignupContext';
 
 const ROLE_LABELS: Record<string, string> = {
@@ -22,7 +24,7 @@ const ROLE_LABELS: Record<string, string> = {
   COACH: 'Coach',
 };
 
-export default function ParentInfo() {
+export default function CoachInfo() {
   const router = useRouter();
   const { role, count, teamCode } = useLocalSearchParams<{
     role?: string;
@@ -30,7 +32,7 @@ export default function ParentInfo() {
     teamCode?: string;
   }>();
 
-  const { signupData, setSignupData } = useParentSignup();
+  const { signupData, setSignupData } = useCoachSignup();
 
   const [firstName, setFirstName] = useState(signupData.firstName || '');
   const [lastName, setLastName] = useState(signupData.lastName || '');
@@ -58,7 +60,7 @@ export default function ParentInfo() {
     });
 
     router.push({
-      pathname: '/signup/parentaddress',
+      pathname: '/signup/addressInfo',
       params: { role, count, teamCode },
     });
   };

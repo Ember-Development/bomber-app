@@ -44,8 +44,9 @@ export default function SignUpRole() {
 
     if (role === 'FAN') {
       router.push({ pathname: '/signup/FanSignup', params });
-    } else if (role === 'COACH' || role === 'PARENT') {
-      // parent or coach
+    } else if (role === 'COACH') {
+      router.push({ pathname: '/signup/coach/coach-form', params });
+    } else if (role === 'PARENT') {
       router.push({ pathname: '/signup/parent/parentform', params });
     } else if (role === 'PLAYER') {
       router.push({ pathname: '/signup/TeamCode', params });

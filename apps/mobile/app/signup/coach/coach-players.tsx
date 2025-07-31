@@ -15,6 +15,10 @@ import { Ionicons } from '@expo/vector-icons';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { GlobalColors } from '@/constants/Colors';
 import CustomButton from '@/components/ui/atoms/Button';
+import { useCoachSignup } from '@/context/CoachSignupContext';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/api/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Choice = {
   key: string;
@@ -31,7 +35,7 @@ const choices: Choice[] = [
     message:
       'Great! We’ll gather information for the players you coach as well.',
     buttonText: 'Continue',
-    nextRoute: '/signup/player-amount',
+    nextRoute: '/signup/add-player',
   },
   {
     key: 'no',
@@ -45,15 +49,76 @@ const choices: Choice[] = [
 
 export default function CoachPlayers() {
   const router = useRouter();
-  const { role } = useLocalSearchParams<{
-    role?: string;
-  }>();
+  const { role } = useLocalSearchParams<{ role?: string }>();
   const [selection, setSelection] = React.useState<string | null>(null);
   const selectedChoice = choices.find((c) => c.key === selection);
 
+  const queryClient = useQueryClient();
+  const { signupData, resetSignupData } = useCoachSignup();
+
+  const handleSubmit = async () => {
+    try {
+      // 1. If address info is filled, create address first
+      let addressID: string | undefined;
+      if (
+        signupData.address &&
+        signupData.city &&
+        signupData.state &&
+        signupData.zip
+      ) {
+        console.log('[COACH SIGNUP] Creating address with:', {
+          address1: signupData.address,
+          city: signupData.city,
+          state: signupData.state,
+          zip: signupData.zip,
+        });
+
+        const { data: address } = await api.post('/api/users/address', {
+          address1: signupData.address,
+          city: signupData.city,
+          state: signupData.state,
+          zip: signupData.zip,
+        });
+
+        addressID = address.id;
+      }
+
+      // 2. Create user with embedded coach object
+      const { data } = await api.post('/api/auth/signup', {
+        email: signupData.email,
+        password: signupData.password,
+        fname: signupData.firstName,
+        lname: signupData.lastName,
+        phone: signupData.phone,
+        role: 'COACH',
+        coach: {
+          addressID,
+          teamCode: signupData.teamCode,
+        },
+      });
+
+      console.log('[COACH SIGNUP] Signup complete, caching and routing.');
+
+      await AsyncStorage.setItem('accessToken', data.access);
+      await AsyncStorage.setItem('refreshToken', data.refresh);
+
+      queryClient.setQueryData(['currentUser'], data.user);
+      resetSignupData();
+
+      router.replace('/');
+    } catch (err) {
+      console.error('[COACH SIGNUP] Signup error:', err);
+    }
+  };
+
   const onContinue = () => {
-    if (selectedChoice) {
-      const coachPlayer = (selectedChoice.key === 'yes').toString();
+    if (!selectedChoice) return;
+
+    const coachPlayer = (selectedChoice.key === 'yes').toString();
+
+    if (selectedChoice.key === 'no') {
+      handleSubmit();
+    } else {
       router.push({
         pathname: selectedChoice.nextRoute,
         params: { role, coachPlayer },
@@ -73,7 +138,6 @@ export default function CoachPlayers() {
             contentContainerStyle={styles.container}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Header */}
             <View style={styles.header}>
               <TouchableOpacity onPress={() => router.back()}>
                 <Ionicons
@@ -85,12 +149,10 @@ export default function CoachPlayers() {
               <Text style={styles.title}>Coach Parent-Players?</Text>
             </View>
 
-            {/* Prompt */}
             <Text style={styles.line1}>
               Do you have any players you also wish to register as their parent?
             </Text>
 
-            {/* Choice cards */}
             <View style={styles.grid}>
               {choices.map((c) => (
                 <TouchableOpacity
@@ -114,12 +176,10 @@ export default function CoachPlayers() {
               ))}
             </View>
 
-            {/* Detail message */}
             {selectedChoice && (
               <Text style={styles.line2}>{selectedChoice.message}</Text>
             )}
 
-            {/* Continue */}
             <CustomButton
               title={selectedChoice?.buttonText ?? 'Continue'}
               onPress={onContinue}
@@ -127,7 +187,6 @@ export default function CoachPlayers() {
               disabled={!selection}
             />
 
-            {/* Terms */}
             <View style={styles.footer}>
               <Text style={styles.terms}>
                 By signing up you accept the{' '}

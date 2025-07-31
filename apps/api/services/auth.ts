@@ -111,6 +111,8 @@ export const authService = {
     role,
     phone,
     player,
+    coach,
+    parent,
   }: {
     email: string;
     password: string;
@@ -119,6 +121,8 @@ export const authService = {
     role: string;
     phone: string;
     player?: any;
+    coach?: any;
+    parent?: any;
   }) {
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) throw { status: 400, message: 'Email already in use' };
@@ -136,8 +140,22 @@ export const authService = {
 
     switch (role) {
       case 'COACH':
-        createData.coach = { create: {} };
+        createData.coach = {
+          create: {
+            ...(coach?.addressID && {
+              address: {
+                connect: { id: coach.addressID },
+              },
+            }),
+            ...(coach?.teamCode && {
+              teams: {
+                connect: { teamCode: coach.teamCode },
+              },
+            }),
+          },
+        };
         break;
+
       case 'PLAYER':
         if (!player?.pos1 || !player?.jerseyNum || !player?.gradYear) {
           throw {
@@ -148,9 +166,17 @@ export const authService = {
         }
         createData.player = { create: player };
         break;
+
       case 'PARENT':
-        createData.parent = { create: {} };
+        createData.parent = {
+          create: {
+            ...(parent?.addressID && {
+              address: { connect: { id: parent.addressID } },
+            }),
+          },
+        };
         break;
+
       case 'FAN':
         createData.fan = { create: {} };
         break;
