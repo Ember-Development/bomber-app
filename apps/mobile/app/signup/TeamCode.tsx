@@ -21,6 +21,7 @@ import { GlobalColors } from '@/constants/Colors';
 import { useTeamByCode } from '@/hooks/teams/useTeams';
 import { Team } from '@bomber-app/database';
 import { usePlayerSignup } from '@/context/PlayerSignupContext';
+import { useCoachSignup } from '@/context/CoachSignupContext';
 
 export default function TeamCode() {
   const router = useRouter();
@@ -42,26 +43,45 @@ export default function TeamCode() {
   const [ageDivision, setAgeDivision] = useState<Team['ageGroup'] | null>(null);
   const { data: teamData, isFetching } = useTeamByCode(teamCode);
 
-  const { setSignupData } = usePlayerSignup();
+  const playerSignup = usePlayerSignup();
+  const coachSignup = useCoachSignup();
   const selectedTeamName = selectedTeam;
 
   useEffect(() => {
     if (teamData) {
       setSelectedTeam(teamData.name);
       setAgeDivision(teamData.ageGroup as Team['ageGroup']);
-      setSignupData({
-        teamName: teamData.name,
-        teamCode: teamData.teamCode ?? '',
-        ageDivision: teamData.ageGroup,
-      });
+
+      if (isCoach) {
+        coachSignup.setSignupData({
+          teamName: teamData.name,
+          teamCode: teamData.teamCode ?? '',
+          ageDivision: teamData.ageGroup,
+        });
+      } else {
+        playerSignup.setSignupData({
+          teamName: teamData.name,
+          teamCode: teamData.teamCode ?? '',
+          ageDivision: teamData.ageGroup,
+        });
+      }
     } else {
       setSelectedTeam(null);
       setAgeDivision(null);
-      setSignupData({
-        teamName: '',
-        teamCode: '',
-        ageDivision: undefined,
-      });
+
+      if (isCoach) {
+        coachSignup.setSignupData({
+          teamName: '',
+          teamCode: '',
+          ageDivision: undefined,
+        });
+      } else {
+        playerSignup.setSignupData({
+          teamName: '',
+          teamCode: '',
+          ageDivision: undefined,
+        });
+      }
     }
   }, [teamData]);
 

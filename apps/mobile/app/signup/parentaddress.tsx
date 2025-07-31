@@ -17,8 +17,11 @@ import { GlobalColors } from '@/constants/Colors';
 import { useCoachSignup } from '@/context/CoachSignupContext';
 import CustomSelect from '@/components/ui/atoms/dropdown';
 import { US_STATES } from '@/utils/state';
+import { useParentSignup } from '@/context/ParentSignupContext';
+import { api } from '@/api/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function AddressInfo() {
+export default function ParentAddressInfo() {
   const router = useRouter();
   const {
     role = 'athlete',
@@ -30,39 +33,62 @@ export default function AddressInfo() {
     teamCode?: string;
   }>();
 
-  const { updateSignupData, signupData } = useCoachSignup();
+  const { updateSignupData, signupData } = useParentSignup();
 
   const [address, setAddress] = useState(signupData.address ?? '');
   const [state, setState] = useState(signupData.state ?? '');
   const [city, setCity] = useState(signupData.city ?? '');
   const [zip, setZip] = useState(signupData.zip ?? '');
 
-  const handleContinue = () => {
-    if (role === 'COACH') {
-      updateSignupData({
-        address,
-        city,
-        state,
-        zip,
+  const handleContinue = async () => {
+    // Persist address fields in context
+    updateSignupData({ address, city, state, zip });
+
+    try {
+      // 1) Create Address record
+      let addressID: string | undefined;
+      if (address && city && state && zip) {
+        const { data: newAddr } = await api.post('/api/users/address', {
+          address1: address,
+          city,
+          state,
+          zip,
+        });
+        addressID = newAddr.id;
+        updateSignupData({ addressID });
+      }
+
+      // 2) Signup Parent, connecting to that address
+      const res = await api.post('/api/auth/signup', {
+        email: signupData.email,
+        password: signupData.password,
+        fname: signupData.firstName,
+        lname: signupData.lastName,
+        phone: signupData.phone,
+        role: 'PARENT',
+        parent: {
+          addressID,
+        },
       });
-    }
 
-    let pathname: string;
-    switch (role) {
-      case 'COACH':
-        pathname = '/signup/TeamCode';
-        break;
-      case 'PARENT':
-        pathname = '/signup/add-player';
-        break;
-      default:
-        pathname = '/signup/add-player';
-    }
+      // Extract the newly created Parent model's ID
+      const parentRecord = res.data.user.parent;
+      if (!parentRecord || !parentRecord.id) {
+        throw new Error('Parent record missing from signup response');
+      }
+      const parentId = parentRecord.id;
+      updateSignupData({ parentId });
 
-    router.push({
-      pathname,
-      params: { role, count, teamCode },
-    });
+      // 3) Store tokens and navigate to AddPlayers
+      const { access, refresh } = res.data;
+      await AsyncStorage.setItem('accessToken', access);
+      await AsyncStorage.setItem('refreshToken', refresh);
+
+      router.push('/signup/add-player');
+    } catch (err: any) {
+      console.error('[PARENT SIGNUP] failed', err);
+      // TODO: display error to the user
+    }
   };
 
   const instruction = `Please enter your address information.`;
@@ -94,7 +120,7 @@ export default function AddressInfo() {
                 color={GlobalColors.white}
                 onPress={() => router.back()}
               />
-              <Text style={styles.title}>Address Info</Text>
+              <Text style={styles.title}>Parent Address Info</Text>
             </View>
 
             <Text style={styles.instruction}>{instruction}</Text>
