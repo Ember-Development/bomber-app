@@ -118,14 +118,18 @@ export default function AthleteInfo() {
                 <CustomInput
                   label="Athlete First Name"
                   variant="name"
-                  style={[styles.half, styles.halfLeft]}
+                  style={[
+                    styles.half,
+                    styles.halfLeft,
+                    { color: GlobalColors.white },
+                  ]}
                   value={athleteFirst}
                   onChangeText={setAthleteFirst}
                 />
                 <CustomInput
                   label="Athlete Last Name"
                   variant="name"
-                  style={styles.half}
+                  style={[styles.half, { color: GlobalColors.white }]}
                   value={athleteLast}
                   onChangeText={setAthleteLast}
                 />
@@ -192,14 +196,14 @@ export default function AthleteInfo() {
               <CustomInput
                 label="City"
                 variant="default"
-                style={styles.half}
+                style={[styles.half, { color: GlobalColors.white }]}
                 value={city}
                 onChangeText={setCity}
               />
               <CustomInput
                 label="Zip Code"
                 variant="default"
-                style={styles.half}
+                style={[styles.half, { color: GlobalColors.white }]}
                 value={zip}
                 onChangeText={setZip}
               />

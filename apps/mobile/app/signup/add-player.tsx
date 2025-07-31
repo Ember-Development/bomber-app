@@ -1,5 +1,3 @@
-// app/signup/add-players.tsx
-
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
@@ -13,7 +11,7 @@ import {
   TouchableOpacity,
   Keyboard,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import CustomInput from '@/components/ui/atoms/Inputs';
 import CustomSelect from '@/components/ui/atoms/dropdown';
@@ -32,36 +30,54 @@ import {
   SHORTS_SIZES,
 } from '@/utils/enumOptions';
 import { GlobalColors } from '@/constants/Colors';
-import { TeamFE } from '@bomber-app/database';
+import { TeamFE, UserFE } from '@bomber-app/database';
 import { api } from '@/api/api';
+import { useCoachSignup } from '@/context/CoachSignupContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function AddPlayersScreen() {
   const router = useRouter();
-  const { signupData, setSignupData } = usePlayerSignup();
-  const { signupData: parentData } = useParentSignup();
+  const { role } = useLocalSearchParams<{ role: string }>();
+  const queryClient = useQueryClient();
 
-  // Single‐player form state, and list of all added players
-  const [form, setForm] = useState({ teamCode: '' } as any);
+  const { signupData: playerData, setSignupData } = usePlayerSignup();
+  const { signupData: parentData } = useParentSignup();
+  const { signupData: coachData } = useCoachSignup();
+
+  // form + added players
+  const [form, setForm] = useState<any>({ teamCode: '' });
   const [players, setPlayers] = useState<any[]>([]);
 
-  // Navigation & flow state
+  // flow state
   const [step, setStep] = useState(1);
   const [selection, setSelection] = useState<'parent' | 'self' | null>(null);
   const [isLinkFlow, setIsLinkFlow] = useState(false);
   const [isParentFlow, setIsParentFlow] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
 
-  // Fetch real team details
+  // back handler
+  const handleBack = () => {
+    if (step === 2) {
+      // reset any branching flags when stepping back to 1
+      setIsLinkFlow(false);
+      setIsParentFlow(false);
+      setSelection(null);
+    }
+    setStep((s) => Math.max(1, s - 1));
+  };
+
+  // fetch team details
   const { data: teamData } = useTeamByCode(form.teamCode);
   useEffect(() => {
     if (teamData) {
-      setForm((f: TeamFE) => ({
+      setForm((f: any) => ({
         ...f,
         teamName: teamData.name,
         ageDivision: teamData.ageGroup,
       }));
     } else {
-      setForm((f: TeamFE) => ({
+      setForm((f: any) => ({
         ...f,
         teamName: null,
         ageDivision: null,
@@ -69,19 +85,17 @@ export default function AddPlayersScreen() {
     }
   }, [teamData]);
 
-  // Decide how many steps this player needs
+  // determine number of steps
   const totalSteps = useMemo(() => {
     if (['U16', 'U18'].includes(form.ageDivision || '')) return 2;
     if (form.ageDivision === 'U14' && isLinkFlow) return 2;
     return 4;
   }, [form.ageDivision, isLinkFlow]);
 
-  // Validation at each step
+  // validation
   const isStepValid = () => {
-    if (step === 1) {
-      return !!form.teamName;
-    }
-    // 12U or 14U+parent: personal info
+    // same as before...
+    if (step === 1) return !!form.teamName;
     if (
       step === 2 &&
       (form.ageDivision === 'U12' ||
@@ -96,7 +110,6 @@ export default function AddPlayersScreen() {
         form.pass === form.confirmPass
       );
     }
-    // 14U choice cards
     if (
       step === 2 &&
       form.ageDivision === 'U14' &&
@@ -105,24 +118,23 @@ export default function AddPlayersScreen() {
     ) {
       return selection !== null;
     }
-    // U16/U18 or 14U-self: email/password + confirm
     if (
       step === 2 &&
       (['U16', 'U18'].includes(form.ageDivision || '') || isLinkFlow)
     ) {
       return (
+        !!form.firstName &&
+        !!form.lastName &&
         !!form.email &&
         !!form.password &&
         !!form.confirmPass &&
         form.password === form.confirmPass
       );
     }
-    // sport & jersey info
     if (step === 3) {
       const base = form.pos1 && form.pos2 && form.jerseyNum && form.gradYear;
       return form.committed ? !!base && !!form.college : !!base;
     }
-    // gear sizes
     if (step === 4) {
       return (
         !!form.jerseySize &&
@@ -135,11 +147,11 @@ export default function AddPlayersScreen() {
     return false;
   };
 
-  // Move to next step, or finish this player
+  // next / add player
   const handleNext = () => {
     if (!isStepValid()) return;
 
-    // 14U → athlete/self branching
+    // U14 branching
     if (
       step === 2 &&
       form.ageDivision === 'U14' &&
@@ -244,7 +256,30 @@ export default function AddPlayersScreen() {
     setShowSummary(false);
   };
 
-  // If done adding, push into context and move on
+  const handleDeletePlayer = (idx: number) => {
+    setPlayers((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleEditPlayer = (ath: any) => {
+    setForm({ ...ath });
+
+    setShowSummary(false);
+
+    const { ageDivision, isTrusted } = ath;
+
+    if (isTrusted || ['U14', 'U16', 'U18'].includes(ageDivision)) {
+      setIsLinkFlow(true);
+      setIsParentFlow(false);
+    } else {
+      setIsLinkFlow(false);
+      setIsParentFlow(true);
+    }
+
+    setSelection(null);
+
+    setStep(2);
+  };
+
   const handleSubmitAll = async () => {
     try {
       // 0) Grab the parentId and parent addressID from context
@@ -260,11 +295,10 @@ export default function AddPlayersScreen() {
       for (const ath of players) {
         let athleteAddrId: string | undefined;
 
-        // If athlete opted to reuse parent address, use that
         if (ath.sameAsParent && parentAddrId) {
           athleteAddrId = parentAddrId;
         }
-        // Otherwise, if athlete provided their own address, create it first
+        // new address
         else if (ath.address && ath.city && ath.state && ath.zip) {
           const { data: newAddr } = await api.post('/api/users/address', {
             address1: ath.address,
@@ -275,7 +309,6 @@ export default function AddPlayersScreen() {
           athleteAddrId = newAddr.id;
         }
 
-        // 2) Build the Player signup payload, connecting to Team, Parent, and Address
         const playerPayload = {
           email: ath.email,
           password: ath.pass,
@@ -312,11 +345,11 @@ export default function AddPlayersScreen() {
         await api.post('/api/auth/signup', playerPayload);
       }
 
-      // 4) All done — navigate to confirmation
+      const { data: me } = await api.get<UserFE>('/api/auth/me');
+      queryClient.setQueryData(['currentUser'], me);
       router.replace('/');
     } catch (err: any) {
       console.error('[ADD PLAYERS] Signup flow error:', err);
-      // TODO: surface a user‐friendly error message/toast here
     }
   };
 
@@ -402,21 +435,39 @@ export default function AddPlayersScreen() {
     }
 
     // STEP 2: email/password for 18U or 14U-self
-    if (step === 2 && (form.ageDivision === 'U18' || isLinkFlow)) {
+    if (
+      step === 2 &&
+      (['U16', 'U18'].includes(form.ageDivision || '') || isLinkFlow)
+    ) {
       return (
         <View style={styles.stepContainer}>
           <Text style={styles.Title}>Self-Link Players</Text>
           <Text style={styles.instructions}>
-            Your player is on 16U/18U and should download the app to finish
-            setup.
+            Your player is on 16U/18U or a trusted 14U team and should download
+            the app to finish setup.
           </Text>
           <Text style={styles.instructions}>
             You can create their account, so all they need to do is login.
           </Text>
           <CustomInput
+            label="First Name"
+            variant="name"
+            fullWidth
+            value={form.firstName}
+            onChangeText={(v) => setForm({ ...form, firstName: v })}
+          />
+          <CustomInput
+            label="Last Name"
+            variant="name"
+            fullWidth
+            value={form.lastName}
+            onChangeText={(v) => setForm({ ...form, lastName: v })}
+          />
+          <CustomInput
             label="Email"
             variant="email"
             fullWidth
+            keyboardType="email-address"
             value={form.email}
             onChangeText={(v) => setForm({ ...form, email: v })}
           />
@@ -643,7 +694,18 @@ export default function AddPlayersScreen() {
         >
           {!showSummary ? (
             <ScrollView contentContainerStyle={styles.container}>
+              {/* back button */}
+              {step > 1 && (
+                <TouchableOpacity
+                  onPress={handleBack}
+                  style={styles.backButton}
+                >
+                  <Text style={styles.backButtonText}>← Back</Text>
+                </TouchableOpacity>
+              )}
+
               {renderStep()}
+
               <CustomButton
                 title={step < totalSteps ? 'Continue' : 'Add Player'}
                 onPress={handleNext}
@@ -657,14 +719,38 @@ export default function AddPlayersScreen() {
               keyExtractor={(_, i) => i.toString()}
               contentContainerStyle={styles.container}
               ListHeaderComponent={
-                <Text style={styles.subTitle}>Players Added</Text>
+                <>
+                  <Text style={styles.subTitle}>
+                    Players Added: Please double-check your players before
+                    submitting.
+                  </Text>
+                  <Text style={styles.noteText}>
+                    (Tap on a player’s card to edit their info, or hit the trash
+                    to remove.)
+                  </Text>
+                </>
               }
               renderItem={({ item, index }) => (
-                <View style={styles.playerCard}>
-                  <Text style={styles.playerText}>
-                    {index + 1}. {item.firstName} {item.lastName}
-                  </Text>
-                </View>
+                <TouchableOpacity
+                  onPress={() => handleEditPlayer(item)}
+                  style={styles.playerCard}
+                >
+                  <View style={styles.playerRow}>
+                    <Text style={styles.playerText}>
+                      {index + 1}. {item.firstName} {item.lastName} —{' '}
+                      {item.teamName} ({item.ageDivision})
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        // prevent the parent onPress
+                        Keyboard.dismiss();
+                        handleDeletePlayer(index);
+                      }}
+                    >
+                      <Ionicons name="trash" size={20} color="red" />
+                    </TouchableOpacity>
+                  </View>
+                </TouchableOpacity>
               )}
               ListFooterComponent={
                 <>
@@ -698,6 +784,12 @@ const styles = StyleSheet.create({
     color: GlobalColors.white,
     marginBottom: 12,
     textAlign: 'center',
+  },
+  backButton: { marginBottom: 16 },
+  backButtonText: {
+    color: GlobalColors.bomber,
+    fontSize: 16,
+    fontWeight: '500',
   },
   Title: {
     fontSize: 24,
@@ -759,11 +851,23 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'center',
   },
+  noteText: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: GlobalColors.gray,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
   playerCard: {
     backgroundColor: '#fff',
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
+  },
+  playerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   playerText: {
     color: GlobalColors.bomber,

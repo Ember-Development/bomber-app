@@ -19,6 +19,7 @@ import { useCoachSignup } from '@/context/CoachSignupContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/api/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useParentSignup } from '@/context/ParentSignupContext';
 
 type Choice = {
   key: string;
@@ -54,75 +55,130 @@ export default function CoachPlayers() {
   const selectedChoice = choices.find((c) => c.key === selection);
 
   const queryClient = useQueryClient();
-  const { signupData, resetSignupData } = useCoachSignup();
+  const { signupData: coachData, resetSignupData } = useCoachSignup();
+  const { updateSignupData: setParentData } = useParentSignup();
 
-  const handleSubmit = async () => {
+  const handleSubmitCoachOnly = async () => {
     try {
-      // 1. If address info is filled, create address first
       let addressID: string | undefined;
       if (
-        signupData.address &&
-        signupData.city &&
-        signupData.state &&
-        signupData.zip
+        coachData.address &&
+        coachData.city &&
+        coachData.state &&
+        coachData.zip
       ) {
-        console.log('[COACH SIGNUP] Creating address with:', {
-          address1: signupData.address,
-          city: signupData.city,
-          state: signupData.state,
-          zip: signupData.zip,
+        const { data: addr } = await api.post('/api/users/address', {
+          address1: coachData.address,
+          city: coachData.city,
+          state: coachData.state,
+          zip: coachData.zip,
         });
-
-        const { data: address } = await api.post('/api/users/address', {
-          address1: signupData.address,
-          city: signupData.city,
-          state: signupData.state,
-          zip: signupData.zip,
-        });
-
-        addressID = address.id;
+        addressID = addr.id;
       }
 
-      // 2. Create user with embedded coach object
       const { data } = await api.post('/api/auth/signup', {
-        email: signupData.email,
-        password: signupData.password,
-        fname: signupData.firstName,
-        lname: signupData.lastName,
-        phone: signupData.phone,
+        email: coachData.email,
+        password: coachData.password,
+        fname: coachData.firstName,
+        lname: coachData.lastName,
+        phone: coachData.phone,
         role: 'COACH',
-        coach: {
-          addressID,
-          teamCode: signupData.teamCode,
-        },
+        coach: { addressID, teamCode: coachData.teamCode },
       });
-
-      console.log('[COACH SIGNUP] Signup complete, caching and routing.');
 
       await AsyncStorage.setItem('accessToken', data.access);
       await AsyncStorage.setItem('refreshToken', data.refresh);
-
       queryClient.setQueryData(['currentUser'], data.user);
       resetSignupData();
-
-      router.replace('/');
+      router.replace('/'); // done
     } catch (err) {
-      console.error('[COACH SIGNUP] Signup error:', err);
+      console.error('[COACH ONLY] Signup error:', err);
+    }
+  };
+
+  const handleSubmitCoachAndParent = async () => {
+    try {
+      // create address if filled
+      let addressID: string | undefined;
+      if (
+        coachData.address &&
+        coachData.city &&
+        coachData.state &&
+        coachData.zip
+      ) {
+        console.log('[COACH+PARENT] Creating address for coach:', {
+          address1: coachData.address,
+          city: coachData.city,
+          state: coachData.state,
+          zip: coachData.zip,
+        });
+        const { data: addr } = await api.post('/api/users/address', {
+          address1: coachData.address,
+          city: coachData.city,
+          state: coachData.state,
+          zip: coachData.zip,
+        });
+        addressID = addr.id;
+        console.log('[COACH+PARENT] Address created with ID:', addressID);
+      }
+
+      // nested create both coach + parent
+      console.log('[COACH+PARENT] Signing up coach+parent with payload:', {
+        email: coachData.email,
+        fname: coachData.firstName,
+        lname: coachData.lastName,
+        phone: coachData.phone,
+        coach: { addressID, teamCode: coachData.teamCode },
+        parent: { addressID },
+      });
+
+      const { data } = await api.post('/api/auth/signup', {
+        email: coachData.email,
+        password: coachData.password,
+        fname: coachData.firstName,
+        lname: coachData.lastName,
+        phone: coachData.phone,
+        role: 'COACH',
+        coach: { addressID, teamCode: coachData.teamCode },
+        parent: { addressID },
+      });
+
+      console.log('[COACH+PARENT] Signup response:', data);
+
+      // pull out new parent.id
+      const parentRec = data.user.parent;
+      if (!parentRec?.id) {
+        console.error(
+          '[COACH+PARENT] No parent record in response:',
+          parentRec
+        );
+        throw new Error('Parent record missing from signup response');
+      }
+
+      const parentId = parentRec.id;
+      console.log('[COACH+PARENT] New parentId:', parentId);
+
+      // stash into ParentSignupContext for AddPlayersScreen
+      setParentData({ parentId, addressID });
+
+      // store tokens + cache
+      await AsyncStorage.setItem('accessToken', data.access);
+      await AsyncStorage.setItem('refreshToken', data.refresh);
+      queryClient.setQueryData(['currentUser'], data.user);
+
+      resetSignupData(); // clear coach context if you want
+      // now jump into your existing AddPlayers flow
+      router.replace('/signup/add-player');
+    } catch (err) {
+      console.error('[COACH+PARENT] Signup error:', err);
     }
   };
 
   const onContinue = () => {
-    if (!selectedChoice) return;
-
-    const coachPlayer = (selectedChoice.key === 'yes').toString();
-
-    if (selectedChoice.key === 'no') {
-      handleSubmit();
+    if (selection === 'no') {
+      handleSubmitCoachOnly();
     } else {
-      router.push({
-        pathname: selectedChoice.nextRoute,
-        params: { role, coachPlayer },
-      });
+      handleSubmitCoachAndParent();
     }
   };
 
