@@ -1,4 +1,3 @@
-import React, { useRef } from 'react';
 import {
   SafeAreaView,
   Animated,
@@ -9,7 +8,10 @@ import {
   ViewStyle,
   StyleSheet,
 } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
+import BannerModal, { BannerData } from '@/components/ui/organisms/Banner';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Components
 import { ThemedText } from '@/components/ThemedText';
@@ -33,6 +35,7 @@ import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useBanners } from '@/hooks/banner/useBanner';
 
 export default function HomeScreen() {
   const { user, refetch } = useUserContext();
@@ -61,7 +64,53 @@ export default function HomeScreen() {
     user?.id
   );
   const { data: userChats, isLoading: isChatsLoading } = useUserChats(user?.id);
+  const { data: banners, isLoading: bannersLoading } = useBanners();
+  const [showBanner, setShowBanner] = useState(true);
+  const [currentBanner, setCurrentBanner] = useState<BannerData | null>(null);
+
+  const handlePaymentPress = () => alert('Payment Reroute Clicked');
+  const handleTeamsPress = () => alert('Teams Reroute Clicked');
+  const seeAllEvents = () => alert('See All Events Clicked');
+  const seeAllGroups = () => alert('See All Groups Clicked');
+  const seeAllMedia = () => alert('See All Media Clicked');
+
   const formattedEvents = formatEvents(rawEvents ?? []);
+
+  useEffect(() => {
+    (async () => {
+      if (bannersLoading || !banners) return;
+
+      const now = new Date();
+      const active = banners.find((b) => new Date(b.expiresAt) > now);
+      if (!active) return;
+
+      const seenJson = await AsyncStorage.getItem('seenBanners');
+      const seen: string[] = seenJson ? JSON.parse(seenJson) : [];
+
+      if (!seen.includes(active.id)) {
+        setCurrentBanner({
+          id: active.id,
+          imageUrl: active.imageUrl,
+          duration: active.duration,
+          expiresAt: new Date(active.expiresAt),
+        });
+        setShowBanner(true);
+      }
+    })();
+  }, [banners, bannersLoading]);
+
+  // mark banner as seen and hide it
+  const handleCloseBanner = async () => {
+    if (currentBanner) {
+      const seenJson = await AsyncStorage.getItem('seenBanners');
+      const seen: string[] = seenJson ? JSON.parse(seenJson) : [];
+      if (!seen.includes(currentBanner.id)) {
+        seen.push(currentBanner.id);
+        await AsyncStorage.setItem('seenBanners', JSON.stringify(seen));
+      }
+    }
+    setShowBanner(false);
+  };
 
   const headerHeight = scrollY.interpolate({
     inputRange: [0, 80],
@@ -96,6 +145,14 @@ export default function HomeScreen() {
   return (
     <BackgroundWrapper>
       <SafeAreaView style={styles.safeContainer}>
+        {currentBanner && showBanner && (
+          <BannerModal
+            visible={showBanner}
+            data={currentBanner}
+            onClose={handleCloseBanner}
+          />
+        )}
+
         <Animated.ScrollView
           contentContainerStyle={{ paddingBottom: 60, flexGrow: 1 }}
           onScroll={Animated.event(
