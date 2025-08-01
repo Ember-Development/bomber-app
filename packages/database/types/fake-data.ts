@@ -60,6 +60,26 @@ export function fakePlayerComplete() {
     isTrusted: undefined,
     addressID: undefined,
     college: undefined,
+    commitId: undefined,
+  };
+}
+export function fakeCommit() {
+  return {
+    name: faker.person.fullName(),
+    state: faker.helpers.arrayElement([State.AL, State.AK, State.AZ, State.AR, State.CA, State.CO, State.CT, State.DE, State.FL, State.GA, State.HI, State.ID, State.IL, State.IN, State.IA, State.KS, State.KY, State.LA, State.ME, State.MD, State.MA, State.MI, State.MN, State.MS, State.MO, State.MT, State.NE, State.NV, State.NH, State.NJ, State.NM, State.NY, State.NC, State.ND, State.OH, State.OK, State.OR, State.PA, State.RI, State.SC, State.SD, State.TN, State.TX, State.UT, State.VT, State.VA, State.WA, State.WV, State.WI, State.WY] as const),
+    city: faker.lorem.words(5),
+    imageUrl: faker.lorem.words(5),
+    committedDate: faker.date.anytime(),
+  };
+}
+export function fakeCommitComplete() {
+  return {
+    id: faker.string.uuid(),
+    name: faker.person.fullName(),
+    state: faker.helpers.arrayElement([State.AL, State.AK, State.AZ, State.AR, State.CA, State.CO, State.CT, State.DE, State.FL, State.GA, State.HI, State.ID, State.IL, State.IN, State.IA, State.KS, State.KY, State.LA, State.ME, State.MD, State.MA, State.MI, State.MN, State.MS, State.MO, State.MT, State.NE, State.NV, State.NH, State.NJ, State.NM, State.NY, State.NC, State.ND, State.OH, State.OK, State.OR, State.PA, State.RI, State.SC, State.SD, State.TN, State.TX, State.UT, State.VT, State.VA, State.WA, State.WV, State.WI, State.WY] as const),
+    city: faker.lorem.words(5),
+    imageUrl: faker.lorem.words(5),
+    committedDate: faker.date.anytime(),
   };
 }
 export function fakeAdminComplete() {

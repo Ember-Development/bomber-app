@@ -18,4 +18,5 @@ export * from './types/sponsor';
 export * from './types/banner';
 export * from './types/media';
 export * from './types/article';
+export * from './types/commit';
 export { UserFE, UserDB, ChatUser, PublicUserFE } from './types/user';

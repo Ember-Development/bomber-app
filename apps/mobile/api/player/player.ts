@@ -6,6 +6,19 @@ export const getPlayerById = async (id: string): Promise<PlayerFE> => {
   return res.data;
 };
 
+export const getAlumniPlayersPaginated = async ({
+  cursor,
+  limit = 20,
+}: {
+  cursor?: string;
+  limit?: number;
+}) => {
+  const res = await api.get('/api/players/alumni', {
+    params: { cursor, limit },
+  });
+  return res.data; // Should return PlayerFE[]
+};
+
 export const updatePlayer = async (
   id: string,
   data: Partial<PlayerFE>

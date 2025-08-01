@@ -224,6 +224,19 @@ model Player {
     addressID String?  @db.Uuid
 
     college String?
+    commitId String? @db.Uuid
+    commit    Commit?     @relation("PlayerCommit", fields: [commitId], references: [id])
+}
+
+model Commit {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  state        State
+  city         String
+  imageUrl     String
+  committedDate DateTime
+
+  players      Player[] @relation("PlayerCommit")
 }
 
 model Admin {
