@@ -1,8 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { PlayerFE } from '@bomber-app/database';
 import {
-  deletePlayer,
-  getAlumniPlayers,
   addPlayerToTeam,
   deletePlayer,
   getPlayerById,

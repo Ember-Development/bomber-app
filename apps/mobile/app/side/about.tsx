@@ -322,7 +322,7 @@ export default function AboutScreen() {
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={20} color={GlobalColors.bomber} />
+          <Ionicons name="arrow-back" size={20} color={GlobalColors.white} />
         </TouchableOpacity>
       </SafeAreaView>
     </BackgroundWrapper>
@@ -481,8 +481,8 @@ const styles = StyleSheet.create({
     top: 86,
     left: 16,
     zIndex: 10,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 24,
     padding: 4,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
 });

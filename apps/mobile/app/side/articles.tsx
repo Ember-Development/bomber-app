@@ -32,9 +32,12 @@ import {
 import Separator from '@/components/ui/atoms/Seperator';
 import { useAllArticles, useArticleById } from '@/hooks/media/useArticle';
 import { Article as ArticleFE } from '@bomber-app/database';
+import { useRouter } from 'expo-router';
 
 export default function ArticlesScreen() {
   const styles = createArticleScreenStyles();
+  const router = useRouter();
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sheetOpened, setSheetOpened] = useState(false);
 
@@ -215,6 +218,12 @@ export default function ArticlesScreen() {
     <BackgroundWrapper>
       <SafeAreaView style={styles.safeContainer}>
         <View style={styles.headerName}>
+          <TouchableOpacity
+            style={styles.floatingBack}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={18} color="white" />
+          </TouchableOpacity>
           <Text style={styles.title}>Explore Articles</Text>
         </View>
         <FlatList

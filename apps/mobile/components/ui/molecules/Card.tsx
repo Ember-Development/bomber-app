@@ -10,13 +10,16 @@ import {
   ImageSourcePropType,
   Platform,
 } from 'react-native';
+import type { ReactNode } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { GlobalColors } from '@/constants/Colors';
 
 interface CardProps {
   type: 'info' | 'quickAction' | 'groupChat' | 'trophy';
   title?: string;
   subtitle?: string;
   image?: ImageSourcePropType;
-  icon?: ImageSourcePropType;
+  iconName?: keyof typeof Ionicons.glyphMap;
   onPress?: () => void;
   additionalInfo?: string;
 }
@@ -26,7 +29,7 @@ export default function Card({
   title,
   subtitle,
   image,
-  icon,
+  iconName,
   onPress,
   additionalInfo,
 }: CardProps) {
@@ -47,8 +50,11 @@ export default function Card({
       onPress={onPress}
     >
       {image && <Image source={image} style={styles.image} />}
-      {icon && <Image source={icon} style={styles.icon} />}
-
+      {iconName && (
+        <View style={styles.iconContainer}>
+          <Ionicons name={iconName} size={24} color={GlobalColors.bomber} />
+        </View>
+      )}
       <View style={styles.textContainer}>
         {safeTitle && (
           <ThemedText
@@ -100,6 +106,10 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 8,
     marginBottom: 6,
+  },
+  iconContainer: {
+    marginRight: 8,
+    justifyContent: 'center',
   },
   icon: {
     width: 24,

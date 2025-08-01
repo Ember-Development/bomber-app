@@ -217,7 +217,7 @@ export default function HomeScreen() {
           )}
 
           {/* Groups — hidden for Fans */}
-          {!isFan && (
+          {/* {!isFan && (
             <Animated.View style={styles.groups}>
               <View style={styles.EventText}>
                 <ThemedText type="title">Groups</ThemedText>
@@ -256,32 +256,7 @@ export default function HomeScreen() {
                 ))}
               </Animated.ScrollView>
             </Animated.View>
-          )}
-
-          {/* Legacy */}
-          <View style={styles.legacy}>
-            <View style={styles.legacyText}>
-              <ThemedText type="title">Bombers Legacy</ThemedText>
-              <ThemedText type="defaultSemiBold">
-                See how the Bombers program has built champions.
-              </ThemedText>
-            </View>
-            <View style={styles.legacyList}>
-              {legacyItems.map((item) => (
-                <TouchableOpacity style={styles.legacyCard} key={item.title}>
-                  <View style={styles.legacyItems}>
-                    <Ionicons
-                      name={item.icon}
-                      size={24}
-                      color={GlobalColors.bomber}
-                    />
-                    <ThemedText type="default">{item.title}</ThemedText>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#ccc" />
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
+          )} */}
 
           {/* Media */}
           <View style={styles.mediaSection}>
@@ -312,44 +287,75 @@ export default function HomeScreen() {
             </Animated.ScrollView>
           </View>
 
-          <View style={styles.becomeBomber}>
-            <ThemedText type="title">Become a Bomber</ThemedText>
-            <TouchableOpacity
-              style={styles.bomberCard}
-              onPress={() => router.push('/signup')}
-              activeOpacity={0.85}
-            >
-              <Image
-                source={becomeBomberImage}
-                style={styles.bomberImage}
-                resizeMode="cover"
-              />
-
-              {/* Bottom overlay bar */}
-              <View style={styles.bomberOverlay}>
-                {/* Bottom fade up into content */}
-                <LinearGradient
-                  colors={['transparent', 'rgba(0,0,0,0)']}
-                  style={StyleSheet.absoluteFill}
-                />
-                {/* Blur effect across the footer */}
-                <BlurView
-                  intensity={60}
-                  tint="dark"
-                  style={StyleSheet.absoluteFill}
-                />
-                {/* Top edge softener */}
-                <LinearGradient
-                  colors={['rgba(0,0,0,0)', 'transparent']}
-                  style={styles.bomberFadeTop}
-                />
-                {/* Centered Text */}
-                <ThemedText type="title" style={styles.bomberText}>
-                  FIND OUT HOW
-                </ThemedText>
-              </View>
-            </TouchableOpacity>
+          {/* Legacy */}
+          <View style={styles.legacy}>
+            <View style={styles.legacyText}>
+              <ThemedText type="title">Bombers Legacy</ThemedText>
+              <ThemedText type="defaultSemiBold">
+                See how the Bombers program has built champions.
+              </ThemedText>
+            </View>
+            <View style={styles.legacyList}>
+              {legacyItems.map((item) => (
+                <TouchableOpacity
+                  key={item.title}
+                  style={styles.legacyCard}
+                  onPress={() => router.push(item.routes)}
+                >
+                  <View style={styles.legacyItems}>
+                    <Ionicons
+                      name={item.icon}
+                      size={24}
+                      color={GlobalColors.bomber}
+                    />
+                    <ThemedText type="default">{item.title}</ThemedText>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#ccc" />
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
+
+          {user?.primaryRole === 'FAN' && (
+            <View style={styles.becomeBomber}>
+              <ThemedText type="title">Become a Bomber</ThemedText>
+              <TouchableOpacity
+                style={styles.bomberCard}
+                onPress={() => router.push('/signup')}
+                activeOpacity={0.85}
+              >
+                <Image
+                  source={becomeBomberImage}
+                  style={styles.bomberImage}
+                  resizeMode="cover"
+                />
+
+                {/* Bottom overlay bar */}
+                <View style={styles.bomberOverlay}>
+                  {/* Bottom fade up into content */}
+                  <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0)']}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  {/* Blur effect across the footer */}
+                  <BlurView
+                    intensity={60}
+                    tint="dark"
+                    style={StyleSheet.absoluteFill}
+                  />
+                  {/* Top edge softener */}
+                  <LinearGradient
+                    colors={['rgba(0,0,0,0)', 'transparent']}
+                    style={styles.bomberFadeTop}
+                  />
+                  {/* Centered Text */}
+                  <ThemedText type="title" style={styles.bomberText}>
+                    FIND OUT HOW
+                  </ThemedText>
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
         </Animated.ScrollView>
       </SafeAreaView>
     </BackgroundWrapper>
