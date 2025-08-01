@@ -1,54 +1,56 @@
-// in src/constants/quickActions.ts
 import { Role } from '@/types';
+import { Ionicons } from '@expo/vector-icons';
 import { Alert } from 'react-native';
+export type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
 export type QuickAction = {
   title: string;
-  icon: any;
+  /** the Ionicons name string you want */
+  iconName: IoniconName;
   onPress: () => void;
 };
 
 const payments: QuickAction = {
   title: 'Payments',
-  icon: require('@/assets/images/react-logo.png'),
+  iconName: 'card-outline',
   onPress: () => Alert.alert('Payments Clicked!'),
 };
 const myTeams: QuickAction = {
   title: 'My Teams',
-  icon: require('@/assets/images/react-logo.png'),
+  iconName: 'people-outline',
   onPress: () => Alert.alert('My Teams Clicked!'),
 };
 const myPlayers: QuickAction = {
   title: 'My Players',
-  icon: require('@/assets/images/react-logo.png'),
+  iconName: 'person-outline',
   onPress: () => Alert.alert('My Players Clicked!'),
 };
 const myProfile: QuickAction = {
   title: 'My Profile',
-  icon: require('@/assets/images/react-logo.png'),
+  iconName: 'person-circle-outline',
   onPress: () => Alert.alert('My Profile Clicked!'),
 };
 const shopBombers: QuickAction = {
   title: 'Shop Bombers',
-  icon: require('@/assets/images/react-logo.png'),
+  iconName: 'shirt-outline',
   onPress: () => Alert.alert('Shop Bombers Clicked!'),
 };
 const bomberTeams: QuickAction = {
   title: 'Bomber Teams',
-  icon: require('@/assets/images/react-logo.png'),
+  iconName: 'shield-outline',
   onPress: () => Alert.alert('Bomber Teams Clicked!'),
 };
 const myRegion: QuickAction = {
   title: 'My Region',
-  icon: require('@/assets/images/react-logo.png'),
+  iconName: 'map-outline',
   onPress: () => Alert.alert('My Region Clicked!'),
 };
 
 export const quickActionMap: Record<Role, QuickAction[]> = {
-  COACH: [payments, myTeams],
-  PARENT: [payments, myPlayers],
-  PLAYER: [myProfile, myTeams],
-  FAN: [shopBombers, bomberTeams],
-  REGIONAL_COACH: [payments, myRegion],
-  ADMIN: [payments, myTeams /*…whatever*/],
+  COACH: [payments, shopBombers],
+  PARENT: [payments, shopBombers],
+  PLAYER: [myProfile, shopBombers],
+  FAN: [bomberTeams, shopBombers],
+  REGIONAL_COACH: [payments, shopBombers],
+  ADMIN: [bomberTeams, shopBombers],
 };

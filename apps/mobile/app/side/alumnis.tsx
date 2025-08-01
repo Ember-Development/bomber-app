@@ -122,7 +122,7 @@ export default function AlumnisScreen() {
             onPress={() => router.back()}
             style={styles.backButton}
           >
-            <Ionicons name="arrow-back" size={24} color="#fff" />
+            <Ionicons name="arrow-back" size={18} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerText}>Bomber Alumni</Text>
         </View>
@@ -178,6 +178,9 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: Platform.OS === 'android' ? 40 : 0 },
   backButton: {
     marginRight: 12,
+    padding: 4,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   headerContainer: {
     flexDirection: 'row',

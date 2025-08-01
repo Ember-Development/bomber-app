@@ -29,8 +29,13 @@ export const SIDEMENU_ITEMS: {
   },
   {
     name: 'About Us',
-    icon: 'flag-outline',
+    icon: 'information-circle-outline',
     routes: '/side/about',
+  },
+  {
+    name: 'Coaches Development',
+    icon: 'baseball-outline',
+    routes: '',
   },
   {
     name: 'Player Development',
