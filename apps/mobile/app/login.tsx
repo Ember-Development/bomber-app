@@ -25,7 +25,7 @@ import { useUserContext } from '@/context/useUserContext';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,13 +42,13 @@ export default function LoginScreen() {
     try {
       const { data } = await api.post('/api/auth/login', { email, password });
 
-      // 1) store tokens
       await AsyncStorage.setItem('accessToken', data.access);
       await AsyncStorage.setItem('refreshToken', data.refresh);
 
       setUser(data.user);
 
-      // 3) navigate to home
+      qc.invalidateQueries({ queryKey: ['currentUser'] });
+
       router.replace('/');
     } catch (err: any) {
       console.error('Login error', err);
