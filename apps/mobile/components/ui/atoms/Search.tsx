@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: 16,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 10,
     // Apply backdropFilter conditionally for web platforms
     ...(Platform.OS === 'web' ? { backdropFilter: 'blur(12px)' } : {}), // NOTE: Web only — use BlurView on native if needed
