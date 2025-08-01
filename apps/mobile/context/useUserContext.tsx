@@ -20,20 +20,20 @@ const UserContext = createContext<UserContextValue | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const { data, isLoading, error, refetch } = useCurrentUser();
-  const [userState, setUser] = useState<UserFE | null>(data ?? null);
+  const [userState, setUserState] = useState<UserFE | null>(null);
 
   useEffect(() => {
-    if (data) setUser(data);
+    if (data) setUserState(data);
   }, [data]);
 
   return (
     <UserContext.Provider
       value={{
-        user: data ?? null,
+        user: userState,
         isLoading,
         error: error ?? null,
         refetch,
-        setUser,
+        setUser: setUserState,
       }}
     >
       {children}
