@@ -1,9 +1,10 @@
-import { Dimensions, Platform, StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 const { width } = Dimensions.get('window');
 
-export const NUM_COLUMNS = 1;
-const CARD_MARGIN = 12;
-const CARD_WIDTH = (width - CARD_MARGIN * (NUM_COLUMNS + 2)) / NUM_COLUMNS;
+export const HORIZONTAL_PADDING = 16;
+export const CATEGORY_ITEM_WIDTH = width * 0.4;
+export const CARD_MARGIN = 12;
+export const HERO_EXPANDED_HEIGHT = width * 0.6;
 
 export const createVideoScreenStyles = () =>
   StyleSheet.create({
@@ -11,78 +12,122 @@ export const createVideoScreenStyles = () =>
       flex: 1,
       paddingTop: Platform.OS === 'android' ? 24 : 0,
     },
-    headerName: {
+    header: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: 16,
+      padding: HORIZONTAL_PADDING,
       paddingTop: 24,
-      gap: 10,
     },
-    floatingBack: {
+    backBtn: {
       marginRight: 12,
       padding: 4,
       borderRadius: 20,
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      backgroundColor: 'rgba(255,255,255,0.1)',
     },
-    title: {
+    headerTitle: {
+      color: '#fff',
       fontSize: 26,
       fontWeight: '700',
-      color: '#fff',
-      letterSpacing: 0.5,
     },
     searchBox: {
-      paddingHorizontal: 16,
+      paddingHorizontal: HORIZONTAL_PADDING,
       marginBottom: 16,
     },
-    list: {
-      padding: CARD_MARGIN,
+    scrollContainer: {
+      paddingBottom: 24,
     },
-    cardContainer: {
-      width: CARD_WIDTH,
-      margin: CARD_MARGIN / 2,
+
+    section: {
+      marginBottom: 24,
+    },
+    sectionLabel: {
+      color: '#fff',
+      fontSize: 14,
+      letterSpacing: 2,
+      marginHorizontal: HORIZONTAL_PADDING,
+      marginBottom: 8,
+      marginTop: 10,
+    },
+
+    // Hero
+    heroContainer: {
+      marginHorizontal: HORIZONTAL_PADDING,
       borderRadius: 16,
       overflow: 'hidden',
-      backgroundColor: '#2A2A2A',
-      elevation: 5,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
+      marginBottom: 24,
+    },
+    heroTouchable: {
+      flex: 1,
+    },
+    heroImage: {
+      width: '100%',
+      height: '100%',
+    },
+    heroOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0,0,0,0.3)',
+    },
+    heroTitle: {
+      position: 'absolute',
+      bottom: 16,
+      left: 16,
+      right: 16,
+      color: '#fff',
+      fontSize: 32,
+    },
+    heroPlayIcon: {
+      position: 'absolute',
+      alignSelf: 'center',
+      top: '40%',
+    },
+
+    // Category carousel
+    carousel: {
+      paddingHorizontal: HORIZONTAL_PADDING - CARD_MARGIN / 2,
+    },
+    card: {
+      width: CATEGORY_ITEM_WIDTH,
+      marginHorizontal: CARD_MARGIN / 2,
+      borderRadius: 12,
+      overflow: 'hidden',
+      backgroundColor: '#1a1a1a',
     },
     cardImage: {
       width: '100%',
-      height: CARD_WIDTH * (9 / 16),
+      height: CATEGORY_ITEM_WIDTH * 0.56,
     },
-    overlay: {
+    cardOverlay: {
       ...StyleSheet.absoluteFillObject,
-      justifyContent: 'center',
-      alignItems: 'center',
       backgroundColor: 'rgba(0,0,0,0.2)',
     },
-    titleContainer: {
-      paddingHorizontal: 10,
+    cardPlay: {
+      position: 'absolute',
+      alignSelf: 'center',
+      top: '35%',
     },
     cardTitle: {
       color: '#fff',
-      fontSize: 16,
-      fontWeight: '600',
-      letterSpacing: 0.2,
-      marginTop: 8,
-      marginVertical: 22,
+      fontSize: 12,
+      fontWeight: '500',
+      marginTop: 4,
+      marginHorizontal: 6,
+      marginBottom: 8,
     },
+
+    // Modal player
     playerContainer: {
       flex: 1,
-      backgroundColor: 'black',
+      backgroundColor: '#000',
       justifyContent: 'center',
       alignItems: 'center',
     },
-    closePlayer: {
+    closeBtn: {
       position: 'absolute',
       top: 60,
       right: 20,
-      zIndex: 1,
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      borderRadius: 20,
+      zIndex: 2,
+      backgroundColor: 'rgba(255,255,255,0.1)',
       padding: 4,
+      borderRadius: 20,
     },
   });

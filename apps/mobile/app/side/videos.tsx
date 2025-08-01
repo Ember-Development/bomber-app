@@ -2,14 +2,20 @@ import React, { useState, useMemo } from 'react';
 import {
   SafeAreaView,
   View,
-  FlatList,
+  Dimensions,
   Text,
   TouchableOpacity,
   Image,
-  Dimensions,
   Modal,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  interpolate,
+} from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import YoutubePlayer from 'react-native-youtube-iframe';
@@ -18,26 +24,44 @@ import SearchField from '@/components/ui/atoms/Search';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { useAllMedia } from '@/hooks/media/useMedia';
 import { Media as MediaFE } from '@bomber-app/database';
+import { MEDIA_CATEGORIES } from '../../utils/enumOptions';
+import CategoryCard from '@/components/ui/molecules/CategoryCard';
 import {
   createVideoScreenStyles,
-  NUM_COLUMNS,
+  HERO_EXPANDED_HEIGHT,
+  CATEGORY_ITEM_WIDTH,
+  CARD_MARGIN,
 } from '@/styles/videoscreenStyle';
 
 const { width } = Dimensions.get('window');
-const PLAYER_HEIGHT = (width * 9) / 16; // 16:9 aspect ratio
+const HERO_COLLAPSED_HEIGHT = HERO_EXPANDED_HEIGHT * 0.6;
 
 export default function VideosScreen() {
   const router = useRouter();
   const styles = createVideoScreenStyles();
 
-  // Fetch from backend
+  // Data + state
   const { data: videos, isLoading } = useAllMedia();
-
-  // Local UI state
   const [searchText, setSearchText] = useState('');
   const [selectedItem, setSelectedItem] = useState<MediaFE | null>(null);
 
-  // Filter on title
+  // Vertical hero scroll
+  const scrollY = useSharedValue(0);
+  const onVerticalScroll = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      scrollY.value = e.contentOffset.y;
+    },
+  });
+
+  // Horizontal carousel scroll
+  const scrollX = useSharedValue(0);
+  const onHorizontalScroll = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      scrollX.value = e.contentOffset.x;
+    },
+  });
+
+  // Filter + sort
   const filtered = useMemo(() => {
     if (!videos) return [];
     return videos.filter((v) =>
@@ -45,13 +69,29 @@ export default function VideosScreen() {
     );
   }, [videos, searchText]);
 
-  // Extract YouTube ID
-  const getVideoId = (url: string) => {
-    const m = url.match(/v=([^&]+)/);
-    return m ? m[1] : '';
-  };
+  const featured = useMemo(() => {
+    return (
+      filtered
+        .slice()
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )[0] || null
+    );
+  }, [filtered]);
 
-  // Render loading spinner
+  // Hero parallax style
+  const heroStyle = useAnimatedStyle(() => ({
+    height: interpolate(
+      scrollY.value,
+      [0, HERO_EXPANDED_HEIGHT - HERO_COLLAPSED_HEIGHT],
+      [HERO_EXPANDED_HEIGHT, HERO_COLLAPSED_HEIGHT],
+      'clamp'
+    ),
+    opacity: interpolate(scrollY.value, [0, 100], [1, 0.8], 'clamp'),
+  }));
+
+  // Loading spinner
   if (isLoading) {
     return (
       <BackgroundWrapper>
@@ -70,14 +110,14 @@ export default function VideosScreen() {
     <BackgroundWrapper>
       <SafeAreaView style={styles.safeContainer}>
         {/* Header */}
-        <View style={styles.headerName}>
+        <View style={styles.header}>
           <TouchableOpacity
-            style={styles.floatingBack}
+            style={styles.backBtn}
             onPress={() => router.back()}
           >
             <Ionicons name="arrow-back" size={18} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.title}>Explore Videos</Text>
+          <Text style={styles.headerTitle}>Explore Videos</Text>
         </View>
 
         {/* Search */}
@@ -89,50 +129,78 @@ export default function VideosScreen() {
           />
         </View>
 
-        {/* Video Grid */}
-        <FlatList
-          data={filtered}
-          keyExtractor={(item) => item.id}
-          numColumns={NUM_COLUMNS}
-          contentContainerStyle={[
-            styles.list,
-            filtered.length === 0 && {
-              flex: 1,
-              justifyContent: 'center',
-              alignItems: 'center',
-            },
-          ]}
-          renderItem={({ item }) => {
-            const thumbnail = `https://img.youtube.com/vi/${getVideoId(item.videoUrl)}/hqdefault.jpg`;
-            return (
-              <>
+        {/* Content */}
+        <Animated.ScrollView
+          onScroll={onVerticalScroll}
+          scrollEventThrottle={16}
+          contentContainerStyle={styles.scrollContainer}
+        >
+          {/* Featured */}
+          {featured && (
+            <>
+              <Text style={styles.sectionLabel}>Featured Video</Text>
+              <Animated.View style={[styles.heroContainer, heroStyle]}>
                 <TouchableOpacity
-                  style={styles.cardContainer}
-                  onPress={() => setSelectedItem(item)}
+                  activeOpacity={0.8}
+                  onPress={() => setSelectedItem(featured)}
                 >
-                  <Image source={{ uri: thumbnail }} style={styles.cardImage} />
-                  <View style={styles.overlay}>
-                    <Ionicons name="play-circle" size={50} color="#5AA5FF" />
-                  </View>
-                </TouchableOpacity>
-                <View style={styles.titleContainer}>
-                  <Text numberOfLines={2} style={styles.cardTitle}>
-                    {item.title}
+                  <Image
+                    source={{
+                      uri: `https://img.youtube.com/vi/${featured.videoUrl.match(/v=([^&]+)/)?.[1]}/hqdefault.jpg`,
+                    }}
+                    style={styles.heroImage}
+                  />
+                  <View style={styles.heroOverlay} />
+                  <Text numberOfLines={2} style={styles.heroTitle}>
+                    {featured.title}
                   </Text>
-                </View>
-              </>
-            );
-          }}
-          ListEmptyComponent={() => (
-            <View style={{ padding: 20 }}>
-              <Text
-                style={{ color: '#fff', fontSize: 18, textAlign: 'center' }}
-              >
-                No videos found.
-              </Text>
-            </View>
+                  <Ionicons
+                    name="play-circle"
+                    size={64}
+                    color="#fff"
+                    style={styles.heroPlayIcon}
+                  />
+                </TouchableOpacity>
+              </Animated.View>
+            </>
           )}
-        />
+
+          {/* Categories */}
+          {MEDIA_CATEGORIES.map((cat) => {
+            const items = filtered.filter(
+              (v) => v.category === cat.value && v.id !== featured?.id
+            );
+            if (!items.length) return null;
+
+            return (
+              <View key={cat.value} style={styles.section}>
+                <Text style={styles.sectionLabel}>
+                  {cat.label.toUpperCase()}
+                </Text>
+                <Animated.FlatList
+                  data={items}
+                  horizontal
+                  keyExtractor={(i) => i.id}
+                  showsHorizontalScrollIndicator={false}
+                  pagingEnabled
+                  snapToInterval={CATEGORY_ITEM_WIDTH + CARD_MARGIN}
+                  decelerationRate="fast"
+                  contentContainerStyle={styles.carousel}
+                  onScroll={onHorizontalScroll}
+                  scrollEventThrottle={16}
+                  renderItem={({ index, item }) => (
+                    <CategoryCard
+                      item={item}
+                      index={index}
+                      scrollX={scrollX}
+                      onPress={() => setSelectedItem(item)}
+                    />
+                  )}
+                />
+              </View>
+            );
+          })}
+        </Animated.ScrollView>
 
         {/* Video Player Modal */}
         <Modal
@@ -142,16 +210,16 @@ export default function VideosScreen() {
         >
           <View style={styles.playerContainer}>
             <TouchableOpacity
-              style={styles.closePlayer}
+              style={styles.closeBtn}
               onPress={() => setSelectedItem(null)}
             >
               <Ionicons name="close" size={24} color="#fff" />
             </TouchableOpacity>
             {selectedItem && (
               <YoutubePlayer
-                height={PLAYER_HEIGHT}
+                height={(width * 9) / 16}
                 width={width}
-                videoId={getVideoId(selectedItem.videoUrl)}
+                videoId={selectedItem.videoUrl.match(/v=([^&]+)/)?.[1] || ''}
                 play
                 initialPlayerParams={{ controls: true }}
               />

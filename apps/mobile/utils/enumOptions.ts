@@ -51,3 +51,19 @@ export const STIRRUP_SIZES = ['SM', 'LG', 'XL'].map((s) => ({
 export const SHORTS_SIZES = ['YXL', 'ASM', 'AMD', 'ALG', 'AXL', 'A2XL'].map(
   (s) => ({ label: s, value: s })
 );
+
+export enum MediaCategory {
+  TRAINING = 'TRAINING',
+  PODCAST = 'PODCAST',
+  HIGHLIGHTS = 'HIGHLIGHTS',
+  INTERVIEWS = 'INTERVIEWS',
+  MERCH = 'MERCH',
+}
+
+export const MEDIA_CATEGORIES = Object.values(MediaCategory).map((c) => ({
+  label: c
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (s) => s.toUpperCase()),
+  value: c,
+}));
