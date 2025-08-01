@@ -5,7 +5,7 @@ import { hashPassword, verifyPassword } from '../utils/crypto';
 export const authService = {
   getMockLogin: async () => {
     return await prisma.user.findUnique({
-      where: { id: 'b8e7f6fa-2b20-4aaa-bff4-db2c0fa3b0f7' }, // your mock UUID
+      where: { id: '26f9c1a1-efab-499a-9a97-06022a489647' },
       include: {
         player: {
           include: {

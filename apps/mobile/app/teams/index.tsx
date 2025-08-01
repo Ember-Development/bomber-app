@@ -52,7 +52,12 @@ export default function TeamsScreen() {
 
         <View style={styles.header}>
           <View style={styles.searchBox}>
-            <SearchField />
+            <SearchField
+              value={''}
+              onChangeText={function (text: string): void {
+                throw new Error('Function not implemented.');
+              }}
+            />
           </View>
           <FilterChips
             selected={activeState}

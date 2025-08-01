@@ -5,15 +5,15 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 
 interface SearchFieldProps {
   placeholder?: string;
-  onSearch?: (query: string) => void;
+  value: string;
+  onChangeText: (text: string) => void;
 }
 
 export default function SearchField({
   placeholder = 'Search...',
-  onSearch,
+  value,
+  onChangeText,
 }: SearchFieldProps) {
-  const [query, setQuery] = useState('');
-
   const textColor = useThemeColor({}, 'text');
   const iconColor = useThemeColor({}, 'component');
   const placeholderColor = useThemeColor({}, 'component');
@@ -25,11 +25,8 @@ export default function SearchField({
         style={[styles.input, { color: textColor }]}
         placeholder={placeholder}
         placeholderTextColor={placeholderColor}
-        value={query}
-        onChangeText={(text) => {
-          setQuery(text);
-          if (onSearch) onSearch(text);
-        }}
+        value={value}
+        onChangeText={onChangeText}
       />
     </View>
   );
