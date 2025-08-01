@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   SafeAreaView,
   View,
@@ -50,6 +50,13 @@ export default function ArticlesScreen() {
   const { data: article, isLoading: articleLoading } = useArticleById(
     selectedId || ''
   );
+
+  const sortedArticles = useMemo(() => {
+    return [...articles].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }, [articles]);
 
   // Bottom sheet translation
   const sheetTranslate = useSharedValue(IMAGE_HEIGHT);
@@ -227,7 +234,7 @@ export default function ArticlesScreen() {
           <Text style={styles.title}>Explore Articles</Text>
         </View>
         <FlatList
-          data={articles}
+          data={sortedArticles}
           keyExtractor={(item: ArticleFE) => item.id}
           contentContainerStyle={styles.list}
           ListEmptyComponent={() => (

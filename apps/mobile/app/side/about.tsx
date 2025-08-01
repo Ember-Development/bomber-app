@@ -31,47 +31,47 @@ const TEAM_MEMBERS = [
     name: 'Scott Smith',
     role: 'CEO / President / Head Coach - 18U Gold',
     imageUri:
-      'https://bombersfastpitch.net/wp-content/uploads/2022/03/Staff_ScottSmith.jpg',
+      'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Scott-Smith-scaled-landscape-e56529274e6452b73edfc3d53bbaea3e-5f90a34246c8e.jpg',
     bio: 'Scott oversees the entire program. As our head coach, he has guided multiple teams to national championships. When he’s not on the field, Scott enjoys spending time with his family and analyzing advanced softball analytics.',
   },
   {
     id: 'bo',
     name: 'Bo Vinton',
-    role: 'Director of Coaching',
+    role: 'Chief Operating Officer/Executive Vice President',
     imageUri:
-      'https://bombersfastpitch.net/wp-content/uploads/2022/03/Staff_BoVinton.jpg',
+      'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Bo-Vinton-scaled-landscape-3aa2faa3a59fec1219804926fbd3a33f-5f90a34246c8e.jpg',
     bio: 'Bo heads up our player development curriculum and mentors each coach on the staff. He has a proven track record of developing hitters into Division‐I recruits. In his free time, Bo loves fishing and tinkering with baseball swing data.',
   },
   {
     id: 'david',
     name: 'David McCorkle',
-    role: 'Head Coach - 16U Platinum',
+    role: 'Assistant Program Director/Vice President',
     imageUri:
-      'https://bombersfastpitch.net/wp-content/uploads/2022/03/Staff_DavidMcCorkle.jpg',
+      'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/David-McCorkle-scaled-landscape-5c5db9ae467f5c088d903022b57fd88f-5f90a34246c8e.jpg',
     bio: 'David leads the 16U Platinum squad and specializes in defensive strategy. He has coached multiple college-bound pitchers. Outside softball, David is a high school math teacher and volunteers at local youth camps.',
   },
   {
     id: 'jane',
-    name: 'Jane Doe',
-    role: 'Assistant Coach',
+    name: 'Jennifer Vinton',
+    role: 'Director of Operations',
     imageUri:
-      'https://bombersfastpitch.net/wp-content/uploads/2022/03/Staff_JaneDoe.jpg',
+      'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Jennifer-Vinton-scaled-landscape-078f9bfeb75e201aab6137dde8943af5-5f90a34246c8e.jpg',
     bio: 'Jane focuses on infield development and works closely with our middle‐school camps. She holds multiple coaching clinics across the state. In her spare time, she loves reading and hiking with her dog, Daisy.',
   },
   {
     id: 'john',
-    name: 'John Smith',
-    role: 'Pitching Coach',
+    name: 'Frank Lopez',
+    role: 'Youth Director',
     imageUri:
-      'https://bombersfastpitch.net/wp-content/uploads/2022/03/Staff_JohnSmith.jpg',
+      'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Frank-Lopez-1-scaled-landscape-e3f7819616404e5c90ab23650caf4a90-5f90a34246c8e.jpg',
     bio: 'John is our lead pitching instructor—he’s sent over 50 pitchers to NCAA programs. A former all‐state pitcher himself, he now devotes his time to biomechanics research. Off the mound, John enjoys woodworking.',
   },
   {
     id: 'emily',
-    name: 'Emily Davis',
-    role: 'Strength & Conditioning',
+    name: 'Jade Nottebrok',
+    role: 'Media Director',
     imageUri:
-      'https://bombersfastpitch.net/wp-content/uploads/2022/03/Staff_EmilyDavis.jpg',
+      'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Jade-Nottebrok-scaled-landscape-6d6f7a877b9ffb01e55b7fb63dd7d2d9-5f90a34246c8e.jpg',
     bio: 'Emily oversees all strength and conditioning regimens. With a background in sports nutrition, she keeps our athletes performing at peak levels. When not at the gym, Emily bakes sourdough and trains for marathons.',
   },
 ];
@@ -119,11 +119,11 @@ const CULTURE_METRICS = [
   {
     id: 'metric5',
     number: '1900+',
-    label: 'Participants Nationwide',
+    label: 'Bombers Nationwide',
   },
   {
     id: 'metric6',
-    number: '20+',
+    number: '25',
     label: 'Years of Excellence',
   },
 ];
@@ -133,7 +133,7 @@ const METRIC_CARD_SPACING = 16;
 const SINGLE_SET_WIDTH =
   CULTURE_METRICS.length * (METRIC_CARD_WIDTH + METRIC_CARD_SPACING);
 
-const SCROLL_DURATION = 24000;
+const SCROLL_DURATION = 35000;
 
 export default function AboutScreen() {
   const textColor = useThemeColor({}, 'text');
@@ -209,7 +209,7 @@ export default function AboutScreen() {
                     style={styles.metricCardGlass}
                   >
                     <View style={styles.metricCardContent}>
-                      <ThemedText style={[styles.metricNumber]}>
+                      <ThemedText style={styles.metricNumber}>
                         {item.number}
                       </ThemedText>
                       <ThemedText
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
 
   introContainer: {
     marginHorizontal: CARD_HORIZONTAL_PADDING,
-    marginBottom: 32,
+    marginBottom: 12,
   },
   introTitle: {
     fontSize: 28,
@@ -373,6 +373,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     overflow: 'hidden',
     alignSelf: 'center',
+    justifyContent: 'center',
   },
   carouselWrapper: {
     height: 120,
@@ -380,9 +381,10 @@ const styles = StyleSheet.create({
   },
   metricCardWrapper: {
     width: CARD_WIDTH,
-    paddingHorizontal: 0,
     alignItems: 'center',
+    justifyContent: 'center',
   },
+
   metricCardGlass: {
     width: CARD_WIDTH - 40,
     height: 100,
@@ -393,22 +395,20 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginHorizontal: 20,
   },
+
   metricCardContent: {
-    flex: 1,
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   metricNumber: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
     marginBottom: 4,
     color: GlobalColors.bomber,
   },
-  metricLabel: {
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 18,
-  },
+  metricLabel: { fontSize: 14, textAlign: 'center' },
 
   headerContainer: {
     marginHorizontal: CARD_HORIZONTAL_PADDING,
