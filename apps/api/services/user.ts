@@ -77,6 +77,7 @@ export const userService = {
                 id: true,
                 name: true,
                 ageGroup: true,
+                region: true,
               },
             },
           },
@@ -88,10 +89,31 @@ export const userService = {
               select: {
                 id: true,
                 name: true,
+                region: true,
               },
             },
           },
         },
+
+        parent: {
+          select: {
+            children: {
+              select: {
+                team: {
+                  select: {
+                    id: true,
+                    name: true,
+                    region: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+
+        admin: true,
+        regCoach: true,
+        fan: true,
       },
     });
   },
@@ -324,6 +346,30 @@ export const userService = {
         player: { include: { address: true } },
         coach: { include: { address: true } },
         parent: { include: { address: true } },
+      },
+    });
+  },
+
+  createAddress: async ({
+    address1,
+    address2,
+    city,
+    state,
+    zip,
+  }: {
+    address1: string;
+    address2?: string;
+    city: string;
+    state: string;
+    zip: string;
+  }) => {
+    return prisma.address.create({
+      data: {
+        address1,
+        address2,
+        city,
+        state,
+        zip,
       },
     });
   },

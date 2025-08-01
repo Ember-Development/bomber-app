@@ -1,6 +1,7 @@
+// components/ui/atoms/Button.tsx
 import React from 'react';
 import {
-  Pressable,
+  TouchableOpacity,
   Text,
   StyleSheet,
   Platform,
@@ -16,6 +17,8 @@ interface CustomButtonProps {
   variant?: 'primary' | 'secondary' | 'danger' | 'icon' | 'text';
   iconName?: keyof typeof Ionicons.glyphMap;
   fullWidth?: boolean;
+  activeOpacity?: number;
+  disabled?: boolean;
 }
 
 export default function CustomButton({
@@ -24,13 +27,17 @@ export default function CustomButton({
   variant = 'primary',
   iconName,
   fullWidth = false,
+  activeOpacity = 0.6,
+  disabled = false,
 }: CustomButtonProps) {
   const bomber = useThemeColor({}, 'component');
   const component = useThemeColor({}, 'component');
 
   return (
-    <Pressable
+    <TouchableOpacity
       onPress={onPress}
+      activeOpacity={activeOpacity}
+      disabled={disabled}
       style={[
         styles.button,
         variant === 'secondary' && styles.secondary,
@@ -49,12 +56,13 @@ export default function CustomButton({
             variant === 'secondary' && styles.secondaryText,
             variant === 'text' && styles.textVariantText,
             variant === 'danger' && styles.dangerVariantText,
+            disabled && styles.disabledText,
           ]}
         >
           {title}
         </Text>
       )}
-    </Pressable>
+    </TouchableOpacity>
   );
 }
 
@@ -79,7 +87,6 @@ const styles = StyleSheet.create({
       default: {},
     }),
   },
-
   secondary: {
     backgroundColor: 'rgba(255,255,255,0.06)',
     borderColor: 'rgba(255,255,255,0.15)',
@@ -100,6 +107,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     minWidth: 0,
   },
+  disabled: {
+    opacity: 0.4,
+  },
   buttonText: {
     fontWeight: '500',
     textAlign: 'center',
@@ -115,6 +125,9 @@ const styles = StyleSheet.create({
     color: GlobalColors.bomber,
     fontSize: 16,
     fontWeight: '500',
+  },
+  disabledText: {
+    color: GlobalColors.gray,
   },
   fullWidth: {
     width: '100%',

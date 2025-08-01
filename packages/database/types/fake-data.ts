@@ -56,7 +56,7 @@ export function fakePlayerComplete() {
     practiceShortSize: faker.helpers.arrayElement([ShortsSize.YXL, ShortsSize.ASM, ShortsSize.AMD, ShortsSize.ALG, ShortsSize.AXL, ShortsSize.A2XL] as const),
     ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
     userID: undefined,
-    teamID: faker.string.uuid(),
+    teamID: undefined,
     isTrusted: undefined,
     addressID: undefined,
     college: undefined,

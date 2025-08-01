@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import {
   CreatePlayerInput,
   playerService,
@@ -99,3 +99,27 @@ export const deletePlayer = async (
       .json({ message: error.message || 'Failed to delete player' });
   }
 };
+
+export async function addPlayerToTeam(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { playerId, teamCode } = req.body;
+
+    if (!playerId || !teamCode) {
+      return res
+        .status(400)
+        .json({ message: 'playerId and teamCode are required' });
+    }
+
+    const updatedPlayer = await playerService.addPlayerToTeamByCode(
+      playerId,
+      teamCode
+    );
+    return res.status(200).json(updatedPlayer);
+  } catch (err) {
+    next(err);
+  }
+}

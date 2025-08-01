@@ -1,133 +1,131 @@
-import React, { useState, useRef } from "react";
+// components/ui/atoms/DateOfBirthInput.tsx
+import React, { useState } from 'react';
 import {
-  TextInput,
   View,
+  TextInput,
   StyleSheet,
-  Animated,
   Pressable,
   Platform,
   Modal,
-} from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { Ionicons } from "@expo/vector-icons";
-import { useThemeColor } from "@/hooks/useThemeColor";
+  Text,
+} from 'react-native';
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
+import { Ionicons } from '@expo/vector-icons';
+
+const GLASS_COLORS = {
+  background: 'rgba(255, 255, 255, 0.1)',
+  border: 'rgba(255, 255, 255, 0.3)',
+  text: '#fff',
+  placeholder: 'rgba(255, 255, 255, 0.5)',
+  icon: '#fff',
+};
 
 interface DateOfBirthInputProps {
   onChangeText?: (date: string) => void;
+  fullWidth?: boolean;
+  value?: string;
 }
 
 export default function DateOfBirthInput({
   onChangeText,
+  fullWidth = false,
 }: DateOfBirthInputProps) {
   const [date, setDate] = useState<Date | null>(null);
+  const [tempDate, setTempDate] = useState<Date>(new Date());
   const [showPicker, setShowPicker] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
-  const animatedLabel = useRef(new Animated.Value(0)).current;
 
-  const borderColor = useThemeColor({}, "border");
-  const backgroundColor = useThemeColor({}, "component");
-  const textColor = useThemeColor({}, "text");
-  const labelColor = useThemeColor({}, "secondaryText");
-  const modalBackground = useThemeColor({}, "background");
-
-  const formatDate = (selectedDate: Date) => {
-    return selectedDate.toLocaleDateString("en-US", {
-      month: "2-digit",
-      day: "2-digit",
-      year: "numeric",
+  const formatDate = (d: Date) =>
+    d.toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
     });
-  };
 
-  const handleConfirm = (event: any, selectedDate?: Date) => {
-    if (selectedDate) {
-      setDate(selectedDate);
-      if (onChangeText) onChangeText(formatDate(selectedDate));
-      handleFocus();
+  // Android handler: only commit and close once
+  const onAndroidChange = (event: DateTimePickerEvent, selected?: Date) => {
+    if (event.type === 'set' && selected) {
+      setDate(selected);
+      onChangeText?.(formatDate(selected));
     }
     setShowPicker(false);
   };
 
-  const handleFocus = () => {
-    setIsFocused(true);
-    Animated.timing(animatedLabel, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
-  };
-
-  const handleBlur = () => {
-    if (!date) {
-      setIsFocused(false);
-      Animated.timing(animatedLabel, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: false,
-      }).start();
+  // iOS: update tempDate on spin but don’t close
+  const onIOSChange = (_: DateTimePickerEvent, selected?: Date) => {
+    if (selected) {
+      setTempDate(selected);
     }
   };
 
-  const labelStyle = {
-    top: animatedLabel.interpolate({
-      inputRange: [0, 1],
-      outputRange: [16, 4], // Moves label up
-    }),
-    fontSize: animatedLabel.interpolate({
-      inputRange: [0, 1],
-      outputRange: [16, 12], // Shrinks label
-    }),
-    color: isFocused ? textColor : textColor,
+  const openPicker = () => {
+    setTempDate(date || new Date());
+    setShowPicker(true);
+  };
+
+  const closeIOS = () => {
+    setDate(tempDate);
+    onChangeText?.(formatDate(tempDate));
+    setShowPicker(false);
   };
 
   return (
-    <View style={styles.container}>
-      <View
-        style={[
+    <View style={[styles.container, fullWidth && styles.fullWidth]}>
+      <Text style={[styles.label, { color: GLASS_COLORS.text }]}>
+        Date of Birth
+      </Text>
+
+      <Pressable
+        style={({ pressed }) => [
           styles.inputWrapper,
-          { backgroundColor: backgroundColor, borderColor: borderColor },
+          {
+            backgroundColor: GLASS_COLORS.background,
+            borderColor: GLASS_COLORS.border,
+            opacity: pressed ? 0.8 : 1,
+          },
         ]}
+        onPress={openPicker}
       >
-        <Animated.Text style={[styles.label, labelStyle]}>
-          Date of Birth
-        </Animated.Text>
+        <TextInput
+          style={[styles.input, { color: GLASS_COLORS.text }]}
+          placeholder="MM/DD/YYYY"
+          placeholderTextColor={GLASS_COLORS.placeholder}
+          value={date ? formatDate(date) : ''}
+          editable={false}
+          pointerEvents="none"
+        />
+        <Ionicons
+          name="calendar-outline"
+          size={20}
+          style={[styles.icon, { color: GLASS_COLORS.icon }]}
+        />
+      </Pressable>
 
-        <Pressable style={styles.input} onPress={() => setShowPicker(true)}>
-          <TextInput
-            value={date ? formatDate(date) : ""}
-            placeholder={isFocused ? "" : "MM/DD/YYYY"}
-            placeholderTextColor="transparent"
-            editable={false}
-          />
-        </Pressable>
-      </View>
-
-      {showPicker && Platform.OS === "android" && (
+      {showPicker && Platform.OS === 'android' && (
         <DateTimePicker
           value={date || new Date()}
           mode="date"
-          display="default"
+          display="calendar"
           maximumDate={new Date()}
-          onChange={handleConfirm}
+          onChange={onAndroidChange}
         />
       )}
 
-      {/* iOS modal for the picker */}
-      {Platform.OS === "ios" && (
-        <Modal transparent animationType="slide" visible={showPicker}>
-          <View style={styles.modalContainer}>
+      {Platform.OS === 'ios' && showPicker && (
+        <Modal transparent animationType="slide">
+          <View style={styles.modalBg}>
             <View style={styles.modalContent}>
               <DateTimePicker
-                value={date || new Date()}
+                value={tempDate}
                 mode="date"
                 display="spinner"
                 maximumDate={new Date()}
-                onChange={handleConfirm}
+                onChange={onIOSChange}
+                textColor="#fff"
               />
-              <Pressable
-                onPress={() => setShowPicker(false)}
-                style={styles.modalButton}
-              >
-                <Ionicons name="close-circle" size={24} color="red" />
+              <Pressable style={styles.closeBtn} onPress={closeIOS}>
+                <Text style={{ color: GLASS_COLORS.text }}>Done</Text>
               </Pressable>
             </View>
           </View>
@@ -141,42 +139,43 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 15,
   },
-  inputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "transparent",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    borderWidth: 0.5,
-    position: "relative",
-    height: 50,
+  fullWidth: {
+    width: '100%',
   },
   label: {
-    position: "absolute",
-    left: 10,
-    paddingHorizontal: 4,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    borderWidth: 0.5,
+    height: 50,
   },
   input: {
     flex: 1,
-    height: 45,
     fontSize: 16,
-    color: "#000",
-    paddingTop: 10,
   },
-  // Modal styles for iOS
-  modalContainer: {
+  icon: {
+    marginHorizontal: 5,
+  },
+  modalBg: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 10,
+    backgroundColor: GLASS_COLORS.background,
+    borderRadius: 14,
+    padding: 16,
+    width: '100%',
   },
-  modalButton: {
-    alignSelf: "center",
-    marginTop: 10,
+  closeBtn: {
+    marginTop: 12,
+    alignItems: 'center',
   },
 });

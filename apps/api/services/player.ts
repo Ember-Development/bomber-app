@@ -238,6 +238,24 @@ export const playerService = {
     });
   },
 
+  addPlayerToTeamByCode: async (playerId: string, teamCode: string) => {
+    const team = await prisma.team.findFirst({
+      where: { teamCode },
+    });
+
+    if (!team)
+      throw { status: 404, message: 'Team not found with provided code' };
+
+    const player = await prisma.player.update({
+      where: { id: playerId },
+      data: {
+        team: { connect: { id: team.id } },
+      },
+    });
+
+    return player;
+  },
+
   deletePlayer: async (playerId: string, actingUserId: string, role: Role) => {
     const authorized = await canAccessPlayer(actingUserId, playerId, role);
     if (!authorized) throw new Error('Not authorized to remove this player.');

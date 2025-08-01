@@ -15,28 +15,26 @@ import NameModal from '@/app/groups/modals/NameModal';
 import CreateGroupModal from '@/app/groups/modals/AddGroupModal';
 import { formatRelativeTime } from '@/utils/DateTimeUtil';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { usePaginatedChats } from '@/hooks/groups/useChats';
+// 🔁 Switched from paginatedChats to userChats
+import { useUserChats } from '@/hooks/useUser';
 import { useCreateGroup } from '@/hooks/groups/useCreateGroup';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
-import { BlurView } from 'expo-blur';
+import { useUserPermissions } from '@/hooks/useUserPermission';
+import { useNormalizedUser } from '@/utils/user';
 
 export default function GroupsScreen() {
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    usePaginatedChats();
-  const chats = useMemo(() => {
-    return (data?.pages.flat() ?? []).sort(
-      (a: { lastMessageAt: Date }, b: { lastMessageAt: Date }) =>
-        new Date(b.lastMessageAt).getTime() -
-        new Date(a.lastMessageAt).getTime()
-    );
-  }, [data]);
+  const { user } = useNormalizedUser();
+  const { can } = useUserPermissions();
+  const canCreateGroup = can('create-team-group');
+
+  const { data: chats = [], isLoading, isError } = useUserChats(user?.id);
+
   const [modalStep, setModalStep] = useState<'name' | 'group' | null>(null);
   const [groupName, setGroupName] = useState('');
   const router = useRouter();
 
   const styles = createGroupStyles('light');
   const iconColor = useThemeColor({}, 'component');
-  // const component = useThemeColor({}, 'component');
 
   const { mutate: createGroup } = useCreateGroup();
 
@@ -46,14 +44,18 @@ export default function GroupsScreen() {
   };
 
   const handleCreateGroup = (selectedUsers: string[]) => {
+    if (!user?.id) return;
+    const allUsers = Array.from(new Set([...selectedUsers, user.id])).filter(
+      Boolean
+    );
+
     createGroup(
-      { title: groupName, userIds: selectedUsers },
+      { title: groupName, userIds: allUsers, creatorId: user.id },
       {
         onSuccess: (newGroup) => {
           setModalStep(null);
           router.push(`/groups/${newGroup.id}`);
         },
-        onError: (err) => console.error('Create group error', err),
       }
     );
   };
@@ -65,17 +67,13 @@ export default function GroupsScreen() {
           <View style={styles.headerContainer}>
             <ThemedText style={styles.headerText}>Groups</ThemedText>
             <View style={styles.iconContainer}>
-              <CustomButton
-                variant="icon"
-                iconName="add"
-                onPress={() => setModalStep('name')}
-              />
-              {/* IMPLEMENT LATER */}
-              {/* <CustomButton
-              variant="icon"
-              iconName="search"
-              onPress={() => alert('Searching!')}
-            /> */}
+              {canCreateGroup && (
+                <CustomButton
+                  variant="icon"
+                  iconName="add"
+                  onPress={() => setModalStep('name')}
+                />
+              )}
             </View>
           </View>
 
@@ -115,13 +113,6 @@ export default function GroupsScreen() {
               keyExtractor={(item) => `chat-${item.id ?? Math.random()}`}
               refreshing={isLoading}
               contentContainerStyle={{ paddingBottom: 50 }}
-              onEndReached={() => hasNextPage && fetchNextPage()}
-              onEndReachedThreshold={0.5}
-              ListFooterComponent={
-                hasNextPage && isFetchingNextPage ? (
-                  <ActivityIndicator style={{ marginVertical: 16 }} />
-                ) : null
-              }
               renderItem={({ item }) => (
                 <TouchableOpacity
                   onPress={() =>

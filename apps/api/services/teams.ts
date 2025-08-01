@@ -66,9 +66,20 @@ export const teamService = {
     return prisma.team.findMany({
       include: {
         trophyCase: true,
-        players: true,
+        players: {
+          include: {
+            user: true,
+            team: true,
+            parents: true,
+            address: true,
+          },
+        },
+        coaches: {
+          include: {
+            user: true,
+          },
+        },
         // regCoaches: true, // Removed as it is not a valid property
-        coaches: true,
         headCoach: {
           include: {
             user: true,
@@ -98,6 +109,18 @@ export const teamService = {
             user: true,
           },
         },
+      },
+    });
+  },
+
+  getTeamByCode: async (code: string) => {
+    return prisma.team.findUnique({
+      where: { teamCode: code },
+      include: {
+        players: true,
+        coaches: true,
+        headCoach: true,
+        trophyCase: true,
       },
     });
   },
