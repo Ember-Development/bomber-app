@@ -1,8 +1,20 @@
-import express from 'express';
-import { getMockLogins } from '../controllers/authController';
+import { Router } from 'express';
+import {
+  signupBase,
+  login,
+  refresh,
+  logout,
+  getCurrentUser,
+} from '../controllers/authController';
+import { auth } from '../auth/auth';
 
-const router = express.Router();
+const router = Router();
 
-router.get('/login', getMockLogins);
+router.post('/signup', signupBase);
+// router.get('/login', getMockLogins);
+router.post('/login', login);
+router.post('/refresh', auth, refresh);
+router.post('/logout', auth, logout);
+router.get('/me', auth, getCurrentUser);
 
 export default router;

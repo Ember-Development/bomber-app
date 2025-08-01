@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { MessageFE } from '@bomber-app/database';
+import { MessageFE, LocalMessage } from '@bomber-app/database';
+
+type CombinedMessage = MessageFE | LocalMessage;
 
 export function useLocalMessages(initialMessages: MessageFE[]) {
   const [localMessages, setLocalMessages] =
-    useState<MessageFE[]>(initialMessages);
+    useState<CombinedMessage[]>(initialMessages);
 
-  const addLocalMessage = (message: MessageFE) => {
+  const addLocalMessage = (message: LocalMessage) => {
     console.log('📤 Adding local message:', message);
     setLocalMessages((prev) => [...prev, message]);
   };

@@ -4,6 +4,7 @@ type Relations = {
   user: { user: true };
   headTeams: { headTeams: true };
   teams: { teams: true };
+  address: { address: true };
 };
 
 export type CoachDynamic<R extends (keyof Relations)[]> =
@@ -11,5 +12,5 @@ export type CoachDynamic<R extends (keyof Relations)[]> =
     include: { [K in R[number]]: true };
   }>;
 
-export type CoachFE = CoachDynamic<['user', 'headTeams', 'teams']>;
+export type CoachFE = CoachDynamic<['user', 'headTeams', 'teams', 'address']>;
 export type CoachDB = CoachDynamic<[]>;

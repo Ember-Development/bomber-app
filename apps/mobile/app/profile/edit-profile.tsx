@@ -28,43 +28,67 @@ import CustomSelect from '@/components/ui/atoms/dropdown';
 import { useUpdateUser } from '@/hooks/useUser';
 import { useUserContext } from '@/context/useUserContext';
 import { GlobalColors } from '@/constants/Colors';
+import { useNormalizedUser } from '@/utils/user';
 
 interface Props {
   user: UserFE;
   onSuccess?: () => void;
 }
 
-const EditProfileContent: React.FC<Props> = ({ user, onSuccess }) => {
+const EditProfileContent: React.FC<Props> = ({
+  user: intitialUser,
+  onSuccess,
+}) => {
+  const { user, primaryRole } = useNormalizedUser();
+  const isCoach =
+    primaryRole === 'COACH' ||
+    primaryRole === 'PARENT' ||
+    primaryRole === 'FAN';
   const [activeTab, setActiveTab] = useState<'info' | 'contact' | 'gear'>(
-    'info'
+    isCoach ? 'info' : 'info'
   );
   const { refetch } = useUserContext();
   const [isPending, setIsPending] = useState(false);
 
-  const { mutate: updateUser } = useUpdateUser(user.id, {
+  const { mutate: updateUser } = useUpdateUser(intitialUser.id, {
     onSuccess: () => console.log('Update successful'),
   });
 
   const [formData, setFormData] = useState({
-    fname: user.fname,
-    lname: user.lname,
-    email: user.email,
-    phone: user.phone || '',
-    pos1: user.player?.pos1,
-    pos2: user.player?.pos2,
-    jerseyNum: user.player?.jerseyNum,
-    gradYear: user.player?.gradYear,
-    college: user.player?.college,
-    address1: user.player?.address?.address1,
-    address2: user.player?.address?.address2,
-    city: user.player?.address?.city,
-    zip: user.player?.address?.zip,
-    state: user.player?.address?.state,
-    jerseySize: user.player?.jerseySize,
-    pantSize: user.player?.pantSize,
-    stirrupSize: user.player?.stirrupSize,
-    shortSize: user.player?.shortSize,
-    practiceShortSize: user.player?.practiceShortSize,
+    fname: intitialUser.fname,
+    lname: intitialUser.lname,
+    email: intitialUser.email,
+    phone: intitialUser.phone || '',
+    pos1: intitialUser.player?.pos1,
+    pos2: intitialUser.player?.pos2,
+    jerseyNum: intitialUser.player?.jerseyNum,
+    gradYear: intitialUser.player?.gradYear,
+    college: intitialUser.player?.college,
+    address1:
+      intitialUser.player?.address?.address1 ||
+      intitialUser.coach?.address?.address1 ||
+      intitialUser.parent?.address?.address1,
+    address2:
+      intitialUser.player?.address?.address2 ||
+      intitialUser.coach?.address?.address2 ||
+      intitialUser.parent?.address?.address2,
+    city:
+      intitialUser.player?.address?.city ||
+      intitialUser.coach?.address?.city ||
+      intitialUser.parent?.address?.city,
+    zip:
+      intitialUser.player?.address?.zip ||
+      intitialUser.coach?.address?.zip ||
+      intitialUser.parent?.address?.zip,
+    state:
+      intitialUser.player?.address?.state ||
+      intitialUser.coach?.address?.state ||
+      intitialUser.parent?.address?.state,
+    jerseySize: intitialUser.player?.jerseySize,
+    pantSize: intitialUser.player?.pantSize,
+    stirrupSize: intitialUser.player?.stirrupSize,
+    shortSize: intitialUser.player?.shortSize,
+    practiceShortSize: intitialUser.player?.practiceShortSize,
   });
 
   const handleSubmit = () => {
@@ -97,52 +121,56 @@ const EditProfileContent: React.FC<Props> = ({ user, onSuccess }) => {
               fullWidth
               onChangeText={(text) => setFormData({ ...formData, lname: text })}
             />
-            <View style={styles.row}>
-              <View style={styles.half}>
-                <CustomSelect
-                  label="Position 1"
-                  options={POSITIONS}
-                  defaultValue={formData.pos1}
-                  onSelect={(value) =>
-                    setFormData({ ...formData, pos1: value as Position })
+            {!isCoach && (
+              <>
+                <View style={styles.row}>
+                  <View style={styles.half}>
+                    <CustomSelect
+                      label="Position 1"
+                      options={POSITIONS}
+                      defaultValue={formData.pos1}
+                      onSelect={(value) =>
+                        setFormData({ ...formData, pos1: value as Position })
+                      }
+                    />
+                  </View>
+                  <View style={styles.half}>
+                    <CustomSelect
+                      label="Position 2"
+                      options={POSITIONS}
+                      defaultValue={formData.pos2}
+                      onSelect={(value) =>
+                        setFormData({ ...formData, pos2: value as Position })
+                      }
+                    />
+                  </View>
+                </View>
+                <CustomInput
+                  label="Jersey #"
+                  defaultValue={formData.jerseyNum}
+                  fullWidth
+                  onChangeText={(text) =>
+                    setFormData({ ...formData, jerseyNum: text })
                   }
                 />
-              </View>
-              <View style={styles.half}>
-                <CustomSelect
-                  label="Position 2"
-                  options={POSITIONS}
-                  defaultValue={formData.pos2}
-                  onSelect={(value) =>
-                    setFormData({ ...formData, pos2: value as Position })
+                <CustomInput
+                  label="Graduation Year"
+                  defaultValue={formData.gradYear}
+                  fullWidth
+                  onChangeText={(text) =>
+                    setFormData({ ...formData, gradYear: text })
                   }
                 />
-              </View>
-            </View>
-            <CustomInput
-              label="Jersey #"
-              defaultValue={formData.jerseyNum}
-              fullWidth
-              onChangeText={(text) =>
-                setFormData({ ...formData, jerseyNum: text })
-              }
-            />
-            <CustomInput
-              label="Graduation Year"
-              defaultValue={formData.gradYear}
-              fullWidth
-              onChangeText={(text) =>
-                setFormData({ ...formData, gradYear: text })
-              }
-            />
-            <CustomInput
-              label="College Committed"
-              defaultValue={formData.college ?? undefined}
-              fullWidth
-              onChangeText={(text) =>
-                setFormData({ ...formData, college: text })
-              }
-            />
+                <CustomInput
+                  label="College Committed"
+                  defaultValue={formData.college ?? undefined}
+                  fullWidth
+                  onChangeText={(text) =>
+                    setFormData({ ...formData, college: text })
+                  }
+                />
+              </>
+            )}
           </View>
         );
       case 'contact':
@@ -166,14 +194,6 @@ const EditProfileContent: React.FC<Props> = ({ user, onSuccess }) => {
               fullWidth
               onChangeText={(text) =>
                 setFormData({ ...formData, address1: text })
-              }
-            />
-            <CustomInput
-              label="Address 2"
-              defaultValue={formData.address2}
-              fullWidth
-              onChangeText={(text) =>
-                setFormData({ ...formData, address2: text })
               }
             />
             <View style={styles.row}>
@@ -275,24 +295,46 @@ const EditProfileContent: React.FC<Props> = ({ user, onSuccess }) => {
 
   return (
     <View style={styles.wrapper}>
-      <View style={styles.tabs}>
-        {['info', 'contact', 'gear'].map((key) => (
-          <TouchableOpacity
-            key={key}
-            style={[styles.tabButton, activeTab === key && styles.tabActive]}
-            onPress={() => setActiveTab(key as typeof activeTab)}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === key && styles.tabTextActive,
-              ]}
+      {!isCoach && (
+        <View style={styles.tabs}>
+          {['info', 'contact', 'gear'].map((key) => (
+            <TouchableOpacity
+              key={key}
+              style={[styles.tabButton, activeTab === key && styles.tabActive]}
+              onPress={() => setActiveTab(key as typeof activeTab)}
             >
-              {key.charAt(0).toUpperCase() + key.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === key && styles.tabTextActive,
+                ]}
+              >
+                {key.charAt(0).toUpperCase() + key.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+      {isCoach && (
+        <View style={styles.tabs}>
+          {['info', 'contact'].map((key) => (
+            <TouchableOpacity
+              key={key}
+              style={[styles.tabButton, activeTab === key && styles.tabActive]}
+              onPress={() => setActiveTab(key as typeof activeTab)}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === key && styles.tabTextActive,
+                ]}
+              >
+                {key.charAt(0).toUpperCase() + key.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
       <ScrollView contentContainerStyle={{ paddingBottom: 60 }}>
         <View style={styles.formGlass}>{renderTab()}</View>
