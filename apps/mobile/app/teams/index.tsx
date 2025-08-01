@@ -19,22 +19,35 @@ import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 
 export default function TeamsScreen() {
   const { data: teams = [], isLoading } = useTeams();
-  const stateOptions = ['ALL', ...US_STATES.map((s) => s.label)];
   const [search, setSearch] = useState('');
   const [activeState, setActiveState] = useState('ALL');
+  const [activeRegion, setActiveRegion] = useState('ALL');
   const styles = createTeamsScreenStyles();
   const router = useRouter();
+
+  const stateOptions = ['ALL', ...US_STATES.map((s) => s.label)];
+  const regionOptions: string[] = [
+    'ALL',
+    ...Array.from(new Set(teams.map((t) => t.region).filter(Boolean))),
+  ];
+
   const getFilterValue = (label: string) =>
     label === 'ALL'
       ? 'ALL'
       : (US_STATES.find((s) => s.label === label)?.value ?? label);
 
   const filteredTeams = teams.filter((team) => {
-    const matchesSearch = team.name
-      .toLowerCase()
-      .includes(search.toLowerCase());
+    const matchesSearch =
+      team.name.toLowerCase().includes(search.toLowerCase()) ||
+      team.coaches?.some((c) =>
+        `${c.user?.fname ?? ''} ${c.user?.lname ?? ''}`
+          .toLowerCase()
+          .includes(search.toLowerCase())
+      );
     const matchesState = activeState === 'ALL' || team.state === activeState;
-    return matchesSearch && matchesState;
+    const matchesRegion =
+      activeRegion === 'ALL' || team.region === activeRegion;
+    return matchesSearch && matchesState && matchesRegion;
   });
 
   return (
@@ -63,6 +76,11 @@ export default function TeamsScreen() {
             selected={activeState}
             onSelect={(label) => setActiveState(getFilterValue(label))}
             options={stateOptions}
+          />
+          <FilterChips
+            selected={activeRegion}
+            onSelect={(label) => setActiveRegion(label)}
+            options={regionOptions}
           />
         </View>
 

@@ -1,6 +1,8 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { PlayerFE } from '@bomber-app/database';
 import {
+  deletePlayer,
+  getAlumniPlayers,
   addPlayerToTeam,
   deletePlayer,
   getPlayerById,
@@ -12,7 +14,7 @@ export const usePlayerById = (id: string) => {
   return useQuery<PlayerFE>({
     queryKey: ['player', id],
     queryFn: () => getPlayerById(id),
-    enabled: !!id,
+    enabled: !!id && id.length === 36,
   });
 };
 

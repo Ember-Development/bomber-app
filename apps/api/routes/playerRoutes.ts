@@ -4,6 +4,7 @@ import {
   createPlayer,
   deletePlayer,
   getAllPlayers,
+  getAlumniPlayers,
   getPlayerById,
   updatePlayer,
 } from '../controllers/playerController';
@@ -13,6 +14,7 @@ import { authorize } from '../middleware/authorize';
 const router = express.Router();
 
 router.get('/', getAllPlayers);
+router.get('/alumni', getAlumniPlayers);
 router.get('/:id', getPlayerById);
 router.post('/', createPlayer);
 router.post('/add-to-team', addPlayerToTeam);
