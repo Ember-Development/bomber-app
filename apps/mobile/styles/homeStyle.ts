@@ -112,6 +112,9 @@ export const createHomeStyles = () =>
       paddingHorizontal: 20,
       marginVertical: 10,
     },
+    articlesSection: {
+      marginBottom: 24,
+    },
     becomeBomber: {
       paddingHorizontal: 20,
       marginTop: 20,

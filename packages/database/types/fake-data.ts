@@ -1,4 +1,4 @@
-import { State, AttendanceStatus, EventType, UserRole, Regions, PantsSize, AgeGroup, Position, JerseySize, StirrupSize, ShortsSize } from 'C:\Users\gunna\Desktop\Bomber\bomber-app\packages\database\generated\client';
+import { State, AttendanceStatus, EventType, UserRole, Regions, MediaCategory, PantsSize, AgeGroup, Position, JerseySize, StirrupSize, ShortsSize } from 'C:\Users\gunna\Desktop\Bomber\bomber-app\packages\database\generated\client';
 import { faker } from '@faker-js/faker';
 import Decimal from 'decimal.js';
 
@@ -315,6 +315,7 @@ export function fakeMedia() {
   return {
     title: faker.lorem.words(5),
     videoUrl: faker.lorem.words(5),
+    category: faker.helpers.arrayElement([MediaCategory.TRAINING, MediaCategory.PODCAST, MediaCategory.HIGHLIGHTS, MediaCategory.INTERVIEWS, MediaCategory.MERCH] as const),
     updatedAt: faker.date.anytime(),
   };
 }
@@ -323,6 +324,7 @@ export function fakeMediaComplete() {
     id: faker.string.uuid(),
     title: faker.lorem.words(5),
     videoUrl: faker.lorem.words(5),
+    category: faker.helpers.arrayElement([MediaCategory.TRAINING, MediaCategory.PODCAST, MediaCategory.HIGHLIGHTS, MediaCategory.INTERVIEWS, MediaCategory.MERCH] as const),
     createdAt: new Date(),
     updatedAt: faker.date.anytime(),
   };

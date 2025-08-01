@@ -211,7 +211,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
     ...(Platform.OS === 'web' ? { backdropFilter: 'blur(10px)' } : {}),
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   cardHeader: {
     flexDirection: 'row',
