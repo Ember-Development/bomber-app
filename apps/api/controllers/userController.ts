@@ -1,5 +1,6 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { CreateUserInput, userService } from '../services/user';
+import { AuthenticatedRequest } from '../auth/devAuth';
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -69,7 +70,7 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
-export const updateUser = async (req: Request, res: Response) => {
+export const updateUser = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = await userService.updateUser(req.params.id, req.body);
     return res.json(user);
@@ -78,3 +79,31 @@ export const updateUser = async (req: Request, res: Response) => {
     return res.status(500).json({ error: 'Failed to update user' });
   }
 };
+
+export async function createAddress(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { address1, address2, city, state, zip } = req.body;
+
+    if (!address1 || !city || !state || !zip) {
+      return res
+        .status(400)
+        .json({ message: 'Missing required address fields' });
+    }
+
+    const address = await userService.createAddress({
+      address1,
+      address2,
+      city,
+      state,
+      zip,
+    });
+
+    return res.status(201).json(address);
+  } catch (err) {
+    next(err);
+  }
+}

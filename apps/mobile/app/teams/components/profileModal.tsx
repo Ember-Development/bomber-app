@@ -1,17 +1,16 @@
+import React from 'react';
 import {
   View,
   Text,
   Image,
   Modal,
   StyleSheet,
-  Dimensions,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { PlayerFE } from '@bomber-app/database';
-
-const { width } = Dimensions.get('window');
 
 interface ProfileModalProps {
   isVisible: boolean;
@@ -26,7 +25,7 @@ export default function ProfileModal({
 }: ProfileModalProps) {
   if (!player) return null;
 
-  const cards = [
+  const infoCards = [
     { label: 'Primary Position', value: player.pos1 },
     { label: 'Secondary Position', value: player.pos2 },
     { label: 'Age Group', value: player.ageGroup },
@@ -47,7 +46,6 @@ export default function ProfileModal({
           style={StyleSheet.absoluteFill}
         />
 
-        {/* Content */}
         <View style={styles.container}>
           <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
             <Ionicons name="close" size={24} color="#fff" />
@@ -65,21 +63,24 @@ export default function ProfileModal({
             {player.user?.fname} {player.user?.lname}
           </Text>
 
-          <View style={styles.grid}>
-            {cards.map((card, i) => {
-              const isLast = i === cards.length - 1;
-              const isOdd = cards.length % 2 !== 0;
+          <ScrollView
+            contentContainerStyle={styles.grid}
+            showsVerticalScrollIndicator={false}
+          >
+            {infoCards.map((card, i) => {
+              const isLast = i === infoCards.length - 1;
+              const isOdd = infoCards.length % 2 !== 0;
               const isFullWidth = isOdd && isLast;
               return (
                 <GlassCard
-                  key={card.label}
+                  key={`${card.label}-${i}`}
                   label={card.label}
                   value={card.value}
                   isFullWidth={isFullWidth}
                 />
               );
             })}
-          </View>
+          </ScrollView>
         </View>
       </View>
     </Modal>
@@ -159,6 +160,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: 16,
+    paddingBottom: 40,
   },
   card: {
     width: '47%',

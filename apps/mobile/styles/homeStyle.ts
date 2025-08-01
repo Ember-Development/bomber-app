@@ -67,7 +67,7 @@ export const createHomeStyles = () =>
       marginVertical: 15,
     },
     legacyList: {
-      marginTop: 16,
+      marginTop: 5,
       width: '100%',
       flexDirection: 'column',
       gap: 8,
@@ -111,5 +111,50 @@ export const createHomeStyles = () =>
       flexDirection: 'column',
       paddingHorizontal: 20,
       marginVertical: 10,
+    },
+    becomeBomber: {
+      paddingHorizontal: 20,
+      marginTop: 20,
+    },
+    bomberCard: {
+      marginTop: 12,
+      borderRadius: 16,
+      overflow: 'hidden',
+      shadowColor: '#000',
+      shadowOpacity: 0.2,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 3,
+    },
+    bomberImage: {
+      width: '100%',
+      height: 180,
+      borderRadius: 16,
+    },
+    bomberOverlay: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: 60,
+      borderBottomLeftRadius: 16,
+      borderBottomRightRadius: 16,
+      justifyContent: 'center',
+      alignItems: 'flex-start',
+      paddingHorizontal: 30,
+      overflow: 'hidden',
+    },
+    bomberText: {
+      color: '#fff',
+      fontSize: 16,
+      letterSpacing: 1,
+    },
+    bomberFadeTop: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 20, // small soft fade height
+      zIndex: 2, // on top of the blur
     },
   });
