@@ -1,19 +1,17 @@
+// src/screens/HomeScreen.tsx
 import {
   SafeAreaView,
-  Animated,
+  Animated as RNAnimated,
   View,
   TouchableOpacity,
   ActivityIndicator,
   Image,
-  ViewStyle,
   StyleSheet,
 } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import BannerModal, { BannerData } from '@/components/ui/organisms/Banner';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// Components
 import { ThemedText } from '@/components/ThemedText';
 import Card from '@/components/ui/molecules/Card';
 import NotificationCard from '@/components/ui/molecules/NotificationCard';
@@ -24,10 +22,15 @@ import ArticleCard from '@/components/ui/molecules/ArticleCard';
 import VideoCard from '@/components/ui/molecules/MediaCards';
 import becomeBomberImage from '@/assets/images/bomberimage1.jpg';
 
+import { useAllMedia } from '@/hooks/media/useMedia';
+import FeaturedVideoCard from '@/components/ui/molecules/featuredVideoCard';
+import CategoryCard from '@/components/ui/molecules/CategoryCard';
+import { CATEGORY_ITEM_WIDTH, CARD_MARGIN } from '@/styles/videoscreenStyle';
+
 import { useUserContext } from '@/context/useUserContext';
 import { useUserEvents, useUserChats } from '@/hooks/useUser';
 import { formatEvents } from '@/utils/FormatEvents';
-import { legacyItems, mockArticles, mockVideos } from '@/constants/items';
+import { legacyItems } from '@/constants/items';
 import { createHomeStyles } from '@/styles/homeStyle';
 import { GlobalColors } from '@/constants/Colors';
 import { QuickAction, quickActionMap } from '@/constants/quickActions';
@@ -37,13 +40,31 @@ import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useBanners } from '@/hooks/banner/useBanner';
 
+import Reanimated, {
+  useSharedValue,
+  useAnimatedScrollHandler,
+} from 'react-native-reanimated';
+import { useAllArticles } from '@/hooks/media/useArticle';
+
 export default function HomeScreen() {
-  const { user, refetch } = useUserContext();
+  const { user } = useUserContext();
   const router = useRouter();
   const styles = createHomeStyles();
-  const scrollY = useRef(new Animated.Value(0)).current;
 
-  // Ensure primaryRole is a string and normalize
+  // Header stretch/shrink using RN Animated
+  const scrollY = useRef(new RNAnimated.Value(0)).current;
+  const headerHeight = scrollY.interpolate({
+    inputRange: [0, 80],
+    outputRange: [100, 70],
+    extrapolate: 'clamp',
+  });
+  const headerScale = scrollY.interpolate({
+    inputRange: [0, 80],
+    outputRange: [1, 0.9],
+    extrapolate: 'clamp',
+  });
+
+  // User data & roles
   const primaryRole = Array.isArray(user?.primaryRole)
     ? user.primaryRole[0]
     : (user?.primaryRole ?? '');
@@ -60,33 +81,36 @@ export default function HomeScreen() {
     ).values()
   );
 
+  // Data fetching
   const { data: rawEvents, isLoading: isEventsLoading } = useUserEvents(
     user?.id
   );
   const { data: userChats, isLoading: isChatsLoading } = useUserChats(user?.id);
   const { data: banners, isLoading: bannersLoading } = useBanners();
-  const [showBanner, setShowBanner] = useState(true);
-  const [currentBanner, setCurrentBanner] = useState<BannerData | null>(null);
+  const { data: videos, isLoading: isMediaLoading } = useAllMedia();
+  const { data: articles = [], isLoading: isArticlesLoading } =
+    useAllArticles();
 
-  const handlePaymentPress = () => alert('Payment Reroute Clicked');
-  const handleTeamsPress = () => alert('Teams Reroute Clicked');
-  const seeAllEvents = () => alert('See All Events Clicked');
-  const seeAllGroups = () => alert('See All Groups Clicked');
-  const seeAllMedia = () => alert('See All Media Clicked');
-
+  const sortedArticles = useMemo(() => {
+    return [...articles].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }, [articles]);
+  const topThree = sortedArticles.slice(0, 3);
   const formattedEvents = formatEvents(rawEvents ?? []);
 
+  // Banner logic
+  const [showBanner, setShowBanner] = useState(true);
+  const [currentBanner, setCurrentBanner] = useState<BannerData | null>(null);
   useEffect(() => {
     (async () => {
       if (bannersLoading || !banners) return;
-
       const now = new Date();
       const active = banners.find((b) => new Date(b.expiresAt) > now);
       if (!active) return;
-
       const seenJson = await AsyncStorage.getItem('seenBanners');
       const seen: string[] = seenJson ? JSON.parse(seenJson) : [];
-
       if (!seen.includes(active.id)) {
         setCurrentBanner({
           id: active.id,
@@ -98,29 +122,37 @@ export default function HomeScreen() {
       }
     })();
   }, [banners, bannersLoading]);
-
-  // mark banner as seen and hide it
   const handleCloseBanner = async () => {
-    if (currentBanner) {
-      const seenJson = await AsyncStorage.getItem('seenBanners');
-      const seen: string[] = seenJson ? JSON.parse(seenJson) : [];
-      if (!seen.includes(currentBanner.id)) {
-        seen.push(currentBanner.id);
-        await AsyncStorage.setItem('seenBanners', JSON.stringify(seen));
-      }
+    if (!currentBanner) return;
+    const seenJson = await AsyncStorage.getItem('seenBanners');
+    const seen: string[] = seenJson ? JSON.parse(seenJson) : [];
+    if (!seen.includes(currentBanner.id)) {
+      seen.push(currentBanner.id);
+      await AsyncStorage.setItem('seenBanners', JSON.stringify(seen));
     }
     setShowBanner(false);
   };
 
-  const headerHeight = scrollY.interpolate({
-    inputRange: [0, 80],
-    outputRange: [100, 70],
-    extrapolate: 'clamp',
-  });
-  const headerScale = scrollY.interpolate({
-    inputRange: [0, 80],
-    outputRange: [1, 0.9],
-    extrapolate: 'clamp',
+  // Hero + mini‐carousel setup
+  const sortedVideos = useMemo(
+    () =>
+      (videos ?? [])
+        .slice()
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        ),
+    [videos]
+  );
+  const hero = sortedVideos[0] ?? null;
+  const miniList = sortedVideos.slice(1, 4);
+
+  // Reanimated for mini‐carousel
+  const scrollX = useSharedValue(0);
+  const onMiniScroll = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      scrollX.value = e.contentOffset.x;
+    },
   });
 
   if (!user || isEventsLoading || isChatsLoading) {
@@ -132,14 +164,8 @@ export default function HomeScreen() {
     );
   }
 
-  const handleSeeAllEvents = () => {
-    /* logic */
-  };
-  const handleSeeAllGroups = () => {
-    /* logic */
-  };
   const handleSeeAllMedia = () => {
-    /* logic */
+    router.push('/side/videos');
   };
 
   return (
@@ -153,9 +179,10 @@ export default function HomeScreen() {
           />
         )}
 
-        <Animated.ScrollView
+        {/* Main scroll with RN Animated */}
+        <RNAnimated.ScrollView
           contentContainerStyle={{ paddingBottom: 60, flexGrow: 1 }}
-          onScroll={Animated.event(
+          onScroll={RNAnimated.event(
             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
             { useNativeDriver: false }
           )}
@@ -164,13 +191,10 @@ export default function HomeScreen() {
           bounces={false}
         >
           {/* Header */}
-          <Animated.View
+          <RNAnimated.View
             style={[
               styles.titleContainer,
-              {
-                height: headerHeight,
-                transform: [{ scale: headerScale }],
-              },
+              { height: headerHeight, transform: [{ scale: headerScale }] },
             ]}
           >
             <View style={styles.title}>
@@ -186,7 +210,7 @@ export default function HomeScreen() {
                 primaryRole={primaryRole}
               />
             </View>
-          </Animated.View>
+          </RNAnimated.View>
 
           {/* Quick Actions & Notifications */}
           <View style={styles.quickAction}>
@@ -200,7 +224,7 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* Events — hidden for Fans */}
+          {/* Events */}
           {!isFan && (
             <View style={styles.event}>
               <View style={styles.EventText}>
@@ -208,7 +232,7 @@ export default function HomeScreen() {
                 <CustomButton
                   title="See All"
                   variant="text"
-                  onPress={handleSeeAllEvents}
+                  onPress={() => {}}
                   fullWidth={false}
                 />
               </View>
@@ -258,7 +282,7 @@ export default function HomeScreen() {
             </Animated.View>
           )} */}
 
-          {/* Media */}
+          {/* Media Section: Hero + Mini‐Carousel */}
           <View style={styles.mediaSection}>
             <View style={styles.EventText}>
               <ThemedText type="title">Media</ThemedText>
@@ -269,25 +293,100 @@ export default function HomeScreen() {
                 fullWidth={false}
               />
             </View>
-            <Animated.ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 5, paddingBottom: 5 }}
-              decelerationRate="fast"
-              snapToAlignment="start"
-              snapToInterval={200}
-              bounces={false}
-            >
-              {mockArticles.map((item, idx) => (
-                <ArticleCard key={`article-${idx}`} {...item} />
-              ))}
-              {mockVideos.map((item, idx) => (
-                <VideoCard key={`video-${idx}`} {...item} />
-              ))}
-            </Animated.ScrollView>
+
+            {isMediaLoading ? (
+              <ActivityIndicator style={{ marginVertical: 20 }} />
+            ) : (
+              <>
+                {/* Hero video */}
+                {hero && (
+                  <View style={{ marginBottom: 16 }}>
+                    <FeaturedVideoCard
+                      video={hero}
+                      onPress={() =>
+                        router.push({
+                          pathname: '../video/[id]',
+                          params: { id: hero.id },
+                        })
+                      }
+                    />
+                  </View>
+                )}
+
+                {/* Mini‐carousel */}
+                <Reanimated.ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  snapToInterval={CATEGORY_ITEM_WIDTH + CARD_MARGIN}
+                  decelerationRate="fast"
+                  onScroll={onMiniScroll}
+                  scrollEventThrottle={16}
+                  contentContainerStyle={{
+                    paddingHorizontal: 0,
+                  }}
+                >
+                  {miniList.map((vid, idx) => (
+                    <CategoryCard
+                      key={vid.id}
+                      item={vid}
+                      index={idx}
+                      scrollX={scrollX}
+                      onPress={() =>
+                        router.push({
+                          pathname: '../video/[id]',
+                          params: { id: vid.id },
+                        })
+                      }
+                    />
+                  ))}
+                </Reanimated.ScrollView>
+              </>
+            )}
           </View>
 
-          {/* Legacy */}
+          <View
+            style={
+              styles.mediaSection /* you can add a new style like styles.articlesSection */
+            }
+          >
+            <View style={styles.EventText}>
+              <ThemedText type="title">Articles</ThemedText>
+              <CustomButton
+                title="See All"
+                variant="text"
+                onPress={() => router.push('/side/articles')}
+                fullWidth={false}
+              />
+            </View>
+
+            {isArticlesLoading ? (
+              <ActivityIndicator style={{ marginVertical: 20 }} />
+            ) : (
+              <Reanimated.ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                decelerationRate="fast"
+                snapToInterval={176} // card width (160 + margin)
+                bounces={false}
+              >
+                {topThree.map((item) => (
+                  <ArticleCard
+                    key={item.id}
+                    image={{ uri: item.imageUrl || '' }}
+                    title={item.title}
+                    onPress={() =>
+                      router.push({
+                        pathname: '../article/[id]',
+                        params: { id: item.id },
+                      })
+                    }
+                  />
+                ))}
+              </Reanimated.ScrollView>
+            )}
+          </View>
+
+          {/* Legacy & other sections... */}
           <View style={styles.legacy}>
             <View style={styles.legacyText}>
               <ThemedText type="title">Bombers Legacy</ThemedText>
@@ -356,7 +455,7 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
           )}
-        </Animated.ScrollView>
+        </RNAnimated.ScrollView>
       </SafeAreaView>
     </BackgroundWrapper>
   );

@@ -1,4 +1,3 @@
-// utils/region.ts
 export const REGION_LABELS: Record<string, string> = {
   NW: 'Northwest',
   SW: 'Southwest',
