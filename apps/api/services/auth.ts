@@ -3,7 +3,7 @@ import { prisma } from '@bomber-app/database';
 export const authService = {
   getMockLogin: async () => {
     return await prisma.user.findUnique({
-      where: { id: '04a33843-74ea-48a1-ae63-596ec289bae6' },
+      where: { id: '26f9c1a1-efab-499a-9a97-06022a489647' },
       include: {
         player: {
           include: {
