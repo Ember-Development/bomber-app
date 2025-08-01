@@ -1,3 +1,4 @@
+// src/components/UserAvatar.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -5,16 +6,16 @@ import {
   StyleSheet,
   Pressable,
   Modal,
-  TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Separator from '../atoms/Seperator';
 import { ThemedText } from '@/components/ThemedText';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { GlobalColors } from '@/constants/Colors';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useRouter } from 'expo-router';
-
 import { SIDEMENU_ITEMS } from '@/constants/sidebarItems';
 import { useLogout } from '@/hooks/user/useLogout';
 
@@ -40,8 +41,11 @@ export default function UserAvatar({
   const displayRole =
     primaryRole.charAt(0).toUpperCase() + primaryRole.slice(1).toLowerCase();
 
-  // hide certain items if user is a FAN
-  const isFan = primaryRole.toUpperCase() === 'FAN';
+  const role = primaryRole.toUpperCase();
+  const isFan = role === 'FAN';
+  const canSeeBomberPortal = ['ADMIN', 'REGIONAL_COACH', 'COACH'].includes(
+    role
+  );
 
   const navigateAndClose = (path: string) => {
     setMenuVisible(false);
@@ -64,45 +68,48 @@ export default function UserAvatar({
       <Modal visible={menuVisible} animationType="slide" transparent>
         <View style={styles.modalContainer}>
           <BlurView intensity={70} tint="dark" style={styles.sidebar}>
-            {/* Profile Header */}
-            <View style={styles.profileHeader}>
-              <View style={styles.profileDetails}>
-                <View style={styles.avatarLarge}>
-                  <ThemedText
-                    style={[styles.avatarTextLarge, { color: textColor }]}
-                  >
-                    {initials}
-                  </ThemedText>
+            {/* Scrollable menu content */}
+            <ScrollView
+              style={styles.scrollArea}
+              showsVerticalScrollIndicator={false}
+            >
+              {/* Profile Header */}
+              <View style={styles.profileHeader}>
+                <View style={styles.profileDetails}>
+                  <View style={styles.avatarLarge}>
+                    <ThemedText
+                      style={[styles.avatarTextLarge, { color: textColor }]}
+                    >
+                      {initials}
+                    </ThemedText>
+                  </View>
+                  <View>
+                    <ThemedText style={[styles.nameText, { color: textColor }]}>
+                      {firstName} {lastName}
+                    </ThemedText>
+                    <ThemedText style={styles.roleText}>
+                      {displayRole}
+                    </ThemedText>
+                  </View>
                 </View>
-                <View>
-                  <ThemedText style={[styles.nameText, { color: textColor }]}>
-                    {firstName} {lastName}
-                  </ThemedText>
-                  <ThemedText style={styles.roleText}>{displayRole}</ThemedText>
-                </View>
+                <Pressable onPress={() => setMenuVisible(false)}>
+                  <Ionicons name="close" size={26} color={textColor} />
+                </Pressable>
               </View>
-              <TouchableOpacity
-                accessibilityRole="button"
-                accessibilityLabel="Close menu"
-                onPress={() => setMenuVisible(false)}
-              >
-                <Ionicons name="close" size={26} color={textColor} />
-              </TouchableOpacity>
-            </View>
 
-            <Separator marginVertical={4} />
+              <Separator marginVertical={4} />
 
-            <View style={styles.menuItems}>
-              {SIDEMENU_ITEMS.filter(
-                (item) =>
-                  !(
-                    isFan &&
-                    ['Bomber Portal', 'Player Development'].includes(item.name)
-                  )
-              ).map((item) => {
+              {/* Dynamic menu items */}
+              {SIDEMENU_ITEMS.filter((item) => {
+                if (item.name === 'Bomber Portal' && !canSeeBomberPortal)
+                  return false;
+                if (item.name === 'Player Development' && isFan) return false;
+                return true;
+              }).map((item) => {
+                // Media submenu
                 if (item.name === 'Media') {
                   return (
-                    <React.Fragment key="media-fragment">
+                    <React.Fragment key="media">
                       <Pressable
                         style={styles.menuItem}
                         onPress={() => setMediaExpanded((p) => !p)}
@@ -162,9 +169,10 @@ export default function UserAvatar({
                   );
                 }
 
+                // Legacy submenu
                 if (item.name === 'Legacy') {
                   return (
-                    <React.Fragment key="legacy-fragment">
+                    <React.Fragment key="legacy">
                       <Pressable
                         style={styles.menuItem}
                         onPress={() => setLegacyExpanded((p) => !p)}
@@ -241,7 +249,7 @@ export default function UserAvatar({
                   );
                 }
 
-                // Default item
+                // Default items
                 return (
                   <Pressable
                     key={item.name}
@@ -262,6 +270,7 @@ export default function UserAvatar({
 
               <Separator marginVertical={12} />
 
+              {/* Footer links */}
               <View style={styles.footer}>
                 {['Profile', 'Settings', 'Contact', 'Payment']
                   .filter((text) => !(isFan && text === 'Payment'))
@@ -272,17 +281,13 @@ export default function UserAvatar({
                       onPress={() => {
                         switch (text) {
                           case 'Profile':
-                            navigateAndClose('/profile');
-                            break;
+                            return navigateAndClose('/profile');
                           case 'Settings':
-                            navigateAndClose('/settings');
-                            break;
+                            return navigateAndClose('/settings');
                           case 'Contact':
-                            navigateAndClose('/side/contact');
-                            break;
+                            return navigateAndClose('/side/contact');
                           case 'Payment':
-                            navigateAndClose('/payment');
-                            break;
+                            return navigateAndClose('/payment');
                         }
                       }}
                     >
@@ -292,8 +297,9 @@ export default function UserAvatar({
                     </Pressable>
                   ))}
               </View>
-            </View>
+            </ScrollView>
 
+            {/* Logout button fixed at bottom */}
             <Pressable
               style={styles.logoutButton}
               onPress={async () => {
@@ -332,6 +338,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   sidebar: {
+    flex: 1,
     width: '100%',
     height: '100%',
     paddingTop: 50,
@@ -339,14 +346,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderTopRightRadius: 24,
     borderBottomRightRadius: 24,
-    overflow: 'hidden',
+  },
+  scrollArea: {
+    flex: 1,
   },
   profileHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 30,
-    marginTop: 20,
+    marginTop: 30,
   },
   profileDetails: {
     flexDirection: 'row',
@@ -374,9 +383,6 @@ const styles = StyleSheet.create({
   roleText: {
     fontSize: 16,
     color: GlobalColors.bomber,
-  },
-  menuItems: {
-    marginBottom: 0,
   },
   menuItem: {
     flexDirection: 'row',
@@ -409,7 +415,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   footer: {
-    marginTop: 0,
     marginBottom: 24,
   },
   footerItem: {
@@ -421,11 +426,11 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
   },
   logoutButton: {
-    marginTop: 20,
     backgroundColor: 'rgba(255,0,0,0.8)',
     padding: 14,
     borderRadius: 12,
     alignItems: 'center',
+    marginVertical: 30,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,

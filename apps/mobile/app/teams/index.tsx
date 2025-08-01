@@ -58,7 +58,7 @@ export default function TeamsScreen() {
             style={styles.floatingBack}
             onPress={() => router.back()}
           >
-            <Ionicons name="arrow-back" size={20} color="black" />
+            <Ionicons name="arrow-back" size={18} color="white" />
           </TouchableOpacity>
           <Text style={styles.title}>Find a Bomber Team</Text>
         </View>
@@ -66,10 +66,9 @@ export default function TeamsScreen() {
         <View style={styles.header}>
           <View style={styles.searchBox}>
             <SearchField
-              value={''}
-              onChangeText={function (text: string): void {
-                throw new Error('Function not implemented.');
-              }}
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Search teams by name..."
             />
           </View>
           <FilterChips
