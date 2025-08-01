@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  addPlayerToTeam,
   createPlayer,
   deletePlayer,
   getAllPlayers,
@@ -16,6 +17,7 @@ router.get('/', getAllPlayers);
 router.get('/alumni', getAlumniPlayers);
 router.get('/:id', getPlayerById);
 router.post('/', createPlayer);
+router.post('/add-to-team', addPlayerToTeam);
 router.put('/:id', devAuth, authorize('edit-player'), updatePlayer);
 router.delete('/:id', devAuth, authorize('remove-player'), deletePlayer);
 

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   addTrophy,
   deleteTrophy,
+  fetchTeamByCode,
   fetchTeams,
   getTeamById,
   updateTrophy,
@@ -20,6 +21,14 @@ export const useTeamById = (id: string) => {
   return useQuery<TeamFE>({
     queryKey: ['team', id],
     queryFn: () => getTeamById(id),
+  });
+};
+
+export const useTeamByCode = (code: string) => {
+  return useQuery<TeamFE>({
+    queryKey: ['teamCode', code],
+    queryFn: () => fetchTeamByCode(code),
+    enabled: !!code && code.length === 5,
   });
 };
 

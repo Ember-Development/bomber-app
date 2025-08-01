@@ -13,11 +13,13 @@ import CustomSelect from '../../../components/ui/atoms/dropdown';
 import SearchField from '../../../components/ui/atoms/Search';
 import Separator from '../../../components/ui/atoms/Seperator';
 import { useUsers } from '@/hooks/useUser';
-import { Position, PublicUserFE } from '@bomber-app/database';
+import { Position, PublicUserFE, TeamFE } from '@bomber-app/database';
 import CustomButton from '../../../components/ui/atoms/Button';
 import { useAddUsersToGroup } from '@/hooks/groups/useChats';
 import UserList from '../components/UserList';
 import { GlobalColors } from '@/constants/Colors';
+import { useNormalizedUser } from '@/utils/user';
+import { useUserPermissions } from '@/hooks/useUserPermission';
 
 interface CreateGroupModalProps {
   visible: boolean;
@@ -64,7 +66,84 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     scrollViewRef.current?.scrollToEnd({ animated: true });
   };
 
-  const users: PublicUserFE[] = useMemo(() => AllUsers, [AllUsers]);
+  // const users: PublicUserFE[] = useMemo(() => AllUsers, [AllUsers]);
+  const { user } = useNormalizedUser();
+  const { can } = useUserPermissions();
+
+  const isAdmin = user?.primaryRole === 'ADMIN';
+  const isRegionalCoach = user?.primaryRole === 'REGIONAL_COACH';
+
+  const users: PublicUserFE[] = useMemo(() => {
+    if (!user || !user.primaryRole) return [];
+
+    // 1. ADMIN sees everyone
+    if (user.primaryRole === 'ADMIN') {
+      return AllUsers;
+    }
+
+    // 2. REGIONAL_COACH sees everyone in their region
+    //    —and if they also have a coach profile, anyone on their coached teams.
+    if (user.primaryRole === 'REGIONAL_COACH') {
+      const region = user.regCoach?.region;
+      const coachTeamIds = user.coach?.teams.map((t: TeamFE) => t.id) ?? [];
+
+      return AllUsers.filter((u) => {
+        // region membership
+        const playerRegion = u.player?.team?.region;
+        const coachRegion = u.coach?.teams?.[0]?.region;
+        const parentRegion = u.parent?.children?.[0]?.team?.region;
+        const inRegion =
+          playerRegion === region ||
+          coachRegion === region ||
+          parentRegion === region;
+
+        // coach-of-team membership
+        let inCoachTeam = false;
+        if (coachTeamIds.length > 0) {
+          const playerTeamId = u.player?.team?.id;
+          const coachTeamIdsOfUser = u.coach?.teams.map((t) => t.id) ?? [];
+          const parentChildTeamIds =
+            u.parent?.children.map((ch) => ch.team?.id) ?? [];
+
+          const parentOnCoachTeam = parentChildTeamIds.some((tid: any) =>
+            tid ? coachTeamIds.includes(tid) : false
+          );
+
+          inCoachTeam =
+            (playerTeamId ? coachTeamIds.includes(playerTeamId) : false) ||
+            coachTeamIdsOfUser.some((tid) => coachTeamIds.includes(tid)) ||
+            parentOnCoachTeam;
+        }
+
+        return inRegion || inCoachTeam;
+      });
+    }
+
+    // 3. COACH sees players, coaches, parents on their teams
+    if (user.primaryRole === 'COACH') {
+      const coachTeamIds = user.coach?.teams.map((t: TeamFE) => t.id) ?? [];
+
+      return AllUsers.filter((u) => {
+        const playerTeamId = u.player?.team?.id;
+        const coachTeamIdsOfUser = u.coach?.teams.map((t) => t.id) ?? [];
+        const parentChildTeamIds =
+          u.parent?.children.map((ch: { team: { id: any } }) => ch.team?.id) ??
+          [];
+
+        const parentOnCoachTeam = parentChildTeamIds.some((tid: any) =>
+          tid ? coachTeamIds.includes(tid) : false
+        );
+
+        return (
+          (playerTeamId ? coachTeamIds.includes(playerTeamId) : false) ||
+          coachTeamIdsOfUser.some((tid) => coachTeamIds.includes(tid)) ||
+          parentOnCoachTeam
+        );
+      });
+    }
+
+    return [];
+  }, [AllUsers, user]);
 
   const teamNames = Array.from(
     new Set(
@@ -212,32 +291,37 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
           {/* Filters */}
           <View style={styles.gridContainer}>
-            <View style={styles.gridItem}>
-              <CustomSelect
-                label="Select Team"
-                options={teamOptions}
-                onSelect={(value) =>
-                  setFilters((prev) => ({ ...prev, team: value }))
-                }
-              />
-            </View>
-            <View style={styles.gridItem}>
-              <CustomSelect
-                label="Age Division"
-                options={[
-                  { label: 'U8', value: 'U8' },
-                  { label: 'U10', value: 'U10' },
-                  { label: 'U12', value: 'U12' },
-                  { label: 'U14', value: 'U14' },
-                  { label: 'U16', value: 'U16' },
-                  { label: 'U18', value: 'U18' },
-                  { label: 'Alumni', value: 'ALUMNI' },
-                ]}
-                onSelect={(value) =>
-                  setFilters((prev) => ({ ...prev, ageDivision: value }))
-                }
-              />
-            </View>
+            {(isAdmin || isRegionalCoach) && (
+              <View style={styles.gridItem}>
+                <CustomSelect
+                  label="Select Team"
+                  options={teamOptions}
+                  onSelect={(value) =>
+                    setFilters((prev) => ({ ...prev, team: value }))
+                  }
+                />
+              </View>
+            )}
+
+            {(isAdmin || isRegionalCoach) && (
+              <View style={styles.gridItem}>
+                <CustomSelect
+                  label="Age Division"
+                  options={[
+                    { label: 'U8', value: 'U8' },
+                    { label: 'U10', value: 'U10' },
+                    { label: 'U12', value: 'U12' },
+                    { label: 'U14', value: 'U14' },
+                    { label: 'U16', value: 'U16' },
+                    { label: 'U18', value: 'U18' },
+                    { label: 'Alumni', value: 'ALUMNI' },
+                  ]}
+                  onSelect={(value) =>
+                    setFilters((prev) => ({ ...prev, ageDivision: value }))
+                  }
+                />
+              </View>
+            )}
             <View style={styles.gridItem}>
               <CustomSelect
                 label="Position"
@@ -253,30 +337,41 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
           </View>
 
           {/* Checkboxes */}
-          <View style={styles.gridContainer}>
-            {[
-              { label: 'All', type: 'all' },
-              { label: 'Admin', type: 'admin' },
-              { label: 'Coaches', type: 'coaches' },
-              { label: 'Regional Coaches', type: 'regional_coaches' },
-              { label: 'Players', type: 'players' },
-              { label: 'Parents', type: 'parents' },
-              { label: 'Pitchers Only', type: 'pitchers' },
-            ].map(({ label, type }) => (
-              <View key={type} style={styles.gridItem}>
-                <Checkbox
-                  label={label}
-                  checked={checkboxes[type as keyof typeof checkboxes]}
-                  onChange={(checked) =>
-                    handleCheckboxChange(
-                      type as keyof typeof checkboxes,
-                      checked
-                    )
-                  }
-                />
-              </View>
-            ))}
-          </View>
+          {(isAdmin || isRegionalCoach || user?.primaryRole === 'COACH') && (
+            <View style={styles.gridContainer}>
+              {[
+                ...(isAdmin
+                  ? [
+                      { label: 'All', type: 'all' },
+                      { label: 'Admin', type: 'admin' },
+                      { label: 'Coaches', type: 'coaches' },
+                      { label: 'Regional Coaches', type: 'regional_coaches' },
+                      { label: 'Players', type: 'players' },
+                      { label: 'Parents', type: 'parents' },
+                      { label: 'Pitchers Only', type: 'pitchers' },
+                    ]
+                  : [
+                      { label: 'Players', type: 'players' },
+                      { label: 'Coaches', type: 'coaches' },
+                      { label: 'Parents', type: 'parents' },
+                      { label: 'Pitchers Only', type: 'pitchers' },
+                    ]),
+              ].map(({ label, type }) => (
+                <View key={type} style={styles.gridItem}>
+                  <Checkbox
+                    label={label}
+                    checked={checkboxes[type as keyof typeof checkboxes]}
+                    onChange={(checked) =>
+                      handleCheckboxChange(
+                        type as keyof typeof checkboxes,
+                        checked
+                      )
+                    }
+                  />
+                </View>
+              ))}
+            </View>
+          )}
 
           <Separator width="90%" color="#000" />
         </View>

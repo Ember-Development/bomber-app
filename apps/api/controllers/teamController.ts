@@ -24,6 +24,18 @@ export const getTeamById = async (req: Request, res: Response) => {
   }
 };
 
+export const getTeamByCode = async (req: Request, res: Response) => {
+  try {
+    const { code } = req.params;
+    const team = await teamService.getTeamByCode(code);
+    if (!team) return res.status(404).json({ message: 'Team not found' });
+    res.json(team);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error fetching team' });
+  }
+};
+
 export const getMyTeams = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;

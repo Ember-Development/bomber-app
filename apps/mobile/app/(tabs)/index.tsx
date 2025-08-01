@@ -1,12 +1,17 @@
-import React, { useRef } from 'react';
 import {
   SafeAreaView,
   Animated,
   View,
   TouchableOpacity,
   ActivityIndicator,
+  Image,
+  ViewStyle,
+  StyleSheet,
 } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
+import BannerModal, { BannerData } from '@/components/ui/organisms/Banner';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Components
 import { ThemedText } from '@/components/ThemedText';
@@ -17,6 +22,7 @@ import CustomButton from '@/components/ui/atoms/Button';
 import EventCardContainer from '@/components/ui/molecules/EventCard/SpotlightEvent/SpotlightContainer';
 import ArticleCard from '@/components/ui/molecules/ArticleCard';
 import VideoCard from '@/components/ui/molecules/MediaCards';
+import becomeBomberImage from '@/assets/images/bomberimage1.jpg';
 
 import { useUserContext } from '@/context/useUserContext';
 import { useUserEvents, useUserChats } from '@/hooks/useUser';
@@ -27,6 +33,9 @@ import { GlobalColors } from '@/constants/Colors';
 import { QuickAction, quickActionMap } from '@/constants/quickActions';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useBanners } from '@/hooks/banner/useBanner';
 
 export default function HomeScreen() {
   const { user, refetch } = useUserContext();
@@ -55,7 +64,53 @@ export default function HomeScreen() {
     user?.id
   );
   const { data: userChats, isLoading: isChatsLoading } = useUserChats(user?.id);
+  const { data: banners, isLoading: bannersLoading } = useBanners();
+  const [showBanner, setShowBanner] = useState(true);
+  const [currentBanner, setCurrentBanner] = useState<BannerData | null>(null);
+
+  const handlePaymentPress = () => alert('Payment Reroute Clicked');
+  const handleTeamsPress = () => alert('Teams Reroute Clicked');
+  const seeAllEvents = () => alert('See All Events Clicked');
+  const seeAllGroups = () => alert('See All Groups Clicked');
+  const seeAllMedia = () => alert('See All Media Clicked');
+
   const formattedEvents = formatEvents(rawEvents ?? []);
+
+  useEffect(() => {
+    (async () => {
+      if (bannersLoading || !banners) return;
+
+      const now = new Date();
+      const active = banners.find((b) => new Date(b.expiresAt) > now);
+      if (!active) return;
+
+      const seenJson = await AsyncStorage.getItem('seenBanners');
+      const seen: string[] = seenJson ? JSON.parse(seenJson) : [];
+
+      if (!seen.includes(active.id)) {
+        setCurrentBanner({
+          id: active.id,
+          imageUrl: active.imageUrl,
+          duration: active.duration,
+          expiresAt: new Date(active.expiresAt),
+        });
+        setShowBanner(true);
+      }
+    })();
+  }, [banners, bannersLoading]);
+
+  // mark banner as seen and hide it
+  const handleCloseBanner = async () => {
+    if (currentBanner) {
+      const seenJson = await AsyncStorage.getItem('seenBanners');
+      const seen: string[] = seenJson ? JSON.parse(seenJson) : [];
+      if (!seen.includes(currentBanner.id)) {
+        seen.push(currentBanner.id);
+        await AsyncStorage.setItem('seenBanners', JSON.stringify(seen));
+      }
+    }
+    setShowBanner(false);
+  };
 
   const headerHeight = scrollY.interpolate({
     inputRange: [0, 80],
@@ -90,6 +145,14 @@ export default function HomeScreen() {
   return (
     <BackgroundWrapper>
       <SafeAreaView style={styles.safeContainer}>
+        {currentBanner && showBanner && (
+          <BannerModal
+            visible={showBanner}
+            data={currentBanner}
+            onClose={handleCloseBanner}
+          />
+        )}
+
         <Animated.ScrollView
           contentContainerStyle={{ paddingBottom: 60, flexGrow: 1 }}
           onScroll={Animated.event(
@@ -247,6 +310,45 @@ export default function HomeScreen() {
                 <VideoCard key={`video-${idx}`} {...item} />
               ))}
             </Animated.ScrollView>
+          </View>
+
+          <View style={styles.becomeBomber}>
+            <ThemedText type="title">Become a Bomber</ThemedText>
+            <TouchableOpacity
+              style={styles.bomberCard}
+              onPress={() => router.push('/signup')}
+              activeOpacity={0.85}
+            >
+              <Image
+                source={becomeBomberImage}
+                style={styles.bomberImage}
+                resizeMode="cover"
+              />
+
+              {/* Bottom overlay bar */}
+              <View style={styles.bomberOverlay}>
+                {/* Bottom fade up into content */}
+                <LinearGradient
+                  colors={['transparent', 'rgba(0,0,0,0)']}
+                  style={StyleSheet.absoluteFill}
+                />
+                {/* Blur effect across the footer */}
+                <BlurView
+                  intensity={60}
+                  tint="dark"
+                  style={StyleSheet.absoluteFill}
+                />
+                {/* Top edge softener */}
+                <LinearGradient
+                  colors={['rgba(0,0,0,0)', 'transparent']}
+                  style={styles.bomberFadeTop}
+                />
+                {/* Centered Text */}
+                <ThemedText type="title" style={styles.bomberText}>
+                  FIND OUT HOW
+                </ThemedText>
+              </View>
+            </TouchableOpacity>
           </View>
         </Animated.ScrollView>
       </SafeAreaView>

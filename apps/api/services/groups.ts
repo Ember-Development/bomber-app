@@ -1,4 +1,6 @@
 import { prisma } from '@bomber-app/database';
+import { validateGroupAccess } from '../utils/accessGroups';
+import { Role } from '../auth/permissions';
 
 export const groupService = {
   getAllGroups: async (
@@ -22,13 +24,24 @@ export const groupService = {
     });
   },
 
-  createGroup: async (title: string, userIds: string[]) => {
-    const group = await prisma.chat.create({
+  createGroup: async (
+    title: string,
+    userIds: string[],
+    actingUserId: string,
+    role: Role
+  ) => {
+    const validatedIds = Array.from(
+      new Set([
+        ...(await validateGroupAccess(actingUserId, role, userIds)),
+        actingUserId,
+      ])
+    );
+    return prisma.chat.create({
       data: {
         title,
         createdAt: new Date(),
         users: {
-          create: userIds.map((id) => ({
+          create: validatedIds.map((id) => ({
             user: { connect: { id } },
             joinedAt: new Date(),
           })),
@@ -36,11 +49,28 @@ export const groupService = {
       },
       include: { users: true, messages: true },
     });
-    return group;
   },
 
-  addUsersToGroup: async (groupId: string, userIds: string[]) => {
-    const updates = userIds.map((id) =>
+  addUsersToGroup: async (
+    groupId: string,
+    userIds: string[],
+    actingUserId: string,
+    role: Role
+  ) => {
+    const validatedIds = await validateGroupAccess(actingUserId, role, userIds);
+
+    const existing = await prisma.userChat.findMany({
+      where: {
+        chatID: groupId,
+        userID: { in: validatedIds },
+      },
+      select: { userID: true },
+    });
+
+    const alreadyInGroup = new Set(existing.map((u) => u.userID));
+    const toAdd = validatedIds.filter((id) => !alreadyInGroup.has(id));
+
+    const updates = toAdd.map((id) =>
       prisma.userChat.create({
         data: {
           userID: id,

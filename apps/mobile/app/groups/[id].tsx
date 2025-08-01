@@ -33,6 +33,7 @@ import {
 import { ChatUser, MessageFE, UserRole } from '@bomber-app/database';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { GlobalColors } from '@/constants/Colors';
+import { useNormalizedUser } from '@/utils/user';
 
 export default function GroupChatScreen() {
   const { id } = useLocalSearchParams();
@@ -47,6 +48,8 @@ export default function GroupChatScreen() {
     useUsersInGroup(chatId);
   const { data: chatDetails, isLoading: chatLoading } = useChatDetails(chatId);
   const { mutate: addUsersToGroup } = useAddUsersToGroup();
+
+  const { user } = useNormalizedUser();
 
   const {
     scrollViewRef,
@@ -91,7 +94,7 @@ export default function GroupChatScreen() {
       {} as Record<UserRole, ChatUser[]>
     );
 
-  const roleOrder: UserRole[] = ['PLAYER', 'COACH', 'FAN', 'ADMIN'];
+  const roleOrder: UserRole[] = ['PLAYER', 'COACH', 'PARENT', 'ADMIN'];
 
   return (
     <>
@@ -195,15 +198,18 @@ export default function GroupChatScreen() {
                   >
                     Start Sending Messages Now
                   </ThemedText>
-                  <CustomButton
-                    title="Add People to Group"
-                    onPress={() => setAddUserModal(true)}
-                  />
+                  {['ADMIN', 'REGIONAL_COACH', 'COACH'].includes(
+                    user?.primaryRole || ''
+                  ) && (
+                    <CustomButton
+                      title="Add People to Group"
+                      onPress={() => setAddUserModal(true)}
+                    />
+                  )}
                 </View>
               ) : (
                 allMessages.map((msg: MessageFE, index: number) => {
-                  const isUser =
-                    msg.sender.id === '379cf0ba-a1fd-4df0-b2a3-5fc0649f137b';
+                  const isUser = msg.sender.id === user?.id;
                   const initials = getInitials(
                     msg.sender.fname,
                     msg.sender.lname
@@ -343,16 +349,18 @@ export default function GroupChatScreen() {
               onClose={() => setShowUsers(false)}
               title="Members"
             >
-              <View style={{ height: '95%' }}>
+              <View style={{ height: '95%', flexDirection: 'column' }}>
+                {/* Scrollable list of members */}
                 <View style={{ flex: 1 }}>
                   <ScrollView
+                    style={{ flex: 1 }}
                     contentContainerStyle={{
                       paddingHorizontal: 20,
                       paddingTop: 20,
                       paddingBottom: 20,
-                      marginBottom: 20,
                     }}
                     showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled" // ← added so taps on buttons still register
                   >
                     {roleOrder.map((role) => {
                       const usersForRole = groupedUsers[role];
@@ -368,7 +376,7 @@ export default function GroupChatScreen() {
                               color: GlobalColors.white,
                             }}
                           >
-                            {role.charAt(0) + role.slice(1).toLowerCase()}s
+                            {role.charAt(0) + role.slice(1).toLowerCase()}
                           </Text>
                           {usersForRole
                             .sort((a, b) => a.fname.localeCompare(b.fname))
@@ -418,23 +426,26 @@ export default function GroupChatScreen() {
                       );
                     })}
                   </ScrollView>
+                </View>
 
+                {/* Footer with Add/End buttons */}
+                {['ADMIN', 'REGIONAL_COACH', 'COACH'].includes(
+                  user?.primaryRole || ''
+                ) && (
                   <View
                     style={{
-                      paddingHorizontal: 20,
-                      paddingTop: -30,
-                      paddingBottom: 0, // extra space below buttons
+                      padding: 16,
+                      borderTopWidth: 1,
+                      borderColor: '#333',
                     }}
                   >
                     <CustomButton
                       title="Add Person to Group"
                       onPress={() => {
-                        if (chatDetails) {
-                          setShowUsers(false);
-                          InteractionManager.runAfterInteractions(() => {
-                            setAddUserModal(true);
-                          });
-                        }
+                        setShowUsers(false);
+                        InteractionManager.runAfterInteractions(() => {
+                          setAddUserModal(true);
+                        });
                       }}
                     />
                     <CustomButton
@@ -443,7 +454,7 @@ export default function GroupChatScreen() {
                       onPress={() => alert('Canceled!')}
                     />
                   </View>
-                </View>
+                )}
               </View>
             </BottomSheetModal>
           </View>

@@ -1,5 +1,3 @@
-// src/middleware/devAuth.ts
-
 import { NextFunction, Request, Response } from 'express';
 import { authService } from '../services/auth';
 import { roleToActions, Role, Action } from '../auth/permissions';

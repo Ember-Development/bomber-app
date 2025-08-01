@@ -30,3 +30,17 @@ export const updatePlayer = async (
 export const deletePlayer = async (id: string): Promise<void> => {
   await api.delete(`/api/players/${id}`);
 };
+
+export const addPlayerToTeam = async ({
+  playerId,
+  teamCode,
+}: {
+  playerId: string;
+  teamCode: string;
+}): Promise<PlayerFE> => {
+  const res = await api.post('/api/players/add-to-team', {
+    playerId,
+    teamCode,
+  });
+  return res.data;
+};

@@ -3,6 +3,8 @@ import { PlayerFE } from '@bomber-app/database';
 import {
   deletePlayer,
   getAlumniPlayers,
+  addPlayerToTeam,
+  deletePlayer,
   getPlayerById,
   updatePlayer,
 } from '@/api/player/player';
@@ -47,6 +49,23 @@ export const useDeletePlayer = (options?: {
       refetch();
       options?.onSuccess?.();
     },
+    onError: options?.onError,
+  });
+};
+
+export const useAddPlayerToTeam = (options?: {
+  onSuccess?: (data: PlayerFE) => void;
+  onError?: (err: unknown) => void;
+}) => {
+  return useMutation({
+    mutationFn: ({
+      playerId,
+      teamCode,
+    }: {
+      playerId: string;
+      teamCode: string;
+    }) => addPlayerToTeam({ playerId, teamCode }),
+    onSuccess: options?.onSuccess,
     onError: options?.onError,
   });
 };
