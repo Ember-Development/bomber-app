@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import express from 'express';
 import http from 'http';
-import initializeSocket from './websockets/websocket';
 import groupRoutes from './routes/groupRoutes';
 import messageRoutes from './routes/messageRoutes';
 import userRoutes from './routes/userRoutes';
@@ -36,8 +35,6 @@ app.use('/api/sponsors', sponsorRoutes);
 app.use('/api/banners', bannerRoutes);
 app.use('/api/medias', mediaRoutes);
 app.use('/api/articles', articleRoutes);
-
-const io = initializeSocket(server);
 
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
