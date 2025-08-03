@@ -15,6 +15,8 @@ export type EventAttendanceFE = Omit<
 // this is weird but fixes whatever fucked up since last time
 export type EventAttendanceBE = Omit<EventAttendance, 'id'>;
 
+export type NewEventAttendance = Pick<EventAttendance, 'userID' | 'status'>;
+
 // FIXME: for some reason this doesnt work... boo
 // export type EventFE = EventDynamic<['attendees']>;
 export type EventAttendanceDynamic<R extends (keyof Relations)[]> =
