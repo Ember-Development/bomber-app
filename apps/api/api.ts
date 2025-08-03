@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import express from 'express';
 import http from 'http';
-import { PrismaClient } from '@bomber-app/database';
 import initializeSocket from './websockets/websocket';
 import groupRoutes from './routes/groupRoutes';
 import messageRoutes from './routes/messageRoutes';
@@ -14,6 +13,7 @@ import sponsorRoutes from './routes/sponsorRoutes';
 import bannerRoutes from './routes/bannerRoutes';
 import mediaRoutes from './routes/mediaRoutes';
 import articleRoutes from './routes/articleRoutes';
+import { PrismaClient } from '@bomber-app/database/generated/client';
 
 const app = express();
 const server = http.createServer(app);
