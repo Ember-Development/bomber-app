@@ -20,6 +20,8 @@ export type EventFE = Omit<
 // this is weird but fixes whatever fucked up since last time
 export type EventBE = Omit<Event, 'id'>;
 
+export type NewEvent = Omit<Event, 'id' | 'tournamentID'>;
+
 // weird that we need this now... again... everything was working with types last I used it...
 export { EventType } from '../generated/client';
 

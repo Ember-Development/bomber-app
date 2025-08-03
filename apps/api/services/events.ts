@@ -2,6 +2,8 @@ import {
   EventAttendanceBE,
   EventBE,
   EventFE,
+  NewEvent,
+  NewEventAttendance,
   prisma,
 } from '@bomber-app/database';
 import { EventType, Prisma } from '@bomber-app/database/generated/client';
@@ -47,19 +49,22 @@ export const eventService = {
     });
   },
 
-  createEvent: async (event: EventBE, attendees: EventAttendanceBE[]) => {
-    //
+  createEvent: async (
+    event: NewEvent,
+    attendees: NewEventAttendance[],
+    tournamentID: string | null
+  ) => {
     // FIXME: this needs a version for eventFE and eventBE
     // const errors = validateEvent(event);
     // if (errors) throw new Error(errors.join('; '));
 
     // primary model creation
-    prisma.event.create({
+    const newEvent = await prisma.event.create({
       data: {
         eventType: event.eventType,
         start: new Date(event.start),
         end: new Date(event.end),
-        tournamentID: event.tournamentID || undefined,
+        tournamentID,
       },
       include: {
         tournament: true,
@@ -68,8 +73,17 @@ export const eventService = {
     });
 
     // related fields
-    // const newAttendees = event.attendees;
-    // const attendees = prisma.event.create({ data: event.attendees });
+    const attendance = prisma.eventAttendance.createMany({
+      data: attendees.map((attendee) => {
+        return {
+          eventID: newEvent.id,
+          userID: attendee.userID,
+          status: attendee.status,
+        };
+      }),
+    });
+
+    return { event: newEvent, attendance: attendance };
   },
 
   updateEvent: async (id: string, data: Partial<EventBE>) => {
