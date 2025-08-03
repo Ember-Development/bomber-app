@@ -21,7 +21,6 @@ import { Text } from '@react-navigation/elements';
 import { Colors, EventColors } from '@/constants/Colors';
 import { EventType } from '@bomber-app/database';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { lighten, toHex } from 'color2k';
 
 // TODO: temp event and reference type in the code for now
 const eventNotes = (
