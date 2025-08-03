@@ -1,4 +1,4 @@
-import { Prisma } from '../generated/client';
+import { Prisma, Event } from '../generated/client';
 
 type Relations = {
   tournament: { tournament: true };
@@ -10,5 +10,16 @@ export type EventDynamic<R extends (keyof Relations)[]> =
     include: { [K in R[number]]: true };
   }>;
 
-export type EventFE = EventDynamic<['attendees']>;
+export type EventFE = Omit<
+  Prisma.EventGetPayload<{
+    include: { attendees: true };
+  }>,
+  'id'
+>;
+
+// this is weird but fixes whatever fucked up since last time
+export type EventBE = Omit<Event, 'id'>;
+
+// FIXME: for some reason this doesnt work... boo
+// export type EventFE = EventDynamic<['attendees']>;
 export type EventDB = EventDynamic<[]>;
