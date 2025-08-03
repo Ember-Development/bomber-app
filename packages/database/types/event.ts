@@ -20,6 +20,9 @@ export type EventFE = Omit<
 // this is weird but fixes whatever fucked up since last time
 export type EventBE = Omit<Event, 'id'>;
 
+// weird that we need this now... again... everything was working with types last I used it...
+export { EventType } from '../generated/client';
+
 // FIXME: for some reason this doesnt work... boo
 // export type EventFE = EventDynamic<['attendees']>;
 export type EventDB = EventDynamic<[]>;
