@@ -1,5 +1,4 @@
 import {
-  EventAttendanceBE,
   EventBE,
   EventFE,
   NewEvent,
@@ -54,10 +53,6 @@ export const eventService = {
     attendees: NewEventAttendance[],
     tournamentID: string | null
   ) => {
-    // FIXME: this needs a version for eventFE and eventBE
-    // const errors = validateEvent(event);
-    // if (errors) throw new Error(errors.join('; '));
-
     // primary model creation
     const newEvent = await prisma.event.create({
       data: {
@@ -86,7 +81,8 @@ export const eventService = {
     return { event: newEvent, attendance: attendance };
   },
 
-  updateEvent: async (id: string, data: Partial<EventBE>) => {
+  // note this is only for direct fields for new events, not relationships i.e. tournaments / attendants
+  updateEvent: async (id: string, data: Partial<NewEvent>) => {
     // sort of thing zod is for but this effectively strips out anything undefined
     // intentionally will accept nulls in case we want to start omitting fields, although a bit dangerous!
     const safeUpdate: Prisma.EventUpdateInput = Object.fromEntries(
@@ -94,7 +90,6 @@ export const eventService = {
         eventType: data.eventType,
         start: data.start ? new Date(data.start) : undefined,
         end: data.end ? new Date(data.end) : undefined,
-        tournamentID: data.tournamentID ?? undefined,
       }).filter(([, v]) => v !== undefined)
     );
 
