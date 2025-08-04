@@ -1,0 +1,2047 @@
+[
+  {
+    "division": "NCAA Division I",
+    "conferences": [
+      {
+        "conference": "American Athletic Conference",
+        "schools": [
+          {
+            "name": "University of North Carolina at Charlotte",
+            "state": "North Carolina",
+            "city": "Charlotte",
+            "imageUrl": "https://brand.charlotte.edu/wp-content/uploads/sites/183/2023/04/C_only.png"
+          },
+          {
+            "name": "East Carolina University",
+            "state": "North Carolina",
+            "city": "Greenville",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c7/East_Carolina_Pirates_logo.svg/1200px-East_Carolina_Pirates_logo.svg.png"
+          },
+          {
+            "name": "Florida Atlantic University",
+            "state": "Florida",
+            "city": "Boca Raton",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/11/Florida-Atlantic-Owls-logo.png"
+          },
+          {
+            "name": "University of Memphis",
+            "state": "Tennessee",
+            "city": "Memphis",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2022/02/Memphis-Tigers-logo-500x308.png"
+          },
+          {
+            "name": "University of North Texas",
+            "state": "Texas",
+            "city": "Denton",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/07/North-Texas-Mean-Green-logo-500x281.png"
+          },
+          {
+            "name": "Rice University",
+            "state": "Texas",
+            "city": "Houston",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/07/Rice-Owls-logo-500x281.png"
+          },
+          {
+            "name": "Southern Methodist University",
+            "state": "Texas",
+            "city": "Dallas",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2022/02/SMU-Mustangs-logo-500x313.png"
+          },
+          {
+            "name": "University of South Florida",
+            "state": "Florida",
+            "city": "Tampa",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2020/02/South-Florida-Bulls-Logo-500x281.png"
+          },
+          {
+            "name": "Temple University",
+            "state": "Pennsylvania",
+            "city": "Philadelphia",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2022/02/Temple-Owls-logo-tumb.jpg"
+          },
+          {
+            "name": "Tulane University",
+            "state": "Louisiana",
+            "city": "New Orleans",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/07/Tulane-Green-Wave-logo-500x281.png"
+          },
+          {
+            "name": "University of Tulsa",
+            "state": "Oklahoma",
+            "city": "Tulsa",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2022/02/Tulsa-Golden-Hurricane-logo-500x333.png"
+          },
+          {
+            "name": "University of Alabama at Birmingham",
+            "state": "Alabama",
+            "city": "Birmingham",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2020/01/UAB-Blazers-Logo-500x281.png"
+          },
+          {
+            "name": "Wichita State University",
+            "state": "Kansas",
+            "city": "Wichita",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/07/Wichita-State-Shockers-logo-500x281.png"
+          },
+          {
+            "name": "University of Texas at San Antonio",
+            "state": "Texas",
+            "city": "San Antonio",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/1/1b/UTSA_Athletics_logo.svg/1200px-UTSA_Athletics_logo.svg.png"
+          }
+        ]
+      },
+      {
+        "conference": "America East Conference",
+        "schools": [
+          {
+            "name": "University at Albany (SUNY Albany)",
+            "state": "New York",
+            "city": "Albany",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/09/Albany-Great-Danes-Logo-500x281.png"
+          },
+          {
+            "name": "Binghamton University",
+            "state": "New York",
+            "city": "Binghamton",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/06/Binghamton-Bearcats-logo-500x281.png"
+          },
+          {
+            "name": "University of Maine",
+            "state": "Maine",
+            "city": "Orono",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/06/Maine-Black-Bears-logo-500x281.png"
+          },
+          {
+            "name": "University of Maryland, Baltimore County",
+            "state": "Maryland",
+            "city": "Baltimore",
+            "imageUrl": "https://styleguide.umbc.edu/wp-content/uploads/sites/113/2019/09/UMBCretrievers_JUSTHEAD-on-white-or-black.png"
+          },
+          {
+            "name": "University of Massachusetts Lowell",
+            "state": "Massachusetts",
+            "city": "Lowell",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2022/02/UMass-Lowell-River-Hawks-logo-500x308.png"
+          },
+          {
+            "name": "University of New Hampshire",
+            "state": "New Hampshire",
+            "city": "Durham",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/12/New-Hampshire-Wildcats-Logo-thumb.png"
+          },
+          {
+            "name": "Stony Brook University",
+            "state": "New York",
+            "city": "Stony Brook",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/09/0031_Stony-Brook-Seawolves-Logo.jpg"
+          },
+          {
+            "name": "University of Vermont",
+            "state": "Vermont",
+            "city": "Burlington",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/10/Vermont-Catamounts.jpg"
+          }
+        ]
+      },
+      {
+        "conference": "Atlantic 10 Conference",
+        "schools": [
+          {
+            "name": "Davidson College",
+            "state": "North Carolina",
+            "city": "Davidson",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/12/Davidson-Wildcats-Logo-tumb.png"
+          },
+          {
+            "name": "University of Dayton",
+            "state": "Ohio",
+            "city": "Dayton",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/10/0006_Dayton-Flyers-Logo.jpg"
+          },
+          {
+            "name": "Duquesne University",
+            "state": "Pennsylvania",
+            "city": "Pittsburgh",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/08/Duquesne-Dukes.jpg"
+          },
+          {
+            "name": "Fordham University",
+            "state": "New York",
+            "city": "Bronx",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/08/Fordham-Rams.jpg"
+          },
+          {
+            "name": "George Mason University",
+            "state": "Virginia",
+            "city": "Fairfax",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/10/George-Mason-Patriots-Logo-500x281.png"
+          },
+          {
+            "name": "George Washington University",
+            "state": "District of Columbia",
+            "city": "Washington",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/08/George-Washington-Colonials.jpg"
+          },
+          {
+            "name": "La Salle University",
+            "state": "Pennsylvania",
+            "city": "Philadelphia",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/10/La-Salle-Explorers-Logo-thumb.png"
+          },
+          {
+            "name": "Loyola University Chicago",
+            "state": "Illinois",
+            "city": "Chicago",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2022/02/Loyola-Ramblers-logo-tumb.jpg"
+          },
+          {
+            "name": "University of Rhode Island",
+            "state": "Rhode Island",
+            "city": "Kingston",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/09/0007_Rhode-Island-Rams.jpg"
+          },
+          {
+            "name": "University of Richmond",
+            "state": "Virginia",
+            "city": "Richmond",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/10/Richmond-Spiders-Logo-thumb.png"
+          },
+          {
+            "name": "St. Bonaventure University",
+            "state": "New York",
+            "city": "Allegany",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2022/02/St.-Bonaventure-Bonnies-logo-500x288.png"
+          },
+          {
+            "name": "Saint Joseph's University",
+            "state": "Pennsylvania",
+            "city": "Philadelphia",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/7/76/Saint_Joseph%27s_Hawks_logo.svg/250px-Saint_Joseph%27s_Hawks_logo.svg.png"
+          },
+          {
+            "name": "Saint Louis University",
+            "state": "Missouri",
+            "city": "St. Louis",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/0/03/Saint_Louis_Billikens_logo.svg/180px-Saint_Louis_Billikens_logo.svg.png"
+          },
+          {
+            "name": "Virginia Commonwealth University",
+            "state": "Virginia",
+            "city": "Richmond",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/VCU_Rams_logo.svg/250px-VCU_Rams_logo.svg.png"
+          }
+        ]
+      },
+      {
+        "conference": "Atlantic Coast Conference",
+        "schools": [
+          {
+            "name": "Boston College",
+            "state": "Massachusetts",
+            "city": "Chestnut Hill",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/9/96/Boston_College_Eagles_logo.svg/1200px-Boston_College_Eagles_logo.svg.png"
+          },
+          {
+            "name": "Clemson University",
+            "state": "South Carolina",
+            "city": "Clemson",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Clemson_Tigers_logo.svg/1200px-Clemson_Tigers_logo.svg.png"
+          },
+          {
+            "name": "Duke University",
+            "state": "North Carolina",
+            "city": "Durham",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Duke_Athletics_logo.svg/1200px-Duke_Athletics_logo.svg.png"
+          },
+          {
+            "name": "Florida State University",
+            "state": "Florida",
+            "city": "Tallahassee",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Florida_State_Seminoles_logo.svg/1200px-Florida_State_Seminoles_logo.svg.png"
+          },
+          {
+            "name": "Georgia Institute of Technology",
+            "state": "Georgia",
+            "city": "Atlanta",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Georgia_Tech_Yellow_Jackets_logo.svg/2560px-Georgia_Tech_Yellow_Jackets_logo.svg.png"
+          },
+          {
+            "name": "University of Louisville",
+            "state": "Kentucky",
+            "city": "Louisville",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/5/59/Louisville_Cardinals_logo.svg/640px-Louisville_Cardinals_logo.svg.png"
+          },
+          {
+            "name": "University of Miami",
+            "state": "Florida",
+            "city": "Coral Gables",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e9/Miami_Hurricanes_logo.svg"
+          },
+          {
+            "name": "University of North Carolina at Chapel Hill",
+            "state": "North Carolina",
+            "city": "Chapel Hill",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/North_Carolina_Tar_Heels_logo.svg/2560px-North_Carolina_Tar_Heels_logo.svg.png"
+          },
+          {
+            "name": "North Carolina State University",
+            "state": "North Carolina",
+            "city": "Raleigh",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/4/41/NC_State_Wolfpack_logo.svg/1200px-NC_State_Wolfpack_logo.svg.png"
+          },
+          {
+            "name": "University of Notre Dame",
+            "state": "Indiana",
+            "city": "Notre Dame",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Notre_Dame_Fighting_Irish_logo.svg/640px-Notre_Dame_Fighting_Irish_logo.svg.png"
+          },
+          {
+            "name": "University of Pittsburgh",
+            "state": "Pennsylvania",
+            "city": "Pittsburgh",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Pitt_Panthers_wordmark.svg/2560px-Pitt_Panthers_wordmark.svg.png"
+          },
+          {
+            "name": "Syracuse University",
+            "state": "New York",
+            "city": "Syracuse",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Syracuse_Orange_logo.svg/1200px-Syracuse_Orange_logo.svg.png"
+          },
+          {
+            "name": "University of Virginia",
+            "state": "Virginia",
+            "city": "Charlottesville",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/1/1e/Virginia_Cavaliers_logo.svg/800px-Virginia_Cavaliers_logo.svg.png"
+          },
+          {
+            "name": "Virginia Tech",
+            "state": "Virginia",
+            "city": "Blacksburg",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Virginia_Tech_Hokies_logo.svg/1280px-Virginia_Tech_Hokies_logo.svg.png"
+          },
+          {
+            "name": "Wake Forest University",
+            "state": "North Carolina",
+            "city": "Winston-Salem",
+            "imageUrl": "https://images.seeklogo.com/logo-png/31/2/wake-forest-university-athletic-logo-png_seeklogo-317337.png"
+          }
+        ]
+      },
+      {
+        "conference": "ASUN Conference",
+        "schools": [
+          {
+            "name": "Bellarmine University",
+            "state": "Kentucky",
+            "city": "Louisville",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2022/10/bellarmine_knights_2020-pres-a.png"
+          },
+          {
+            "name": "University of Central Arkansas",
+            "state": "Arkansas",
+            "city": "Arkadelphia",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2023/02/central_arkansas_bears_2017-pres.png"
+          },
+          {
+            "name": "Eastern Kentucky University",
+            "state": "Kentucky",
+            "city": "Richmond",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2019/05/eastern_kentucky_colonels_2004-pres-a.png"
+          },
+          {
+            "name": "Florida Gulf Coast University",
+            "state": "Florida",
+            "city": "Fort Myers",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/9/95/Florida_Gulf_Coast_Eagles_logo.svg/1200px-Florida_Gulf_Coast_Eagles_logo.svg.png"
+          },
+          {
+            "name": "Jacksonville University",
+            "state": "Florida",
+            "city": "Jacksonville",
+            "imageUrl": "https://media.yourobserver.com/img/photos/2022/05/06/194452_standard_t900x600.png?d666c25c0ae2036b31e9e5deb97c48b6f611244c"
+          },
+          {
+            "name": "Kennesaw State University",
+            "state": "Georgia",
+            "city": "Kennesaw",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Kennesaw_State_Owls_logo.svg/1200px-Kennesaw_State_Owls_logo.svg.png"
+          },
+          {
+            "name": "Lipscomb University",
+            "state": "Tennessee",
+            "city": "Nashville",
+            "imageUrl": "https://content.sportslogos.net/logos/32/729/full/lipscomb_bisons_logo_secondary_2020sportslogosnet4552.png"
+          },
+          {
+            "name": "University of North Alabama",
+            "state": "Alabama",
+            "city": "Florence",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2021/06/north_alabama_lions_2012-2018-a.png"
+          },
+          {
+            "name": "University of North Florida",
+            "state": "Florida",
+            "city": "Jacksonville",
+            "imageUrl": "https://www.unf.edu/brand/images/athletics-5.png"
+          },
+          {
+            "name": "Stetson University",
+            "state": "Florida",
+            "city": "DeLand",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/6/61/Stetson_Hatters_current_logo.svg/1200px-Stetson_Hatters_current_logo.svg.png"
+          }
+        ]
+      },
+      {
+        "conference": "Big East Conference",
+        "schools": [
+          {
+            "name": "Butler University",
+            "state": "Indiana",
+            "city": "Indianapolis",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/0/06/Butler_Bulldogs_logo.svg/1200px-Butler_Bulldogs_logo.svg.png"
+          },
+          {
+            "name": "Creighton University",
+            "state": "Nebraska",
+            "city": "Omaha",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/6/6f/Creighton_Bluejays_logo.svg/1200px-Creighton_Bluejays_logo.svg.png"
+          },
+          {
+            "name": "DePaul University",
+            "state": "Illinois",
+            "city": "Chicago",
+            "imageUrl": "https://resources.depaul.edu/brand/PublishingImages/logos/athletics-logo.png"
+          },
+          {
+            "name": "Georgetown University",
+            "state": "District of Columbia",
+            "city": "Washington",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Georgetown_Hoyas_logo.svg/1200px-Georgetown_Hoyas_logo.svg.png"
+          },
+          {
+            "name": "Marquette University",
+            "state": "Wisconsin",
+            "city": "Milwaukee",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Marquette_Golden_Eagles_logo.svg/2560px-Marquette_Golden_Eagles_logo.svg.png"
+          },
+          {
+            "name": "Providence College",
+            "state": "Rhode Island",
+            "city": "Providence",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/9/9d/Providence_Friars_logo.svg/1200px-Providence_Friars_logo.svg.png"
+          },
+          {
+            "name": "Seton Hall University",
+            "state": "New Jersey",
+            "city": "South Orange",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/e/e1/Seton_Hall_Pirates_logo.svg/1200px-Seton_Hall_Pirates_logo.svg.png"
+          },
+          {
+            "name": "St. John's University",
+            "state": "New York",
+            "city": "Queens",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9e/St._John%27s_Athletics_logo.png"
+          },
+          {
+            "name": "University of Connecticut",
+            "state": "Connecticut",
+            "city": "Storrs",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/b/b0/Connecticut_Huskies_logo.svg/1200px-Connecticut_Huskies_logo.svg.png"
+          },
+          {
+            "name": "Villanova University",
+            "state": "Pennsylvania",
+            "city": "Villanova",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2020/01/Villanova-Wildcats-Logo.png"
+          },
+          {
+            "name": "Xavier University",
+            "state": "Ohio",
+            "city": "Cincinnati",
+            "imageUrl": "https://www.xavier.edu/brand/images/new-logos/signature-vertical-logo-navy-whitebg.png"
+          }
+        ]
+      },
+      {
+        "conference": "Big Sky Conference",
+        "schools": [
+          {
+            "name": "Eastern Washington University",
+            "state": "Washington",
+            "city": "Cheney",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Eastern_Washington_Eagles_logo.svg/800px-Eastern_Washington_Eagles_logo.svg.png"
+          },
+          {
+            "name": "Idaho State University",
+            "state": "Idaho",
+            "city": "Pocatello",
+            "imageUrl": "https://images.seeklogo.com/logo-png/40/2/idaho-state-bengals-logo-png_seeklogo-401605.png"
+          },
+          {
+            "name": "University of Idaho",
+            "state": "Idaho",
+            "city": "Moscow",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Idaho_Vandals_logo.svg/1200px-Idaho_Vandals_logo.svg.png"
+          },
+          {
+            "name": "University of Montana",
+            "state": "Montana",
+            "city": "Missoula",
+            "imageUrl": "https://www.umt.edu/brand/imx/AthleticMark.png"
+          },
+          {
+            "name": "Montana State University",
+            "state": "Montana",
+            "city": "Bozeman",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/2/2f/Montana_State_Bobcats_logo.svg/1200px-Montana_State_Bobcats_logo.svg.png"
+          },
+          {
+            "name": "Northern Arizona University",
+            "state": "Arizona",
+            "city": "Flagstaff",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2023/04/northern_arizona_lumberjacks_2014-2018%5Ea.png"
+          },
+          {
+            "name": "University of Northern Colorado",
+            "state": "Colorado",
+            "city": "Greeley",
+            "imageUrl": "https://www.unco.edu/marketing-communications/assets/logos/16_unc_bear_mg_vert_c.png"
+          },
+          {
+            "name": "Portland State University",
+            "state": "Oregon",
+            "city": "Portland",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/48/Portland_State_Vikings_logo.svg"
+          },
+          {
+            "name": "California State University, Sacramento",
+            "state": "California",
+            "city": "Sacramento",
+            "imageUrl": "https://www.calstate.edu/csu-system/csu-branding-standards/PublishingImages/csu-seal.png"
+          },
+          {
+            "name": "Southern Utah University",
+            "state": "Utah",
+            "city": "Cedar City",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/e/e7/Southern_Utah_Thunderbirds_logo.svg/1200px-Southern_Utah_Thunderbirds_logo.svg.png"
+          },
+          {
+            "name": "Weber State University",
+            "state": "Utah",
+            "city": "Ogden",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Weber_State_Wildcats_logo.svg/1200px-Weber_State_Wildcats_logo.svg.png"
+          }
+        ]
+      },
+      {
+        "conference": "Big South Conference",
+        "schools": [
+          {
+            "name": "Campbell University",
+            "state": "North Carolina",
+            "city": "Buies Creek",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/8/84/Campbell_Fighting_Camels_logo.svg/1200px-Campbell_Fighting_Camels_logo.svg.png"
+          },
+          {
+            "name": "Charleston Southern University",
+            "state": "South Carolina",
+            "city": "North Charleston",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/8/86/Charleston_Southern_Buccaneers_logo.svg"
+          },
+          {
+            "name": "College of Charleston",
+            "state": "South Carolina",
+            "city": "Charleston",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/College_of_Charleston_Cougars_logo.svg/1760px-College_of_Charleston_Cougars_logo.svg.png"
+          },
+          {
+            "name": "High Point University",
+            "state": "North Carolina",
+            "city": "High Point",
+            "imageUrl": "https://www.highpoint.edu/ooc/files/2023/11/HPU-BOLD_2685.png"
+          },
+          {
+            "name": "Longwood University",
+            "state": "Virginia",
+            "city": "Farmville",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Longwood_Lancers_logo.svg/1200px-Longwood_Lancers_logo.svg.png"
+          },
+          {
+            "name": "North Carolina A&T State University",
+            "state": "North Carolina",
+            "city": "Greensboro",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/North_Carolina_A%26T_Aggies_logo.svg/1200px-North_Carolina_A%26T_Aggies_logo.svg.png"
+          },
+          {
+            "name": "University of North Carolina at Asheville",
+            "state": "North Carolina",
+            "city": "Asheville",
+            "imageUrl": "https://communication.unca.edu/wp-content/uploads/sites/103/2020/10/UNCA-SEAL-293-RGB-300x300.png"
+          }
+        ]
+      },
+      {
+        "conference": "Big Ten Conference",
+        "schools": [
+          {
+            "name": "University of Illinois Urbana–Champaign",
+            "state": "Illinois",
+            "city": "Champaign",
+            "imageUrl": "https://brand.illinois.edu/wp-content/uploads/2025/02/Illinois_logo_fullcolor_%C2%AE_rgb.png"
+          },
+          {
+            "name": "Indiana University Bloomington",
+            "state": "Indiana",
+            "city": "Bloomington",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Indiana_Hoosiers_logo.svg/1200px-Indiana_Hoosiers_logo.svg.png"
+          },
+          {
+            "name": "University of Iowa",
+            "state": "Iowa",
+            "city": "Iowa City",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/7/7b/Iowa_Hawkeyes_logo.svg/1200px-Iowa_Hawkeyes_logo.svg.png"
+          },
+          {
+            "name": "University of Maryland, College Park",
+            "state": "Maryland",
+            "city": "College Park",
+            "imageUrl": "https://images.seeklogo.com/logo-png/45/2/university-of-maryland-logo-png_seeklogo-458337.png"
+          },
+          {
+            "name": "University of Michigan",
+            "state": "Michigan",
+            "city": "Ann Arbor",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Michigan_Wolverines_logo.svg/2560px-Michigan_Wolverines_logo.svg.png"
+          },
+          {
+            "name": "Michigan State University",
+            "state": "Michigan",
+            "city": "East Lansing",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/a/a7/Michigan_State_Athletics_logo.svg/1200px-Michigan_State_Athletics_logo.svg.png"
+          },
+          {
+            "name": "University of Minnesota",
+            "state": "Minnesota",
+            "city": "Minneapolis",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/University_of_Minnesota_Logo.svg/2560px-University_of_Minnesota_Logo.svg.png"
+          },
+          {
+            "name": "University of Nebraska–Lincoln",
+            "state": "Nebraska",
+            "city": "Lincoln",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Nebraska_Cornhuskers_logo.svg/2048px-Nebraska_Cornhuskers_logo.svg.png"
+          },
+          {
+            "name": "Northwestern University",
+            "state": "Illinois",
+            "city": "Evanston",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Northwestern_Wildcats_logo.svg/1200px-Northwestern_Wildcats_logo.svg.png"
+          },
+          {
+            "name": "The Ohio State University",
+            "state": "Ohio",
+            "city": "Columbus",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Ohio_State_Buckeyes_logo.svg/2082px-Ohio_State_Buckeyes_logo.svg.png"
+          },
+          {
+            "name": "Pennsylvania State University",
+            "state": "Pennsylvania",
+            "city": "University Park",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/3/3a/Penn_State_Nittany_Lions_logo.svg/1200px-Penn_State_Nittany_Lions_logo.svg.png"
+          },
+          {
+            "name": "Purdue University",
+            "state": "Indiana",
+            "city": "West Lafayette",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Purdue_Boilermakers_logo.svg/1200px-Purdue_Boilermakers_logo.svg.png"
+          },
+          {
+            "name": "Rutgers University",
+            "state": "New Jersey",
+            "city": "Piscataway",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Rutgers_Scarlet_Knights_logo.svg/1200px-Rutgers_Scarlet_Knights_logo.svg.png"
+          },
+          {
+            "name": "University of Wisconsin–Madison",
+            "state": "Wisconsin",
+            "city": "Madison",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Wisconsin_Badgers_logo.svg/1200px-Wisconsin_Badgers_logo.svg.png"
+          }
+        ]
+      },
+      {
+        "conference": "Big 12 Conference",
+        "schools": [
+          {
+            "name": "Baylor University",
+            "state": "Texas",
+            "city": "Waco",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b0/2018_Baylor_Athletics_Logo.png"
+          },
+          {
+            "name": "Brigham Young University",
+            "state": "Utah",
+            "city": "Provo",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/BYU_Cougars_logo.svg/1280px-BYU_Cougars_logo.svg.png"
+          },
+          {
+            "name": "University of Cincinnati",
+            "state": "Ohio",
+            "city": "Cincinnati",
+            "imageUrl": "https://loodibee.com/wp-content/uploads/Cincinnati_Bearcats_logo.png"
+          },
+          {
+            "name": "University of Houston",
+            "state": "Texas",
+            "city": "Houston",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/University_of_Houston_Logo.svg/1200px-University_of_Houston_Logo.svg.png"
+          },
+          {
+            "name": "Iowa State University",
+            "state": "Iowa",
+            "city": "Ames",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Iowa_State_Cyclones_logo.svg/2560px-Iowa_State_Cyclones_logo.svg.png"
+          },
+          {
+            "name": "University of Kansas",
+            "state": "Kansas",
+            "city": "Lawrence",
+            "imageUrl": "https://www.gannett-cdn.com/content-pipeline-sports-images/sports2/cbk/logos/1456.png?format=png8&auto=webp"
+          },
+          {
+            "name": "Kansas State University",
+            "state": "Kansas",
+            "city": "Manhattan",
+            "imageUrl": "https://cdn.freelogovectors.net/wp-content/uploads/2020/10/kansas-state-wildcats-logo.png"
+          },
+          {
+            "name": "Oklahoma State University",
+            "state": "Oklahoma",
+            "city": "Stillwater",
+            "imageUrl": "https://storage-prtl-co.imgix.net/endor/organisations/11828/logos/1691532002_osu-logo.png"
+          },
+          {
+            "name": "Texas Christian University",
+            "state": "Texas",
+            "city": "Fort Worth",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/TCU_Horned_Frogs_logo.svg/1200px-TCU_Horned_Frogs_logo.svg.png"
+          },
+          {
+            "name": "Texas Tech University",
+            "state": "Texas",
+            "city": "Lubbock",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Texas_Tech_Athletics_logo.svg/252px-Texas_Tech_Athletics_logo.svg.png?20240714191715"
+          },
+          {
+            "name": "University of Central Florida",
+            "state": "Florida",
+            "city": "Orlando",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/UCF_Knights_logo.svg/1200px-UCF_Knights_logo.svg.png"
+          },
+          {
+            "name": "West Virginia University",
+            "state": "West Virginia",
+            "city": "Morgantown",
+            "imageUrl": "https://loodibee.com/wp-content/uploads/West_Virginia_Mountaineers_logo.png"
+          }
+        ]
+      },
+      {
+        "conference": "Big West Conference",
+        "schools": [
+          {
+            "name": "California Polytechnic State University",
+            "state": "California",
+            "city": "San Luis Obispo",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Cal_Poly_Mustangs_logo.svg/1200px-Cal_Poly_Mustangs_logo.svg.png"
+          },
+          {
+            "name": "California State University, Bakersfield",
+            "state": "California",
+            "city": "Bakersfield",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/c/cc/Cal_State_Bakersfield_Roadrunners_logo.svg/1200px-Cal_State_Bakersfield_Roadrunners_logo.svg.png"
+          },
+          {
+            "name": "California State University, Fullerton",
+            "state": "California",
+            "city": "Fullerton",
+            "imageUrl": "https://www.picnictime.com/cdn/shop/collections/98-0-Cal-State-Fullerton_500x.png?v=1657564319"
+          },
+          {
+            "name": "California State University, Northridge",
+            "state": "California",
+            "city": "Northridge",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/5/51/CSUN_Matadors_logo.svg/800px-CSUN_Matadors_logo.svg.png"
+          },
+          {
+            "name": "University of California, Davis",
+            "state": "California",
+            "city": "Davis",
+            "imageUrl": "https://cdn.freebiesupply.com/logos/large/2x/uc-davis-aggies-3-logo-png-transparent.png"
+          },
+          {
+            "name": "University of California, Irvine",
+            "state": "California",
+            "city": "Irvine",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/UC_Irvine_Anteaters_logo.svg/1200px-UC_Irvine_Anteaters_logo.svg.png"
+          },
+          {
+            "name": "University of California, Riverside",
+            "state": "California",
+            "city": "Riverside",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/90/Uc_riverside_textlogo.png"
+          },
+          {
+            "name": "University of California, San Diego",
+            "state": "California",
+            "city": "La Jolla",
+            "imageUrl": "https://images.seeklogo.com/logo-png/41/2/uc-san-diego-tritons-logo-png_seeklogo-410028.png"
+          },
+          {
+            "name": "University of California, Santa Barbara",
+            "state": "California",
+            "city": "Santa Barbara",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/a/a8/UC_Santa_Barbara_Gauchos_logo.svg/1200px-UC_Santa_Barbara_Gauchos_logo.svg.png"
+          },
+          {
+            "name": "California State University, Long Beach",
+            "state": "California",
+            "city": "Long Beach",
+            "imageUrl": "https://images.seeklogo.com/logo-png/30/2/long-beach-state-logo-png_seeklogo-306226.png"
+          },
+          {
+            "name": "University of Hawaiʻi at Mānoa",
+            "state": "Hawaii",
+            "city": "Honolulu",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2021/06/hawaii_warriors_2000-pres.png"
+          }
+        ]
+      },
+      {
+        "conference": "Coastal Athletic Association",
+        "schools": [
+          {
+            "name": "Delaware State University",
+            "state": "Delaware",
+            "city": "Dover",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/12/Delaware-State-Hornets-Logo.png"
+          },
+          {
+            "name": "Drexel University",
+            "state": "Pennsylvania",
+            "city": "Philadelphia",
+            "imageUrl": "https://drexel.edu/identity/~/media/Drexel/UMaC-Site-Group/Identity/Images/pageLogos/DragonIcon_Blue_HEX.png"
+          },
+          {
+            "name": "Elon University",
+            "state": "North Carolina",
+            "city": "Elon",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Elon_logo_from_NCAA.svg/2048px-Elon_logo_from_NCAA.svg.png"
+          },
+          {
+            "name": "Hofstra University",
+            "state": "New York",
+            "city": "Hempstead",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2024/04/hofstra_pride_2005-pres-a.png"
+          },
+          {
+            "name": "Monmouth University",
+            "state": "New Jersey",
+            "city": "West Long Branch",
+            "imageUrl": "https://images.seeklogo.com/logo-png/40/2/monmouth-hawks-logo-png_seeklogo-405293.png"
+          },
+          {
+            "name": "North Carolina Central University",
+            "state": "North Carolina",
+            "city": "Durham",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/1/13/NCCU_Eagles_head_mark_logo.svg/1200px-NCCU_Eagles_head_mark_logo.svg.png"
+          },
+          {
+            "name": "Towson University",
+            "state": "Maryland",
+            "city": "Towson",
+            "imageUrl": "https://www.towson.edu/universitymarketing/images/tigerhead-transparentbkgd-ic.png"
+          },
+          {
+            "name": "University of North Carolina at Wilmington",
+            "state": "North Carolina",
+            "city": "Wilmington",
+            "imageUrl": "https://uncw.edu/media/images/logos/brand/primary-seahawk-athletics-logo-notpad-our.png"
+          },
+          {
+            "name": "College of William & Mary",
+            "state": "Virginia",
+            "city": "Williamsburg",
+            "imageUrl": "https://brand.wm.edu/wp-content/uploads/2022/06/Athletics-WM-Green-on-Gold-300x244.png"
+          }
+        ]
+      },
+      {
+        "conference": "Conference USA",
+        "schools": [
+          {
+            "name": "Florida International University",
+            "state": "Florida",
+            "city": "Miami",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/1/1d/FIU_Panthers_logo.svg/800px-FIU_Panthers_logo.svg.png"
+          },
+          {
+            "name": "Jacksonville State University",
+            "state": "Alabama",
+            "city": "Jacksonville",
+            "imageUrl": "https://cdn.freebiesupply.com/logos/large/2x/jsu-gamecocks-2-logo-png-transparent.png"
+          },
+          {
+            "name": "Liberty University",
+            "state": "Virginia",
+            "city": "Lynchburg",
+            "imageUrl": "https://libertyflamesclub.org/images/2023/5/5/logo_header_letterwinners.png"
+          },
+          {
+            "name": "Louisiana Tech University",
+            "state": "Louisiana",
+            "city": "Ruston",
+            "imageUrl": "https://brand.latech.edu/wp-content/uploads/sites/13/2021/03/favicon-300x300-1.png"
+          },
+          {
+            "name": "Middle Tennessee State University",
+            "state": "Tennessee",
+            "city": "Murfreesboro",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Middle_Tennessee_MT_Logomark.svg/2560px-Middle_Tennessee_MT_Logomark.svg.png"
+          },
+          {
+            "name": "New Mexico State University",
+            "state": "New Mexico",
+            "city": "Las Cruces",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c8/New_Mexico_State_Aggies_logo.svg/1200px-New_Mexico_State_Aggies_logo.svg.png"
+          },
+          {
+            "name": "Sam Houston State University",
+            "state": "Texas",
+            "city": "Huntsville",
+            "imageUrl": "https://www.shsu.edu/dept/marketing/athletic-logos/Sam_Houston_Primary_Mark_ORANGE_RGB_WHTBG_FINAL_Sam_Houston_Primary_Mark_ORANGE_PMS_WHTBG.png"
+          },
+          {
+            "name": "University of Texas at El Paso",
+            "state": "Texas",
+            "city": "El Paso",
+            "imageUrl": "https://cdn.freebiesupply.com/logos/large/2x/utep-miners-4-logo-svg-vector.svg"
+          },
+          {
+            "name": "Western Kentucky University",
+            "state": "Kentucky",
+            "city": "Bowling Green",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/1/1d/WKU_Athletics_logo.svg/1200px-WKU_Athletics_logo.svg.png"
+          },
+          {
+            "name": "University of Delaware",
+            "state": "Delaware",
+            "city": "Newark",
+            "imageUrl": "https://cdn.worldvectorlogo.com/logos/university-of-delaware.svg"
+          },
+          {
+            "name": "Missouri State University",
+            "state": "Missouri",
+            "city": "Springfield",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/07/Missouri-State-Bears-logo.png"
+          }
+        ]
+      },
+      {
+        "conference": "Horizon League",
+        "schools": [
+          {
+            "name": "Cleveland State University",
+            "state": "Ohio",
+            "city": "Cleveland",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2022/03/Cleveland-State-Vikings-Logo-2007.png"
+          },
+          {
+            "name": "University of Detroit Mercy",
+            "state": "Michigan",
+            "city": "Detroit",
+            "imageUrl": "https://programs.adea.org/assets/programs/887/logo-1744916471086.png"
+          },
+          {
+            "name": "University of Wisconsin–Green Bay",
+            "state": "Wisconsin",
+            "city": "Green Bay",
+            "imageUrl": "https://cdn.shopify.com/s/files/1/0646/4664/3925/collections/University_of_Wisconsin-Green_Bay.png?v=1716221771"
+          },
+          {
+            "name": "University of Wisconsin–Milwaukee",
+            "state": "Wisconsin",
+            "city": "Milwaukee",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/07/Wisconsin-Milwaukee-Panthers-logo.png"
+          },
+          {
+            "name": "Northern Kentucky University",
+            "state": "Kentucky",
+            "city": "Highland Heights",
+            "imageUrl": "https://www.pngkey.com/png/full/194-1945400_nku-logo-northern-kentucky-university-logo.png"
+          },
+          {
+            "name": "Purdue University Fort Wayne",
+            "state": "Indiana",
+            "city": "Fort Wayne",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/1/14/Purdue_Fort_Wayne_Mastodons_logo.svg/1200px-Purdue_Fort_Wayne_Mastodons_logo.svg.png"
+          },
+          {
+            "name": "Robert Morris University",
+            "state": "Pennsylvania",
+            "city": "Moon Township",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2022/02/Robert-Morris-Colonials-Logo-2006.png"
+          },
+          {
+            "name": "Wright State University",
+            "state": "Ohio",
+            "city": "Dayton",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c2/Wright_State_Raiders_logo.svg/1200px-Wright_State_Raiders_logo.svg.png"
+          },
+          {
+            "name": "Youngstown State University",
+            "state": "Ohio",
+            "city": "Youngstown",
+            "imageUrl": "https://ysu.edu/sites/default/files/creative-services/University%20Y%202%20line%20Serif%20vert%20logo_0.png"
+          }
+        ]
+      },
+      {
+        "conference": "Ivy League",
+        "schools": [
+          {
+            "name": "Brown University",
+            "state": "Rhode Island",
+            "city": "Providence",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Brown_Bears_Athletics_logo.svg"
+          },
+          {
+            "name": "Columbia University",
+            "state": "New York",
+            "city": "New York",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/5/5f/Columbia_Lions_logo.svg"
+          },
+          {
+            "name": "Cornell University",
+            "state": "New York",
+            "city": "Ithaca",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2024/03/Cornell-Big-Red-Logo.png"
+          },
+          {
+            "name": "Dartmouth College",
+            "state": "New Hampshire",
+            "city": "Hanover",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Dartmouth_College_Big_Green_logo.svg/1200px-Dartmouth_College_Big_Green_logo.svg.png"
+          },
+          {
+            "name": "Harvard University",
+            "state": "Massachusetts",
+            "city": "Cambridge",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2022/02/Harvard-Crimson-Logo-2002.png"
+          },
+          {
+            "name": "University of Pennsylvania",
+            "state": "Pennsylvania",
+            "city": "Philadelphia",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Penn_Quakers_logo.svg/1200px-Penn_Quakers_logo.svg.png"
+          },
+          {
+            "name": "Princeton University",
+            "state": "New Jersey",
+            "city": "Princeton",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Princeton_Tigers_logo.svg/1200px-Princeton_Tigers_logo.svg.png"
+          },
+          {
+            "name": "Yale University",
+            "state": "Connecticut",
+            "city": "New Haven",
+            "imageUrl": "https://images.seeklogo.com/logo-png/44/2/yale-bulldogs-athletics-logo-png_seeklogo-448567.png"
+          }
+        ]
+      },
+      {
+        "conference": "Metro Atlantic Athletic Conference",
+        "schools": [
+          {
+            "name": "Canisius College",
+            "state": "New York",
+            "city": "Buffalo",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/6/69/Canisius_Golden_Griffins_Logo.svg/1200px-Canisius_Golden_Griffins_Logo.svg.png"
+          },
+          {
+            "name": "Fairfield University",
+            "state": "Connecticut",
+            "city": "Fairfield",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/06/Fairfield-Stags-logo.png"
+          },
+          {
+            "name": "Iona University",
+            "state": "New York",
+            "city": "New Rochelle",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2024/07/iona_gaels_2016-pres-w.png"
+          },
+          {
+            "name": "Manhattan College",
+            "state": "New York",
+            "city": "Bronx",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Manhattan_Jaspers_logo.svg/640px-Manhattan_Jaspers_logo.svg.png"
+          },
+          {
+            "name": "Marist College",
+            "state": "New York",
+            "city": "Poughkeepsie",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/06/Marist-Red-Foxes-logo.png"
+          },
+          {
+            "name": "Niagara University",
+            "state": "New York",
+            "city": "Niagara Falls",
+            "imageUrl": "https://www.niagaracollege.ca/wp-content/uploads/2024/08/A1-Knights-Logo-colour.png"
+          },
+          {
+            "name": "Quinnipiac University",
+            "state": "Connecticut",
+            "city": "Hamden",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/07/Quinnipiac-Bobcats-logo.png"
+          },
+          {
+            "name": "Rider University",
+            "state": "New Jersey",
+            "city": "Lawrenceville",
+            "imageUrl": "https://phoenixdesignworks.com/wp-content/uploads/2023/05/Rider_RwithBronc_SG_053014.png"
+          },
+          {
+            "name": "Saint Peter's University",
+            "state": "New Jersey",
+            "city": "Jersey City",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2024/07/saint_peters_peacocks_2020-pres.png"
+          },
+          {
+            "name": "Siena College",
+            "state": "New York",
+            "city": "Loudonville",
+            "imageUrl": "https://www.siena.edu/files/resources/small-siena__bernie_lockup_vertical_fullcolor.png"
+          }
+        ]
+      },
+      {
+        "conference": "Mid-American Conference",
+        "schools": [
+          {
+            "name": "University at Buffalo",
+            "state": "New York",
+            "city": "Buffalo",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/5/5e/Buffalo_Bulls_Athletic_Logo.svg"
+          },
+          {
+            "name": "Bowling Green State University",
+            "state": "Ohio",
+            "city": "Bowling Green",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/2/2b/Bowling_Green_Falcons_logo.svg/1200px-Bowling_Green_Falcons_logo.svg.png"
+          },
+          {
+            "name": "Central Michigan University",
+            "state": "Michigan",
+            "city": "Mount Pleasant",
+            "imageUrl": "https://static.wixstatic.com/media/7383ad_ff45f1d1342545508af4fce74c71a3c2~mv2_d_1500_1500_s_2.png/v1/fill/w_1500,h_1500,al_c/Central%20Michigan.png"
+          },
+          {
+            "name": "Eastern Michigan University",
+            "state": "Michigan",
+            "city": "Ypsilanti",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/06/Eastern-Michigan-Eagles-logo.png"
+          },
+          {
+            "name": "Kent State University",
+            "state": "Ohio",
+            "city": "Kent",
+            "imageUrl": "https://www.gannett-cdn.com/content-pipeline-sports-images/sports2/cbk/logos/1458.png?format=png8&auto=webp"
+          },
+          {
+            "name": "Miami University",
+            "state": "Ohio",
+            "city": "Oxford",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/09/Miami-Ohio-RedHawks-Logo.png"
+          },
+          {
+            "name": "Northern Illinois University",
+            "state": "Illinois",
+            "city": "DeKalb",
+            "imageUrl": "https://www.niu.edu/communication-standards/_images/3CHDNIU.png"
+          },
+          {
+            "name": "Ohio University",
+            "state": "Ohio",
+            "city": "Athens",
+            "imageUrl": "https://www.ohio.edu/sites/default/files/styles/medium/public/2024-06/Attack%20Cat%20Logo.png?itok=d35QCLWj"
+          },
+          {
+            "name": "University of Toledo",
+            "state": "Ohio",
+            "city": "Toledo",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/07/Toledo-Rockets-logo.png"
+          },
+          {
+            "name": "Western Michigan University",
+            "state": "Michigan",
+            "city": "Kalamazoo",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Western_Michigan_Broncos_%282021%29_logo.svg/1200px-Western_Michigan_Broncos_%282021%29_logo.svg.png"
+          }
+        ]
+      },
+      {
+        "conference": "Missouri Valley Conference",
+        "schools": [
+          {
+            "name": "Belmont University",
+            "state": "Tennessee",
+            "city": "Nashville",
+            "imageUrl": "https://www.belmont.edu/umac/brand/_images/athleticslogo_bearicon.png"
+          },
+          {
+            "name": "Bradley University",
+            "state": "Illinois",
+            "city": "Peoria",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Bradley_Braves_logo.svg/640px-Bradley_Braves_logo.svg.png"
+          },
+          {
+            "name": "Drake University",
+            "state": "Iowa",
+            "city": "Des Moines",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/f/fc/Drake_Bulldogs_logo.svg/1200px-Drake_Bulldogs_logo.svg.png"
+          },
+          {
+            "name": "University of Evansville",
+            "state": "Indiana",
+            "city": "Evansville",
+            "imageUrl": "https://www.evansville.edu/marketing/images/logos/athletics-ace-purple.png"
+          },
+          {
+            "name": "Illinois State University",
+            "state": "Illinois",
+            "city": "Normal",
+            "imageUrl": "https://universitymarketing.illinoisstate.edu/images/identity/SECNDRY_head_3C.png"
+          },
+          {
+            "name": "Indiana State University",
+            "state": "Indiana",
+            "city": "Terre Haute",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Indiana_State_Sycamores_logo.svg/1200px-Indiana_State_Sycamores_logo.svg.png"
+          },
+          {
+            "name": "Murray State University",
+            "state": "Kentucky",
+            "city": "Murray",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c9/Murray_State_Racers_logo.svg/1200px-Murray_State_Racers_logo.svg.png"
+          },
+          {
+            "name": "University of Northern Iowa",
+            "state": "Iowa",
+            "city": "Cedar Falls",
+            "imageUrl": "https://ur.uni.edu/sites/default/files/inline-uploads/uni_primaryrgb.png"
+          },
+          {
+            "name": "Southern Illinois University",
+            "state": "Illinois",
+            "city": "Carbondale",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/9/9f/Southern_Illinois_Salukis_logo.svg"
+          },
+          {
+            "name": "Valparaiso University",
+            "state": "Indiana",
+            "city": "Valparaiso",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2020/01/Valparaiso-Crusaders-logo.png"
+          }
+        ]
+      },
+      {
+        "conference": "Mountain West Conference",
+        "schools": [
+          {
+            "name": "United States Air Force Academy",
+            "state": "Colorado",
+            "city": "Colorado Springs",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Air_Force_Falcons_logo.svg/1200px-Air_Force_Falcons_logo.svg.png"
+          },
+          {
+            "name": "Boise State University",
+            "state": "Idaho",
+            "city": "Boise",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2022/08/boise_state_broncos_2002-2012.png"
+          },
+          {
+            "name": "California State University, Fresno",
+            "state": "California",
+            "city": "Fresno",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/7/7c/Fresno_State_Bulldogs_logo.svg"
+          },
+          {
+            "name": "Colorado State University",
+            "state": "Colorado",
+            "city": "Fort Collins",
+            "imageUrl": "https://cdn.shopify.com/s/files/1/0430/9085/files/Colorado_State_Logo_large.png?14576633245269305067"
+          },
+          {
+            "name": "University of Nevada, Reno",
+            "state": "Nevada",
+            "city": "Reno",
+            "imageUrl": "https://logos-world.net/wp-content/uploads/2020/08/Nevada-Wolf-Pack-Logo.png"
+          },
+          {
+            "name": "University of New Mexico",
+            "state": "New Mexico",
+            "city": "Albuquerque",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/4/45/New_Mexico_Lobos_logo.svg/1200px-New_Mexico_Lobos_logo.svg.png"
+          },
+          {
+            "name": "San Diego State University",
+            "state": "California",
+            "city": "San Diego",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/San_Diego_State_Aztecs_logo.svg/2560px-San_Diego_State_Aztecs_logo.svg.png"
+          },
+          {
+            "name": "San Jose State University",
+            "state": "California",
+            "city": "San Jose",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/e/ec/San_Jose_State_Spartans_logo.svg"
+          },
+          {
+            "name": "University of Nevada, Las Vegas",
+            "state": "Nevada",
+            "city": "Las Vegas",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/07/UNLV-Rebels-logo-2009.png"
+          },
+          {
+            "name": "Utah State University",
+            "state": "Utah",
+            "city": "Logan",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Utah_State_Aggies_logo.svg/2560px-Utah_State_Aggies_logo.svg.png"
+          },
+          {
+            "name": "University of Wyoming",
+            "state": "Wyoming",
+            "city": "Laramie",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Wyoming_Athletics_logo.svg/1200px-Wyoming_Athletics_logo.svg.png"
+          }
+        ]
+      },
+      {
+        "conference": "Northeast Conference",
+        "schools": [
+          {
+            "name": "Bryant University",
+            "state": "Rhode Island",
+            "city": "Smithfield",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/c/ca/Bryant_Bulldogs_logo.svg/1200px-Bryant_Bulldogs_logo.svg.png"
+          },
+          {
+            "name": "Central Connecticut State University",
+            "state": "Connecticut",
+            "city": "New Britain",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/9/90/Central_Connecticut_Blue_Devils_logo.svg/1200px-Central_Connecticut_Blue_Devils_logo.svg.png"
+          },
+          {
+            "name": "Fairleigh Dickinson University",
+            "state": "New Jersey",
+            "city": "Teaneck",
+            "imageUrl": "https://fduknights.com/images/2023/7/5/FDU_Knightro_Full_rgb.png"
+          },
+          {
+            "name": "Long Island University",
+            "state": "New York",
+            "city": "Brooklyn",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/f/fd/LIU_Sharks_logo.svg/1200px-LIU_Sharks_logo.svg.png"
+          },
+          {
+            "name": "Merrimack College",
+            "state": "Massachusetts",
+            "city": "North Andover",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Merrimack_Warriors.svg/2560px-Merrimack_Warriors.svg.png"
+          },
+          {
+            "name": "Sacred Heart University",
+            "state": "Connecticut",
+            "city": "Fairfield",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2024/02/sacred_heart_pioneers_2004-presa.png"
+          },
+          {
+            "name": "Saint Francis University",
+            "state": "Pennsylvania",
+            "city": "Loretto",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Saint_Francis_Red_Flash_logo.svg/1200px-Saint_Francis_Red_Flash_logo.svg.png"
+          },
+          {
+            "name": "Stonehill College",
+            "state": "Massachusetts",
+            "city": "Easton",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Stonehill_logo_from_NCAA.svg/2560px-Stonehill_logo_from_NCAA.svg.png"
+          },
+          {
+            "name": "Wagner College",
+            "state": "New York",
+            "city": "Staten Island",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/6/63/Wagner_Seahawks_logo.svg/1200px-Wagner_Seahawks_logo.svg.png"
+          },
+          {
+            "name": "Le Moyne College",
+            "state": "New York",
+            "city": "Syracuse",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/c/cc/Le_Moyne_Dolphins_logo.svg/1200px-Le_Moyne_Dolphins_logo.svg.png"
+          }
+        ]
+      },
+      {
+        "conference": "Ohio Valley Conference",
+        "schools": [
+          {
+            "name": "Austin Peay State University",
+            "state": "Tennessee",
+            "city": "Clarksville",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/a/a8/Austin_Peay_Governors_logo.svg"
+          },
+          {
+            "name": "Southeast Missouri State University",
+            "state": "Missouri",
+            "city": "Cape Girardeau",
+            "imageUrl": "https://gosoutheast.com/images/2020/6/11/Redhawk_Head_4Color.png"
+          },
+          {
+            "name": "Southern Illinois University Edwardsville",
+            "state": "Illinois",
+            "city": "Edwardsville",
+            "imageUrl": "https://www.siue.edu/marketing-and-communications/services/graphic-design/img/2023/digital/Cougar_Logo_SIUE_Full-color_for-white-background_e5182d.png"
+          },
+          {
+            "name": "Tennessee State University",
+            "state": "Tennessee",
+            "city": "Nashville",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/Tennessee_State_Athletics_logo.svg/800px-Tennessee_State_Athletics_logo.svg.png"
+          },
+          {
+            "name": "Tennessee Technological University",
+            "state": "Tennessee",
+            "city": "Cookeville",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/f/f8/Tennessee_Tech_Golden_Eagles_logo.svg/1200px-Tennessee_Tech_Golden_Eagles_logo.svg.png"
+          },
+          {
+            "name": "University of Tennessee at Martin",
+            "state": "Tennessee",
+            "city": "Martin",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/2/2c/UT_Martin_Skyhawks_logo.svg/1200px-UT_Martin_Skyhawks_logo.svg.png"
+          }
+        ]
+      },
+      {
+        "conference": "Patriot League",
+        "schools": [
+          {
+            "name": "American University",
+            "state": "District of Columbia",
+            "city": "Washington",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2024/10/American-University-Emblem.png"
+          },
+          {
+            "name": "United States Military Academy (Army)",
+            "state": "New York",
+            "city": "West Point",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/06/Army-Black-Knights-logo.png"
+          },
+          {
+            "name": "Boston University",
+            "state": "Massachusetts",
+            "city": "Boston",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/1/15/Boston_University_Terriers_logo.svg/800px-Boston_University_Terriers_logo.svg.png"
+          },
+          {
+            "name": "Bucknell University",
+            "state": "Pennsylvania",
+            "city": "Lewisburg",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/3/3a/Bucknell_Bison_logo.svg/1200px-Bucknell_Bison_logo.svg.png"
+          },
+          {
+            "name": "Colgate University",
+            "state": "New York",
+            "city": "Hamilton",
+            "imageUrl": "https://www.colgate.edu/sites/default/files/2020-10/Col_Athletics_C_RGB_500_0.png"
+          },
+          {
+            "name": "College of the Holy Cross",
+            "state": "Massachusetts",
+            "city": "Worcester",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Holy_Cross_Crusaders_logo.svg/1200px-Holy_Cross_Crusaders_logo.svg.png"
+          },
+          {
+            "name": "Lafayette College",
+            "state": "Pennsylvania",
+            "city": "Easton",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/8/8f/Lafayette_Leopards_logo.svg/1200px-Lafayette_Leopards_logo.svg.png"
+          },
+          {
+            "name": "Lehigh University",
+            "state": "Pennsylvania",
+            "city": "Bethlehem",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/6/65/LehighMountainHawks.svg/1200px-LehighMountainHawks.svg.png"
+          },
+          {
+            "name": "Loyola University Maryland",
+            "state": "Maryland",
+            "city": "Baltimore",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Loyola-maryland_logo_from_NCAA.svg/2048px-Loyola-maryland_logo_from_NCAA.svg.png"
+          },
+          {
+            "name": "United States Naval Academy (Navy)",
+            "state": "Maryland",
+            "city": "Annapolis",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2022/02/Navy-Midshipmen-logo.png"
+          }
+        ]
+      },
+      {
+        "conference": "Southeastern Conference",
+        "schools": [
+          {
+            "name": "University of Alabama",
+            "state": "Alabama",
+            "city": "Tuscaloosa",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Alabama_Crimson_Tide_logo.svg/2048px-Alabama_Crimson_Tide_logo.svg.png"
+          },
+          {
+            "name": "University of Arkansas",
+            "state": "Arkansas",
+            "city": "Fayetteville",
+            "imageUrl": "https://brand.uark.edu/_resources/images/RightHog.png"
+          },
+          {
+            "name": "Auburn University",
+            "state": "Alabama",
+            "city": "Auburn",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/06/Auburn-Tigers-logo.png"
+          },
+          {
+            "name": "University of Florida",
+            "state": "Florida",
+            "city": "Gainesville",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/1/14/Florida_Gators_gator_logo.svg/1200px-Florida_Gators_gator_logo.svg.png"
+          },
+          {
+            "name": "University of Georgia",
+            "state": "Georgia",
+            "city": "Athens",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Georgia_Athletics_logo.svg/1200px-Georgia_Athletics_logo.svg.png"
+          },
+          {
+            "name": "University of Kentucky",
+            "state": "Kentucky",
+            "city": "Lexington",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2022/04/kentucky_wildcats_2005-2016.png"
+          },
+          {
+            "name": "Louisiana State University",
+            "state": "Louisiana",
+            "city": "Baton Rouge",
+            "imageUrl": "https://logos-world.net/wp-content/uploads/2021/09/LSU-Logo-2007-2013.png"
+          },
+          {
+            "name": "University of Mississippi",
+            "state": "Mississippi",
+            "city": "Oxford",
+            "imageUrl": "https://blackcloverusa.com/cdn/shop/collections/university-of-mississippi.png?v=1724959711"
+          },
+          {
+            "name": "Mississippi State University",
+            "state": "Mississippi",
+            "city": "Starkville",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Mississippi_State_Bulldogs_logo.svg/1200px-Mississippi_State_Bulldogs_logo.svg.png"
+          },
+          {
+            "name": "University of Missouri",
+            "state": "Missouri",
+            "city": "Columbia",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/2/2c/Missouri_Tigers_logo.svg/1200px-Missouri_Tigers_logo.svg.png"
+          },
+          {
+            "name": "University of South Carolina",
+            "state": "South Carolina",
+            "city": "Columbia",
+            "imageUrl": "https://sc.edu/about/offices_and_divisions/communications/images/toolbox/logos/grid_athletics_logo.png"
+          },
+          {
+            "name": "University of Tennessee",
+            "state": "Tennessee",
+            "city": "Knoxville",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Tennessee_Volunteers_logo.svg/1200px-Tennessee_Volunteers_logo.svg.png"
+          },
+          {
+            "name": "Texas A&M University",
+            "state": "Texas",
+            "city": "College Station",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Texas_A%26M_University_logo.svg/2492px-Texas_A%26M_University_logo.svg.png"
+          },
+          {
+            "name": "Vanderbilt University",
+            "state": "Tennessee",
+            "city": "Nashville",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2020/02/Vanderbilt-Commodores-Logo.png"
+          },
+          {
+            "name": "University of Oklahoma",
+            "state": "Oklahoma",
+            "city": "Norman",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Oklahoma_Sooners_logo.svg/1200px-Oklahoma_Sooners_logo.svg.png"
+          },
+          {
+            "name": "University of Texas at Austin",
+            "state": "Texas",
+            "city": "Austin",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Texas_Longhorns_logo.svg/2560px-Texas_Longhorns_logo.svg.png"
+          }
+        ]
+      },
+      {
+        "conference": "Southern Conference",
+        "schools": [
+          {
+            "name": "University of Tennessee at Chattanooga",
+            "state": "Tennessee",
+            "city": "Chattanooga",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Chattanooga_Mocs_logo.svg/1200px-Chattanooga_Mocs_logo.svg.png"
+          },
+          {
+            "name": "East Tennessee State University",
+            "state": "Tennessee",
+            "city": "Johnson City",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/East_Tennessee_State_Buccaneers_logo.svg/640px-East_Tennessee_State_Buccaneers_logo.svg.png"
+          },
+          {
+            "name": "Furman University",
+            "state": "South Carolina",
+            "city": "Greenville",
+            "imageUrl": "https://www.furman.edu/wp-content/uploads/2019/01/paladins-logo/PNG/Paladins-Logo-RGB.png"
+          },
+          {
+            "name": "Mercer University",
+            "state": "Georgia",
+            "city": "Macon",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/f/fa/Mercer_Bears_logo.svg/1200px-Mercer_Bears_logo.svg.png"
+          },
+          {
+            "name": "Samford University",
+            "state": "Alabama",
+            "city": "Homewood",
+            "imageUrl": "https://content.sportslogos.net/logos/34/824/full/samford_bulldogs_logo_secondary_2016_sportslogosnet-7191.png"
+          },
+          {
+            "name": "The Citadel",
+            "state": "South Carolina",
+            "city": "Charleston",
+            "imageUrl": "https://brand.citadel.edu/wp-content/uploads/2023/12/The-Citadel-Primary_Athletic_Mark_white_background.png"
+          },
+          {
+            "name": "University of North Carolina at Greensboro",
+            "state": "North Carolina",
+            "city": "Greensboro",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/7/70/UNCG_Spartans_logo.svg/800px-UNCG_Spartans_logo.svg.png"
+          },
+          {
+            "name": "Virginia Military Institute",
+            "state": "Virginia",
+            "city": "Lexington",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/90/Virginia_Military_Institute_logo.png"
+          },
+          {
+            "name": "Western Carolina University",
+            "state": "North Carolina",
+            "city": "Cullowhee",
+            "imageUrl": "https://athlonsports.com/.image/c_fit%2Ccs_srgb%2Cq_auto:good/MjA1MjcyMjkxNDg3MTk2OTU0/western-carolina-catamounts-logo.png"
+          },
+          {
+            "name": "Wofford College",
+            "state": "South Carolina",
+            "city": "Spartanburg",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/5/5b/Wofford_Terriers_logo.svg/1200px-Wofford_Terriers_logo.svg.png"
+          }
+        ]
+      },
+      {
+        "conference": "Southland Conference",
+        "schools": [
+          {
+            "name": "University of the Incarnate Word",
+            "state": "Texas",
+            "city": "San Antonio",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/e/ea/Incarnate_Word_Cardinals_logo.svg/1200px-Incarnate_Word_Cardinals_logo.svg.png"
+          },
+          {
+            "name": "Nicholls State University",
+            "state": "Louisiana",
+            "city": "Thibodaux",
+            "imageUrl": "https://gridironfootballusa.com/wp-content/uploads/2018/08/1200px-Nicholls_State_Colonels_logo.svg_.png"
+          },
+          {
+            "name": "Northwestern State University",
+            "state": "Louisiana",
+            "city": "Natchitoches",
+            "imageUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500-dark/2466.png"
+          },
+          {
+            "name": "Southeastern Louisiana University",
+            "state": "Louisiana",
+            "city": "Hammond",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/3/33/Southeastern_Louisiana_Lions_logo.svg/640px-Southeastern_Louisiana_Lions_logo.svg.png"
+          },
+          {
+            "name": "McNeese State University",
+            "state": "Louisiana",
+            "city": "Lake Charles",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/f/f7/McNeese_State_Athletics_logo.svg/800px-McNeese_State_Athletics_logo.svg.png"
+          },
+          {
+            "name": "Lamar University",
+            "state": "Texas",
+            "city": "Beaumont",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Lamar_Cardinals_alternate_logo.svg/2125px-Lamar_Cardinals_alternate_logo.svg.png"
+          },
+          {
+            "name": "Texas A&M University–Corpus Christi",
+            "state": "Texas",
+            "city": "Corpus Christi",
+            "imageUrl": "https://cdn.d1baseball.com/uploads/2023/12/21144108/tamucc.png"
+          },
+          {
+            "name": "University of New Orleans",
+            "state": "Louisiana",
+            "city": "New Orleans",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/2/27/New_Orleans_Privateers_logo.svg/1200px-New_Orleans_Privateers_logo.svg.png"
+          }
+        ]
+      },
+      {
+        "conference": "Summit League",
+        "schools": [
+          {
+            "name": "University of Denver",
+            "state": "Colorado",
+            "city": "Denver",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Denver_Pioneers_Athletics_logo.svg/1200px-Denver_Pioneers_Athletics_logo.svg.png"
+          },
+          {
+            "name": "University of Missouri–Kansas City",
+            "state": "Missouri",
+            "city": "Kansas City",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/7/75/Kansas_City_Roos_logo.svg/1200px-Kansas_City_Roos_logo.svg.png"
+          },
+          {
+            "name": "University of North Dakota",
+            "state": "North Dakota",
+            "city": "Grand Forks",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2023/10/north_dakota_fighting_hawks_2016-pres.png"
+          },
+          {
+            "name": "North Dakota State University",
+            "state": "North Dakota",
+            "city": "Fargo",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/7/74/North_Dakota_State_Bison_logo.svg/1200px-North_Dakota_State_Bison_logo.svg.png"
+          },
+          {
+            "name": "University of Nebraska Omaha",
+            "state": "Nebraska",
+            "city": "Omaha",
+            "imageUrl": "https://www.unomaha.edu/university-communications/downloadables/durango-the-bull/uno-maverick-color.png"
+          },
+          {
+            "name": "Oral Roberts University",
+            "state": "Oklahoma",
+            "city": "Tulsa",
+            "imageUrl": "https://cdn.usteamcolors.com/images/ncaa/division-1/oral-roberts-golden-eagles-logo.png"
+          },
+          {
+            "name": "University of South Dakota",
+            "state": "South Dakota",
+            "city": "Vermillion",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/a/ae/South_Dakota_Coyotes_logo.svg/1200px-South_Dakota_Coyotes_logo.svg.png"
+          },
+          {
+            "name": "South Dakota State University",
+            "state": "South Dakota",
+            "city": "Brookings",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/2/25/South_Dakota_State_Jackrabbits_logo.svg/1200px-South_Dakota_State_Jackrabbits_logo.svg.png"
+          },
+          {
+            "name": "University of St. Thomas",
+            "state": "Minnesota",
+            "city": "St. Paul",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/St-thomas-mn_logo_from_NCAA.svg/1200px-St-thomas-mn_logo_from_NCAA.svg.png"
+          },
+          {
+            "name": "Western Illinois University",
+            "state": "Illinois",
+            "city": "Macomb",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/1/16/Western_Illinois_Leathernecks_logo.svg/1200px-Western_Illinois_Leathernecks_logo.svg.png"
+          }
+        ]
+      },
+      {
+        "conference": "Sun Belt Conference",
+        "schools": [
+          {
+            "name": "Appalachian State University",
+            "state": "North Carolina",
+            "city": "Boone",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Appalachian_State_Mountaineers_logo.svg/1810px-Appalachian_State_Mountaineers_logo.svg.png"
+          },
+          {
+            "name": "Arkansas State University",
+            "state": "Arkansas",
+            "city": "Jonesboro",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/3/36/Arkansas_State_Red_Wolves_logo.svg/800px-Arkansas_State_Red_Wolves_logo.svg.png"
+          },
+          {
+            "name": "Coastal Carolina University",
+            "state": "South Carolina",
+            "city": "Conway",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/Coastal_Carolina_Chanticleers_logo.svg/1200px-Coastal_Carolina_Chanticleers_logo.svg.png"
+          },
+          {
+            "name": "Georgia Southern University",
+            "state": "Georgia",
+            "city": "Statesboro",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/2/2a/Georgia_Southern_Eagles_logo.svg/1200px-Georgia_Southern_Eagles_logo.svg.png"
+          },
+          {
+            "name": "Georgia State University",
+            "state": "Georgia",
+            "city": "Atlanta",
+            "imageUrl": "https://commkit.gsu.edu/files/2021/05/GSU-Athletics-Pantherhead-2C-RGB.png"
+          },
+          {
+            "name": "James Madison University",
+            "state": "Virginia",
+            "city": "Harrisonburg",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2023/03/james_madison_dukes_2017-pres_a.png"
+          },
+          {
+            "name": "Marshall University",
+            "state": "West Virginia",
+            "city": "Huntington",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Marshall_University_logo.svg/2560px-Marshall_University_logo.svg.png"
+          },
+          {
+            "name": "Old Dominion University",
+            "state": "Virginia",
+            "city": "Norfolk",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/b/b4/Old_Dominion_Athletics_logo.svg/1200px-Old_Dominion_Athletics_logo.svg.png"
+          },
+          {
+            "name": "University of Louisiana at Lafayette",
+            "state": "Louisiana",
+            "city": "Lafayette",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/La-lafayette_logo_from_NCAA.svg/2560px-La-lafayette_logo_from_NCAA.svg.png"
+          },
+          {
+            "name": "University of Louisiana at Monroe",
+            "state": "Louisiana",
+            "city": "Monroe",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2019/09/Louisiana-Monroe-Warhawks-Logo-2006.png"
+          },
+          {
+            "name": "University of South Alabama",
+            "state": "Alabama",
+            "city": "Mobile",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2025/07/south_alabama_jaguars_2018-pres.png"
+          },
+          {
+            "name": "University of Southern Mississippi",
+            "state": "Mississippi",
+            "city": "Hattiesburg",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/5/5d/Southern_Miss_Athletics_logo.svg/1200px-Southern_Miss_Athletics_logo.svg.png"
+          },
+          {
+            "name": "Texas State University",
+            "state": "Texas",
+            "city": "San Marcos",
+            "imageUrl": "https://docs.gato.txst.edu/157714/w/2000/r49Aetgjh_Dt/supercat-logo.png"
+          },
+          {
+            "name": "Troy University",
+            "state": "Alabama",
+            "city": "Troy",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2022/02/Troy-Trojans-Logo-2008.png"
+          },
+          {
+            "name": "University of Texas at Arlington",
+            "state": "Texas",
+            "city": "Arlington",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/da/UTA_logomark.png"
+          }
+        ]
+      },
+      {
+        "conference": "Southwestern Athletic Conference",
+        "schools": [
+          {
+            "name": "Alabama A&M University",
+            "state": "Alabama",
+            "city": "Huntsville",
+            "imageUrl": "https://www.aamu.edu/about/administrative-offices/marketing-communication-advancement/marketing-public-relations/_images/standing.butch.2.png"
+          },
+          {
+            "name": "Alabama State University",
+            "state": "Alabama",
+            "city": "Montgomery",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2023/02/alabama_state_hornets_1999-pres.png"
+          },
+          {
+            "name": "Alcorn State University",
+            "state": "Mississippi",
+            "city": "Lorman",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Alcorn_logo_from_NCAA.svg/2048px-Alcorn_logo_from_NCAA.svg.png"
+          },
+          {
+            "name": "Bethune–Cookman University",
+            "state": "Florida",
+            "city": "Daytona Beach",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Bethune%E2%80%93Cookman_Wildcats_logo.svg/1200px-Bethune%E2%80%93Cookman_Wildcats_logo.svg.png"
+          },
+          {
+            "name": "Florida A&M University",
+            "state": "Florida",
+            "city": "Tallahassee",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/5/54/Florida_A%26M_Rattlers_logo.svg/800px-Florida_A%26M_Rattlers_logo.svg.png"
+          },
+          {
+            "name": "Jackson State University",
+            "state": "Mississippi",
+            "city": "Jackson",
+            "imageUrl": "https://www.jsums.edu/wp-content/uploads/2020/02/JSU-Block-Logo-01-6.png"
+          },
+          {
+            "name": "Mississippi Valley State University",
+            "state": "Mississippi",
+            "city": "Itta Bena",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/MVSU_VS_simple_monogram.svg/1814px-MVSU_VS_simple_monogram.svg.png"
+          },
+          {
+            "name": "Prairie View A&M University",
+            "state": "Texas",
+            "city": "Prairie View",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2023/03/prairie_view_am_panthers_2011-2016.png"
+          },
+          {
+            "name": "Southern University",
+            "state": "Louisiana",
+            "city": "Baton Rouge",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Southern-u_logo_from_NCAA.svg/1200px-Southern-u_logo_from_NCAA.svg.png"
+          },
+          {
+            "name": "Texas Southern University",
+            "state": "Texas",
+            "city": "Houston",
+            "imageUrl": "https://1000logos.net/wp-content/uploads/2021/07/Texas-Southern-Tigers-logo.png"
+          }
+        ]
+      },
+      {
+        "conference": "West Coast Conference",
+        "schools": [
+          {
+            "name": "Gonzaga University",
+            "state": "Washington",
+            "city": "Spokane",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/b/bd/Gonzaga_Bulldogs_logo.svg/1200px-Gonzaga_Bulldogs_logo.svg.png"
+          },
+          {
+            "name": "Loyola Marymount University",
+            "state": "California",
+            "city": "Los Angeles",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/LMU_Lions_logo.svg/800px-LMU_Lions_logo.svg.png"
+          },
+          {
+            "name": "Pepperdine University",
+            "state": "California",
+            "city": "Malibu",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Pepperdine_logo_from_NCAA.svg/1024px-Pepperdine_logo_from_NCAA.svg.png"
+          },
+          {
+            "name": "University of Portland",
+            "state": "Oregon",
+            "city": "Portland",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/4/43/Portland_pilots_anchor_logo.png"
+          },
+          {
+            "name": "University of San Diego",
+            "state": "California",
+            "city": "San Diego",
+            "imageUrl": "https://www.sandiego.edu/brand/images/logos/spirit-mark/usd-logo-spirit-mark-thumb.png"
+          },
+          {
+            "name": "University of San Francisco",
+            "state": "California",
+            "city": "San Francisco",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/San_Francisco_Dons_logo.svg/1200px-San_Francisco_Dons_logo.svg.png"
+          },
+          {
+            "name": "Santa Clara University",
+            "state": "California",
+            "city": "Santa Clara",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2018/10/santa_clara_broncos_1998-pres_s.png"
+          },
+          {
+            "name": "Saint Mary's College of California",
+            "state": "California",
+            "city": "Moraga",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2022/04/saint_marys_gaels_2007-presa-1.png"
+          },
+          {
+            "name": "University of the Pacific",
+            "state": "California",
+            "city": "Stockton",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/5/5e/Pacific_Tigers_logo.svg/1200px-Pacific_Tigers_logo.svg.png"
+          }
+        ]
+      },
+      {
+        "conference": "Western Athletic Conference",
+        "schools": [
+          {
+            "name": "Abilene Christian University",
+            "state": "Texas",
+            "city": "Abilene",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/6/6c/Abilene_Christian_Wildcats_logo.svg/1200px-Abilene_Christian_Wildcats_logo.svg.png"
+          },
+          {
+            "name": "California Baptist University",
+            "state": "California",
+            "city": "Riverside",
+            "imageUrl": "https://images.seeklogo.com/logo-png/49/2/california-baptist-lancers-logo-png_seeklogo-493813.png"
+          },
+          {
+            "name": "Southern Utah University",
+            "state": "Utah",
+            "city": "Cedar City",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/e/e7/Southern_Utah_Thunderbirds_logo.svg/1200px-Southern_Utah_Thunderbirds_logo.svg.png"
+          },
+          {
+            "name": "Tarleton State University",
+            "state": "Texas",
+            "city": "Stephenville",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Tarleton-st_logo_from_NCAA.svg/2048px-Tarleton-st_logo_from_NCAA.svg.png"
+          },
+          {
+            "name": "Utah Tech University",
+            "state": "Utah",
+            "city": "St. George",
+            "imageUrl": "https://sportslogohistory.com/wp-content/uploads/2023/10/utah_tech-trailblazers_2022-pres-a.png"
+          },
+          {
+            "name": "Utah Valley University",
+            "state": "Utah",
+            "city": "Orem",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c8/Utah_Valley_Wolverines_logo.svg/640px-Utah_Valley_Wolverines_logo.svg.png"
+          }
+        ]
+      }
+    ]
+  }
+]
