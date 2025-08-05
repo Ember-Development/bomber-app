@@ -21,7 +21,10 @@ import { Text } from '@react-navigation/elements';
 import { Colors, EventColors } from '@/constants/Colors';
 import { EventType } from '@bomber-app/database';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Event } from '@react-native-community/datetimepicker';
+import FullScreenModal from '@/components/ui/organisms/FullSheetModal';
+import ViewEvent from '../events/modals/ViewEvent';
 
 const eventNotes = (
   <View style={{ marginTop: 3 }}>
@@ -145,11 +148,11 @@ const events: Array<MyCustomEventType> = [
 const MAX_READABLE_EVENT_MINUTES = 32;
 
 export default function EventsScreen() {
-  const [curEventView, setCurEventView] = useState(undefined);
+  const [curEventView, setCurEventView] = useState<MyCustomEventType | Event>();
   const colorScheme = useColorScheme();
 
   // needs to be inside the component since it uses hooks to define the colors
-  const useCustomEventRenderer: EventRenderer<MyCustomEventType> = (
+  const useCustomEventRenderer: EventRenderer<MyCustomEventType> | Event = (
     event,
     touchableOpacityProps
   ) => {
@@ -192,6 +195,13 @@ export default function EventsScreen() {
             {event.children && event.children}
           </>
         )}
+        <FullScreenModal
+          isVisible={Boolean(curEventView)}
+          onClose={() => setCurEventView(undefined)}
+          title="Edit Profile"
+        >
+          <ViewEvent />
+        </FullScreenModal>
       </TouchableOpacity>
     );
   };
@@ -240,7 +250,7 @@ export default function EventsScreen() {
             mode={'3days'}
             renderEvent={useCustomEventRenderer}
             onPressEvent={(event: MyCustomEventType) => {
-              alert(`You clicked event: ${event.id}`);
+              setCurEventView(event);
               return;
             }}
           />
