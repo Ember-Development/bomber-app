@@ -23,7 +23,6 @@ import { EventType } from '@bomber-app/database';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useState } from 'react';
 
-// TODO: temp event and reference type in the code for now
 const eventNotes = (
   <View style={{ marginTop: 3 }}>
     <Text style={{ fontSize: 10, color: 'white' }}>
