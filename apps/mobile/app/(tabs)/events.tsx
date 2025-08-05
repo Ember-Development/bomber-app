@@ -21,6 +21,7 @@ import { Text } from '@react-navigation/elements';
 import { Colors, EventColors } from '@/constants/Colors';
 import { EventType } from '@bomber-app/database';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useState } from 'react';
 
 // TODO: temp event and reference type in the code for now
 const eventNotes = (
@@ -52,12 +53,14 @@ const eventNotes = (
 // }
 
 export interface MyCustomEventType extends ICalendarEventBase {
+  id: string;
   color: string;
   fill: boolean;
 }
 
 const events: Array<MyCustomEventType> = [
   {
+    id: '0',
     title: 'Watch Boxing',
     start: dayjs().set('hour', 0).set('minute', 0).set('second', 0).toDate(),
     end: dayjs().set('hour', 1).set('minute', 30).toDate(),
@@ -65,6 +68,7 @@ const events: Array<MyCustomEventType> = [
     fill: true,
   },
   {
+    id: '1',
     title: 'Meeting',
     start: dayjs().set('hour', 10).set('minute', 0).toDate(),
     end: dayjs().set('hour', 10).set('minute', 30).toDate(),
@@ -72,6 +76,7 @@ const events: Array<MyCustomEventType> = [
     fill: true,
   },
   {
+    id: '2',
     title: 'Coffee break',
     start: dayjs().set('hour', 14).set('minute', 30).toDate(),
     end: dayjs().set('hour', 15).set('minute', 30).toDate(),
@@ -79,6 +84,7 @@ const events: Array<MyCustomEventType> = [
     fill: false,
   },
   {
+    id: '3',
     title: 'with color prop',
     start: dayjs().set('hour', 16).set('minute', 0).toDate(),
     end: dayjs().set('hour', 18).set('minute', 30).toDate(),
@@ -86,6 +92,7 @@ const events: Array<MyCustomEventType> = [
     fill: false,
   },
   {
+    id: '4',
     title: 'Repair my car',
     start: dayjs().add(1, 'day').set('hour', 7).set('minute', 45).toDate(),
     end: dayjs().add(1, 'day').set('hour', 13).set('minute', 30).toDate(),
@@ -93,6 +100,7 @@ const events: Array<MyCustomEventType> = [
     fill: true,
   },
   {
+    id: '5',
     title: 'Meet Realtor',
     start: dayjs().add(1, 'day').set('hour', 8).set('minute', 25).toDate(),
     end: dayjs().add(1, 'day').set('hour', 9).set('minute', 55).toDate(),
@@ -100,6 +108,7 @@ const events: Array<MyCustomEventType> = [
     fill: true,
   },
   {
+    id: '6',
     title: 'Laundry',
     start: dayjs().add(1, 'day').set('hour', 8).set('minute', 25).toDate(),
     end: dayjs().add(1, 'day').set('hour', 11).set('minute', 0).toDate(),
@@ -107,6 +116,7 @@ const events: Array<MyCustomEventType> = [
     fill: true,
   },
   {
+    id: '7',
     title: "Doctor's appointment",
     start: dayjs().set('hour', 13).set('minute', 0).toDate(),
     end: dayjs().set('hour', 14).set('minute', 15).toDate(),
@@ -115,6 +125,7 @@ const events: Array<MyCustomEventType> = [
     fill: false,
   },
   {
+    id: '8',
     title: 'Plan a holiday',
     start: dayjs().set('hour', 13).set('minute', 0).add(1, 'month').toDate(),
     end: dayjs().set('hour', 14).set('minute', 15).add(1, 'month').toDate(),
@@ -123,6 +134,7 @@ const events: Array<MyCustomEventType> = [
   },
 
   {
+    id: '9',
     title: 'Go on holiday',
     start: dayjs().set('hour', 13).set('minute', 0).add(3, 'month').toDate(),
     end: dayjs().set('hour', 14).set('minute', 15).add(3, 'month').toDate(),
@@ -134,7 +146,9 @@ const events: Array<MyCustomEventType> = [
 const MAX_READABLE_EVENT_MINUTES = 32;
 
 export default function EventsScreen() {
+  const [curEventView, setCurEventView] = useState(undefined);
   const colorScheme = useColorScheme();
+
   // needs to be inside the component since it uses hooks to define the colors
   const useCustomEventRenderer: EventRenderer<MyCustomEventType> = (
     event,
@@ -143,7 +157,6 @@ export default function EventsScreen() {
     return (
       <TouchableOpacity
         {...touchableOpacityProps}
-        onPress={onPress}
         disabled={false}
         key={touchableOpacityProps.key}
         style={[
@@ -227,6 +240,10 @@ export default function EventsScreen() {
             ampm={true}
             mode={'3days'}
             renderEvent={useCustomEventRenderer}
+            onPressEvent={(event: MyCustomEventType) => {
+              alert(`You clicked event: ${event.id}`);
+              return;
+            }}
           />
         </View>
       </SafeAreaView>
