@@ -143,6 +143,8 @@ export default function EventsScreen() {
     return (
       <TouchableOpacity
         {...touchableOpacityProps}
+        onPress={onPress}
+        disabled={false}
         key={touchableOpacityProps.key}
         style={[
           ...(touchableOpacityProps.style as RecursiveArray<ViewStyle>),
