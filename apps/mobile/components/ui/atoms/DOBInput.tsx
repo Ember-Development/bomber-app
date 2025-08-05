@@ -1,4 +1,3 @@
-// components/ui/atoms/DateOfBirthInput.tsx
 import React, { useState } from 'react';
 import {
   View,

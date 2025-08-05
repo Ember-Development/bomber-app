@@ -1,4 +1,3 @@
-// src/screens/HomeScreen.tsx
 import {
   SafeAreaView,
   Animated as RNAnimated,
@@ -51,7 +50,6 @@ export default function HomeScreen() {
   const router = useRouter();
   const styles = createHomeStyles();
 
-  // Header stretch/shrink using RN Animated
   const scrollY = useRef(new RNAnimated.Value(0)).current;
   const headerHeight = scrollY.interpolate({
     inputRange: [0, 80],
@@ -85,7 +83,7 @@ export default function HomeScreen() {
   const { data: rawEvents, isLoading: isEventsLoading } = useUserEvents(
     user?.id
   );
-  const { data: userChats, isLoading: isChatsLoading } = useUserChats(user?.id);
+  const { isLoading: isChatsLoading } = useUserChats(user?.id);
   const { data: banners, isLoading: bannersLoading } = useBanners();
   const { data: videos, isLoading: isMediaLoading } = useAllMedia();
   const { data: articles = [], isLoading: isArticlesLoading } =
@@ -429,25 +427,20 @@ export default function HomeScreen() {
                   resizeMode="cover"
                 />
 
-                {/* Bottom overlay bar */}
                 <View style={styles.bomberOverlay}>
-                  {/* Bottom fade up into content */}
                   <LinearGradient
                     colors={['transparent', 'rgba(0,0,0,0)']}
                     style={StyleSheet.absoluteFill}
                   />
-                  {/* Blur effect across the footer */}
                   <BlurView
                     intensity={60}
                     tint="dark"
                     style={StyleSheet.absoluteFill}
                   />
-                  {/* Top edge softener */}
                   <LinearGradient
                     colors={['rgba(0,0,0,0)', 'transparent']}
                     style={styles.bomberFadeTop}
                   />
-                  {/* Centered Text */}
                   <ThemedText type="title" style={styles.bomberText}>
                     FIND OUT HOW
                   </ThemedText>

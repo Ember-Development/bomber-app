@@ -15,7 +15,6 @@ import NameModal from '@/app/groups/modals/NameModal';
 import CreateGroupModal from '@/app/groups/modals/AddGroupModal';
 import { formatRelativeTime } from '@/utils/DateTimeUtil';
 import { useThemeColor } from '@/hooks/useThemeColor';
-// 🔁 Switched from paginatedChats to userChats
 import { useUserChats } from '@/hooks/useUser';
 import { useCreateGroup } from '@/hooks/groups/useCreateGroup';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
