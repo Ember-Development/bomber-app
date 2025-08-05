@@ -1,5 +1,11 @@
+import { Text, View } from 'react-native';
+
 // const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 const ViewEvent = () => {
-  return <div>hello worl</div>;
+  return (
+    <View>
+      <Text>Hello Whirl!</Text>
+    </View>
+  );
 };
 export default ViewEvent;
