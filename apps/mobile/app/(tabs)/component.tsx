@@ -27,7 +27,7 @@ export default function ComponentsScreen() {
         >
           <ThemedView style={styles.container}>
             <ThemedText type="title">🧪 UI Components Test</ThemedText>
-            <UserAvatar firstName="Gunnar" lastName="Smith" />
+            {/* <UserAvatar firstName="Gunnar" lastName="Smith" /> */}
 
             <CustomButton
               title="Test Button"
@@ -92,18 +92,18 @@ export default function ComponentsScreen() {
                 onChange={(checked) => console.log("Checked:", checked)}
               /> */}
 
-              <SearchField
+              {/* <SearchField
                 onSearch={(query) => console.log('Searching for:', query)}
-              />
+              /> */}
             </ThemedView>
             <ThemedView style={styles.inputContainer}>
               <Card type="info" title="2045 Tree Meadow Ave" />
-              <Card
+              {/* <Card
                 type="quickAction"
                 title="Payments"
                 icon={require('@/assets/images/react-logo.png')}
                 onPress={() => alert('Payments Clicked!')}
-              />
+              /> */}
               <Card
                 type="groupChat"
                 title="Texas Bombers 16U"
@@ -126,9 +126,9 @@ export default function ComponentsScreen() {
                 <ThemedText style={{ fontSize: 18, marginBottom: 10 }}>
                   Enter Verification Code
                 </ThemedText>
-                <CodeInput
+                {/* <CodeInput
                   onComplete={(code) => console.log('Entered Code:', code)}
-                />
+                /> */}
               </View>
             </ThemedView>
           </ThemedView>

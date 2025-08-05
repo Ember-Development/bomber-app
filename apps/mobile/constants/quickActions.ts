@@ -5,7 +5,6 @@ export type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
 export type QuickAction = {
   title: string;
-  /** the Ionicons name string you want */
   iconName: IoniconName;
   onPress: () => void;
 };

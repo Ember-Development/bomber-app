@@ -13,7 +13,6 @@ export function TabBar({
 }: {
   items: TabItem[];
   activeKey: ProfileTab;
-  // Now matches setActiveTab: Dispatch<SetStateAction<ProfileTab>>
   onTabPress: Dispatch<SetStateAction<ProfileTab>>;
 }) {
   return (

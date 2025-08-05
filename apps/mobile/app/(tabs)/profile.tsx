@@ -66,7 +66,7 @@ export default function ProfileScreen() {
           <Text style={styles.editButtonText}>Edit Profile</Text>
         </TouchableOpacity>
 
-        <ProfileTabs user={user} />
+        <ProfileTabs />
       </ScrollView>
 
       <FullScreenModal
