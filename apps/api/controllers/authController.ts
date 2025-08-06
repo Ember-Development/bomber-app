@@ -148,6 +148,7 @@ export async function signupBase(
   next: NextFunction
 ) {
   try {
+    console.log(req.body)
     const {
       email,
       password,
@@ -202,3 +203,4 @@ export async function logout(_req: Request, res: Response) {
   // Optionally revoke refresh here
   return res.sendStatus(204);
 }
+
