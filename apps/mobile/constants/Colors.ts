@@ -3,43 +3,45 @@
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
 
-const tintColorLight = "#000000";
-const tintColorDark = "#fff";
+const tintColorLight = '#000000';
+const tintColorDark = '#fff';
 
 export const GlobalColors = {
-  white: "#ffffff",
-  black: "#000000",
-  purple: "#202988",
-  blue: "#5AA5FF",
-  red: "#FF0505",
-  dark: "#282A29",
+  white: '#ffffff',
+  black: '#000000',
+  purple: '#202988',
+  blue: '#5AA5FF',
+  red: '#FF0505',
+  dark: '#282A29',
+  gray: '#a1a1a1',
+  bomber: '#57a4ff',
 };
 
 export const Colors = {
   light: {
-    text: "#282A29",
-    button: "#282A29",
-    buttonText: "#f6f6f6",
-    border: "#282A29",
-    secondaryText: "#666666",
-    background: "#f6f6f6",
+    text: '#f6f6f6',
+    button: '#282A29',
+    buttonText: '#f6f6f6',
+    border: '#282A29',
+    secondaryText: '#a1a1a1',
+    background: '#282A29',
     tint: tintColorLight,
-    icon: "#222222",
-    component: "#ffffff",
-    tabIconDefault: "#222222",
+    icon: '#222222',
+    component: '#ffffff',
+    tabIconDefault: '#222222',
     tabIconSelected: tintColorLight,
   },
   dark: {
-    text: "#f6f6f6",
-    button: "#434644",
-    buttonText: "#f6f6f6",
-    border: "#ffffff",
-    secondaryText: "#666666",
-    background: "#282A29",
+    text: '#f6f6f6',
+    button: '#434644',
+    buttonText: '#f6f6f6',
+    border: '#ffffff',
+    secondaryText: '#666666',
+    background: '#282A29',
     tint: tintColorDark,
-    icon: "#f6f6f6",
-    component: "#434644",
-    tabIconDefault: "#f6f6f6",
+    icon: '#f6f6f6',
+    component: '#434644',
+    tabIconDefault: '#f6f6f6',
     tabIconSelected: tintColorDark,
   },
 } as const;

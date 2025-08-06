@@ -1,72 +1,66 @@
-import React, { useState, useRef, useEffect } from "react";
-import { View, StyleSheet, Pressable, Animated } from "react-native";
-import { ThemedText } from "@/components/ThemedText";
-import { Ionicons } from "@expo/vector-icons";
-import { useThemeColor } from "@/hooks/useThemeColor";
-import { GlobalColors } from "@/constants/Colors";
+import React, { useState, useRef, useEffect } from 'react';
+import { View, StyleSheet, Pressable, Animated } from 'react-native';
+import { ThemedText } from '@/components/ThemedText';
+import { Ionicons } from '@expo/vector-icons';
+import { GlobalColors } from '@/constants/Colors';
+import { getCountdown } from '@/utils/FormatEvents';
 
-interface Event {
-  date: string;
-  title: string;
-  location: string;
-  time: string;
+interface EventCardProps {
+  events: {
+    date: string;
+    title: string;
+    location: string;
+    time: string;
+  }[];
 }
 
-const eventData: Event = {
-  date: "2025-05-12T19:00:00",
-  title: "Texas Bombers 16U - Hitting Practice",
-  location: "Bomber Lab Facility",
-  time: "7:00 PM - 8:30 PM",
-};
-
-export default function EventCardContainer() {
-  const [selectedTab, setSelectedTab] = useState<"Upcoming" | "Past">(
-    "Upcoming"
+export default function EventCardContainer({ events }: EventCardProps) {
+  const [selectedTab, setSelectedTab] = useState<'Upcoming' | 'Past'>(
+    'Upcoming'
   );
   const animatedValue = useRef(new Animated.Value(0)).current;
-  const [countdown, setCountdown] = useState("");
+  const [countdown, setCountdown] = useState('');
 
-  // **Apply Theme Colors**
-  const cardBackground = useThemeColor({}, "component");
-  const toggleBackground = useThemeColor({}, "background");
-  const activeIndicatorColor = useThemeColor({}, "background");
-  const textColor = useThemeColor({}, "text");
-  const secondaryColor = useThemeColor({}, "component");
-  const eventTitleColor = useThemeColor({}, "buttonText");
+  // formatting events
+  const now = new Date();
+
+  const upcomingEvents = events
+    .filter((e) => new Date(e.date) >= now)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const pastEvents = events
+    .filter((e) => new Date(e.date) < now)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const activeEvent =
+    selectedTab === 'Upcoming' ? upcomingEvents[0] : pastEvents[0];
 
   useEffect(() => {
-    const updateCountdown = () => {
-      const now = new Date().getTime();
-      const eventTime = new Date(eventData.date).getTime();
-      const timeDifference = eventTime - now;
+    if (!activeEvent) return;
 
-      if (timeDifference <= 0) {
-        setCountdown("Event Started");
+    const updateCountdown = () => {
+      const eventTime = new Date(activeEvent.date).getTime();
+      const now = new Date().getTime();
+      const diff = eventTime - now;
+
+      if (!eventTime || isNaN(eventTime)) {
+        setCountdown('Invalid Date');
         return;
       }
 
-      const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-      const hours = Math.floor(
-        (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-      );
-      const minutes = Math.floor(
-        (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
-      );
-      const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
-
-      setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+      setCountdown(getCountdown(diff));
     };
 
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
-
     return () => clearInterval(interval);
-  }, []);
+  }, [activeEvent]);
 
-  const toggleTab = (tab: "Upcoming" | "Past") => {
+  // tab toggle
+  const toggleTab = (tab: 'Upcoming' | 'Past') => {
     setSelectedTab(tab);
     Animated.timing(animatedValue, {
-      toValue: tab === "Upcoming" ? 0 : 1,
+      toValue: tab === 'Upcoming' ? 0 : 1,
       duration: 250,
       useNativeDriver: false,
     }).start();
@@ -75,37 +69,33 @@ export default function EventCardContainer() {
   const slideStyle = {
     left: animatedValue.interpolate({
       inputRange: [0, 1],
-      outputRange: ["0%", "50%"],
+      outputRange: ['0%', '50%'],
     }),
   };
 
+  if (!events.length) {
+    return <ThemedText style={{ padding: 16 }}>No events available</ThemedText>;
+  }
+
   return (
-    <View style={[styles.eventCard, { backgroundColor: cardBackground }]}>
-      <View
-        style={[styles.toggleContainer, { backgroundColor: toggleBackground }]}
-      >
-        <Animated.View
-          style={[
-            styles.activeIndicator,
-            slideStyle,
-            { backgroundColor: secondaryColor },
-          ]}
-        />
-        <Pressable style={styles.tab} onPress={() => toggleTab("Upcoming")}>
+    <View style={[styles.eventCard]}>
+      <View style={[styles.toggleContainer]}>
+        <Animated.View style={[styles.activeIndicator, slideStyle]} />
+        <Pressable style={styles.tab} onPress={() => toggleTab('Upcoming')}>
           <ThemedText
             style={[
               styles.tabText,
-              selectedTab === "Upcoming" && styles.activeText,
+              selectedTab === 'Upcoming' && styles.activeText,
             ]}
           >
             Upcoming
           </ThemedText>
         </Pressable>
-        <Pressable style={styles.tab} onPress={() => toggleTab("Past")}>
+        <Pressable style={styles.tab} onPress={() => toggleTab('Past')}>
           <ThemedText
             style={[
               styles.tabText,
-              selectedTab === "Past" && styles.activeText,
+              selectedTab === 'Past' && styles.activeText,
             ]}
           >
             Past
@@ -113,32 +103,41 @@ export default function EventCardContainer() {
         </Pressable>
       </View>
 
-      <View style={styles.dateContainer}>
-        <View style={styles.iconContainer}>
-          <Ionicons name="ticket-outline" size={20} color={textColor} />
-          <ThemedText
-            type="subtitle"
-            style={[styles.titleText, { color: textColor }]}
-          >
-            {eventData.date.split("T")[0]}
-          </ThemedText>
+      {activeEvent && (
+        <View style={styles.dateContainer}>
+          <View style={styles.iconContainer}>
+            <Ionicons
+              name="ticket-outline"
+              size={20}
+              color={GlobalColors.bomber}
+            />
+            <ThemedText type="subtitle" style={[styles.titleText]}>
+              {activeEvent.date.split('T')[0]}
+            </ThemedText>
+          </View>
+          {selectedTab === 'Upcoming' && (
+            <ThemedText style={styles.countdownText}>{countdown}</ThemedText>
+          )}
         </View>
-        <ThemedText style={[styles.countdownText]}>{countdown}</ThemedText>
-      </View>
-
-      <View style={[styles.detailContainer]}>
-        <ThemedText
-          type="title"
-          style={[styles.eventTitle, { color: eventTitleColor }]}
-        >
-          {eventData.title}
-        </ThemedText>
-        <ThemedText style={[styles.eventText, { color: eventTitleColor }]}>
-          {eventData.location}
-        </ThemedText>
-        <ThemedText style={[styles.eventText, { color: eventTitleColor }]}>
-          {eventData.time}
-        </ThemedText>
+      )}
+      <View style={styles.detailContainer}>
+        {activeEvent ? (
+          <>
+            <ThemedText type="title" style={[styles.eventTitle]}>
+              {activeEvent.title}
+            </ThemedText>
+            <ThemedText style={[styles.eventText]}>
+              {activeEvent.location}
+            </ThemedText>
+            <ThemedText style={[styles.eventText]}>
+              {activeEvent.time}
+            </ThemedText>
+          </>
+        ) : (
+          <ThemedText style={[styles.eventText, { fontStyle: 'italic' }]}>
+            No {selectedTab.toLowerCase()} events available
+          </ThemedText>
+        )}
       </View>
     </View>
   );
@@ -146,80 +145,90 @@ export default function EventCardContainer() {
 
 const styles = StyleSheet.create({
   eventCard: {
-    borderRadius: 12,
+    borderRadius: 20,
     padding: 16,
     marginVertical: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255,255,255,0.18)',
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 6,
   },
   toggleContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     borderRadius: 12,
-    position: "relative",
-    overflow: "hidden",
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    overflow: 'hidden',
     height: 40,
     marginBottom: 12,
-    paddingRight: 4,
-    paddingBottom: 4,
-  },
-  dateContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 10,
-    marginBottom: 8,
-  },
-  countdownText: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: GlobalColors.blue,
   },
   activeIndicator: {
-    position: "absolute",
-    width: "50%",
-    height: "100%",
+    position: 'absolute',
+    width: '50%',
+    height: '100%',
     borderRadius: 12,
-    marginTop: 2,
-    marginRight: 2,
-    marginLeft: 2,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    zIndex: 0,
   },
   tab: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     zIndex: 1,
   },
   tabText: {
-    fontSize: 12,
-    fontWeight: "500",
-    marginTop: 2,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#fff',
+    textShadowColor: 'rgba(0, 0, 0, 0.4)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+  },
+  activeText: {
+    color: GlobalColors.bomber,
+    fontWeight: '700',
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    marginBottom: 6,
+  },
+  iconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   titleText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginLeft: 8,
+    color: '#fff',
   },
-  activeText: {
-    fontWeight: "bold",
+  countdownText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#66ccff',
   },
   detailContainer: {
-    marginTop: 12,
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: GlobalColors.dark,
+    marginTop: 10,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    padding: 14,
+    borderRadius: 14,
+    borderColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
   },
   eventTitle: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: '700',
+    color: '#fff',
   },
   eventText: {
     fontSize: 14,
-  },
-  iconContainer: {
-    display: "flex",
-    flexDirection: "row",
+    color: GlobalColors.bomber,
+    marginTop: 4,
   },
 });

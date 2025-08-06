@@ -4,7 +4,7 @@ type Relations = {
   admin: { admin: true };
   coach: { coach: true };
   regCoach: { regCoach: true };
-  player: { player: true };
+  player: { player: { include: { address: true; team: true } } };
   parent: { parent: true };
   fan: { fan: true };
   sentMessages: { sentMessages: true };
@@ -33,3 +33,36 @@ export type UserFE = UserDynamic<
 >;
 
 export type UserDB = UserDynamic<[]>;
+
+export type ChatUser = Pick<UserFE, 'id' | 'fname' | 'lname' | 'primaryRole'>;
+
+// Small version for frontend
+export type PublicUserFE = Omit<
+  UserFE,
+  | 'pass'
+  | 'notifications'
+  | 'sentMessages'
+  | 'events'
+  | 'chats'
+  | 'admin'
+  | 'regCoach'
+  | 'parent'
+  | 'fan'
+> & {
+  player?: {
+    pos1: string;
+    pos2: string;
+    ageGroup: string;
+    team?: {
+      id: string;
+      name: string;
+      ageGroup: string;
+    };
+  };
+  coach?: {
+    teams: {
+      id: string;
+      name: string;
+    }[];
+  };
+};

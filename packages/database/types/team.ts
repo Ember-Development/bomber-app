@@ -1,18 +1,23 @@
-import { Prisma } from '../generated/client';
+import { Prisma, Team, Trophy, Player, Coach, User } from '../generated/client';
 
 type Relations = {
   trophyCase: { trophyCase: true };
-  players: { players: true };
+  players: { players: { include: { user: true } } };
   regCoaches: { regCoaches: true };
-  coaches: { coaches: true };
-  headCoach: { headCoach: true };
+  coaches: { coaches: { include: { user: true } } };
+  headCoach: { headCoach: { include: { user: true } } };
 };
 
 export type TeamDynamic<R extends (keyof Relations)[]> = Prisma.TeamGetPayload<{
   include: { [K in R[number]]: true };
 }>;
 
-export type TeamFE = TeamDynamic<
-  ['trophyCase', 'players', 'regCoaches', 'coaches', 'headCoach']
->;
+export interface TeamFE extends Team {
+  trophyCase: Trophy[];
+  teamCode: string;
+  players: (Player & { user: User | null })[];
+  coaches: (Coach & { user: User | null })[];
+  headCoach: (Coach & { user: User }) | null;
+}
+
 export type TeamDB = TeamDynamic<[]>;

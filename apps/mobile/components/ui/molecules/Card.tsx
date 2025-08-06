@@ -1,14 +1,25 @@
-import { ThemedText } from "@/components/ThemedText";
-import { useThemeColor } from "@/hooks/useThemeColor";
-import React from "react";
-import { View, Text, Image, Pressable, StyleSheet } from "react-native";
+import { ThemedText } from '@/components/ThemedText';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import React from 'react';
+import {
+  View,
+  Text,
+  Image,
+  Pressable,
+  StyleSheet,
+  ImageSourcePropType,
+  Platform,
+} from 'react-native';
+import type { ReactNode } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { GlobalColors } from '@/constants/Colors';
 
 interface CardProps {
-  type: "info" | "quickAction" | "groupChat" | "trophy";
+  type: 'info' | 'quickAction' | 'groupChat' | 'trophy';
   title?: string;
   subtitle?: string;
-  image?: any;
-  icon?: any;
+  image?: ImageSourcePropType;
+  iconName?: keyof typeof Ionicons.glyphMap;
   onPress?: () => void;
   additionalInfo?: string;
 }
@@ -18,37 +29,52 @@ export default function Card({
   title,
   subtitle,
   image,
-  icon,
+  iconName,
   onPress,
   additionalInfo,
 }: CardProps) {
-  const component = useThemeColor({}, "component");
-  const textColor = useThemeColor({}, "text");
-  const secondaryTextColor = useThemeColor({}, "secondaryText");
+  const textColor = useThemeColor({}, 'text');
+  const secondaryTextColor = useThemeColor({}, 'secondaryText');
+
+  const safeTitle = title?.toString() ?? '';
+
   return (
     <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={title}
       style={[
         styles.card,
-        { backgroundColor: component },
-        type === "quickAction" && styles.quickAction,
+        type === 'quickAction' && styles.quickAction,
+        type === 'groupChat' && { width: 220, marginRight: 10 },
       ]}
       onPress={onPress}
     >
       {image && <Image source={image} style={styles.image} />}
-      {icon && <Image source={icon} style={styles.icon} />}
-
+      {iconName && (
+        <View style={styles.iconContainer}>
+          <Ionicons name={iconName} size={24} color={GlobalColors.bomber} />
+        </View>
+      )}
       <View style={styles.textContainer}>
-        <ThemedText style={[styles.title, { color: textColor }]}>
-          {title}
-        </ThemedText>
+        {safeTitle && (
+          <ThemedText
+            style={[styles.title, { color: textColor }]}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {safeTitle}
+          </ThemedText>
+        )}
         {subtitle && (
           <Text style={[styles.subtitle, { color: secondaryTextColor }]}>
-            {subtitle}
+            {typeof subtitle === 'string' ? subtitle : String(subtitle)}
           </Text>
         )}
         {additionalInfo && (
           <Text style={[styles.additionalInfo, { color: secondaryTextColor }]}>
-            {additionalInfo}
+            {typeof additionalInfo === 'string'
+              ? additionalInfo
+              : String(additionalInfo)}
           </Text>
         )}
       </View>
@@ -58,24 +84,33 @@ export default function Card({
 
 const styles = StyleSheet.create({
   card: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 20,
-    backgroundColor: "#fff",
     padding: 12,
     marginVertical: 6,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
     shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    elevation: 5,
+    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(10px)' } : {}),
+    flex: 1,
   },
   quickAction: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   image: {
     width: 40,
     height: 40,
     borderRadius: 8,
     marginBottom: 6,
+  },
+  iconContainer: {
+    marginRight: 8,
+    justifyContent: 'center',
   },
   icon: {
     width: 24,
@@ -84,17 +119,18 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
+    gap: 8,
   },
   title: {
     fontSize: 16,
-    fontWeight: "semibold",
+    fontWeight: 'bold',
   },
   subtitle: {
     fontSize: 14,
-    color: "#666",
+    color: '#666',
   },
   additionalInfo: {
     fontSize: 12,
-    color: "#888",
+    color: '#888',
   },
 });
