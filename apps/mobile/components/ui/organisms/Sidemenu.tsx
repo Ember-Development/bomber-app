@@ -1,142 +1,315 @@
-import React, { useState } from "react";
+// src/components/UserAvatar.tsx
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Pressable,
   Modal,
-  TouchableOpacity,
-  Switch,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import Separator from "../atoms/Seperator";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { GlobalColors } from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { useThemeColor } from "@/hooks/useThemeColor";
+  ScrollView,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import Separator from '../atoms/Seperator';
+import { ThemedText } from '@/components/ThemedText';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import { GlobalColors } from '@/constants/Colors';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { useRouter } from 'expo-router';
+import { SIDEMENU_ITEMS } from '@/constants/sidebarItems';
+import { useLogout } from '@/hooks/user/useLogout';
 
 interface UserAvatarProps {
   firstName: string;
   lastName: string;
+  primaryRole: string;
 }
 
-export default function UserAvatar({ firstName, lastName }: UserAvatarProps) {
+export default function UserAvatar({
+  firstName,
+  lastName,
+  primaryRole,
+}: UserAvatarProps) {
   const [menuVisible, setMenuVisible] = useState(false);
-  const { theme, toggleTheme } = useColorScheme();
+  const [mediaExpanded, setMediaExpanded] = useState(false);
+  const [legacyExpanded, setLegacyExpanded] = useState(false);
+  const router = useRouter();
+  const logout = useLogout();
 
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  const textColor = useThemeColor({}, 'text');
+  const displayRole =
+    primaryRole.charAt(0).toUpperCase() + primaryRole.slice(1).toLowerCase();
 
-  // theme
-  const backgroundColor = useThemeColor({}, "background");
-  const textColor = useThemeColor({}, "text");
-  const icons = useThemeColor({}, "icon");
+  const role = primaryRole.toUpperCase();
+  const isFan = role === 'FAN';
+  const canSeeBomberPortal = ['ADMIN', 'REGIONAL_COACH', 'COACH'].includes(
+    role
+  );
+
+  const navigateAndClose = (path: string) => {
+    setMenuVisible(false);
+    router.push(path);
+  };
 
   return (
     <>
-      <Pressable onPress={() => setMenuVisible(true)} style={styles.avatar}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`open menu for ${firstName} ${lastName}`}
+        onPress={() => setMenuVisible(true)}
+        style={styles.avatar}
+      >
         <Text style={[styles.avatarText, { color: textColor }]}>
           {initials}
         </Text>
       </Pressable>
 
-      <Modal visible={menuVisible} animationType="fade" transparent>
+      <Modal visible={menuVisible} animationType="slide" transparent>
         <View style={styles.modalContainer}>
-          <ThemedView style={[styles.sidebar, { backgroundColor }]}>
-            <View style={styles.profileHeader}>
-              <View style={styles.profileDetails}>
-                <View style={styles.avatarLarge}>
-                  <ThemedText
-                    style={[styles.avatarTextLarge, { color: textColor }]}
+          <BlurView intensity={70} tint="dark" style={styles.sidebar}>
+            {/* Scrollable menu content */}
+            <ScrollView
+              style={styles.scrollArea}
+              showsVerticalScrollIndicator={false}
+            >
+              {/* Profile Header */}
+              <View style={styles.profileHeader}>
+                <View style={styles.profileDetails}>
+                  <View style={styles.avatarLarge}>
+                    <ThemedText
+                      style={[styles.avatarTextLarge, { color: textColor }]}
+                    >
+                      {initials}
+                    </ThemedText>
+                  </View>
+                  <View>
+                    <ThemedText style={[styles.nameText, { color: textColor }]}>
+                      {firstName} {lastName}
+                    </ThemedText>
+                    <ThemedText style={styles.roleText}>
+                      {displayRole}
+                    </ThemedText>
+                  </View>
+                </View>
+                <Pressable onPress={() => setMenuVisible(false)}>
+                  <Ionicons name="close" size={26} color={textColor} />
+                </Pressable>
+              </View>
+
+              <Separator marginVertical={4} />
+
+              {/* Dynamic menu items */}
+              {SIDEMENU_ITEMS.filter((item) => {
+                if (item.name === 'Bomber Portal' && !canSeeBomberPortal)
+                  return false;
+                if (item.name === 'Player Development' && isFan) return false;
+                return true;
+              }).map((item) => {
+                // Media submenu
+                if (item.name === 'Media') {
+                  return (
+                    <React.Fragment key="media">
+                      <Pressable
+                        style={styles.menuItem}
+                        onPress={() => setMediaExpanded((p) => !p)}
+                      >
+                        <Ionicons
+                          name={item.icon}
+                          size={24}
+                          color={GlobalColors.bomber}
+                        />
+                        <ThemedText
+                          style={[styles.menuText, { color: textColor }]}
+                        >
+                          {item.name}
+                        </ThemedText>
+                        <Ionicons
+                          name={mediaExpanded ? 'chevron-up' : 'chevron-down'}
+                          size={20}
+                          color={textColor}
+                          style={{ marginLeft: 'auto' }}
+                        />
+                      </Pressable>
+                      {mediaExpanded && (
+                        <View style={styles.subMenu}>
+                          <Pressable
+                            style={styles.subMenuItem}
+                            onPress={() => navigateAndClose('/side/videos')}
+                          >
+                            <Ionicons
+                              name="videocam-outline"
+                              size={20}
+                              color={GlobalColors.bomber}
+                            />
+                            <ThemedText
+                              style={[styles.subMenuText, { color: textColor }]}
+                            >
+                              Videos
+                            </ThemedText>
+                          </Pressable>
+                          <Pressable
+                            style={styles.subMenuItem}
+                            onPress={() => navigateAndClose('/side/articles')}
+                          >
+                            <Ionicons
+                              name="document-text-outline"
+                              size={20}
+                              color={GlobalColors.bomber}
+                            />
+                            <ThemedText
+                              style={[styles.subMenuText, { color: textColor }]}
+                            >
+                              Articles
+                            </ThemedText>
+                          </Pressable>
+                        </View>
+                      )}
+                    </React.Fragment>
+                  );
+                }
+
+                // Legacy submenu
+                if (item.name === 'Legacy') {
+                  return (
+                    <React.Fragment key="legacy">
+                      <Pressable
+                        style={styles.menuItem}
+                        onPress={() => setLegacyExpanded((p) => !p)}
+                      >
+                        <Ionicons
+                          name={item.icon}
+                          size={24}
+                          color={GlobalColors.bomber}
+                        />
+                        <ThemedText
+                          style={[styles.menuText, { color: textColor }]}
+                        >
+                          {item.name}
+                        </ThemedText>
+                        <Ionicons
+                          name={legacyExpanded ? 'chevron-up' : 'chevron-down'}
+                          size={20}
+                          color={textColor}
+                          style={{ marginLeft: 'auto' }}
+                        />
+                      </Pressable>
+                      {legacyExpanded && (
+                        <View style={styles.subMenu}>
+                          <Pressable
+                            style={styles.subMenuItem}
+                            onPress={() => navigateAndClose('/side/history')}
+                          >
+                            <Ionicons
+                              name="book-outline"
+                              size={20}
+                              color={GlobalColors.bomber}
+                            />
+                            <ThemedText
+                              style={[styles.subMenuText, { color: textColor }]}
+                            >
+                              History
+                            </ThemedText>
+                          </Pressable>
+                          <Pressable
+                            style={styles.subMenuItem}
+                            onPress={() => navigateAndClose('/side/alumnis')}
+                          >
+                            <Ionicons
+                              name="people-outline"
+                              size={20}
+                              color={GlobalColors.bomber}
+                            />
+                            <ThemedText
+                              style={[styles.subMenuText, { color: textColor }]}
+                            >
+                              Alumnis
+                            </ThemedText>
+                          </Pressable>
+                          <Pressable
+                            style={styles.subMenuItem}
+                            onPress={() =>
+                              navigateAndClose('/side/commitments')
+                            }
+                          >
+                            <Ionicons
+                              name="checkmark-done-outline"
+                              size={20}
+                              color={GlobalColors.bomber}
+                            />
+                            <ThemedText
+                              style={[styles.subMenuText, { color: textColor }]}
+                            >
+                              Commitments
+                            </ThemedText>
+                          </Pressable>
+                        </View>
+                      )}
+                    </React.Fragment>
+                  );
+                }
+
+                // Default items
+                return (
+                  <Pressable
+                    key={item.name}
+                    style={styles.menuItem}
+                    onPress={() => item.routes && navigateAndClose(item.routes)}
                   >
-                    {initials}
-                  </ThemedText>
-                </View>
-                <View>
-                  <ThemedText style={[styles.nameText, { color: textColor }]}>
-                    {firstName} {lastName}
-                  </ThemedText>
-                  <ThemedText style={[styles.roleText, { color: textColor }]}>
-                    Coach
-                  </ThemedText>
-                </View>
-              </View>
+                    <Ionicons
+                      name={item.icon}
+                      size={24}
+                      color={GlobalColors.bomber}
+                    />
+                    <ThemedText style={[styles.menuText, { color: textColor }]}>
+                      {item.name}
+                    </ThemedText>
+                  </Pressable>
+                );
+              })}
 
-              <TouchableOpacity onPress={() => setMenuVisible(false)}>
-                <Ionicons name="close" size={26} color={textColor} />
-              </TouchableOpacity>
-            </View>
+              <Separator marginVertical={12} />
 
-            <Separator marginVertical={4} />
-
-            <View style={styles.menuItems}>
-              {[
-                {
-                  name: "Teams",
-                  icon: "people-outline" as keyof typeof Ionicons.glyphMap,
-                },
-                {
-                  name: "Media",
-                  icon: "play-outline" as keyof typeof Ionicons.glyphMap,
-                },
-                {
-                  name: "Legacy",
-                  icon: "school-outline" as keyof typeof Ionicons.glyphMap,
-                },
-                {
-                  name: "Bomber Portal",
-                  icon: "book-outline" as keyof typeof Ionicons.glyphMap,
-                },
-                {
-                  name: "About Us",
-                  icon: "flag-outline" as keyof typeof Ionicons.glyphMap,
-                },
-                {
-                  name: "Player Development",
-                  icon: "star-outline" as keyof typeof Ionicons.glyphMap,
-                },
-              ].map((item, index) => (
-                <Pressable key={index} style={styles.menuItem}>
-                  <Ionicons name={item.icon} size={24} color={icons} />
-                  <ThemedText style={[styles.menuText, { color: textColor }]}>
-                    {item.name}
-                  </ThemedText>
-                </Pressable>
-              ))}
-              <Separator />
+              {/* Footer links */}
               <View style={styles.footer}>
-                <Pressable style={styles.footerItem}>
-                  <Text style={[styles.footerText, { color: textColor }]}>
-                    Profile
-                  </Text>
-                </Pressable>
-                <Pressable style={styles.footerItem}>
-                  <Text style={[styles.footerText, { color: textColor }]}>
-                    Settings
-                  </Text>
-                </Pressable>
-                <Pressable style={styles.footerItem}>
-                  <Text style={[styles.footerText, { color: textColor }]}>
-                    Contact
-                  </Text>
-                </Pressable>
-                <Pressable style={styles.footerItem}>
-                  <Text style={[styles.footerText, { color: textColor }]}>
-                    Payment
-                  </Text>
-                </Pressable>
+                {['Profile', 'Settings', 'Contact', 'Payment']
+                  .filter((text) => !(isFan && text === 'Payment'))
+                  .map((text) => (
+                    <Pressable
+                      key={text}
+                      style={styles.footerItem}
+                      onPress={() => {
+                        switch (text) {
+                          case 'Profile':
+                            return navigateAndClose('/profile');
+                          case 'Settings':
+                            return navigateAndClose('/settings');
+                          case 'Contact':
+                            return navigateAndClose('/side/contact');
+                          case 'Payment':
+                            return navigateAndClose('/payment');
+                        }
+                      }}
+                    >
+                      <Text style={[styles.footerText, { color: textColor }]}>
+                        {text}
+                      </Text>
+                    </Pressable>
+                  ))}
               </View>
-            </View>
+            </ScrollView>
 
-            <View style={styles.themeToggleContainer}>
-              <ThemedText>Dark Mode</ThemedText>
-              <Switch value={theme === "dark"} onValueChange={toggleTheme} />
-            </View>
-
-            <Pressable style={styles.logoutButton}>
+            {/* Logout button fixed at bottom */}
+            <Pressable
+              style={styles.logoutButton}
+              onPress={async () => {
+                setMenuVisible(false);
+                await logout();
+              }}
+            >
               <Text style={styles.logoutText}>Logout</Text>
             </Pressable>
-          </ThemedView>
+          </BlurView>
         </View>
       </Modal>
     </>
@@ -148,101 +321,125 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#EAEAEA",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
   avatarText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
   },
   sidebar: {
-    width: "100%",
-    height: "100%",
+    flex: 1,
+    width: '100%',
+    height: '100%',
     paddingTop: 50,
     paddingHorizontal: 20,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderTopRightRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+  scrollArea: {
+    flex: 1,
   },
   profileHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 30,
-    marginTop: 20,
+    marginTop: 30,
   },
   profileDetails: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   avatarLarge: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: "#EAEAEA",
-    justifyContent: "center",
-    alignItems: "center",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
   },
   avatarTextLarge: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   nameText: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   roleText: {
     fontSize: 16,
-  },
-  menuItems: {
-    marginBottom: 0,
+    color: GlobalColors.bomber,
   },
   menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    marginBottom: 8,
   },
   menuText: {
-    fontSize: 20,
-    marginLeft: 15,
-    fontWeight: "bold",
+    fontSize: 18,
+    marginLeft: 12,
+    fontWeight: '600',
+  },
+  subMenu: {
+    marginLeft: 36,
+    marginBottom: 12,
+  },
+  subMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    marginBottom: 6,
+  },
+  subMenuText: {
+    fontSize: 16,
+    marginLeft: 10,
+    fontWeight: '500',
   },
   footer: {
-    marginTop: 10,
-    marginBottom: 10,
+    marginBottom: 24,
   },
   footerItem: {
     paddingVertical: 10,
   },
   footerText: {
-    fontSize: 16,
-    fontWeight: "semibold",
-    color: "#6D6D6D",
-  },
-  themeToggleContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 15,
-    borderTopWidth: 1,
-    borderColor: "#EAEAEA",
-    marginTop: 10,
+    fontSize: 15,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.8)',
   },
   logoutButton: {
-    backgroundColor: GlobalColors.red,
-    padding: 15,
-    borderRadius: 10,
-    alignItems: "center",
-    marginTop: 10,
+    backgroundColor: 'rgba(255,0,0,0.8)',
+    padding: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginVertical: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
   },
   logoutText: {
-    color: "white",
+    color: 'white',
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
 });

@@ -1,38 +1,32 @@
-import React, { useState } from "react";
-import { TextInput, View, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useThemeColor } from "@/hooks/useThemeColor";
+import React, { useState } from 'react';
+import { TextInput, View, StyleSheet, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 interface SearchFieldProps {
   placeholder?: string;
-  onSearch?: (query: string) => void;
+  value: string;
+  onChangeText: (text: string) => void;
 }
 
 export default function SearchField({
-  placeholder = "Search...",
-  onSearch,
+  placeholder = 'Search...',
+  value,
+  onChangeText,
 }: SearchFieldProps) {
-  const [query, setQuery] = useState("");
-
-  // **Apply Theme Colors**
-  const borderColor = useThemeColor({}, "border");
-  const backgroundColor = useThemeColor({}, "component");
-  const textColor = useThemeColor({}, "text");
-  const iconColor = useThemeColor({}, "icon");
-  const placeholderColor = useThemeColor({}, "secondaryText");
+  const textColor = useThemeColor({}, 'text');
+  const iconColor = useThemeColor({}, 'component');
+  const placeholderColor = useThemeColor({}, 'component');
 
   return (
-    <View style={[styles.container, { borderColor, backgroundColor }]}>
-      <Ionicons name="search" size={20} color={iconColor} />
+    <View style={styles.container}>
+      <Ionicons name="search" size={20} color={iconColor} style={styles.icon} />
       <TextInput
         style={[styles.input, { color: textColor }]}
         placeholder={placeholder}
         placeholderTextColor={placeholderColor}
-        value={query}
-        onChangeText={(text) => {
-          setQuery(text);
-          if (onSearch) onSearch(text);
-        }}
+        value={value}
+        onChangeText={onChangeText}
       />
     </View>
   );
@@ -40,16 +34,22 @@ export default function SearchField({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    borderWidth: 0.5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    // Apply backdropFilter conditionally for web platforms
+    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(12px)' } : {}), // NOTE: Web only — use BlurView on native if needed
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+  },
+  icon: {
+    marginRight: 8,
   },
   input: {
     flex: 1,
-    height: 40,
     fontSize: 16,
-    marginLeft: 5,
   },
 });

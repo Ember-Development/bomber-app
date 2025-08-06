@@ -1,0 +1,125 @@
+import { NextFunction, Request, Response } from 'express';
+import {
+  CreatePlayerInput,
+  playerService,
+  UpdatePlayerInput,
+} from '../services/player';
+import { AuthenticatedRequest } from '../auth/devAuth';
+import { Role } from '../auth/permissions';
+import { prisma } from '@bomber-app/database';
+
+export const getPlayerById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const player = await playerService.getPlayerById(id);
+
+    if (!player) return res.status(404).json({ message: 'Player not found' });
+
+    return res.status(200).json(player);
+  } catch (error) {
+    console.error('getPlayerById error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getAllPlayers = async (_req: Request, res: Response) => {
+  try {
+    const players = await playerService.getAllPlayers();
+    console.log('get players', players);
+    return res.status(200).json(players);
+  } catch (error) {
+    console.error('getAllPlayers error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getAlumniPlayers = async (req: Request, res: Response) => {
+  try {
+    const { cursor, limit = 20 } = req.query;
+    const players = await playerService.getAlumniPlayers({
+      cursor: cursor as string,
+      limit: parseInt(limit as string),
+    });
+    return res.status(200).json(players);
+  } catch (error) {
+    console.error('getAlumniPlayers error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const createPlayer = async (req: Request, res: Response) => {
+  try {
+    const payload = req.body as CreatePlayerInput;
+    const player = await playerService.createPlayer(payload);
+    return res.status(201).json(player);
+  } catch (error: any) {
+    console.error('createPlayer error:', error);
+    return res
+      .status(400)
+      .json({ message: error.message || 'Failed to create player' });
+  }
+};
+
+export const updatePlayer = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const payload = req.body as UpdatePlayerInput;
+    const player = await playerService.updatePlayer(
+      req.params.id,
+      payload,
+      req.user!.id,
+      req.user!.primaryRole
+    );
+
+    return res.status(200).json(player);
+  } catch (error: any) {
+    console.error('updatePlayer error:', error);
+    return res
+      .status(400)
+      .json({ message: error.message || 'Failed to update player' });
+  }
+};
+
+export const deletePlayer = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const actingUserId = req.user!.id;
+    const role = req.user!.primaryRole;
+
+    await playerService.deletePlayer(req.params.id, actingUserId, role);
+    return res.status(204).send();
+  } catch (error: any) {
+    console.error('deletePlayer error:', error);
+    return res
+      .status(403)
+      .json({ message: error.message || 'Failed to delete player' });
+  }
+};
+
+export async function addPlayerToTeam(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { playerId, teamCode } = req.body;
+
+    if (!playerId || !teamCode) {
+      return res
+        .status(400)
+        .json({ message: 'playerId and teamCode are required' });
+    }
+
+    const updatedPlayer = await playerService.addPlayerToTeamByCode(
+      playerId,
+      teamCode
+    );
+    return res.status(200).json(updatedPlayer);
+  } catch (err) {
+    next(err);
+  }
+}

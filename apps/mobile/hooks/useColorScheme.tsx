@@ -1,9 +1,9 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { useColorScheme as useRNColorScheme } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createContext, useContext, useEffect, useState } from 'react';
+import { useColorScheme as useRNColorScheme } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ThemeContext = createContext({
-  theme: "light",
+  theme: 'light',
   toggleTheme: async () => {},
 });
 
@@ -11,22 +11,22 @@ const ThemeContext = createContext({
  * Custom hook to manage theme switching manually.
  */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const systemColorScheme = useRNColorScheme(); // System theme detection
-  const [theme, setTheme] = useState<"light" | "dark">("light"); // Default to light mode
+  const systemColorScheme = useRNColorScheme();
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isThemeLoaded, setIsThemeLoaded] = useState(false);
 
   useEffect(() => {
     const loadTheme = async () => {
-      const storedTheme = await AsyncStorage.getItem("theme");
-      if (storedTheme === "light" || storedTheme === "dark") {
+      const storedTheme = await AsyncStorage.getItem('theme');
+      if (storedTheme === 'light' || storedTheme === 'dark') {
         setTheme(storedTheme);
       } else if (
-        systemColorScheme === "light" ||
-        systemColorScheme === "dark"
+        systemColorScheme === 'light' ||
+        systemColorScheme === 'dark'
       ) {
         setTheme(systemColorScheme);
       } else {
-        setTheme("light");
+        setTheme('light');
       }
       setIsThemeLoaded(true); // Mark theme as loaded
     };
@@ -36,11 +36,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const toggleTheme = async () => {
     try {
-      const newTheme = theme === "light" ? "dark" : "light";
+      const newTheme = theme === 'light' ? 'dark' : 'light';
       setTheme(newTheme);
-      await AsyncStorage.setItem("theme", newTheme);
+      await AsyncStorage.setItem('theme', newTheme);
     } catch (error) {
-      console.error("Error toggling theme:", error);
+      console.error('Error toggling theme:', error);
     }
   };
 
