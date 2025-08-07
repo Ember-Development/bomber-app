@@ -18,6 +18,7 @@ import EditProfileContent from '../profile/edit-profile';
 import { useQueryClient } from '@tanstack/react-query';
 import BomberIcon from '@/assets/images/bomber-icon.png';
 import ProfileTabs from '../profile/profile-tab';
+import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 
 export default function ProfileScreen() {
   const { user } = useUserContext();
@@ -34,19 +35,9 @@ export default function ProfileScreen() {
   }
 
   return (
+    <BackgroundWrapper>
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <View style={styles.backgroundWrapper}>
-        <Image
-          source={require('@/assets/images/bomberback.jpg')}
-          style={styles.backgroundImage}
-          blurRadius={40}
-        />
-        <LinearGradient
-          colors={['rgba(0,0,0,0.4)', 'rgba(0,0,0,0.85)']}
-          style={StyleSheet.absoluteFill}
-        />
-      </View>
 
       <ScrollView contentContainerStyle={styles.content}>
         <Image source={BomberIcon} style={styles.avatar} />
@@ -83,13 +74,13 @@ export default function ProfileScreen() {
         />
       </FullScreenModal>
     </SafeAreaView>
+    </BackgroundWrapper>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
     position: 'relative',
   },
   backgroundWrapper: {

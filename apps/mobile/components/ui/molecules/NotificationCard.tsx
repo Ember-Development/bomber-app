@@ -26,21 +26,9 @@ interface Notification {
 const notifications: Notification[] = [
   {
     id: '1',
-    message: 'New Bomber Merch Released!',
-    timeAgo: '2hr ago',
+    message: 'Notifications Coming Soon',
+    timeAgo: 'Now',
     isNew: true,
-  },
-  {
-    id: '2',
-    message: 'Congratulations to our latest alumni commits!',
-    timeAgo: '1d ago',
-    isNew: false,
-  },
-  {
-    id: '3',
-    message: 'Don’t miss the upcoming showcase!',
-    timeAgo: '2d ago',
-    isNew: false,
   },
 ];
 

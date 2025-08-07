@@ -15,16 +15,18 @@ import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCommits } from '@/hooks/useCommit';
 import CustomSelect from '@/components/ui/atoms/dropdown';
 import { CommitFE } from '@bomber-app/database';
+import { useRouter } from 'expo-router';
+import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 
 const ROW_HORIZONTAL_PADDING = 16;
 const ROW_HEIGHT = 100;
 
 export default function CommitmentsScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const textColor = useThemeColor({}, 'text');
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -63,13 +65,12 @@ export default function CommitmentsScreen() {
     setShowScrollButton(yOffset > 100);
   };
 
-  const formatDate = (date: string | Date) => {
-    return new Date(date).toLocaleDateString(undefined, {
+  const formatDate = (date: string | Date) =>
+    new Date(date).toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     });
-  };
 
   const filteredCommits: CommitFE[] = (commits ?? [])
     .filter(
@@ -88,12 +89,10 @@ export default function CommitmentsScreen() {
     const user = player?.user;
     const playerName =
       user?.fname && user?.lname ? `${user.fname} ${user.lname}` : 'Unknown';
-
     const position = player?.pos1 || '—';
     const hometown = player?.address
       ? `${player.address.city}, ${player.address.state}`
       : '—';
-
     const formattedDate = item.committedDate
       ? formatDate(item.committedDate)
       : '—';
@@ -126,24 +125,31 @@ export default function CommitmentsScreen() {
   return (
     <BackgroundWrapper>
       <SafeAreaView style={styles.container}>
-        <StatusBar
-          barStyle="light-content"
-          translucent
-          backgroundColor="transparent"
-        />
 
-        <View style={[styles.headerContainer, { paddingTop: insets.top + 12 }]}>
+        {/* Header with Back button */}
+                <View style={styles.headerName}>
+        
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="arrow-back" size={24} color={textColor} />
+          </TouchableOpacity>
+
           <ThemedText style={[styles.headerText, { color: textColor }]}>
             {selectedYear} Commitments
           </ThemedText>
-          <View style={styles.dropdownWrapper}>
+
+        </View>
+        
+        <View style={styles.dropdownWrapper}>
             <CustomSelect
               label="Year"
               options={allYears.map((y) => ({ label: y, value: y }))}
               defaultValue={selectedYear}
               onSelect={(value) => setSelectedYear(value)}
             />
-          </View>
         </View>
 
         {isLoading ? (
@@ -162,7 +168,6 @@ export default function CommitmentsScreen() {
           <FlatList
             ref={listRef}
             data={filteredCommits}
-            numColumns={1}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
@@ -195,18 +200,29 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: Platform.OS === 'android' ? 40 : 0,
   },
-  headerContainer: {
-    paddingBottom: 8,
-  },
-  dropdownWrapper: {
-    marginTop: 12,
-    paddingHorizontal: 20,
+  headerName: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    paddingTop: 24,
+    gap: 10,
+    marginBottom: 8,
+    },
+  backButton: {
+    marginRight: 12,
+    padding: 4,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   headerText: {
     fontSize: 28,
     fontWeight: '700',
-    paddingHorizontal: 20,
+    paddingHorizontal: 0,
     paddingTop: 10,
+  },
+  dropdownWrapper: {
+    marginTop: 12,
+    paddingHorizontal: 20,
   },
   emptyContainer: {
     flex: 1,

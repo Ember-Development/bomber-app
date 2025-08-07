@@ -47,9 +47,20 @@ export default function LoginScreen() {
 
       setUser(data.user);
 
+      console.log(
+          'should finish signup?',
+          data.user.primaryRole,
+          data.user.phone,
+          data.user.primaryRole === 'PLAYER' && data.user.phone === '0000000000'
+      );
+
       qc.invalidateQueries({ queryKey: ['currentUser'] });
 
-      router.replace('/');
+      if ( data.user.primaryRole === 'PLAYER' && data.user.phone === '0000000000') {
+        router.replace('/signup/finishsignup');
+      } else {
+        router.replace('/');
+      }
     } catch (err: any) {
       console.error('Login error', err);
       setError(
@@ -106,7 +117,7 @@ export default function LoginScreen() {
               <CustomButton
                 variant="primary"
                 title={loading ? 'Logging in…' : 'LOGIN'}
-                onPress={handleLogin}
+                onPress={() => {console.warn('🔥 handleLogin invoked'); handleLogin()}}
                 disabled={loading}
               />
 

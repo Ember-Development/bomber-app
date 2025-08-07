@@ -32,7 +32,7 @@ import { formatEvents } from '@/utils/FormatEvents';
 import { legacyItems } from '@/constants/items';
 import { createHomeStyles } from '@/styles/homeStyle';
 import { GlobalColors } from '@/constants/Colors';
-import { QuickAction, quickActionMap } from '@/constants/quickActions';
+import { QuickAction, useQuickActions } from '@/constants/quickActions';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -69,14 +69,8 @@ export default function HomeScreen() {
   const isFan = primaryRole.toUpperCase() === 'FAN';
 
   const roles = primaryRole ? [primaryRole] : [];
-  const actionsToShow: QuickAction[] = Array.from(
-    new Map(
-      roles
-        .flatMap(
-          (role) => quickActionMap[role as keyof typeof quickActionMap] || []
-        )
-        .map((action) => [action.title, action] as [string, QuickAction])
-    ).values()
+  const actionsToShow: QuickAction[] = useQuickActions(
+    primaryRole as import('@/types').Role
   );
 
   // Data fetching
