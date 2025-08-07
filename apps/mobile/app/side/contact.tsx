@@ -1,3 +1,5 @@
+// src/screens/ContactScreen.tsx
+
 import React, { useState } from 'react';
 import {
   SafeAreaView,
@@ -16,12 +18,14 @@ import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import CustomButton from '@/components/ui/atoms/Button';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
+import { useRouter } from 'expo-router';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 20;
 const PANEL_WIDTH = SCREEN_WIDTH - HORIZONTAL_PADDING * 2;
 
 export default function ContactScreen() {
+  const router = useRouter();
   const textColor = useThemeColor({}, 'text');
   const componentColor = useThemeColor({}, 'component');
 
@@ -39,24 +43,35 @@ export default function ContactScreen() {
       />
 
       <SafeAreaView style={styles.container}>
-        <ScrollView
-          contentContainerStyle={styles.contentContainer}
-          showsVerticalScrollIndicator={false}
-        >
+        {/* Header with Back button */}
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="arrow-back" size={24} color={textColor} />
+          </TouchableOpacity>
           <ThemedText
             type="title"
             style={[styles.headerTitle, { color: textColor }]}
           >
             GET IN TOUCH
           </ThemedText>
+        </View>
+
+        <ScrollView
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+        >
           <BlurView intensity={40} tint="light" style={styles.glassPanel}>
             <View style={styles.panelInner}>
               <ThemedText style={[styles.sectionTitle, { color: textColor }]}>
                 OFFICE ADDRESS
               </ThemedText>
               <ThemedText style={[styles.addressText, { color: textColor }]}>
-                5615 Bicentennial St
-                {'\n'}San Antonio, TX 78219
+                5615 Bicentennial St{'\n'}
+                San Antonio, TX 78219
               </ThemedText>
 
               <View
@@ -66,85 +81,23 @@ export default function ContactScreen() {
                 ]}
               />
 
-              <View style={styles.socialItem}>
-                <Ionicons
-                  name="logo-instagram"
-                  size={20}
-                  color={componentColor}
-                />
-                <ThemedText style={[styles.socialText, { color: textColor }]}>
-                  BOMBERSFASTPITCH
-                </ThemedText>
-                <ThemedText
-                  style={[styles.socialLabel, { color: componentColor }]}
-                >
-                  INSTAGRAM
-                </ThemedText>
-              </View>
-
-              <View style={styles.socialItem}>
-                <Ionicons
-                  name="logo-facebook"
-                  size={20}
-                  color={componentColor}
-                />
-                <ThemedText style={[styles.socialText, { color: textColor }]}>
-                  BOMBERSINC
-                </ThemedText>
-                <ThemedText
-                  style={[styles.socialLabel, { color: componentColor }]}
-                >
-                  FACEBOOK
-                </ThemedText>
-              </View>
-
-              <View style={styles.socialItem}>
-                <Ionicons
-                  name="logo-twitter"
-                  size={20}
-                  color={componentColor}
-                />
-                <ThemedText style={[styles.socialText, { color: textColor }]}>
-                  BOMBERCACATAW
-                </ThemedText>
-                <ThemedText
-                  style={[styles.socialLabel, { color: componentColor }]}
-                >
-                  X
-                </ThemedText>
-              </View>
-
-              <View style={styles.socialItem}>
-                <Ionicons
-                  name="mail-outline"
-                  size={20}
-                  color={componentColor}
-                />
-                <ThemedText style={[styles.socialText, { color: textColor }]}>
-                  INFO@BOMBERSFASTPITCH.COM
-                </ThemedText>
-                <ThemedText
-                  style={[styles.socialLabel, { color: componentColor }]}
-                >
-                  EMAIL
-                </ThemedText>
-              </View>
-
-              <View style={styles.socialItem}>
-                <Ionicons
-                  name="logo-youtube"
-                  size={20}
-                  color={componentColor}
-                />
-                <ThemedText style={[styles.socialText, { color: textColor }]}>
-                  BOMBERSFASTPITCH
-                </ThemedText>
-                <ThemedText
-                  style={[styles.socialLabel, { color: componentColor }]}
-                >
-                  YOUTUBE
-                </ThemedText>
-              </View>
+              {[
+                { icon: 'logo-instagram', label: 'BOMBERSFASTPITCH', tag: 'INSTAGRAM' },
+                { icon: 'logo-facebook',  label: 'BOMBERSINC',       tag: 'FACEBOOK'  },
+                { icon: 'logo-twitter',   label: 'BOMBERCACATAW',    tag: 'X'         },
+                { icon: 'mail-outline',   label: 'INFO@BOMBERSFASTPITCH.COM', tag: 'EMAIL' },
+                { icon: 'logo-youtube',   label: 'BOMBERSFASTPITCH', tag: 'YOUTUBE'   },
+              ].map((s) => (
+                <View key={s.tag} style={styles.socialItem}>
+                  <Ionicons name={s.icon as any} size={20} color={componentColor} />
+                  <ThemedText style={[styles.socialText, { color: textColor }]}>
+                    {s.label}
+                  </ThemedText>
+                  <ThemedText style={[styles.socialLabel, { color: componentColor }]}>
+                    {s.tag}
+                  </ThemedText>
+                </View>
+              ))}
             </View>
           </BlurView>
 
@@ -194,10 +147,7 @@ export default function ContactScreen() {
                 placeholderTextColor="#999"
                 multiline
                 numberOfLines={4}
-                style={[
-                  styles.textArea,
-                  { borderColor: componentColor + '55' },
-                ]}
+                style={[styles.textArea, { borderColor: componentColor + '55' }]}
               />
 
               <CustomButton
@@ -221,17 +171,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  contentContainer: {
-    padding: HORIZONTAL_PADDING,
-    paddingBottom: 40,
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingTop: Platform.OS === 'android' ? 40 : 0,
+    paddingBottom: 16,
   },
-
+  backButton: {
+    marginRight: 12,
+  },
   headerTitle: {
     fontSize: 28,
     fontWeight: '700',
-    marginBottom: 24,
     lineHeight: 36,
-    textAlign: 'left',
+  },
+
+  contentContainer: {
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingBottom: 40,
   },
 
   glassPanel: {
@@ -315,10 +273,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.08)',
     minHeight: 100,
     textAlignVertical: 'top',
-  },
-  recaptchaText: {
-    marginLeft: 8,
-    fontSize: 14,
-    fontWeight: '500',
   },
 });

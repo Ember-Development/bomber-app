@@ -175,13 +175,17 @@ export default function AddPlayersScreen() {
     if (step < totalSteps) {
       setStep((s) => s + 1);
     } else {
-      const isUnderage = ['U8', 'U10', 'U12', 'U14'].includes(
-        form.ageDivision || ''
-      );
-      const isAdultLink = ['U16', 'U18'].includes(form.ageDivision || '');
-      const istrusted =
-        ['U16', 'U18'].includes(form.ageDivision || '') ||
-        (form.ageDivision === 'U14' && isLinkFlow);
+      const age = form.ageDivision || '';
+
+      // U14
+      const isParentFill = age === 'U14' && isParentFlow;
+      const isSelfFill   = age === 'U14' && isLinkFlow;
+
+      const isUnderage   = ['U8','U10','U12'].includes(age) || isParentFill;
+      const isAdultLink  = ['U16','U18'].includes(age) || isSelfFill;
+
+      const isTrusted    = ['U16','U18'].includes(age) || isSelfFill;
+      const isNotTrusted = !isTrusted;
 
       // build final payload
       const athlete = isUnderage
@@ -192,13 +196,12 @@ export default function AddPlayersScreen() {
               `${form.teamCode.toLowerCase()}+${Math.random()
                 .toString(36)
                 .substring(2, 6)}@bomber.app`,
-            phone: form.phone || '0000000000',
-            isTrusted: false,
+            phone: form.phone || '1111111111',
+            isTrusted: isNotTrusted,
           }
         : isAdultLink
           ? {
               ...form,
-              // every field your backend needs, with sensible defaults
               role: form.role || 'PLAYER',
               teamCode: form.teamCode || '',
               teamName: form.teamName || '',
@@ -233,7 +236,7 @@ export default function AddPlayersScreen() {
               stirrupSize: form.stirrupSize || 'SM',
               shortSize: form.shortSize || 'ASM',
               practiceShirtSize: form.practiceShirtSize || 'ASM',
-              isTrusted: istrusted,
+              isTrusted: isNotTrusted,
 
               players: form.players || [],
             }
@@ -309,9 +312,11 @@ export default function AddPlayersScreen() {
           athleteAddrId = newAddr.id;
         }
 
+        console.log('BITCH', ath);
+
         const playerPayload = {
           email: ath.email,
-          password: ath.pass,
+          password: ath.password,
           fname: ath.firstName,
           lname: ath.lastName,
           role: 'PLAYER',
@@ -344,6 +349,8 @@ export default function AddPlayersScreen() {
         // 3) Sign up the Player
         await api.post('/api/auth/signup', playerPayload);
       }
+
+      console.log("player", playerData);
 
       const { data: me } = await api.get<UserFE>('/api/auth/me');
       queryClient.setQueryData(['currentUser'], me);

@@ -17,6 +17,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useRouter } from 'expo-router';
 import { SIDEMENU_ITEMS } from '@/constants/sidebarItems';
 import { useLogout } from '@/hooks/user/useLogout';
+import { Linking } from 'react-native';
 
 interface UserAvatarProps {
   firstName: string;
@@ -101,6 +102,8 @@ export default function UserAvatar({
               {/* Dynamic menu items */}
               {SIDEMENU_ITEMS.filter((item) => {
                 if (item.name === 'Bomber Portal' && !canSeeBomberPortal)
+                  return false;
+                if (item.name === 'Coaches Development' && !canSeeBomberPortal)
                   return false;
                 if (item.name === 'Player Development' && isFan) return false;
                 return true;
@@ -286,7 +289,7 @@ export default function UserAvatar({
                           case 'Contact':
                             return navigateAndClose('/side/contact');
                           case 'Payment':
-                            return navigateAndClose('/payment');
+                            return Linking.openURL('https://bomberpayments.net').catch(console.error);
                         }
                       }}
                     >

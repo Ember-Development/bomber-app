@@ -68,7 +68,7 @@ export default function TabLayout() {
       />
 
       {/* groups: only non-Fans */}
-      {!isFan && (
+      {/* {!isFan && (
         <Tabs.Screen
           name="groups"
           options={{
@@ -82,7 +82,7 @@ export default function TabLayout() {
             ),
           }}
         />
-      )}
+      )} */}
 
       {/* Events: only non-Fans */}
       {!isFan && (

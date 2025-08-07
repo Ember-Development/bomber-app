@@ -1,5 +1,7 @@
-import { View, Image, StyleSheet, SafeAreaView } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, SafeAreaView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 
 export default function BackgroundWrapper({
   children,
@@ -8,16 +10,20 @@ export default function BackgroundWrapper({
 }) {
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.backgroundWrapper}>
-        <Image
-          source={require('@/assets/images/bomberback.jpg')}
-          style={styles.backgroundImage}
-          blurRadius={40}
-        />
+      <View style={styles.background}>
+        {/* main blue gradient */}
         <LinearGradient
-          colors={['rgba(0,0,0,0.4)', 'rgba(0,0,0,0.85)']}
+          // light logo blue → darker logo blue
+          colors={['#004987', '#000']}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
           style={StyleSheet.absoluteFill}
         />
+
+        {/* add a little extra softness on top */}
+        <BlurView intensity={50} style={StyleSheet.absoluteFill} />
+
+        {/* your actual content */}
         <View style={styles.content}>{children}</View>
       </View>
     </SafeAreaView>
@@ -25,18 +31,13 @@ export default function BackgroundWrapper({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
+  container: { flex: 1, backgroundColor: '#1E4B9C' },
 
-  backgroundWrapper: { ...StyleSheet.absoluteFillObject, zIndex: -1 },
-
-  backgroundImage: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    resizeMode: 'cover',
+  background: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: -1,
   },
+
   content: {
     flex: 1,
     zIndex: 1,
