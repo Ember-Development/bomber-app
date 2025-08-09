@@ -9,7 +9,7 @@ export function useLogout() {
   const { setUser } = useUserContext();
   const qc = useQueryClient();
 
-  const logout = async () => {
+  return async () => {
     try {
       await api.post('/api/auth/logout');
     } catch (err) {
@@ -17,11 +17,15 @@ export function useLogout() {
     }
 
     await AsyncStorage.multiRemove(['accessToken', 'refreshToken']);
+
+    delete (api.defaults.headers as any).common?.Authorization;
+
+    await qc.cancelQueries();
+    qc.removeQueries({ queryKey: ['currentUser'] });
     qc.clear();
 
     setUser(null);
+
     router.replace('/login');
   };
-
-  return logout;
 }

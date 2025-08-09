@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import type { Dispatch, SetStateAction } from 'react';
-import { styles } from '../../styles/ProfileTabsStyle';
-import { ProfileTab } from './useProfileTabs';
+import { styles } from '../../../styles/ProfileTabsStyle';
+import { ProfileTab } from '../../../hooks/useProfileTabs';
 
 export type TabItem = { key: ProfileTab; label: string };
 

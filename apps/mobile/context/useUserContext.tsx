@@ -23,32 +23,86 @@ const UserContext = createContext<UserContextValue | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [tokenLoaded, setTokenLoaded] = useState(false);
+  const [hasToken, setHasToken] = useState(false);
   const [userState, setUserState] = useState<UserFE | null>(null);
 
-  // 1️⃣ Bootstrap token once at mount
+  // 1) Bootstrap token once at mount and set/clear Authorization header defensively
   useEffect(() => {
     (async () => {
-      const token = await AsyncStorage.getItem('accessToken');
-      if (token) api.defaults.headers.common.Authorization = `Bearer ${token}`;
-      setTokenLoaded(true);
+      try {
+        const token = await AsyncStorage.getItem('accessToken');
+        const present = !!token;
+        setHasToken(present);
+
+        if (present && token) {
+          api.defaults.headers.common.Authorization = `Bearer ${token}`;
+        } else {
+          // important: clear any stale header from a previous session
+          delete api.defaults.headers.common.Authorization;
+        }
+      } catch (e) {
+        // If anything goes wrong, ensure we don't keep a bad header around
+        delete api.defaults.headers.common.Authorization;
+        setHasToken(false);
+      } finally {
+        setTokenLoaded(true);
+      }
     })();
   }, []);
 
-  // 2️⃣ Only run /me query after tokenLoaded is true
+  // 🔎 Debug: see auth bootstrap state changes on both platforms
+  useEffect(() => {
+    console.log('[UserProvider]', {
+      tokenLoaded,
+      hasToken,
+      userLoaded: !!userState,
+    });
+  }, [tokenLoaded, hasToken, userState]);
+
+  // 2) Only run /me query after token is known AND present
   const {
     data,
     isLoading: queryLoading,
     error,
     refetch,
-  } = useCurrentUser({ enabled: tokenLoaded });
+  } = useCurrentUser({
+    enabled: tokenLoaded && hasToken,
+  });
 
-  // 3️⃣ When data arrives, hydrate userState
+  // 3) Hydrate user when data arrives
   useEffect(() => {
     if (data) setUserState(data);
   }, [data]);
 
-  // 4️⃣ Keep loading true until token is loaded AND query is running
-  const isLoading = !tokenLoaded || queryLoading;
+  // 4) If /me fails (e.g., 401), clear tokens + header and force logged-out state
+  useEffect(() => {
+    if (!error) return;
+    console.warn('[UserProvider] /me failed — clearing auth', error);
+
+    (async () => {
+      try {
+        await AsyncStorage.multiRemove(['accessToken', 'refreshToken']);
+      } catch {}
+      delete api.defaults.headers.common.Authorization;
+      setHasToken(false);
+      setUserState(null);
+    })();
+  }, [error]);
+
+  // 5) Loading state logic:
+  // - If token hasn't been checked yet => loading
+  // - If token exists => reflect query loading
+  // - If no token => not loading (show public routes)
+  const isLoading = !tokenLoaded ? true : hasToken ? queryLoading : false;
+
+  // 6) Expose a safe setter that clears header when logging out
+  const setUser = (u: UserFE | null) => {
+    setUserState(u);
+    if (!u) {
+      // clear header on logout or explicit unset
+      delete api.defaults.headers.common.Authorization;
+    }
+  };
 
   return (
     <UserContext.Provider
@@ -57,7 +111,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         error: error ?? null,
         refetch,
-        setUser: setUserState,
+        setUser,
       }}
     >
       {children}

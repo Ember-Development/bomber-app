@@ -48,15 +48,18 @@ export default function LoginScreen() {
       setUser(data.user);
 
       console.log(
-          'should finish signup?',
-          data.user.primaryRole,
-          data.user.phone,
-          data.user.primaryRole === 'PLAYER' && data.user.phone === '0000000000'
+        'should finish signup?',
+        data.user.primaryRole,
+        data.user.phone,
+        data.user.primaryRole === 'PLAYER' && data.user.phone === '0000000000'
       );
 
       qc.invalidateQueries({ queryKey: ['currentUser'] });
 
-      if ( data.user.primaryRole === 'PLAYER' && data.user.phone === '0000000000') {
+      if (
+        data.user.primaryRole === 'PLAYER' &&
+        data.user.phone === '0000000000'
+      ) {
         router.replace('/signup/finishsignup');
       } else {
         router.replace('/');
@@ -117,13 +120,16 @@ export default function LoginScreen() {
               <CustomButton
                 variant="primary"
                 title={loading ? 'Logging in…' : 'LOGIN'}
-                onPress={() => {console.warn('🔥 handleLogin invoked'); handleLogin()}}
+                onPress={() => {
+                  console.warn('🔥 handleLogin invoked');
+                  handleLogin();
+                }}
                 disabled={loading}
               />
 
               <TouchableOpacity
                 style={styles.footerLink}
-                onPress={() => router.push('/signup/role')}
+                onPress={() => router.push('/signup')}
               >
                 <Text style={styles.switch}>
                   Don’t have an account?{' '}

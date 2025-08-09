@@ -1,7 +1,24 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import RenderCards, { CardItem } from '../components/render-content';
+import CustomButton from '@/components/ui/atoms/Button';
 import { styles } from '../../../styles/ProfileTabsStyle';
+
+type Props = {
+  user: any;
+  activeTab: string;
+  view: 'roster' | 'staff' | 'trophies';
+  setView: (v: 'roster' | 'staff' | 'trophies') => void;
+  hasParentRecord: boolean;
+  setEditPlayerId: (id: string) => void;
+  setRemovePlayerId: (id: string) => void;
+  setEditCoachId: (id: string) => void;
+  setRemoveCoachId: (id: string) => void;
+  setEditTrophy: (x: any) => void;
+  setRemoveTrophy: (x: any) => void;
+  setSelectedProfile: (x: any) => void;
+};
 
 export default function CoachProfile({
   user,
@@ -16,8 +33,10 @@ export default function CoachProfile({
   setEditTrophy,
   setRemoveTrophy,
   setSelectedProfile,
-}: any) {
-  // 1️⃣ Contact Tab
+}: Props) {
+  const router = useRouter();
+
+  // Contact tab
   if (activeTab === 'contact') {
     return (
       <RenderCards
@@ -39,8 +58,10 @@ export default function CoachProfile({
     );
   }
 
-  // 2️⃣ Players Tab (if they also have a parent record)
+  // Players tab (if they also have a parent record)
   if (hasParentRecord && activeTab === 'players') {
+    const parentUserId = user?.parent?.id;
+
     return (
       <View style={{ marginTop: 20 }}>
         <RenderCards
@@ -59,23 +80,36 @@ export default function CoachProfile({
             },
           ]}
         />
+
+        <CustomButton
+          title="+ Add New Player"
+          onPress={() =>
+            router.push({
+              pathname: '/profile/components/add-new-player',
+              params: { parentUserId },
+            })
+          }
+        />
+
         <Text style={styles.sectionTitle}>My Athletes</Text>
         <RenderCards
-          data={user?.parent?.children.map((c: any) => ({
-            label: `${c.user?.fname ?? ''} ${c.user?.lname ?? ''}`.trim(),
-            value: `#${c.jerseyNum}`,
-            fullWidth: true,
-            player: c,
-            onEdit: () => setEditPlayerId(c.id),
-            onRemove: () => setRemovePlayerId(c.id),
-          }))}
-          onSelectPlayer={(p) => setSelectedProfile(p)}
+          data={
+            user?.parent?.children?.map((c: any) => ({
+              label: `${c.user?.fname ?? ''} ${c.user?.lname ?? ''}`.trim(),
+              value: `#${c.jerseyNum}`,
+              fullWidth: true,
+              player: c,
+              onEdit: () => setEditPlayerId(c.id),
+              onRemove: () => setRemovePlayerId(c.id),
+            })) || []
+          }
+          onSelectPlayer={(p: any) => setSelectedProfile(p)}
         />
       </View>
     );
   }
 
-  // 3️⃣ Default → Info (Team) Tab
+  // Default: Info/Team view
   const teams = user?.coach?.teams || [];
   const tabs = ['roster', 'staff', 'trophies'] as const;
 

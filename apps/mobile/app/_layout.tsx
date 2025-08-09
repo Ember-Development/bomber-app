@@ -4,7 +4,12 @@ import {
   DefaultTheme,
   ThemeProvider as NavigationThemeProvider,
 } from '@react-navigation/native';
-import { Slot, useRouter } from 'expo-router';
+import {
+  Slot,
+  usePathname,
+  useRootNavigationState,
+  useRouter,
+} from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import 'react-native-reanimated';
@@ -20,21 +25,46 @@ SplashScreen.preventAutoHideAsync();
 function RootNavigator() {
   const { user, isLoading } = useUserContext();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!user) {
-        router.replace('/login');
-      } else {
-        router.replace('/(tabs)');
-      }
+    console.log('[NAV]', { isLoading, hasUser: !!user, pathname });
+  }, [isLoading, user, pathname]);
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    const inSignup = pathname.startsWith('/signup');
+    const inOnboarding =
+      pathname.startsWith('/onboarding') || pathname.startsWith('/welcome');
+    const atAuth =
+      pathname.startsWith('/login') || pathname.startsWith('/signup');
+    const atRoot = pathname === '/' || pathname === '';
+
+    const safeReplace = (path: string) => {
+      if (pathname !== path) router.replace(path);
+    };
+
+    if (!user) {
+      if (!atAuth) safeReplace('/login');
+      return;
+    }
+
+    if (inSignup || inOnboarding) {
+      return;
+    }
+
+    if (atRoot || atAuth) {
+      safeReplace('/(tabs)');
     }
   }, [isLoading, user]);
 
   if (isLoading) {
     return (
       <BackgroundWrapper>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
           <ActivityIndicator size="large" />
         </View>
       </BackgroundWrapper>
