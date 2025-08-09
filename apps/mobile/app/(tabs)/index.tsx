@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Image,
   StyleSheet,
+  Pressable,
 } from 'react-native';
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useRouter } from 'expo-router';
@@ -388,10 +389,14 @@ export default function HomeScreen() {
             </View>
             <View style={styles.legacyList}>
               {legacyItems.map((item) => (
-                <TouchableOpacity
+                <Pressable
                   key={item.title}
-                  style={styles.legacyCard}
                   onPress={() => router.push(item.routes)}
+                  android_ripple={{
+                    color: 'rgba(255,255,255,0.08)',
+                    borderless: false,
+                  }}
+                  style={[styles.legacyPressable, styles.legacyCard]}
                 >
                   <View style={styles.legacyItems}>
                     <Ionicons
@@ -402,7 +407,7 @@ export default function HomeScreen() {
                     <ThemedText type="default">{item.title}</ThemedText>
                   </View>
                   <Ionicons name="chevron-forward" size={20} color="#ccc" />
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
           </View>

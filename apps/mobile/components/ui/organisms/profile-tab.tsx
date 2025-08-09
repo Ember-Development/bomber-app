@@ -1,13 +1,13 @@
 import React from 'react';
 import { ScrollView } from 'react-native';
 import { TabBar, TabItem } from './TabBar';
-import CoachProfile from './profileviews/CoachProfile';
-import RegionalCoachProfile from './profileviews/RegionalCoachProfile';
-import ParentProfile from './profileviews/ParentProfile';
-import FanProfile from './profileviews/FanProfile';
-import PlayerProfile from './profileviews/PlayerProfile';
-import ModalManager from './components/modalmanager';
-import { ProfileTab, useProfileTabs } from './useProfileTabs';
+import CoachProfile from '../../../app/user/profileviews/CoachProfile';
+import RegionalCoachProfile from '../../../app/user/profileviews/RegionalCoachProfile';
+import ParentProfile from '../../../app/user/profileviews/ParentProfile';
+import FanProfile from '../../../app/user/profileviews/FanProfile';
+import PlayerProfile from '../../../app/user/profileviews/PlayerProfile';
+import ModalManager from '../../../app/user/components/modalmanager';
+import { ProfileTab, useProfileTabs } from '../../../hooks/useProfileTabs';
 
 export default function ProfileTabs() {
   const hook = useProfileTabs();

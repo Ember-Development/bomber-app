@@ -1,7 +1,18 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import RenderCards, { CardItem } from '../components/render-content';
+import { useRouter } from 'expo-router';
+import CustomButton from '@/components/ui/atoms/Button';
 import { styles } from '@/styles/ProfileTabsStyle';
+import { PlayerFE } from '@bomber-app/database';
+import RenderCards from '../components/render-content';
+
+type Props = {
+  user: any;
+  activeTab: 'info' | 'players' | 'contact';
+  setEditPlayerId: (id: string) => void;
+  setRemovePlayerId: (id: string) => void;
+  setSelectedProfile: (x: any) => void;
+};
 
 export default function ParentProfile({
   user,
@@ -9,8 +20,9 @@ export default function ParentProfile({
   setEditPlayerId,
   setRemovePlayerId,
   setSelectedProfile,
-}: any) {
-  // 1️⃣ Info
+}: Props) {
+  const router = useRouter();
+
   if (activeTab === 'info') {
     return (
       <RenderCards
@@ -23,8 +35,9 @@ export default function ParentProfile({
     );
   }
 
-  // 2️⃣ Players
   if (activeTab === 'players') {
+    const parentUserId = user?.parent?.id;
+
     return (
       <View style={{ marginTop: 20 }}>
         <RenderCards
@@ -43,6 +56,17 @@ export default function ParentProfile({
             },
           ]}
         />
+
+        <CustomButton
+          title="+ Add New Player"
+          onPress={() =>
+            router.push({
+              pathname: '/profile/components/add-new-player',
+              params: { parentUserId },
+            })
+          }
+        />
+
         <Text style={styles.sectionTitle}>My Athletes</Text>
         <RenderCards
           data={user.parent.children.map((c: any) => ({
@@ -53,13 +77,12 @@ export default function ParentProfile({
             onEdit: () => setEditPlayerId(c.id),
             onRemove: () => setRemovePlayerId(c.id),
           }))}
-          onSelectPlayer={(p) => setSelectedProfile(p)}
+          onSelectPlayer={(p: PlayerFE) => setSelectedProfile(p)}
         />
       </View>
     );
   }
 
-  // 3️⃣ Contact
   if (activeTab === 'contact') {
     return (
       <RenderCards

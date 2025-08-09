@@ -18,7 +18,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { createMessageStyles } from './styles';
 import CustomButton from '@/components/ui/atoms/Button';
 import BottomSheetModal from '@/components/ui/organisms/BottomSheetModal';
-import CreateGroupModal from '@/app/groups/modals/AddGroupModal';
+import CreateGroupModal from '@/features/groups/modals/AddGroupModal';
 import { ThemedText } from '@/components/ThemedText';
 
 import { useUsersInGroup, useAddUsersToGroup } from '@/hooks/groups/useChats';

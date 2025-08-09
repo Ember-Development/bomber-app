@@ -1,8 +1,33 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import RenderCards, { CardItem } from '../components/render-content';
 import CoachProfile from './CoachProfile';
+import CustomButton from '@/components/ui/atoms/Button';
 import { styles } from '@/styles/ProfileTabsStyle';
+import { PlayerFE } from '@bomber-app/database';
+
+const tabs = ['roster', 'staff', 'trophies'] as const;
+type TabKey = (typeof tabs)[number];
+
+type Props = {
+  user: any;
+  activeTab: string;
+  isAlsoCoach: boolean;
+  hasParentRecord: boolean;
+  view: TabKey;
+  setView: (v: TabKey) => void;
+  regionTeams: any[];
+  selectedRegionTeamId: string | null;
+  setSelectedRegionTeamId: (id: string | null) => void;
+  setEditPlayerId: (id: string) => void;
+  setRemovePlayerId: (id: string) => void;
+  setEditCoachId: (id: string) => void;
+  setRemoveCoachId: (id: string) => void;
+  setEditTrophy: (x: any) => void;
+  setRemoveTrophy: (x: any) => void;
+  setSelectedProfile: (x: any) => void;
+};
 
 export default function RegionalCoachProfile({
   user,
@@ -21,8 +46,10 @@ export default function RegionalCoachProfile({
   setEditTrophy,
   setRemoveTrophy,
   setSelectedProfile,
-}: any) {
-  // 1️⃣ Contact
+}: Props) {
+  const router = useRouter();
+
+  // Contact
   if (activeTab === 'contact') {
     return (
       <RenderCards
@@ -34,8 +61,10 @@ export default function RegionalCoachProfile({
     );
   }
 
-  // 2️⃣ Players (if also a parent)
+  // Players (if also a parent)
   if (hasParentRecord && activeTab === 'players') {
+    const parentUserId = user?.parent?.id;
+
     return (
       <View style={{ marginTop: 20 }}>
         <RenderCards
@@ -54,6 +83,17 @@ export default function RegionalCoachProfile({
             },
           ]}
         />
+
+        <CustomButton
+          title="+ Add New Player"
+          onPress={() =>
+            router.push({
+              pathname: '/profile/components/add-new-player',
+              params: { parentUserId },
+            })
+          }
+        />
+
         <Text style={styles.sectionTitle}>My Athletes</Text>
         <RenderCards
           data={user.parent.children.map((c: any) => ({
@@ -64,13 +104,13 @@ export default function RegionalCoachProfile({
             onEdit: () => setEditPlayerId(c.id),
             onRemove: () => setRemovePlayerId(c.id),
           }))}
-          onSelectPlayer={(p) => setSelectedProfile(p)}
+          onSelectPlayer={(p: PlayerFE) => setSelectedProfile(p)}
         />
       </View>
     );
   }
 
-  // 3️⃣ Info (if they also coach, delegate)
+  // Info (delegate)
   if (activeTab === 'info' && isAlsoCoach) {
     return (
       <CoachProfile
@@ -90,15 +130,13 @@ export default function RegionalCoachProfile({
     );
   }
 
-  // 4️⃣ Region
+  // Region
   if (activeTab === 'region') {
-    // drilling into one team
     if (selectedRegionTeamId) {
       const team = regionTeams.find((t: any) => t.id === selectedRegionTeamId);
       if (!team) return null;
 
-      const tabs = ['roster', 'staff', 'trophies'] as const;
-      const teamData: Record<typeof view, CardItem[]> = {
+      const teamData: Record<TabKey, CardItem[]> = {
         roster:
           team.players?.map((p: any) => ({
             label:
@@ -135,7 +173,9 @@ export default function RegionalCoachProfile({
           <TouchableOpacity onPress={() => setSelectedRegionTeamId(null)}>
             <Text style={styles.backLink}>← Back to Region Teams</Text>
           </TouchableOpacity>
+
           <Text style={styles.sectionTitle}>{team.name}</Text>
+
           <View style={styles.teamTabRow}>
             {tabs.map((key) => (
               <TouchableOpacity
@@ -151,6 +191,7 @@ export default function RegionalCoachProfile({
               </TouchableOpacity>
             ))}
           </View>
+
           <RenderCards
             data={teamData[view]}
             onSelectPlayer={(p: any) => setSelectedProfile(p)}
@@ -159,7 +200,6 @@ export default function RegionalCoachProfile({
       );
     }
 
-    // list of all region teams
     const data: CardItem[] = regionTeams.map((t: any) => ({
       label: t.name,
       value: `${t.ageGroup} • ${t.region}`,
@@ -171,7 +211,7 @@ export default function RegionalCoachProfile({
         <Text style={styles.sectionTitle}>Region Teams</Text>
         <RenderCards
           data={data}
-          onPress={(label) => {
+          onPress={(label: string) => {
             const team = regionTeams.find((t: any) => t.name === label);
             if (team) setSelectedRegionTeamId(team.id);
           }}

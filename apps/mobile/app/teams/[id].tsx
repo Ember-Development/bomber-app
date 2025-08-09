@@ -15,7 +15,7 @@ import { useTeamById } from '@/hooks/teams/useTeams';
 import { US_STATES } from '@/utils/state';
 import { BlurView } from 'expo-blur';
 import { getRegionLabel } from '@/utils/region';
-import ProfileModal from './components/profileModal';
+import ProfileModal from '../../features/teams/components/profileModal';
 import { usePlayerById } from '@/hooks/teams/usePlayerById';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 

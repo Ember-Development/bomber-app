@@ -1,30 +1,44 @@
 import React from 'react';
 import ProfileModal from './profile-role-modal';
-import EditPlayerModal from './update-player';
 import RemovePlayerModal from './remove-player';
 import EditCoachModal from './edit-coach-modal';
 import RemoveCoachModal from './remove-coach-modal';
 import EditTrophyModal from './edit-trophy-modal';
 import RemoveTrophyModal from './remove-trophy-modal';
+import EditPlayerModal from './update-player';
 
 export default function ModalManager({
+  // profile
   selectedProfile,
   setSelectedProfile,
+
+  // players
   editPlayerId,
+  setEditPlayerId,
   selectedPlayer,
   removePlayerId,
+  setRemovePlayerId,
   selectedPlayerToRemove,
   deletePlayer,
+
+  // coaches
   editCoachId,
+  setEditCoachId,
   selectedCoach,
   removeCoachId,
+  setRemoveCoachId,
   selectedCoachToRemove,
   deleteCoach,
+
+  // trophies
   editTrophy,
+  setEditTrophy,
   removeTrophy,
+  setRemoveTrophy,
 }: any) {
   return (
     <>
+      {/* Profile details modal */}
       {selectedProfile && (
         <ProfileModal
           isVisible
@@ -33,53 +47,68 @@ export default function ModalManager({
         />
       )}
 
+      {/* Edit player modal */}
       {editPlayerId && selectedPlayer && (
         <EditPlayerModal
           visible
           player={selectedPlayer}
-          onClose={() => setSelectedProfile(null)}
+          onClose={() => setEditPlayerId(null)}
         />
       )}
+
+      {/* Remove player modal */}
       {removePlayerId && selectedPlayerToRemove && (
         <RemovePlayerModal
           visible
           playerName={`${selectedPlayerToRemove.user?.fname} ${selectedPlayerToRemove.user?.lname}`}
-          onClose={() => setSelectedProfile(null)}
-          onConfirm={() => deletePlayer(removePlayerId)}
+          onClose={() => setRemovePlayerId(null)}
+          onConfirm={() => {
+            deletePlayer(removePlayerId);
+            setRemovePlayerId(null);
+          }}
         />
       )}
 
+      {/* Edit coach modal */}
       {editCoachId && selectedCoach && (
         <EditCoachModal
           visible
           coach={selectedCoach}
-          onClose={() => setSelectedProfile(null)}
+          onClose={() => setEditCoachId(null)}
         />
       )}
+
+      {/* Remove coach modal */}
       {removeCoachId && selectedCoachToRemove && (
         <RemoveCoachModal
           visible
           coachName={`${selectedCoachToRemove.user?.fname} ${selectedCoachToRemove.user?.lname}`}
-          onClose={() => setSelectedProfile(null)}
-          onConfirm={() => deleteCoach(removeCoachId)}
+          onClose={() => setRemoveCoachId(null)}
+          onConfirm={() => {
+            deleteCoach(removeCoachId);
+            setRemoveCoachId(null);
+          }}
         />
       )}
 
+      {/* Edit trophy modal */}
       {editTrophy && (
         <EditTrophyModal
           visible
           teamId={editTrophy.teamId}
           trophy={editTrophy.trophy}
-          onClose={() => setSelectedProfile(null)}
+          onClose={() => setEditTrophy(null)}
         />
       )}
+
+      {/* Remove trophy modal */}
       {removeTrophy && (
         <RemoveTrophyModal
           visible
           teamId={removeTrophy.teamId}
           trophyId={removeTrophy.trophy.id}
           trophyTitle={removeTrophy.trophy.title}
-          onClose={() => setSelectedProfile(null)}
+          onClose={() => setRemoveTrophy(null)}
         />
       )}
     </>

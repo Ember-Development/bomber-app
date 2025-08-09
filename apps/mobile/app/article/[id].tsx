@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   SafeAreaView,
   View,
@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   ScrollView,
-  StyleSheet,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -37,13 +36,17 @@ export default function ArticleDetailScreen() {
   const { id } = useLocalSearchParams<'id'>();
   const { data: article, isLoading, error } = useArticleById(id || '');
 
-  // Bottom sheet state & animations (same as in ArticlesScreen)
+  // Refs (optional for future simultaneous handlers)
+  const panRef = useRef(null);
+  const innerScrollRef = useRef<ScrollView>(null);
+
+  // Bottom sheet state & animations
   const sheetTranslate = useSharedValue(IMAGE_HEIGHT);
   const [sheetOpened, setSheetOpened] = useState(false);
   const bounce = useSharedValue(0);
 
   useEffect(() => {
-    // arrow bounce
+    // bounce arrow gently
     bounce.value = withRepeat(
       withTiming(-10, { duration: 1000, easing: Easing.inOut(Easing.quad) }),
       -1,
@@ -55,14 +58,13 @@ export default function ArticleDetailScreen() {
     transform: [{ translateY: bounce.value }],
   }));
 
-  // Parallax image
+  // Parallax image offset
   const imageOffsetStyle = useAnimatedStyle(() => {
     const delta = IMAGE_HEIGHT - sheetTranslate.value;
     const extra = delta - SHEET_HEIGHT;
     return { transform: [{ translateY: extra > 0 ? -extra : 0 }] };
   });
 
-  // Open / close handlers
   const openSheet = () => {
     sheetTranslate.value = withTiming(IMAGE_HEIGHT - SHEET_HEIGHT, {
       duration: 500,
@@ -74,12 +76,14 @@ export default function ArticleDetailScreen() {
     setSheetOpened(false);
   };
 
-  // Gesture & scroll handlers
+  // Open the sheet the first time user scrolls (helps Android)
   const scrollHandler = useAnimatedScrollHandler((evt) => {
     if (!sheetOpened && evt.contentOffset.y > 50) {
       runOnJS(openSheet)();
     }
   });
+
+  // Drag the sheet — only from the small handle area
   const panHandler = useAnimatedGestureHandler({
     onStart: (_, ctx: any) => {
       ctx.startY = sheetTranslate.value;
@@ -93,12 +97,14 @@ export default function ArticleDetailScreen() {
     },
     onEnd: (evt) => {
       if (evt.translationY > SHEET_HEIGHT * 0.25) runOnJS(closeSheet)();
-      else
+      else {
         sheetTranslate.value = withTiming(IMAGE_HEIGHT - SHEET_HEIGHT, {
           duration: 300,
         });
+      }
     },
   });
+
   const sheetStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: sheetTranslate.value }],
   }));
@@ -124,19 +130,23 @@ export default function ArticleDetailScreen() {
 
   return (
     <View style={styles.detailContainer}>
-      {/* Parallax image + back button */}
+      {/* Parallax header image */}
       <View style={styles.imageWrapper}>
         <Animated.Image
           source={{ uri: article.imageUrl! }}
           style={[styles.detailImage, imageOffsetStyle]}
         />
+
+        {/* Back button */}
         <TouchableOpacity
           style={styles.detailBack}
           onPress={() => router.back()}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
 
+        {/* Header gradient + title/preview */}
         <LinearGradient
           colors={['transparent', 'rgba(0,0,0,0.9)']}
           start={{ x: 0.65, y: 0 }}
@@ -155,38 +165,63 @@ export default function ArticleDetailScreen() {
           </Text>
         </LinearGradient>
 
-        {/* Header overlay */}
+        {/* Outer scroll (just to detect first pull; sheet does the real scroll) */}
         <Animated.ScrollView
           onScroll={scrollHandler}
+          onScrollBeginDrag={() => {
+            if (!sheetOpened) openSheet();
+          }}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingTop: IMAGE_HEIGHT }}
+          nestedScrollEnabled
         >
-          <PanGestureHandler onGestureEvent={panHandler}>
-            <Animated.View style={[styles.detailBodyContainer, sheetStyle]}>
-              <View style={styles.dragHandle} />
-              <ScrollView
-                contentContainerStyle={{ padding: 16 }}
-                scrollEnabled={sheetOpened}
+          <Animated.View style={[styles.detailBodyContainer, sheetStyle]}>
+            {/* Drag handle area only captures the pan */}
+            <PanGestureHandler ref={panRef} onGestureEvent={panHandler}>
+              <View
+                style={{
+                  height: 28,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
-                <View style={styles.sheetHeaderRow}>
-                  <Text style={styles.sheetTitle}>{article.title}</Text>
-                  <Text style={styles.sheetMeta}>
-                    {new Date(article.createdAt).toLocaleDateString()}
-                  </Text>
-                </View>
-                <Separator marginVertical={12} color="#000" />
-                <Text style={styles.detailBody}>{article.body}</Text>
-              </ScrollView>
-            </Animated.View>
-          </PanGestureHandler>
+                <View style={styles.dragHandle} />
+              </View>
+            </PanGestureHandler>
+
+            {/* Inner scrollable article content */}
+            <ScrollView
+              ref={innerScrollRef}
+              contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+              nestedScrollEnabled
+              showsVerticalScrollIndicator={true}
+              bounces={false}
+              overScrollMode="never"
+            >
+              <View style={styles.sheetHeaderRow}>
+                <Text style={styles.sheetTitle}>{article.title}</Text>
+                <Text style={styles.sheetMeta}>
+                  {new Date(article.createdAt).toLocaleDateString()}
+                </Text>
+              </View>
+              <Separator marginVertical={12} color="#000" />
+              <Text style={styles.detailBody}>{article.body}</Text>
+            </ScrollView>
+          </Animated.View>
         </Animated.ScrollView>
 
-        {/* Arrow bounce */}
+        {/* Tap-to-open helper */}
         {!sheetOpened && (
           <Animated.View style={[styles.swipeUpContainer, bounceStyle]}>
-            <Ionicons name="chevron-up" size={32} color="#fff" />
-            <Text style={styles.swipeText}>Scroll to Continue Reading</Text>
+            <TouchableOpacity
+              onPress={openSheet}
+              activeOpacity={0.7}
+              style={{ alignItems: 'center' }}
+            >
+              <Ionicons name="chevron-up" size={32} color="#fff" />
+              <Text style={styles.swipeText}>Scroll to Continue Reading</Text>
+            </TouchableOpacity>
           </Animated.View>
         )}
       </View>

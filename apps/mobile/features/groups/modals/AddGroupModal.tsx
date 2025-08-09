@@ -127,10 +127,9 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         const playerTeamId = u.player?.team?.id;
         const coachTeamIdsOfUser = u.coach?.teams.map((t) => t.id) ?? [];
         const parentChildTeamIds =
-  u.parent?.children
-    .map(ch => ch.team?.id)  
-    .filter((id): id is string => !!id)  
-  ?? [];
+          u.parent?.children
+            .map((ch) => ch.team?.id)
+            .filter((id): id is string => !!id) ?? [];
 
         const parentOnCoachTeam = parentChildTeamIds.some((tid: any) =>
           tid ? coachTeamIds.includes(tid) : false

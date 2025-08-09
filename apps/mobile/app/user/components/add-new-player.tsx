@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   Keyboard,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import CustomInput from '@/components/ui/atoms/Inputs';
 import CustomSelect from '@/components/ui/atoms/dropdown';
@@ -30,19 +30,26 @@ import {
   SHORTS_SIZES,
 } from '@/utils/enumOptions';
 import { GlobalColors } from '@/constants/Colors';
-import { TeamFE, UserFE } from '@bomber-app/database';
+import { UserFE } from '@bomber-app/database';
 import { api } from '@/api/api';
 import { useCoachSignup } from '@/context/CoachSignupContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 
-export default function AddPlayersScreen() {
+export default function AddNewPlayersScreen() {
   const router = useRouter();
-  const { role } = useLocalSearchParams<{ role: string }>();
+
+  // 👇 read and log the parent ID passed from profile
+  const { parentUserId } = useLocalSearchParams<{ parentUserId?: string }>();
+  useEffect(() => {
+    console.log('[AddNewPlayers] parentUserId param:', parentUserId);
+  }, [parentUserId]);
+
   const queryClient = useQueryClient();
 
-  const { signupData: playerData, setSignupData } = usePlayerSignup();
+  // still available if your providers are there
+  const { signupData: playerData } = usePlayerSignup();
   const { signupData: parentData } = useParentSignup();
   const { signupData: coachData } = useCoachSignup();
 
@@ -60,10 +67,10 @@ export default function AddPlayersScreen() {
 
   const validPass = (p?: string, c?: string) =>
     !!p && !!c && p.length >= 8 && p === c;
-  // back handler
+
+  // back handler (within the multi-step flow)
   const handleBack = () => {
     if (step === 2) {
-      // reset any branching flags when stepping back to 1
       setIsLinkFlow(false);
       setIsParentFlow(false);
       setSelection(null);
@@ -180,7 +187,6 @@ export default function AddPlayersScreen() {
     } else {
       const age = form.ageDivision || '';
 
-      // U14
       const isParentFill = age === 'U14' && isParentFlow;
       const isSelfFill = age === 'U14' && isLinkFlow;
 
@@ -190,7 +196,6 @@ export default function AddPlayersScreen() {
       const isTrusted = ['U16', 'U18'].includes(age) || isSelfFill;
       const isNotTrusted = !isTrusted;
 
-      // build final payload
       const athlete = isUnderage
         ? {
             ...form,
@@ -254,6 +259,7 @@ export default function AddPlayersScreen() {
         }
         return [...prev, athlete];
       });
+
       // reset form state for next player
       setForm({ teamCode: form.teamCode });
       setSelection(null);
@@ -264,22 +270,15 @@ export default function AddPlayersScreen() {
     }
   };
 
-  // If adding more players
-  const handleAddAnother = () => {
-    setShowSummary(false);
-  };
-
-  const handleDeletePlayer = (idx: number) => {
+  const handleAddAnother = () => setShowSummary(false);
+  const handleDeletePlayer = (idx: number) =>
     setPlayers((prev) => prev.filter((_, i) => i !== idx));
-  };
 
   const handleEditPlayer = (ath: any, idx: number) => {
     setForm({ ...ath });
-
     setShowSummary(false);
 
     const { ageDivision, isTrusted } = ath;
-
     if (isTrusted || ['U14', 'U16', 'U18'].includes(ageDivision)) {
       setIsLinkFlow(true);
       setIsParentFlow(false);
@@ -295,24 +294,25 @@ export default function AddPlayersScreen() {
 
   const handleSubmitAll = async () => {
     try {
-      // 0) Grab the parentId and parent addressID from context
-      const parentId = parentData.parentId;
+      // prefer the param; fall back to context
+      const parentId =
+        (parentUserId as string | undefined) ?? parentData.parentId;
       const parentAddrId = parentData.addressID;
+
+      console.log('[AddNewPlayers] Using parentId:', parentId);
+
       if (!parentId) {
         throw new Error(
           'Parent ID missing – make sure you completed the Parent signup first'
         );
       }
 
-      // 1) Loop through each athlete and create/link their address
       for (const ath of players) {
         let athleteAddrId: string | undefined;
 
         if (ath.sameAsParent && parentAddrId) {
           athleteAddrId = parentAddrId;
-        }
-        // new address
-        else if (ath.address && ath.city && ath.state && ath.zip) {
+        } else if (ath.address && ath.city && ath.state && ath.zip) {
           const { data: newAddr } = await api.post('/api/users/address', {
             address1: ath.address,
             city: ath.city,
@@ -321,8 +321,6 @@ export default function AddPlayersScreen() {
           });
           athleteAddrId = newAddr.id;
         }
-
-        console.log('BITCH', ath);
 
         const playerPayload = {
           email: ath.email,
@@ -343,22 +341,16 @@ export default function AddPlayersScreen() {
             shortSize: ath.shortSize || 'AS',
             practiceShortSize: ath.practiceShirtSize || 'AS',
             isTrusted: ath.isTrusted,
-
-            // link to the Team
             team: { connect: { teamCode: ath.teamCode! } },
-            // link back to the Parent
             parents: { connect: { id: parentId } },
-
-            // link or create the athlete’s Address
             ...(athleteAddrId
               ? { address: { connect: { id: athleteAddrId } } }
               : {}),
           },
         };
 
-        // 3) Sign up the Player
         try {
-          const res = await api.post('/api/auth/signup', playerPayload);
+          await api.post('/api/auth/signup', playerPayload);
         } catch (err) {
           if (axios.isAxiosError(err)) {
             console.error('[ADD PLAYERS] Signup flow error:');
@@ -374,21 +366,32 @@ export default function AddPlayersScreen() {
         }
       }
 
-      console.log('player', playerData);
       const { data: me } = await api.get<UserFE>('/api/auth/me');
       queryClient.setQueryData(['currentUser'], me);
-      router.replace('/');
+      router.replace('/profile');
     } catch (err: any) {
       console.error('[ADD PLAYERS] Signup flow error:', err);
     }
   };
 
-  // Render each step’s UI
   const renderStep = () => {
-    // STEP 1: Team code
     if (step === 1) {
       return (
         <View style={styles.stepContainer}>
+          {/* Back to Profile on team-code step */}
+          <TouchableOpacity
+            style={{
+              marginBottom: 20,
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+            onPress={() => router.replace('/profile')}
+          >
+            <Text style={{ fontSize: 18, color: '#fff' }}>
+              ← Back to Profile
+            </Text>
+          </TouchableOpacity>
+
           <Text style={styles.titleStep}>
             Step 1 of {totalSteps}: Enter Team Code
           </Text>
@@ -403,6 +406,7 @@ export default function AddPlayersScreen() {
             Bomber codes are unique make sure the team code matches for your
             players team.
           </Text>
+
           <CodeInput
             length={5}
             onChange={(code) => {
@@ -410,6 +414,7 @@ export default function AddPlayersScreen() {
               setForm((f: any) => ({ ...f, teamCode: up }));
             }}
           />
+
           {form.teamName && (
             <View style={styles.selectedTeamContainer}>
               <Text style={styles.selectedLabel}>Team:</Text>
@@ -422,7 +427,6 @@ export default function AddPlayersScreen() {
       );
     }
 
-    // STEP 2: choice or personal info / login
     if (
       step === 2 &&
       form.ageDivision === 'U14' &&
@@ -464,7 +468,6 @@ export default function AddPlayersScreen() {
       );
     }
 
-    // STEP 2: email/password for 18U or 14U-self
     if (
       step === 2 &&
       (['U16', 'U18'].includes(form.ageDivision || '') || isLinkFlow)
@@ -521,7 +524,6 @@ export default function AddPlayersScreen() {
       );
     }
 
-    // STEP 2: personal info for 12U or 14U+parent
     if (
       step === 2 &&
       (['U8', 'U10', 'U12'].includes(form.ageDivision || '') ||
@@ -625,7 +627,6 @@ export default function AddPlayersScreen() {
       );
     }
 
-    // STEP 3: sport & jersey
     if (step === 3) {
       return (
         <View style={styles.stepContainer}>
@@ -675,7 +676,6 @@ export default function AddPlayersScreen() {
       );
     }
 
-    // STEP 4: gear sizes
     if (step === 4) {
       return (
         <View style={styles.stepContainer}>
@@ -718,6 +718,9 @@ export default function AddPlayersScreen() {
 
   return (
     <BackgroundWrapper>
+      {/* Hide the native header */}
+      <Stack.Screen options={{ headerShown: false }} />
+
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -725,7 +728,7 @@ export default function AddPlayersScreen() {
         >
           {!showSummary ? (
             <ScrollView contentContainerStyle={styles.container}>
-              {/* back button */}
+              {/* back button inside flow (for steps > 1) */}
               {step > 1 && (
                 <TouchableOpacity
                   onPress={handleBack}
@@ -751,6 +754,16 @@ export default function AddPlayersScreen() {
               contentContainerStyle={styles.container}
               ListHeaderComponent={
                 <>
+                  {/* Back to Profile on the summary screen as well */}
+                  <TouchableOpacity
+                    style={{ marginBottom: 16 }}
+                    onPress={() => router.replace('/profile')}
+                  >
+                    <Text style={{ fontSize: 16, color: '#fff' }}>
+                      ← Back to Profile
+                    </Text>
+                  </TouchableOpacity>
+
                   <Text style={styles.subTitle}>
                     Players Added: Please double-check your players before
                     submitting.
@@ -773,7 +786,6 @@ export default function AddPlayersScreen() {
                     </Text>
                     <TouchableOpacity
                       onPress={() => {
-                        // prevent the parent onPress
                         Keyboard.dismiss();
                         handleDeletePlayer(index);
                       }}

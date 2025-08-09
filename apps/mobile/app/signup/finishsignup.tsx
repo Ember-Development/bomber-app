@@ -4,9 +4,9 @@ import { useRouter } from 'expo-router';
 import { useUserContext } from '@/context/useUserContext';
 import { usePlayerById } from '@/hooks/teams/usePlayerById';
 import { GlobalColors } from '@/constants/Colors';
-import EditPlayerContent from '../profile/components/edit-player-form';
 import { api } from '@/api/api';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
+import EditPlayerContent from '../user/components/edit-player-form';
 
 export default function FinishSignupScreen() {
   const { user, setUser } = useUserContext();
@@ -55,10 +55,10 @@ export default function FinishSignupScreen() {
 
   return (
     <BackgroundWrapper>
-    <SafeAreaView style={styles.wrapper}>
-      <Text style={styles.header}>Let's Complete Your Profile Signup</Text>
-      <EditPlayerContent player={player} onSuccess={handleSuccess} />
-    </SafeAreaView>
+      <SafeAreaView style={styles.wrapper}>
+        <Text style={styles.header}>Let's Complete Your Profile Signup</Text>
+        <EditPlayerContent player={player} onSuccess={handleSuccess} />
+      </SafeAreaView>
     </BackgroundWrapper>
   );
 }
