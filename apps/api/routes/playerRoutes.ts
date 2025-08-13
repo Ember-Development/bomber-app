@@ -22,7 +22,7 @@ router.get('/unassigned', auth, getUnassignedPlayers);
 router.get('/:id', auth, getPlayerById);
 router.post('/', auth, createPlayer);
 router.post('/:id/commit', auth, createForPlayer);
-router.post('/add-to-team', auth, addPlayerToTeam);
+router.post('/add-to-team', addPlayerToTeam);
 router.put('/:id', auth, authorize('edit-player'), updatePlayer);
 router.post(
   '/:id/parents',

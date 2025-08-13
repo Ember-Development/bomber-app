@@ -48,9 +48,8 @@ export const useDeleteCoach = (options?: { onSuccess?: () => void }) => {
   return useMutation<void, unknown, string>({
     mutationFn: (id: string) => deleteCoach(id),
     onSuccess: (_, id) => {
-      console.log('[HOOK] deleteCoach success');
-      queryClient.invalidateQueries({ queryKey: ['coach', id] }); // just in case
-      queryClient.invalidateQueries({ queryKey: ['coaches'] }); // ✅ refetch list
+      queryClient.invalidateQueries({ queryKey: ['coach', id] });
+      queryClient.invalidateQueries({ queryKey: ['coaches'] });
       queryClient.invalidateQueries({ queryKey: ['user'] });
       refetch();
       options?.onSuccess?.();

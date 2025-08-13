@@ -111,14 +111,6 @@ const EditPlayerContent: React.FC<Props> = ({ player, onSuccess }) => {
     try {
       setIsPending(true);
 
-      console.log('[EDIT PLAYER] Submit start', {
-        committed,
-        college,
-        collegeSchool,
-        commitDate,
-        existingCommitId: formData.commitId,
-      });
-
       let nextPayload = { ...formData, college };
 
       if (committed && collegeSchool) {
@@ -129,14 +121,9 @@ const EditPlayerContent: React.FC<Props> = ({ player, onSuccess }) => {
           imageUrl: collegeSchool.imageUrl ?? '',
           committedDate: commitDate ? new Date(commitDate) : new Date(),
         };
-        console.log(
-          '[EDIT PLAYER] Commit POST payload → /api/commits',
-          payload
-        );
 
         try {
           const { data: created } = await api.post('/api/commits', payload);
-          console.log('[EDIT PLAYER] Commit created:', created);
 
           nextPayload = {
             ...nextPayload,
@@ -148,14 +135,9 @@ const EditPlayerContent: React.FC<Props> = ({ player, onSuccess }) => {
           nextPayload = { ...nextPayload, commitId: undefined };
         }
       } else if (!committed) {
-        console.log('[EDIT PLAYER] Commit cleared (un-checked).');
         nextPayload = { ...nextPayload, college: '', commitId: undefined };
       }
 
-      console.log(
-        '[EDIT PLAYER] Player UPDATE payload → useUpdatePlayer:',
-        nextPayload
-      );
       updatePlayer(nextPayload, {
         onSettled: () => setIsPending(false),
       });

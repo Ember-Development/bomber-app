@@ -97,8 +97,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const handleAppStateChange = (nextState: AppStateStatus) => {
       if (nextState === 'active' && hasToken) {
-        console.log('[UserProvider] App resumed — refreshing user');
-        refetch(); // will use interceptor if access token is expired
+        refetch();
       }
     };
 

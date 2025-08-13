@@ -10,7 +10,6 @@ import {
   Keyboard,
   Platform,
   ScrollView,
-  SafeAreaView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
@@ -19,7 +18,6 @@ import GlassCard from '@/components/ui/molecules/GlassCard';
 import CustomButton from '@/components/ui/atoms/Button';
 import { GlobalColors } from '@/constants/Colors';
 import { api, saveTokenPair } from '@/api/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUserContext } from '@/context/useUserContext';
 
@@ -45,13 +43,6 @@ export default function LoginScreen() {
       await saveTokenPair(data.access, data.refresh);
       api.defaults.headers.common.Authorization = `Bearer ${data.access}`;
       setUser(data.user);
-
-      console.log(
-        'should finish signup?',
-        data.user.primaryRole,
-        data.user.phone,
-        data.user.primaryRole === 'PLAYER' && data.user.phone === '0000000000'
-      );
 
       qc.invalidateQueries({ queryKey: ['currentUser'] });
 

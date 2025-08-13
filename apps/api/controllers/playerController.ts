@@ -25,7 +25,6 @@ export const getPlayerById = async (req: Request, res: Response) => {
 export const getAllPlayers = async (_req: Request, res: Response) => {
   try {
     const players = await playerService.getAllPlayers();
-    console.log('get players', players);
     return res.status(200).json(players);
   } catch (error) {
     console.error('getAllPlayers error:', error);

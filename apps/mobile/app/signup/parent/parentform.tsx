@@ -140,6 +140,7 @@ export default function ParentInfo() {
               <CustomInput
                 label="Password"
                 variant="password"
+                description="Must be atleast 8 Characters"
                 fullWidth
                 secureTextEntry
                 value={password}

@@ -26,8 +26,6 @@ export default function ProfileModal({
 }: ProfileModalProps) {
   if (!player) return null;
 
-  console.log('hi', player);
-
   const infoCards = [
     { label: 'Primary Position', value: formatPosition(player.pos1) },
     { label: 'Secondary Position', value: formatPosition(player.pos2) },

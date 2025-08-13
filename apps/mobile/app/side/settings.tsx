@@ -1,4 +1,3 @@
-// app/(tabs)/settings.ts
 import React, { useMemo, useState } from 'react';
 import {
   SafeAreaView,
@@ -10,6 +9,7 @@ import {
   TouchableOpacity,
   Switch,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -53,6 +53,7 @@ export default function SettingsScreen() {
       (u.coach?.teams?.length ?? 0) + (u.coach?.headTeams?.length ?? 0);
     const playerTeams = u.player?.team ? 1 : 0;
     const teamCount = coachTeams || playerTeams || 0;
+
     return {
       id: u.id,
       role: primaryRole,
@@ -66,6 +67,11 @@ export default function SettingsScreen() {
     };
   }, [user]);
 
+  const canSeePlayersSection =
+    currentUser.role !== 'FAN' && currentUser.role !== 'PLAYER';
+
+  const parentUserId =
+    currentUser.role === 'PARENT' ? currentUser.id : undefined;
   const [editVisible, setEditVisible] = useState(false);
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [teamsVisible, setTeamsVisible] = useState(false);
@@ -157,6 +163,19 @@ export default function SettingsScreen() {
                     />
                   </Group>
                 )}
+              {canSeePlayersSection && (
+                <Group title="Players">
+                  <PressLink
+                    text="Add Player"
+                    onPress={() =>
+                      router.push({
+                        pathname: '/user/components/add-player-start',
+                        params: { parentUserId: String(parentUserId ?? '') },
+                      })
+                    }
+                  />
+                </Group>
+              )}
               <Group title="Media Sensitivity">
                 <ToggleRow
                   label="Warn Before Age-Restricted Clips"
@@ -223,7 +242,10 @@ export default function SettingsScreen() {
                   text="Contact Support"
                   onPress={() => router.push('/side/contact')}
                 />
-                <PressLink text="Report a Problem" onPress={() => {}} />
+                <PressLink
+                  text="Report a Problem"
+                  onPress={() => Linking.openURL('mailto:emberdevco@gmail.com')}
+                />
                 <Row label="App Version" value="1.0.0 (100)" />
               </Group>
             </Section>

@@ -12,6 +12,7 @@ export function useProfileTabs() {
   const isCoach = primaryRole === 'COACH';
   const isFan = primaryRole === 'FAN';
   const isRegionalCoach = primaryRole === 'REGIONAL_COACH';
+  const isAdmin = primaryRole === 'ADMIN';
   const hasParentRecord = !!user?.parent && user.parent.children.length > 0;
   const isParentView = primaryRole === 'PARENT' || hasParentRecord;
   const isAlsoCoach = !!user?.coach?.teams?.length;
@@ -44,9 +45,12 @@ export function useProfileTabs() {
   const { data: allTeams = [] } = useTeams();
 
   const regionTeams = useMemo(() => {
-    if (!user?.regCoach?.region) return [];
-    return allTeams.filter((t) => t.region === user?.regCoach?.region);
-  }, [allTeams, user?.regCoach?.region]);
+    if (isAdmin) return allTeams;
+    if (isRegionalCoach && user?.regCoach?.region) {
+      return allTeams.filter((t) => t.region === user.regCoach?.region);
+    }
+    return [];
+  }, [allTeams, isAdmin, isRegionalCoach, user?.regCoach?.region]);
 
   const { mutate: deletePlayer } = useDeletePlayer({
     onSuccess: () => setRemovePlayerId(null),
@@ -61,6 +65,7 @@ export function useProfileTabs() {
     isCoach,
     isFan,
     isRegionalCoach,
+    isAdmin,
     hasParentRecord,
     isParentView,
     isAlsoCoach,

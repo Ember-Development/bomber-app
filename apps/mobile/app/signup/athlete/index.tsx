@@ -289,7 +289,6 @@ export default function AthleteStepper() {
     return startingStep; // RESTRICTIONS or INFO
   };
 
-  // -----------------------
   // STEPS
   const renderRestrictions = () => (
     <>
@@ -366,6 +365,7 @@ export default function AthleteStepper() {
       <CustomInput
         label="Password"
         variant="password"
+        description="Must be atleast 8 Characters"
         fullWidth
         secureTextEntry
         value={password}

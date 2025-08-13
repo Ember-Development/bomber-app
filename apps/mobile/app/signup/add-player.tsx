@@ -586,15 +586,32 @@ export default function AddPlayersScreen() {
 
   const renderStart = () => (
     <View style={styles.stepContainer}>
-      <Text style={styles.Title}>Do you want to add a player now?</Text>
+      <Text style={styles.Title}>Add a Player to Your Account</Text>
+      <Text style={styles.instructions}>Choose one of the options below:</Text>
+
+      <Text style={styles.instructions}>You have two options:</Text>
+
       <Text style={styles.instructions}>
-        You can create a brand‑new player profile right now, or skip this for
-        now and link an existing player later from your profile (App Settings →
-        Players).
+        •{' '}
+        <Text style={{ fontWeight: 'bold' }}>
+          Create a new player profile now
+        </Text>{' '}
+        – for players not already in the app.
+      </Text>
+
+      <Text style={styles.instructions}>
+        • <Text style={{ fontWeight: 'bold' }}>Skip for now</Text> – you can
+        still add players later from inside the app, either by
+        <Text style={{ fontWeight: 'bold' }}> creating a new profile</Text> or
+        <Text style={{ fontWeight: 'bold' }}> linking an existing one</Text>.
+      </Text>
+
+      <Text style={styles.instructions}>
+        To add later: App Settings → Players
       </Text>
 
       <CustomButton
-        title="Create a Player Now"
+        title="Create a New Player Now"
         onPress={handleStartCreateNow}
         fullWidth
       />
@@ -603,15 +620,10 @@ export default function AddPlayersScreen() {
 
       <CustomButton
         variant="secondary"
-        title="I’ll Link a Player Later"
+        title="I’ll Add a Player Later"
         onPress={handleStartLinkLater}
         fullWidth
       />
-
-      <Text style={[styles.instructions, { marginTop: 12 }]}>
-        Creating a new player or claiming a player that already exists can be
-        done anytime in your App → Settings.
-      </Text>
     </View>
   );
 
@@ -723,6 +735,7 @@ export default function AddPlayersScreen() {
           <CustomInput
             label="Password"
             variant="password"
+            description="Must be atleast 8 Characters"
             fullWidth
             secureTextEntry
             value={form.password || ''}
@@ -785,6 +798,7 @@ export default function AddPlayersScreen() {
           <CustomInput
             label="Athlete Password"
             variant="password"
+            description="Must be atleast 8 Characters"
             fullWidth
             secureTextEntry
             value={form.password || ''}

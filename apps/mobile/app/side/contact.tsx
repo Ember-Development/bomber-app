@@ -139,7 +139,7 @@ export default function ContactScreen() {
             </View>
           </BlurView>
 
-          <BlurView intensity={40} tint="light" style={styles.glassPanel}>
+          {/* <BlurView intensity={40} tint="light" style={styles.glassPanel}>
             <View style={styles.panelInner}>
               <ThemedText style={[styles.fieldLabel, { color: textColor }]}>
                 Your Name
@@ -193,14 +193,12 @@ export default function ContactScreen() {
 
               <CustomButton
                 title="SEND YOUR MESSAGE"
-                onPress={() => {
-                  /* TODO: hook up send logic */
-                }}
+                onPress={() => {}}
                 variant="primary"
                 fullWidth
               />
             </View>
-          </BlurView>
+          </BlurView> */}
         </ScrollView>
       </SafeAreaView>
     </BackgroundWrapper>

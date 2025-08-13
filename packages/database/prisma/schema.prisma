@@ -95,12 +95,13 @@ enum UserRole {
 }
 
 enum Regions {
-    NW
-    SW
-    S
-    SE
-    NE
-    MW
+  ACADEMY
+  PACIFIC
+  MOUNTAIN
+  MIDWEST
+  NORTHEAST
+  SOUTHEAST
+  TEXAS
 }
 
 enum MediaCategory {
