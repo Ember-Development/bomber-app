@@ -47,7 +47,6 @@ export default function TeamPage() {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
   const { data: team } = useTeamById(id as string);
-  console.log('Team Data', team);
   const { data: selectedPlayer, isFetching: loadingPlayer } = usePlayerById(
     selectedPlayerId ?? ''
   );

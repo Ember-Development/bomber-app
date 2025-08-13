@@ -28,10 +28,6 @@ function RootNavigator() {
   const pathname = usePathname();
 
   useEffect(() => {
-    console.log('[NAV]', { isLoading, hasUser: !!user, pathname });
-  }, [isLoading, user, pathname]);
-
-  useEffect(() => {
     if (isLoading) return;
 
     const inSignup = pathname.startsWith('/signup');

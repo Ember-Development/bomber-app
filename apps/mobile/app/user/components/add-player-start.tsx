@@ -91,7 +91,9 @@ export default function AddPlayerStart() {
         >
           <ScrollView contentContainerStyle={styles.container}>
             <TouchableOpacity
-              onPress={() => router.replace('/profile')}
+              onPress={() =>
+                router.canGoBack() ? router.back() : router.replace('/')
+              }
               style={styles.backButton}
             >
               <Text style={styles.backButtonText}>← Back to Profile</Text>

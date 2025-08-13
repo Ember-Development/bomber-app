@@ -91,7 +91,6 @@ export default function ParentAddressInfo() {
         throw new Error('Parent record missing from signup response');
       }
       const parentId = parentRecord.id;
-      console.log(parentId);
       updateSignupData({ parentId });
 
       // 3) Store tokens and navigate to AddPlayers

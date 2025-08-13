@@ -22,9 +22,6 @@ export function authorize(requiredAction: Action): RequestHandler {
             (role) => roleToActions[role] || []
           );
 
-    // DEBUG
-    console.log('[authorize] computedActions=', Array.from(new Set(derived)));
-
     if (!derived.includes(requiredAction)) {
       return res
         .status(403)

@@ -1,5 +1,6 @@
 import { PlayerFE } from '@bomber-app/database';
 import { api } from '../api';
+import { PlayerUpdatePayload } from '@/hooks/teams/usePlayerById';
 
 export const fetchPlayers = async (): Promise<PlayerFE[]> => {
   try {
@@ -39,12 +40,9 @@ export const getAlumniPlayersPaginated = async ({
   return res.data; // Should return PlayerFE[]
 };
 
-export const updatePlayer = async (
-  id: string,
-  data: Partial<PlayerFE>
-): Promise<PlayerFE> => {
-  const res = await api.put(`/api/players/${id}`, data);
-  return res.data;
+export const updatePlayer = async (id: string, body: PlayerUpdatePayload) => {
+  const { data } = await api.put(`/api/players/${id}`, body);
+  return data;
 };
 
 export const deletePlayer = async (id: string): Promise<void> => {

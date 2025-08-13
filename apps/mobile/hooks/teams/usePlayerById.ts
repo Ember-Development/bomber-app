@@ -24,6 +24,11 @@ export const usePlayerById = (id: string) => {
   });
 };
 
+export type PlayerUpdatePayload = Partial<PlayerFE> & {
+  commitId?: string | null;
+  college?: string;
+};
+
 export const useUpdatePlayer = (
   id: string,
   options?: {
@@ -34,7 +39,7 @@ export const useUpdatePlayer = (
   const { refetch } = useNormalizedUser();
 
   return useMutation({
-    mutationFn: (data: Partial<PlayerFE>) => updatePlayer(id, data),
+    mutationFn: (data: PlayerUpdatePayload) => updatePlayer(id, data),
     onSuccess: (data) => {
       refetch();
       options?.onSuccess?.(data);

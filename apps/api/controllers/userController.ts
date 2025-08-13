@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { CreateUserInput, userService } from '../services/user';
 import { AuthenticatedRequest } from '../auth/devAuth';
+import { hashPassword, verifyPassword } from '../utils/crypto';
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -125,3 +126,40 @@ export async function createAddress(
     next(err);
   }
 }
+
+export const changePassword = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword)
+      return res.status(400).json({ error: 'Missing current or new password' });
+
+    if (newPassword.length < 8)
+      return res
+        .status(400)
+        .json({ error: 'New password must be at least 8 characters' });
+
+    const requesterId = req.user?.id || req.user?.sub;
+    const isSelf = requesterId === id;
+    const isAdmin =
+      req.user?.roles?.includes?.('ADMIN') || req.user?.role === 'ADMIN';
+    if (!isSelf && !isAdmin)
+      return res.status(403).json({ error: 'Forbidden' });
+
+    await userService.changePassword({
+      userId: id,
+      currentPassword,
+      newPassword,
+    });
+    return res.status(204).send();
+  } catch (e: any) {
+    if (e?.message === 'USER_NOT_FOUND')
+      return res.status(404).json({ error: 'User not found' });
+    if (e?.message === 'BAD_CURRENT_PASSWORD')
+      return res.status(401).json({ error: 'Current password is incorrect' });
+
+    console.error('[changePassword] error', e);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};

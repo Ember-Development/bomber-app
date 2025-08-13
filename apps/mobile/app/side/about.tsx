@@ -244,19 +244,11 @@ export default function AboutScreen() {
               key={member.id}
               activeOpacity={0.8}
               style={styles.cardOuterWrapper}
-              onPress={() => {
-                console.log('Tapped', member.name);
-              }}
+              onPress={() => {}}
             >
               <View style={styles.cardContent}>
                 <View style={styles.photoWrapper}>
-                  <Image
-                    source={member.image}
-                    style={styles.photo}
-                    onError={(e) =>
-                      console.log('Image error', member.id, e.nativeEvent.error)
-                    }
-                  />
+                  <Image source={member.image} style={styles.photo} />
                 </View>
 
                 <View

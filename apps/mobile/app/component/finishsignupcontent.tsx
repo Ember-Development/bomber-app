@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,6 @@ import {
 import {
   JerseySize,
   PantsSize,
-  PlayerFE,
   Position,
   ShortsSize,
   StirrupSize,
@@ -31,20 +30,24 @@ import { useUpdateUser } from '@/hooks/useUser';
 import { useUserContext } from '@/context/useUserContext';
 import { GlobalColors } from '@/constants/Colors';
 import { useNormalizedUser } from '@/utils/user';
-
+import { useChangePassword } from '@/hooks/user/useChangePassword';
 import SchoolInput from '@/components/ui/atoms/SchoolInput';
 import type { FlatSchool } from '@/utils/SchoolUtil';
 import { api } from '@/api/api';
 import Checkbox from '@/components/ui/atoms/Checkbox';
 import { useUpdatePlayer } from '@/hooks/teams/usePlayerById';
-import { buildCommitCreatePayload } from '@/hooks/user/usePatchCommit';
+import {
+  buildCommitCreatePayload,
+  buildCommitPatchPayload,
+  hasKeys,
+} from '@/hooks/user/usePatchCommit';
 
 interface Props {
   user: UserFE;
   onSuccess?: () => void;
 }
 
-const EditProfileContent: React.FC<Props> = ({
+const FinishProfileContent: React.FC<Props> = ({
   user: intitialUser,
   onSuccess,
 }) => {
@@ -53,21 +56,31 @@ const EditProfileContent: React.FC<Props> = ({
     primaryRole === 'COACH' ||
     primaryRole === 'PARENT' ||
     primaryRole === 'FAN';
+  const playerId = intitialUser.player?.id as string;
+  const existingCommitId = intitialUser.player?.commitId ?? undefined;
+
+  const [committed, setCommitted] = useState<boolean>(!!existingCommitId);
+  const [college, setCollege] = useState<string>(
+    intitialUser.player?.college ?? ''
+  );
+  const [collegeSchool, setCollegeSchool] = useState<FlatSchool | undefined>(
+    undefined
+  );
+  const [commitDate, setCommitDate] = useState<string>(''); // YYYY-MM-DD
+
+  // hook to update player (for commitId connect/disconnect)
+  const { mutateAsync: updatePlayer } = useUpdatePlayer(playerId);
   const [activeTab, setActiveTab] = useState<'info' | 'contact' | 'gear'>(
     isCoach ? 'info' : 'info'
   );
   const { refetch } = useUserContext();
   const [isPending, setIsPending] = useState(false);
 
-  const { mutateAsync: updateUser } = useUpdateUser(intitialUser.id, {
+  const { mutate: changePassword } = useChangePassword(intitialUser.id);
+  const { mutate: updateUser } = useUpdateUser(intitialUser.id, {
     onSuccess: () => console.log('Update successful'),
   });
 
-  const playerId = intitialUser.player?.id as string | undefined;
-  const existingCommitId =
-    (intitialUser.player as PlayerFE)?.commitId ?? undefined;
-
-  // 🔽 state for form + commit UI
   const [formData, setFormData] = useState({
     fname: intitialUser.fname,
     lname: intitialUser.lname,
@@ -77,7 +90,7 @@ const EditProfileContent: React.FC<Props> = ({
     pos2: intitialUser.player?.pos2,
     jerseyNum: intitialUser.player?.jerseyNum,
     gradYear: intitialUser.player?.gradYear,
-    college: intitialUser.player?.college ?? '', // keep display string here
+    college: intitialUser.player?.college,
     address1:
       intitialUser.player?.address?.address1 ||
       intitialUser.coach?.address?.address1 ||
@@ -104,21 +117,38 @@ const EditProfileContent: React.FC<Props> = ({
     shortSize: intitialUser.player?.shortSize,
     practiceShortSize: intitialUser.player?.practiceShortSize,
   });
+  const [showPwd, setShowPwd] = useState(false);
+  const [pwd, setPwd] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirm: '',
+  });
 
-  const [committed, setCommitted] = useState<boolean>(!!existingCommitId);
-  const [collegeSchool, setCollegeSchool] = useState<FlatSchool | undefined>(
-    undefined
-  );
-  const [commitDate, setCommitDate] = useState<string>(''); // YYYY-MM-DD
+  useEffect(() => {
+    if (!committed) {
+      setCollege('');
+      setCollegeSchool(undefined);
+      setCommitDate('');
+    }
+  }, [committed]);
 
-  const { mutateAsync: updatePlayer } = useUpdatePlayer(playerId ?? '', {});
+  const validatePwd = () => {
+    if (!showPwd) return true;
+    if (!pwd.currentPassword || !pwd.newPassword || !pwd.confirm) return false;
+    if (pwd.newPassword !== pwd.confirm) return false;
+    if (pwd.newPassword.length < 8) return false;
+    return true;
+  };
 
   const handleSubmit = async () => {
-    try {
-      setIsPending(true);
+    if (!validatePwd()) {
+      Alert.alert('Password validation failed');
+      return;
+    }
 
-      // Always start with normal profile updates
-      const updates: any = { ...formData };
+    setIsPending(true);
+    try {
+      const updates: any = { ...formData, college };
 
       const isPlayer = !!playerId && !isCoach;
       const hadCommit = !!existingCommitId;
@@ -126,25 +156,24 @@ const EditProfileContent: React.FC<Props> = ({
       if (isPlayer) {
         if (committed) {
           if (hadCommit) {
-            const patch = buildCommitCreatePayload({
+            const patch = buildCommitPatchPayload({
               collegeSchool,
-              collegeDisplay: formData.college,
+              collegeDisplay: college,
               commitDate,
-              fallbackState: undefined,
-              fallbackCity: undefined,
             });
 
-            if (Object.keys(patch).length > 0) {
+            if (hasKeys(patch)) {
               await api.patch(`/api/commits/${existingCommitId}`, patch);
             }
           } else {
             const createPayload = buildCommitCreatePayload({
               collegeSchool,
-              collegeDisplay: formData.college,
-              fallbackState: formData.state,
-              fallbackCity: formData.city,
+              collegeDisplay: college,
+              fallbackState: formData.state || '',
+              fallbackCity: formData.city || '',
               commitDate,
             });
+
             const { data: created } = await api.post(
               '/api/commits',
               createPayload
@@ -157,6 +186,18 @@ const EditProfileContent: React.FC<Props> = ({
       }
 
       await updateUser(updates);
+
+      if (showPwd && pwd.newPassword) {
+        await new Promise((resolve, reject) => {
+          changePassword(
+            {
+              currentPassword: pwd.currentPassword,
+              newPassword: pwd.newPassword,
+            },
+            { onSuccess: resolve, onError: reject }
+          );
+        });
+      }
 
       refetch();
       await onSuccess?.();
@@ -186,11 +227,10 @@ const EditProfileContent: React.FC<Props> = ({
               fullWidth
               onChangeText={(text) => setFormData({ ...formData, lname: text })}
             />
-
             {!isCoach && (
               <>
                 <View style={styles.row}>
-                  <View className="half" style={styles.half}>
+                  <View style={styles.half}>
                     <CustomSelect
                       label="Position 1"
                       options={POSITIONS}
@@ -200,7 +240,7 @@ const EditProfileContent: React.FC<Props> = ({
                       }
                     />
                   </View>
-                  <View className="half" style={styles.half}>
+                  <View style={styles.half}>
                     <CustomSelect
                       label="Position 2"
                       options={POSITIONS}
@@ -211,7 +251,6 @@ const EditProfileContent: React.FC<Props> = ({
                     />
                   </View>
                 </View>
-
                 <CustomInput
                   label="Jersey #"
                   defaultValue={formData.jerseyNum}
@@ -228,8 +267,6 @@ const EditProfileContent: React.FC<Props> = ({
                     setFormData({ ...formData, gradYear: text })
                   }
                 />
-
-                {/* 🔽 College commit block */}
                 <Checkbox
                   label="Is this athlete committed to a college?"
                   checked={committed}
@@ -244,19 +281,15 @@ const EditProfileContent: React.FC<Props> = ({
                       value={collegeSchool}
                       onChange={(school) => {
                         setCollegeSchool(school);
-                        setFormData((prev) => ({
-                          ...prev,
-                          college: school?.name ?? prev.college ?? '',
-                        }));
+                        setCollege(school.name);
                       }}
                     />
                     <CustomInput
-                      label="College (Display Name)"
+                      label="College Committed"
+                      variant="default"
                       fullWidth
-                      value={formData.college}
-                      onChangeText={(text) =>
-                        setFormData({ ...formData, college: text })
-                      }
+                      value={college}
+                      onChangeText={setCollege}
                     />
                   </>
                 )}
@@ -319,6 +352,63 @@ const EditProfileContent: React.FC<Props> = ({
               defaultValue={formData.state}
               onSelect={(value) => setFormData({ ...formData, state: value })}
             />
+            {!showPwd ? (
+              <TouchableOpacity onPress={() => setShowPwd(true)}>
+                <Text style={{ color: '#9bd', fontWeight: '600' }}>
+                  Change password
+                </Text>
+                <Text style={{ color: '#aaa', fontSize: 12 }}>
+                  Optional — update your password securely
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={{ gap: 10 }}>
+                <CustomInput
+                  label="Current Password"
+                  variant="password"
+                  fullWidth
+                  onChangeText={(t) => setPwd({ ...pwd, currentPassword: t })}
+                />
+                <CustomInput
+                  label="New Password"
+                  variant="password"
+                  fullWidth
+                  onChangeText={(t) => setPwd({ ...pwd, newPassword: t })}
+                />
+                <CustomInput
+                  label="Confirm New Password"
+                  variant="password"
+                  fullWidth
+                  onChangeText={(t) => setPwd({ ...pwd, confirm: t })}
+                />
+
+                {pwd.newPassword !== '' && pwd.newPassword.length < 8 && (
+                  <Text style={{ color: '#f88', fontSize: 12 }}>
+                    Password must be at least 8 characters.
+                  </Text>
+                )}
+                {pwd.confirm !== '' && pwd.confirm !== pwd.newPassword && (
+                  <Text style={{ color: '#f88', fontSize: 12 }}>
+                    Passwords do not match.
+                  </Text>
+                )}
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowPwd(false);
+                    setPwd({
+                      currentPassword: '',
+                      newPassword: '',
+                      confirm: '',
+                    });
+                  }}
+                >
+                  <Text style={{ color: '#bbb', fontSize: 12 }}>
+                    Cancel password change
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         );
       case 'gear':
@@ -483,7 +573,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   formGlass: {
-    backgroundColor: 'rgba(20, 20, 20, 0.85)',
+    backgroundColor: 'rgba(20, 20, 20, 0.85)', // matches notification modal
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,
@@ -523,4 +613,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EditProfileContent;
+export default FinishProfileContent;

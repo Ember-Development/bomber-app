@@ -45,9 +45,6 @@ export default function AddNewPlayersScreen() {
 
   // Parent ID passed from profile (preferred), falls back to context later
   const { parentUserId } = useLocalSearchParams<{ parentUserId?: string }>();
-  useEffect(() => {
-    console.log('[AddNewPlayers] parentUserId param:', parentUserId);
-  }, [parentUserId]);
 
   const queryClient = useQueryClient();
 
@@ -409,8 +406,6 @@ export default function AddNewPlayersScreen() {
       const parentId =
         (parentUserId as string | undefined) ?? parentData.parentId;
       const parentAddrId = parentData.addressID;
-
-      console.log('[AddNewPlayers] Using parentId:', parentId);
 
       if (!parentId) {
         throw new Error(

@@ -103,14 +103,14 @@ export function fakeCoachComplete() {
 }
 export function fakeRegCoach() {
   return {
-    region: faker.helpers.arrayElement([Regions.NW, Regions.SW, Regions.S, Regions.SE, Regions.NE, Regions.MW] as const),
+    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS] as const),
   };
 }
 export function fakeRegCoachComplete() {
   return {
     id: faker.string.uuid(),
     userID: faker.string.uuid(),
-    region: faker.helpers.arrayElement([Regions.NW, Regions.SW, Regions.S, Regions.SE, Regions.NE, Regions.MW] as const),
+    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS] as const),
   };
 }
 export function fakeTeam() {
@@ -118,7 +118,7 @@ export function fakeTeam() {
     name: faker.person.fullName(),
     teamCode: undefined,
     ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
-    region: faker.helpers.arrayElement([Regions.NW, Regions.SW, Regions.S, Regions.SE, Regions.NE, Regions.MW] as const),
+    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS] as const),
   };
 }
 export function fakeTeamComplete() {
@@ -127,7 +127,7 @@ export function fakeTeamComplete() {
     name: faker.person.fullName(),
     teamCode: undefined,
     ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
-    region: faker.helpers.arrayElement([Regions.NW, Regions.SW, Regions.S, Regions.SE, Regions.NE, Regions.MW] as const),
+    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS] as const),
     state: State.TX,
     headCoachID: undefined,
   };

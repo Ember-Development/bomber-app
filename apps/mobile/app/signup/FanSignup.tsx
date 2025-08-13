@@ -137,6 +137,7 @@ export default function FanSignup() {
                 />
                 <CustomInput
                   label="Password"
+                  description="Must be atleast 8 Characters"
                   variant="password"
                   fullWidth
                   value={password}

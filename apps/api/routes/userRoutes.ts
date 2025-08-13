@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   adminSoftDeleteUser,
+  changePassword,
   createAddress,
   createUser,
   deleteMe,
@@ -26,5 +27,11 @@ router.put('/:id', auth, authorize('edit-my-info'), updateUser);
 router.delete('/me', auth, deleteMe);
 router.delete('/:id', auth, authorize('delete-user'), adminSoftDeleteUser);
 router.post('/address', createAddress);
+router.post(
+  '/:id/change-password',
+  auth,
+  authorize('edit-my-info'),
+  changePassword
+);
 
 export default router;

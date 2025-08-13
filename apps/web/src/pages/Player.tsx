@@ -83,7 +83,6 @@ export default function Players() {
     setLoading(true);
     fetchPlayers()
       .then((data) => {
-        console.log('fetched players:', data);
         setPlayers(
           data.map((p: any) => ({
             id: p.id,

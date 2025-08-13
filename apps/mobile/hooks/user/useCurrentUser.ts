@@ -6,9 +6,7 @@ export function useCurrentUser(options?: { enabled: boolean }) {
   return useQuery<UserFE, Error>({
     queryKey: ['currentUser'],
     queryFn: async () => {
-      console.log('[useCurrentUser] calling GET /api/auth/me');
       const { data } = await api.get<UserFE>('/api/auth/me');
-      console.log('[useCurrentUser] received:', data);
       return data;
     },
     enabled: options?.enabled ?? false,

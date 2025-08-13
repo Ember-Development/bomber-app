@@ -6,7 +6,7 @@ const router = Router();
 
 router.get('/', auth, commitController.getAll);
 router.get('/:id', auth, commitController.getOne);
-router.post('/', auth, commitController.create);
+router.post('/', commitController.create);
 router.patch('/:id', auth, commitController.update);
 router.delete('/:id', auth, commitController.remove);
 
