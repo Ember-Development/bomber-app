@@ -21,6 +21,7 @@ import CustomSelect from '@/components/ui/atoms/dropdown';
 import { CommitFE } from '@bomber-app/database';
 import { useRouter } from 'expo-router';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
+import { formatPosition } from '@/utils/enumOptions';
 
 const ROW_HORIZONTAL_PADDING = 16;
 const ROW_HEIGHT = 100;
@@ -89,7 +90,7 @@ export default function CommitmentsScreen() {
     const user = player?.user;
     const playerName =
       user?.fname && user?.lname ? `${user.fname} ${user.lname}` : 'Unknown';
-    const position = player?.pos1 || '—';
+    const position = formatPosition(player?.pos1) || '—';
     const hometown = player?.address
       ? `${player.address.city}, ${player.address.state}`
       : '—';
@@ -125,10 +126,8 @@ export default function CommitmentsScreen() {
   return (
     <BackgroundWrapper>
       <SafeAreaView style={styles.container}>
-
         {/* Header with Back button */}
-                <View style={styles.headerName}>
-        
+        <View style={styles.headerName}>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
@@ -140,16 +139,15 @@ export default function CommitmentsScreen() {
           <ThemedText style={[styles.headerText, { color: textColor }]}>
             {selectedYear} Commitments
           </ThemedText>
-
         </View>
-        
+
         <View style={styles.dropdownWrapper}>
-            <CustomSelect
-              label="Year"
-              options={allYears.map((y) => ({ label: y, value: y }))}
-              defaultValue={selectedYear}
-              onSelect={(value) => setSelectedYear(value)}
-            />
+          <CustomSelect
+            label="Year"
+            options={allYears.map((y) => ({ label: y, value: y }))}
+            defaultValue={selectedYear}
+            onSelect={(value) => setSelectedYear(value)}
+          />
         </View>
 
         {isLoading ? (
@@ -207,7 +205,7 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     gap: 10,
     marginBottom: 8,
-    },
+  },
   backButton: {
     marginRight: 12,
     padding: 4,

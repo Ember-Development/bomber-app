@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,11 +6,9 @@ import {
   Pressable,
   FlatList,
   StyleSheet,
-  Platform,
   ViewStyle,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeColor } from '@/hooks/useThemeColor';
 
 interface SelectOption {
   label: string;
@@ -21,7 +19,8 @@ interface CustomSelectProps {
   label: string;
   options: SelectOption[];
   onSelect?: (value: string) => void;
-  defaultValue?: string;
+  value?: string; // controlled
+  defaultValue?: string; // uncontrolled
   style?: ViewStyle;
 }
 
@@ -37,15 +36,33 @@ export default function CustomSelect({
   label,
   options,
   onSelect,
+  value,
   defaultValue,
   style,
 }: CustomSelectProps) {
-  const [selectedValue, setSelectedValue] = useState(defaultValue ?? null);
   const [isModalVisible, setModalVisible] = useState(false);
 
-  const handleSelect = (value: string) => {
-    setSelectedValue(value);
-    if (onSelect) onSelect(value);
+  // Uncontrolled internal state (only used when `value` isn't provided)
+  const [internal, setInternal] = useState<string | null>(defaultValue ?? null);
+
+  // Keep internal in sync if defaultValue changes (rare but harmless)
+  useEffect(() => {
+    if (defaultValue !== undefined && value === undefined) {
+      setInternal(defaultValue);
+    }
+  }, [defaultValue, value]);
+
+  const isControlled = value !== undefined && value !== null;
+  const currentValue = isControlled ? value! : (internal ?? undefined);
+
+  const displayLabel = useMemo(() => {
+    const match = options.find((o) => o.value === currentValue);
+    return match?.label ?? ''; // if nothing selected, we'll show placeholder below
+  }, [options, currentValue]);
+
+  const handleSelect = (v: string) => {
+    if (!isControlled) setInternal(v);
+    onSelect?.(v);
     setModalVisible(false);
   };
 
@@ -67,7 +84,7 @@ export default function CustomSelect({
           style={[
             styles.text,
             {
-              color: selectedValue
+              color: currentValue
                 ? GLASS_COLORS.text
                 : GLASS_COLORS.placeholder,
             },
@@ -75,7 +92,7 @@ export default function CustomSelect({
           numberOfLines={1}
           ellipsizeMode="tail"
         >
-          {selectedValue || label}
+          {currentValue ? displayLabel : label}
         </Text>
         <Ionicons
           name="chevron-down"
@@ -99,18 +116,27 @@ export default function CustomSelect({
             <FlatList
               data={options}
               keyExtractor={(item) => item.value}
-              renderItem={({ item }) => (
-                <Pressable
-                  style={styles.option}
-                  onPress={() => handleSelect(item.value)}
-                >
-                  <Text
-                    style={[styles.optionText, { color: GLASS_COLORS.text }]}
+              renderItem={({ item }) => {
+                const selected = item.value === currentValue;
+                return (
+                  <Pressable
+                    style={styles.option}
+                    onPress={() => handleSelect(item.value)}
                   >
-                    {item.label}
-                  </Text>
-                </Pressable>
-              )}
+                    <Text
+                      style={[
+                        styles.optionText,
+                        {
+                          color: GLASS_COLORS.text,
+                          fontWeight: selected ? '700' : '400',
+                        },
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                  </Pressable>
+                );
+              }}
             />
           </View>
         </Pressable>
@@ -120,14 +146,8 @@ export default function CustomSelect({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 6,
-  },
+  container: { marginBottom: 16 },
+  label: { fontSize: 14, fontWeight: '600', marginBottom: 6 },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -137,13 +157,8 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: 'space-between',
   },
-  text: {
-    fontSize: 16,
-  },
-  icon: {
-    position: 'absolute',
-    right: 10,
-  },
+  text: { fontSize: 16 },
+  icon: { position: 'absolute', right: 10 },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -161,7 +176,5 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: '#ccc',
   },
-  optionText: {
-    fontSize: 16,
-  },
+  optionText: { fontSize: 16 },
 });

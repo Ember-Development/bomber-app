@@ -61,8 +61,8 @@ export default function ParentProfile({
           title="+ Add New Player"
           onPress={() =>
             router.push({
-              pathname: '/profile/components/add-new-player',
-              params: { parentUserId },
+              pathname: '/user/components/add-player-start',
+              params: { parentUserId: String(parentUserId ?? '') },
             })
           }
         />

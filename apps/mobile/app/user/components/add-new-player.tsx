@@ -19,6 +19,7 @@ import DateOfBirthInput from '@/components/ui/atoms/DOBInput';
 import Checkbox from '@/components/ui/atoms/Checkbox';
 import CodeInput from '@/components/ui/organisms/TeamCode';
 import CustomButton from '@/components/ui/atoms/Button';
+import SchoolInput from '@/components/ui/atoms/SchoolInput';
 import { useTeamByCode } from '@/hooks/teams/useTeams';
 import { usePlayerSignup } from '@/context/PlayerSignupContext';
 import { useParentSignup } from '@/context/ParentSignupContext';
@@ -36,26 +37,62 @@ import { useCoachSignup } from '@/context/CoachSignupContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
+import type { FlatSchool } from '@/utils/SchoolUtil';
+import { US_STATES } from '@/utils/state';
 
 export default function AddNewPlayersScreen() {
   const router = useRouter();
 
-  // 👇 read and log the parent ID passed from profile
+  // Parent ID passed from profile (preferred), falls back to context later
   const { parentUserId } = useLocalSearchParams<{ parentUserId?: string }>();
-  useEffect(() => {
-    console.log('[AddNewPlayers] parentUserId param:', parentUserId);
-  }, [parentUserId]);
 
   const queryClient = useQueryClient();
 
-  // still available if your providers are there
   const { signupData: playerData } = usePlayerSignup();
   const { signupData: parentData } = useParentSignup();
   const { signupData: coachData } = useCoachSignup();
 
   // form + added players
-  const [form, setForm] = useState<any>({ teamCode: '' });
-  const [players, setPlayers] = useState<any[]>([]);
+  type FormState = {
+    teamCode?: string;
+    teamName?: string | null;
+    ageDivision?: 'U8' | 'U10' | 'U12' | 'U14' | 'U16' | 'U18' | string | null;
+
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    dob?: string;
+    password?: string;
+    confirmPass?: string;
+
+    sameAsParent?: boolean;
+    address?: string;
+    state?: string;
+    city?: string;
+    zip?: string;
+
+    pos1?: string;
+    pos2?: string;
+    jerseyNum?: string;
+    gradYear?: string;
+
+    committed?: boolean;
+    college?: string;
+    commitId?: string;
+
+    jerseySize?: string | null;
+    pantSize?: string | null;
+    stirrupSize?: string | null;
+    shortSize?: string | null;
+    practiceShirtSize?: string | null;
+
+    isTrusted?: boolean;
+    role?: string;
+  };
+
+  const [form, setForm] = useState<FormState>({ teamCode: '' });
+  const [players, setPlayers] = useState<FormState[]>([]);
 
   // flow state
   const [step, setStep] = useState(1);
@@ -64,6 +101,28 @@ export default function AddNewPlayersScreen() {
   const [isParentFlow, setIsParentFlow] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+  // College/commit UI (mirrors add-player.tsx)
+  const [committed, setCommitted] = useState(!!form.college);
+  const [college, setCollege] = useState(form.college ?? '');
+  const [collegeSchool, setCollegeSchool] = useState<FlatSchool | undefined>(
+    undefined
+  );
+  const [commitDate, setCommitDate] = useState<string>('');
+
+  useEffect(() => {
+    if (!committed) {
+      setCollege('');
+      setCollegeSchool(undefined);
+      setCommitDate('');
+      setForm((f) => ({
+        ...f,
+        committed: false,
+        college: '',
+        commitId: undefined,
+      }));
+    }
+  }, [committed]);
 
   const validPass = (p?: string, c?: string) =>
     !!p && !!c && p.length >= 8 && p === c;
@@ -79,16 +138,16 @@ export default function AddNewPlayersScreen() {
   };
 
   // fetch team details
-  const { data: teamData } = useTeamByCode(form.teamCode);
+  const { data: teamData } = useTeamByCode(form.teamCode || '');
   useEffect(() => {
     if (teamData) {
-      setForm((f: any) => ({
+      setForm((f) => ({
         ...f,
         teamName: teamData.name,
         ageDivision: teamData.ageGroup,
       }));
     } else {
-      setForm((f: any) => ({
+      setForm((f) => ({
         ...f,
         teamName: null,
         ageDivision: null,
@@ -106,6 +165,7 @@ export default function AddNewPlayersScreen() {
   // validation
   const isStepValid = () => {
     if (step === 1) return !!form.teamName;
+
     if (
       step === 2 &&
       (['U8', 'U10', 'U12'].includes(form.ageDivision || '') ||
@@ -120,6 +180,7 @@ export default function AddNewPlayersScreen() {
         validPass(form.password, form.confirmPass)
       );
     }
+
     if (
       step === 2 &&
       form.ageDivision === 'U14' &&
@@ -128,6 +189,7 @@ export default function AddNewPlayersScreen() {
     ) {
       return selection !== null;
     }
+
     if (
       step === 2 &&
       (['U16', 'U18'].includes(form.ageDivision || '') || isLinkFlow)
@@ -141,10 +203,12 @@ export default function AddNewPlayersScreen() {
         validPass(form.password, form.confirmPass)
       );
     }
+
     if (step === 3) {
       const base = form.pos1 && form.pos2 && form.jerseyNum && form.gradYear;
-      return form.committed ? !!base && !!form.college : !!base;
+      return committed ? !!base && !!college : !!base;
     }
+
     if (step === 4) {
       return (
         !!form.jerseySize &&
@@ -154,11 +218,12 @@ export default function AddNewPlayersScreen() {
         !!form.practiceShirtSize
       );
     }
+
     return false;
   };
 
   // next / add player
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!isStepValid()) return;
 
     // U14 branching
@@ -181,6 +246,43 @@ export default function AddNewPlayersScreen() {
       return;
     }
 
+    // SPORT step: create Commit if needed (matches add-player.tsx)
+    if (step === 3) {
+      if (committed && collegeSchool) {
+        try {
+          const payload = {
+            name: collegeSchool.name,
+            state: collegeSchool.state ?? '',
+            city: collegeSchool.city ?? '',
+            imageUrl: collegeSchool.imageUrl ?? '',
+            committedDate: commitDate ? new Date(commitDate) : new Date(),
+          };
+          const { data: created } = await api.post('/api/commits', payload);
+          setForm((f) => ({
+            ...f,
+            committed: true,
+            college: collegeSchool.name,
+            commitId: created.id,
+          }));
+        } catch (err) {
+          console.error('[ADD NEW PLAYERS] Commit create error:', err);
+          setForm((f) => ({
+            ...f,
+            committed: false,
+            college: '',
+            commitId: undefined,
+          }));
+        }
+      } else {
+        setForm((f) => ({
+          ...f,
+          committed: false,
+          college: '',
+          commitId: undefined,
+        }));
+      }
+    }
+
     // Advance or finalize this player
     if (step < totalSteps) {
       setStep((s) => s + 1);
@@ -201,9 +303,9 @@ export default function AddNewPlayersScreen() {
             ...form,
             email:
               form.email ||
-              `${form.teamCode.toLowerCase()}+${Math.random()
+              `${form.teamCode?.toLowerCase()}+${Math.random()
                 .toString(36)
-                .substring(2, 6)}@bomber.app`,
+                .slice(2, 6)}@bomber.app`,
             phone: form.phone || '1111111111',
             isTrusted: isNotTrusted,
           }
@@ -219,38 +321,37 @@ export default function AddNewPlayersScreen() {
               lastName: form.lastName || 'Player',
               email:
                 form.email ||
-                `${form.teamCode.toLowerCase()}+${Math.random()
+                `${form.teamCode?.toLowerCase()}+${Math.random()
                   .toString(36)
-                  .substring(2, 6)}@bomber.app`,
+                  .slice(2, 6)}@bomber.app`,
               phone: form.phone || '0000000000',
               dob: form.dob || '2005-01-01',
-              pass: form.pass || 'TempPass123!',
+              password: form.password || 'TempPass123!',
               confirmPass: form.confirmPass || 'TempPass123!',
+
               address: form.address || '123 Main St',
               city: form.city || 'Anytown',
               state: form.state || 'Texas',
               zip: form.zip || '00000',
 
+              // sport defaults (valid Prisma enums)
               pos1: form.pos1 || 'PITCHER',
               pos2: form.pos2 || 'FIRST_BASE',
               jerseyNum: form.jerseyNum || '0',
               gradYear: form.gradYear || `${new Date().getFullYear()}`,
-              committed: form.committed ?? false,
-              college: form.college || '',
-              ageGroup: form.ageGroup || '',
+              committed: committed ?? false,
+              college: college || '',
 
+              // gear defaults
               jerseySize: form.jerseySize || 'AM',
               pantSize: form.pantSize || 'SIZE_20',
               stirrupSize: form.stirrupSize || 'SM',
               shortSize: form.shortSize || 'ASM',
               practiceShirtSize: form.practiceShirtSize || 'ASM',
-              isTrusted: isNotTrusted,
-
-              players: form.players || [],
+              isTrusted: isTrusted,
             }
           : form;
 
-      console.log('Adding athlete info:', athlete);
       setPlayers((prev) => {
         if (editingIndex !== null) {
           const next = [...prev];
@@ -260,13 +361,18 @@ export default function AddNewPlayersScreen() {
         return [...prev, athlete];
       });
 
-      // reset form state for next player
+      // reset form state for next player (keep team context)
       setForm({ teamCode: form.teamCode });
       setSelection(null);
       setIsLinkFlow(false);
       setIsParentFlow(false);
-      setStep(1);
+      setEditingIndex(null);
+      setCollegeSchool(undefined);
+      setCommitted(false);
+      setCollege('');
+      setCommitDate('');
       setShowSummary(true);
+      setStep(1);
     }
   };
 
@@ -274,12 +380,15 @@ export default function AddNewPlayersScreen() {
   const handleDeletePlayer = (idx: number) =>
     setPlayers((prev) => prev.filter((_, i) => i !== idx));
 
-  const handleEditPlayer = (ath: any, idx: number) => {
+  const handleEditPlayer = (ath: FormState, idx: number) => {
     setForm({ ...ath });
+    setCommitted(!!ath.college);
+    setCollege(ath.college ?? '');
+    setCollegeSchool(undefined);
     setShowSummary(false);
 
     const { ageDivision, isTrusted } = ath;
-    if (isTrusted || ['U14', 'U16', 'U18'].includes(ageDivision)) {
+    if (isTrusted || ['U14', 'U16', 'U18'].includes(String(ageDivision))) {
       setIsLinkFlow(true);
       setIsParentFlow(false);
     } else {
@@ -294,12 +403,9 @@ export default function AddNewPlayersScreen() {
 
   const handleSubmitAll = async () => {
     try {
-      // prefer the param; fall back to context
       const parentId =
         (parentUserId as string | undefined) ?? parentData.parentId;
       const parentAddrId = parentData.addressID;
-
-      console.log('[AddNewPlayers] Using parentId:', parentId);
 
       if (!parentId) {
         throw new Error(
@@ -324,7 +430,7 @@ export default function AddNewPlayersScreen() {
 
         const playerPayload = {
           email: ath.email,
-          password: ath.pass ?? ath.password,
+          password: (ath as any).pass ?? ath.password,
           fname: ath.firstName,
           lname: ath.lastName,
           role: 'PLAYER',
@@ -335,12 +441,16 @@ export default function AddNewPlayersScreen() {
             jerseyNum: ath.jerseyNum!,
             gradYear: ath.gradYear!,
             ageGroup: ath.ageDivision!,
-            jerseySize: ath.jerseySize || 'M',
-            pantSize: ath.pantSize || 'SIZE_32',
+            jerseySize: ath.jerseySize || 'AM',
+            pantSize: ath.pantSize || 'SIZE_20',
             stirrupSize: ath.stirrupSize || 'SM',
-            shortSize: ath.shortSize || 'AS',
-            practiceShortSize: ath.practiceShirtSize || 'AS',
+            shortSize: ath.shortSize || 'ASM',
+            practiceShortSize: ath.practiceShirtSize || 'ASM',
             isTrusted: ath.isTrusted,
+            college: ath.college,
+            ...(ath.commitId
+              ? { commit: { connect: { id: ath.commitId } } }
+              : {}),
             team: { connect: { teamCode: ath.teamCode! } },
             parents: { connect: { id: parentId } },
             ...(athleteAddrId
@@ -353,7 +463,7 @@ export default function AddNewPlayersScreen() {
           await api.post('/api/auth/signup', playerPayload);
         } catch (err) {
           if (axios.isAxiosError(err)) {
-            console.error('[ADD PLAYERS] Signup flow error:');
+            console.error('[ADD NEW PLAYERS] Signup flow error:');
             console.error('  URL:', err.config?.url);
             console.error('  Method:', err.config?.method);
             console.error('  Payload:', err.config?.data);
@@ -361,7 +471,7 @@ export default function AddNewPlayersScreen() {
             console.error('  Status Text:', err.response?.statusText);
             console.error('  Response Data:', err.response?.data);
           } else {
-            console.error('[ADD PLAYERS] Unexpected error:', err);
+            console.error('[ADD NEW PLAYERS] Unexpected error:', err);
           }
         }
       }
@@ -370,7 +480,7 @@ export default function AddNewPlayersScreen() {
       queryClient.setQueryData(['currentUser'], me);
       router.replace('/profile');
     } catch (err: any) {
-      console.error('[ADD PLAYERS] Signup flow error:', err);
+      console.error('[ADD NEW PLAYERS] Signup flow error:', err);
     }
   };
 
@@ -411,7 +521,7 @@ export default function AddNewPlayersScreen() {
             length={5}
             onChange={(code) => {
               const up = code.toUpperCase();
-              setForm((f: any) => ({ ...f, teamCode: up }));
+              setForm((f) => ({ ...f, teamCode: up }));
             }}
           />
 
@@ -486,12 +596,14 @@ export default function AddNewPlayersScreen() {
             label="First Name"
             variant="name"
             fullWidth
+            autoCapitalize="words"
             value={form.firstName}
             onChangeText={(v) => setForm({ ...form, firstName: v })}
           />
           <CustomInput
             label="Last Name"
             variant="name"
+            autoCapitalize="words"
             fullWidth
             value={form.lastName}
             onChangeText={(v) => setForm({ ...form, lastName: v })}
@@ -500,6 +612,8 @@ export default function AddNewPlayersScreen() {
             label="Email"
             variant="email"
             fullWidth
+            autoCorrect={false}
+            autoCapitalize="none"
             keyboardType="email-address"
             value={form.email}
             onChangeText={(v) => setForm({ ...form, email: v })}
@@ -539,6 +653,7 @@ export default function AddNewPlayersScreen() {
             label=" Athlete First Name"
             variant="name"
             fullWidth
+            autoCapitalize="words"
             value={form.firstName}
             onChangeText={(v) => setForm({ ...form, firstName: v })}
           />
@@ -546,6 +661,7 @@ export default function AddNewPlayersScreen() {
             label="Athlete Last Name"
             variant="name"
             fullWidth
+            autoCapitalize="words"
             value={form.lastName}
             onChangeText={(v) => setForm({ ...form, lastName: v })}
           />
@@ -553,6 +669,9 @@ export default function AddNewPlayersScreen() {
             label=" Athlete Email (Optional)"
             variant="email"
             fullWidth
+            autoCorrect={false}
+            autoCapitalize="none"
+            keyboardType="email-address"
             value={form.email}
             onChangeText={(v) => setForm({ ...form, email: v })}
           />
@@ -595,21 +714,22 @@ export default function AddNewPlayersScreen() {
                 label="Address"
                 variant="default"
                 fullWidth
+                autoCapitalize="words"
                 value={form.address}
                 onChangeText={(v) => setForm({ ...form, address: v })}
               />
-              <CustomInput
+              <CustomSelect
                 label="State"
-                variant="default"
-                fullWidth
-                value={form.state}
-                onChangeText={(v) => setForm({ ...form, state: v })}
+                options={US_STATES}
+                defaultValue={form.state}
+                onSelect={(v) => setForm({ ...form, state: v })}
               />
               <View style={styles.row}>
                 <CustomInput
                   label="City"
                   variant="default"
                   style={styles.half}
+                  autoCapitalize="words"
                   value={form.city}
                   onChangeText={(v) => setForm({ ...form, city: v })}
                 />
@@ -617,6 +737,7 @@ export default function AddNewPlayersScreen() {
                   label="Zip Code"
                   variant="default"
                   style={styles.half}
+                  keyboardType="number-pad"
                   value={form.zip}
                   onChangeText={(v) => setForm({ ...form, zip: v })}
                 />
@@ -658,19 +779,40 @@ export default function AddNewPlayersScreen() {
             value={form.gradYear}
             onChangeText={(v) => setForm({ ...form, gradYear: v })}
           />
+
           <Checkbox
-            label="Committed to College"
-            checked={!!form.committed}
-            onChange={(v) => setForm({ ...form, committed: v })}
+            label="Is this athlete committed to a college?"
+            checked={committed}
+            onChange={(v) => {
+              setCommitted(v);
+              setForm({ ...form, committed: v });
+            }}
           />
-          {form.committed && (
-            <CustomInput
-              label="College"
-              variant="default"
-              fullWidth
-              value={form.college}
-              onChangeText={(v) => setForm({ ...form, college: v })}
-            />
+
+          {committed && (
+            <>
+              <SchoolInput
+                label="College"
+                placeholder="Search for a college"
+                value={collegeSchool}
+                onChange={(school) => {
+                  setCollegeSchool(school);
+                  const name = school?.name || '';
+                  setCollege(name);
+                  setForm({ ...form, college: name });
+                }}
+              />
+              <CustomInput
+                label="College Committed"
+                variant="default"
+                fullWidth
+                value={college}
+                onChangeText={(v) => {
+                  setCollege(v);
+                  setForm({ ...form, college: v });
+                }}
+              />
+            </>
           )}
         </View>
       );
@@ -682,31 +824,31 @@ export default function AddNewPlayersScreen() {
           <CustomSelect
             label="Jersey Size"
             options={JERSEY_SIZES}
-            defaultValue={form.jerseySize}
+            defaultValue={form.jerseySize ?? undefined}
             onSelect={(v) => setForm({ ...form, jerseySize: v })}
           />
           <CustomSelect
             label="Pant Size"
             options={PANT_SIZES}
-            defaultValue={form.pantSize}
+            defaultValue={form.pantSize ?? undefined}
             onSelect={(v) => setForm({ ...form, pantSize: v })}
           />
           <CustomSelect
             label="Stirrup Size"
             options={STIRRUP_SIZES}
-            defaultValue={form.stirrupSize}
+            defaultValue={form.stirrupSize ?? undefined}
             onSelect={(v) => setForm({ ...form, stirrupSize: v })}
           />
           <CustomSelect
             label="Shorts Size"
             options={SHORTS_SIZES}
-            defaultValue={form.shortSize}
+            defaultValue={form.shortSize ?? undefined}
             onSelect={(v) => setForm({ ...form, shortSize: v })}
           />
           <CustomSelect
             label="Practice Short Size"
             options={SHORTS_SIZES}
-            defaultValue={form.practiceShirtSize}
+            defaultValue={form.practiceShirtSize ?? undefined}
             onSelect={(v) => setForm({ ...form, practiceShirtSize: v })}
           />
         </View>
@@ -878,14 +1020,8 @@ const styles = StyleSheet.create({
     borderColor: GlobalColors.bomber,
     backgroundColor: 'rgba(255,255,255,0.1)',
   },
-  cardLabel: {
-    color: GlobalColors.white,
-    textAlign: 'center',
-  },
-  cardLabelSelected: {
-    color: GlobalColors.bomber,
-    fontWeight: '600',
-  },
+  cardLabel: { color: GlobalColors.white, textAlign: 'center' },
+  cardLabelSelected: { color: GlobalColors.bomber, fontWeight: '600' },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: 6 },
   half: { width: '45%' },
   subTitle: {
@@ -912,8 +1048,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  playerText: {
-    color: GlobalColors.bomber,
-    fontWeight: '500',
-  },
+  playerText: { color: GlobalColors.bomber, fontWeight: '500' },
 });

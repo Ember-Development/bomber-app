@@ -1,6 +1,7 @@
 import { PlayerFE, prisma, UserRole } from '@bomber-app/database';
 import { signAccess, signRefresh, verifyRefresh } from '../utils/jwt';
 import { hashPassword, verifyPassword } from '../utils/crypto';
+import { issueTokenPair, rotateRefreshToken } from '../auth/token';
 
 export const authService = {
   getMockLogin: async () => {
@@ -74,6 +75,7 @@ export const authService = {
             },
             parents: true,
             address: true,
+            commit: { select: { imageUrl: true, name: true } },
           },
         },
         coach: {
@@ -82,7 +84,12 @@ export const authService = {
             address: true,
             teams: {
               include: {
-                players: { include: { user: true } },
+                players: {
+                  include: {
+                    user: true,
+                    commit: { select: { imageUrl: true, name: true } },
+                  },
+                },
                 coaches: { include: { user: true } },
                 trophyCase: true,
                 headCoach: true,
@@ -93,7 +100,14 @@ export const authService = {
         regCoach: true,
         parent: {
           include: {
-            children: { include: { team: true, address: true, user: true } },
+            children: {
+              include: {
+                team: true,
+                address: true,
+                user: true,
+                commit: { select: { imageUrl: true, name: true } },
+              },
+            },
             address: true,
           },
         },
@@ -236,11 +250,13 @@ export const authService = {
     const userMin = await prisma.user.findUnique({ where: { email } });
     if (!userMin) throw { status: 401, message: 'Invalid credentials' };
     const valid = await verifyPassword(password, userMin.pass);
-    if (!valid) throw { status: 401, message: 'Invalid credentials' };
+    if (!valid) throw { status: 401, message: 'Invalid Password' };
 
     // 2) Generate tokens
-    const access = signAccess({ sub: userMin.id, role: userMin.primaryRole });
-    const refresh = signRefresh({ sub: userMin.id });
+    const { access, refresh } = await issueTokenPair({
+      id: userMin.id,
+      role: userMin.primaryRole,
+    });
 
     // 3) Fetch the full, nested profile
     const fullProfile = await this.getUserById(userMin.id);
@@ -255,18 +271,8 @@ export const authService = {
   },
 
   async refreshToken(token: string) {
-    let payload: any;
-    try {
-      payload = verifyRefresh(token);
-    } catch {
-      throw { status: 401, message: 'Invalid refresh token' };
-    }
-
-    const user = await prisma.user.findUnique({ where: { id: payload.sub } });
-    if (!user) throw { status: 401, message: 'User not found' };
-    const access = signAccess({ sub: user.id, role: user.primaryRole });
-    const refresh = signRefresh({ sub: user.id });
+    // rotate: revoke matched stored token, return new pair
+    const { access, refresh } = await rotateRefreshToken(token);
     return { access, refresh };
   },
-
 };

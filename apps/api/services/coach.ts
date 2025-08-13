@@ -82,14 +82,7 @@ export const coachService = {
     actingUserId: string,
     role: Role
   ) => {
-    console.log('[UPDATE COACH] start', { coachId, data });
-
     const authorized = await canAccessCoach(actingUserId, coachId, role);
-    console.log('[UPDATE COACH] access check', {
-      authorized,
-      actingUserId,
-      role,
-    });
     if (!authorized) throw new Error('Not authorized to update this coach.');
 
     const {
@@ -111,12 +104,6 @@ export const coachService = {
     });
 
     if (!coach) throw new Error('Coach not found');
-    console.log('[UPDATE COACH] fetched coach', {
-      userID: coach.userID,
-      hasAddress: !!coach.address,
-      addressID: coach.address?.id,
-    });
-
     return prisma.$transaction(async (tx) => {
       // 1. Update user
       const updatedUser = await tx.user.update({
@@ -128,7 +115,6 @@ export const coachService = {
           ...(phone && { phone }),
         },
       });
-      console.log('[UPDATE COACH] updated user', updatedUser);
 
       // 2. Update or create address
       if (address1) {
@@ -137,12 +123,10 @@ export const coachService = {
             where: { id: coach.address.id },
             data: { address1, address2, city, state, zip },
           });
-          console.log('[UPDATE COACH] updated address', updatedAddress);
         } else {
           const newAddress = await tx.address.create({
             data: { address1, address2, city, state, zip },
           });
-          console.log('[UPDATE COACH] created new address', newAddress);
 
           await tx.coach.update({
             where: { id: coachId },
@@ -150,7 +134,6 @@ export const coachService = {
               address: { connect: { id: newAddress.id } },
             },
           });
-          console.log('[UPDATE COACH] linked new address to coach');
         }
       }
 
@@ -163,7 +146,6 @@ export const coachService = {
           address: true,
         },
       });
-      console.log('[UPDATE COACH] returning updated coach', finalCoach);
 
       return finalCoach;
     });

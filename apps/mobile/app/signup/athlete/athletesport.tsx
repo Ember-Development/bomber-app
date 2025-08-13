@@ -19,6 +19,8 @@ import Checkbox from '@/components/ui/atoms/Checkbox';
 import { GlobalColors } from '@/constants/Colors';
 import { POSITIONS } from '@/utils/enumOptions';
 import { usePlayerSignup } from '@/context/PlayerSignupContext';
+import SchoolInput from '@/components/ui/atoms/SchoolInput';
+import { FlatSchool } from '@/utils/SchoolUtil';
 
 export default function PlayerSportInfo() {
   const router = useRouter();
@@ -30,6 +32,9 @@ export default function PlayerSportInfo() {
   const [gradYear, setGradYear] = useState(signupData.gradYear ?? '');
   const [committed, setCommitted] = useState(!!signupData.college);
   const [college, setCollege] = useState(signupData.college ?? '');
+  const [collegeSchool, setCollegeSchool] = useState<FlatSchool | undefined>(
+    undefined
+  );
 
   const allFilled =
     !!position1 &&
@@ -37,6 +42,13 @@ export default function PlayerSportInfo() {
     !!jersey &&
     !!gradYear &&
     (!committed || !!college);
+
+  useEffect(() => {
+    if (!committed) {
+      setCollege('');
+      setCollegeSchool(undefined);
+    }
+  }, [committed]);
 
   const handleContinue = () => {
     updateSignupData({
@@ -130,13 +142,23 @@ export default function PlayerSportInfo() {
             />
 
             {committed && (
-              <CustomInput
-                label="College Committed"
-                variant="default"
-                fullWidth
-                value={college}
-                onChangeText={setCollege}
-              />
+              <>
+                <SchoolInput
+                  placeholder="Search for committed college"
+                  value={collegeSchool}
+                  onChange={(school) => {
+                    setCollegeSchool(school);
+                    setCollege(school.name);
+                  }}
+                />
+                <CustomInput
+                  label="College Committed"
+                  variant="default"
+                  fullWidth
+                  value={college}
+                  onChangeText={setCollege}
+                />
+              </>
             )}
 
             <CustomButton
