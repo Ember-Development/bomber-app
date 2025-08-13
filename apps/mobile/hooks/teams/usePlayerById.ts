@@ -3,10 +3,18 @@ import { PlayerFE } from '@bomber-app/database';
 import {
   addPlayerToTeam,
   deletePlayer,
+  fetchPlayers,
   getPlayerById,
   updatePlayer,
 } from '@/api/player/player';
 import { useNormalizedUser } from '@/utils/user';
+
+export const usePlayers = () => {
+  return useQuery<PlayerFE[]>({
+    queryKey: ['players'],
+    queryFn: fetchPlayers,
+  });
+};
 
 export const usePlayerById = (id: string) => {
   return useQuery<PlayerFE>({

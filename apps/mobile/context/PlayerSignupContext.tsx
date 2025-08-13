@@ -24,6 +24,7 @@ export type PlayerSignupData = {
   gradYear?: string;
   committed?: boolean;
   college?: string;
+  commitId?: string;
 
   jerseySize?: string;
   pantSize?: string;

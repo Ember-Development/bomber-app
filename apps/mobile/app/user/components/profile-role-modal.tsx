@@ -15,6 +15,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { PlayerFE } from '@bomber-app/database';
 import { useNormalizedUser } from '@/utils/user';
+import {
+  formatAgeGroup,
+  formatPantSize,
+  formatPosition,
+} from '@/utils/enumOptions';
 
 const { width } = Dimensions.get('window');
 
@@ -39,9 +44,9 @@ export default function ProfileModal({
   if (!player) return null;
 
   const infoCards = [
-    { label: 'Primary Position', value: player.pos1 },
-    { label: 'Secondary Position', value: player.pos2 },
-    { label: 'Age Group', value: player.ageGroup },
+    { label: 'Primary Position', value: formatPosition(player.pos1) },
+    { label: 'Secondary Position', value: formatPosition(player.pos2) },
+    { label: 'Age Group', value: formatAgeGroup(player.ageGroup) },
     { label: 'Grad Year', value: player.gradYear },
     { label: 'College Commitment', value: player.college ?? 'Uncommitted' },
   ];
@@ -64,7 +69,7 @@ export default function ProfileModal({
 
   const gearCards = [
     { label: 'Jersey Size', value: player.jerseySize },
-    { label: 'Pant Size', value: player.pantSize },
+    { label: 'Pant Size', value: formatPantSize(player.pantSize) },
     { label: 'Stirrup Size', value: player.stirrupSize },
     { label: 'Short Size', value: player.shortSize },
     { label: 'Practice Short Size', value: player.practiceShortSize },
@@ -120,8 +125,13 @@ export default function ProfileModal({
           </TouchableOpacity>
 
           <Image
-            source={require('@/assets/images/bomberback.jpg')}
+            source={
+              player.commit?.imageUrl
+                ? { uri: player.commit.imageUrl }
+                : require('@/assets/images/bomber-icon-blue.png')
+            }
             style={styles.playerImage}
+            resizeMode="contain"
           />
           <View style={styles.jerseyCircle}>
             <Text style={styles.jerseyText}>#{player.jerseyNum}</Text>

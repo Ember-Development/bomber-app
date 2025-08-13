@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { PlayerFE } from '@bomber-app/database';
+import { formatAgeGroup, formatPosition } from '@/utils/enumOptions';
 
 interface ProfileModalProps {
   isVisible: boolean;
@@ -25,10 +26,12 @@ export default function ProfileModal({
 }: ProfileModalProps) {
   if (!player) return null;
 
+  console.log('hi', player);
+
   const infoCards = [
-    { label: 'Primary Position', value: player.pos1 },
-    { label: 'Secondary Position', value: player.pos2 },
-    { label: 'Age Group', value: player.ageGroup },
+    { label: 'Primary Position', value: formatPosition(player.pos1) },
+    { label: 'Secondary Position', value: formatPosition(player.pos2) },
+    { label: 'Age Group', value: formatAgeGroup(player.ageGroup) },
     { label: 'Grad Year', value: player.gradYear },
     { label: 'College Commitment', value: player.college ?? 'Uncommitted' },
   ];
@@ -52,8 +55,13 @@ export default function ProfileModal({
           </TouchableOpacity>
 
           <Image
-            source={require('@/assets/images/bomberback.jpg')}
+            source={
+              player.commit?.imageUrl
+                ? { uri: player.commit.imageUrl }
+                : require('@/assets/images/bomber-icon-blue.png')
+            }
             style={styles.playerImage}
+            resizeMode="contain"
           />
           <View style={styles.jerseyCircle}>
             <Text style={styles.jerseyText}>#{player.jerseyNum}</Text>

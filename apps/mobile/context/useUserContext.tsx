@@ -1,4 +1,3 @@
-// context/useUserContext.tsx
 import React, {
   createContext,
   ReactNode,
@@ -6,7 +5,9 @@ import React, {
   useEffect,
   useState,
 } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { api } from '@/api/api';
 import { useCurrentUser } from '@/hooks/user/useCurrentUser';
 import { UserFE } from '@bomber-app/database';
@@ -26,22 +27,23 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [hasToken, setHasToken] = useState(false);
   const [userState, setUserState] = useState<UserFE | null>(null);
 
-  // 1) Bootstrap token once at mount and set/clear Authorization header defensively
+  // Bootstrap tokens
   useEffect(() => {
     (async () => {
       try {
-        const token = await AsyncStorage.getItem('accessToken');
-        const present = !!token;
+        const [access, refresh] = await Promise.all([
+          AsyncStorage.getItem('accessToken'),
+          SecureStore.getItemAsync('refreshToken'),
+        ]);
+        const present = !!access || !!refresh;
         setHasToken(present);
 
-        if (present && token) {
-          api.defaults.headers.common.Authorization = `Bearer ${token}`;
+        if (access) {
+          api.defaults.headers.common.Authorization = `Bearer ${access}`;
         } else {
-          // important: clear any stale header from a previous session
           delete api.defaults.headers.common.Authorization;
         }
-      } catch (e) {
-        // If anything goes wrong, ensure we don't keep a bad header around
+      } catch {
         delete api.defaults.headers.common.Authorization;
         setHasToken(false);
       } finally {
@@ -50,16 +52,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     })();
   }, []);
 
-  // 🔎 Debug: see auth bootstrap state changes on both platforms
-  useEffect(() => {
-    console.log('[UserProvider]', {
-      tokenLoaded,
-      hasToken,
-      userLoaded: !!userState,
-    });
-  }, [tokenLoaded, hasToken, userState]);
-
-  // 2) Only run /me query after token is known AND present
+  // Query for current user
   const {
     data,
     isLoading: queryLoading,
@@ -69,37 +62,55 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     enabled: tokenLoaded && hasToken,
   });
 
-  // 3) Hydrate user when data arrives
+  // Hydrate user
   useEffect(() => {
     if (data) setUserState(data);
   }, [data]);
 
-  // 4) If /me fails (e.g., 401), clear tokens + header and force logged-out state
+  // Handle /me auth errors
   useEffect(() => {
     if (!error) return;
-    console.warn('[UserProvider] /me failed — clearing auth', error);
 
-    (async () => {
-      try {
-        await AsyncStorage.multiRemove(['accessToken', 'refreshToken']);
-      } catch {}
-      delete api.defaults.headers.common.Authorization;
-      setHasToken(false);
-      setUserState(null);
-    })();
+    const status = (error as any)?.response?.status;
+    if (status === 401 || status === 403) {
+      console.warn('[UserProvider] /me auth error — clearing tokens');
+      (async () => {
+        try {
+          await AsyncStorage.removeItem('accessToken');
+        } catch {}
+        try {
+          await SecureStore.deleteItemAsync('refreshToken');
+        } catch {}
+        delete api.defaults.headers.common.Authorization;
+        setHasToken(false);
+        setUserState(null);
+      })();
+    } else {
+      console.warn(
+        '[UserProvider] /me failed (non-auth) — keeping session',
+        error
+      );
+    }
   }, [error]);
 
-  // 5) Loading state logic:
-  // - If token hasn't been checked yet => loading
-  // - If token exists => reflect query loading
-  // - If no token => not loading (show public routes)
+  // Refresh user when app resumes
+  useEffect(() => {
+    const handleAppStateChange = (nextState: AppStateStatus) => {
+      if (nextState === 'active' && hasToken) {
+        console.log('[UserProvider] App resumed — refreshing user');
+        refetch(); // will use interceptor if access token is expired
+      }
+    };
+
+    const sub = AppState.addEventListener('change', handleAppStateChange);
+    return () => sub.remove();
+  }, [hasToken, refetch]);
+
   const isLoading = !tokenLoaded ? true : hasToken ? queryLoading : false;
 
-  // 6) Expose a safe setter that clears header when logging out
   const setUser = (u: UserFE | null) => {
     setUserState(u);
     if (!u) {
-      // clear header on logout or explicit unset
       delete api.defaults.headers.common.Authorization;
     }
   };

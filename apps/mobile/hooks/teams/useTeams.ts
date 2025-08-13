@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import {
   addTrophy,
   deleteTrophy,
@@ -9,11 +14,32 @@ import {
 } from '../../api/teams/teams';
 import { TeamFE, Trophy } from '@bomber-app/database';
 import { useNormalizedUser } from '@/utils/user';
+import { getUnassignedPlayers } from '@/api/player/player';
 
 export const useTeams = () => {
   return useQuery<TeamFE[]>({
     queryKey: ['teams'],
     queryFn: fetchTeams,
+  });
+};
+
+export const useUnassignedPlayers = (filters?: {
+  search?: string;
+  ageGroup?: string;
+  pageSize?: number;
+}) => {
+  const { search, ageGroup, pageSize = 20 } = filters ?? {};
+  return useInfiniteQuery({
+    queryKey: ['players', 'unassigned', { search, ageGroup, pageSize }],
+    queryFn: ({ pageParam }) =>
+      getUnassignedPlayers({
+        cursor: pageParam,
+        limit: pageSize,
+        search,
+        ageGroup,
+      }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
 };
 

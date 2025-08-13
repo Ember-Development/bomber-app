@@ -104,6 +104,7 @@ export default function FanSignup() {
                   label="First Name"
                   variant="name"
                   fullWidth
+                  autoCapitalize="words"
                   value={firstName}
                   onChangeText={setFirstName}
                 />
@@ -111,6 +112,7 @@ export default function FanSignup() {
                   label="Last Name"
                   variant="name"
                   fullWidth
+                  autoCapitalize="words"
                   value={lastName}
                   onChangeText={setLastName}
                 />
@@ -118,6 +120,9 @@ export default function FanSignup() {
                   label="Email"
                   variant="email"
                   fullWidth
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
                   value={email}
                   onChangeText={setEmail}
                 />
@@ -158,8 +163,20 @@ export default function FanSignup() {
               <View style={styles.footer}>
                 <Text style={styles.terms}>
                   By signing up you accept the{' '}
-                  <Text style={styles.link}>Terms of Service</Text> and{' '}
-                  <Text style={styles.link}>Privacy Policy</Text>.
+                  <Text
+                    style={styles.link}
+                    onPress={() => router.push('/side/terms')}
+                  >
+                    Terms of Service
+                  </Text>{' '}
+                  and{' '}
+                  <Text
+                    style={styles.link}
+                    onPress={() => router.push('/side/privacy')}
+                  >
+                    Privacy Policy
+                  </Text>
+                  .
                 </Text>
               </View>
             </ScrollView>

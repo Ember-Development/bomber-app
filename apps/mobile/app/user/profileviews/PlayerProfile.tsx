@@ -1,5 +1,10 @@
 import React from 'react';
 import RenderCards from '../components/render-content';
+import {
+  formatAgeGroup,
+  formatPantSize,
+  formatPosition,
+} from '@/utils/enumOptions';
 
 export default function PlayerProfile({ user, activeTab }: any) {
   if (activeTab === 'info') {
@@ -12,9 +17,18 @@ export default function PlayerProfile({ user, activeTab }: any) {
             fullWidth: true,
           },
           { label: 'Grad Year', value: user?.player?.gradYear ?? 'N/A' },
-          { label: 'Age Group', value: user?.player?.ageGroup ?? 'N/A' },
-          { label: 'Primary Position', value: user?.player?.pos1 ?? 'N/A' },
-          { label: 'Secondary Position', value: user?.player?.pos2 ?? 'N/A' },
+          {
+            label: 'Age Group',
+            value: formatAgeGroup(user?.player?.ageGroup) ?? 'N/A',
+          },
+          {
+            label: 'Primary Position',
+            value: formatPosition(user?.player?.pos1) ?? 'N/A',
+          },
+          {
+            label: 'Secondary Position',
+            value: formatPosition(user?.player?.pos2) ?? 'N/A',
+          },
           {
             label: 'College Commitment',
             value: user?.player?.college ?? 'Uncommitted',
@@ -54,11 +68,11 @@ export default function PlayerProfile({ user, activeTab }: any) {
   if (activeTab === 'gear') {
     const gearItems = [
       { label: 'Jersey Size', value: user?.player?.jerseySize ?? 'N/A' },
-      { label: 'Pant Size', value: user?.player?.pantSize ?? 'N/A' },
+      { label: 'Pant Size', value: formatPantSize(user?.player?.pantSize) },
       { label: 'Stirrup Size', value: user?.player?.stirrupSize ?? 'N/A' },
       { label: 'Short Size', value: user?.player?.shortSize ?? 'N/A' },
       {
-        label: 'Practice Shirt Size',
+        label: 'Practice Short Size',
         value: user?.player?.practiceShortSize ?? 'N/A',
       },
     ];
