@@ -4,7 +4,6 @@ import { TeamFE, Trophy } from '@bomber-app/database';
 export const fetchTeams = async (): Promise<TeamFE[]> => {
   try {
     const response = await api.get<TeamFE[]>('/api/teams');
-    console.log('team', response.data);
     return response.data;
   } catch (error) {
     console.error('Failed to fetch teams:', error);

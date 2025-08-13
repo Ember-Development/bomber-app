@@ -15,10 +15,26 @@ export const commitController = {
 
   create: async (req: Request, res: Response) => {
     try {
-      const commit = await commitService.create(req.body);
-      return res.status(201).json(commit);
-    } catch (err) {
-      return res.status(400).json({ error: 'Invalid commit data' });
+      const { name, state, city, imageUrl, committedDate } = req.body;
+
+      if (!name || !state || !city || !committedDate) {
+        return res.status(400).json({ message: 'Missing required fields' });
+      }
+
+      const commit = await commitService.createCommit({
+        name,
+        state,
+        city,
+        imageUrl,
+        committedDate: new Date(committedDate),
+      });
+
+      res.status(201).json(commit);
+    } catch (error: any) {
+      console.error(error);
+      res
+        .status(500)
+        .json({ message: 'Error creating commit', error: error.message });
     }
   },
 

@@ -8,7 +8,9 @@ import FanProfile from '../../../app/user/profileviews/FanProfile';
 import PlayerProfile from '../../../app/user/profileviews/PlayerProfile';
 import ModalManager from '../../../app/user/components/modalmanager';
 import { ProfileTab, useProfileTabs } from '../../../hooks/useProfileTabs';
+import AdminProfile from '@/app/user/profileviews/AdminProfile';
 
+// ProfileTabs.tsx
 export default function ProfileTabs() {
   const hook = useProfileTabs();
   const {
@@ -22,20 +24,32 @@ export default function ProfileTabs() {
     setActiveTab,
   } = hook;
 
+  const isAdmin = primaryRole === 'ADMIN';
+
   const items: TabItem[] = [
     {
       key: 'info' as ProfileTab,
-      label: isCoach || isRegionalCoach ? 'Team' : 'Info',
+      label:
+        isCoach || isRegionalCoach || isAdmin
+          ? 'Team'
+          : isAdmin
+            ? 'Info'
+            : 'Info',
     },
     ...(hasParentRecord
       ? [{ key: 'players' as ProfileTab, label: 'Players' }]
       : []),
     { key: 'contact' as ProfileTab, label: 'Contact' },
-    ...(!isCoach && !isParentView
+    ...(!isCoach && !isParentView && !isAdmin
       ? [{ key: 'gear' as ProfileTab, label: 'Gear' }]
       : []),
-    ...(isRegionalCoach
-      ? [{ key: 'region' as ProfileTab, label: 'Region' }]
+    ...(isRegionalCoach || isAdmin
+      ? [
+          {
+            key: 'region' as ProfileTab,
+            label: isAdmin ? 'All Teams' : 'Region',
+          },
+        ]
       : []),
   ];
 
@@ -52,6 +66,9 @@ export default function ProfileTabs() {
       break;
     case 'FAN':
       BodyComponent = FanProfile;
+      break;
+    case 'ADMIN':
+      BodyComponent = AdminProfile;
       break;
     default:
       BodyComponent = PlayerProfile;

@@ -1,4 +1,4 @@
-import { State, AttendanceStatus, EventType, UserRole, Regions, MediaCategory, PantsSize, AgeGroup, Position, JerseySize, StirrupSize, ShortsSize } from 'C:\Users\gunna\Desktop\Bomber\bomber-app\packages\database\generated\client';
+import { State, AttendanceStatus, EventType, UserRole, Regions, MediaCategory, LeadKind, PantsSize, AgeGroup, Position, JerseySize, StirrupSize, ShortsSize } from 'C:\Users\gunna\Desktop\Bomber\bomber-app\packages\database\generated\client';
 import { faker } from '@faker-js/faker';
 import Decimal from 'decimal.js';
 
@@ -66,7 +66,7 @@ export function fakePlayerComplete() {
 export function fakeCommit() {
   return {
     name: faker.person.fullName(),
-    state: faker.helpers.arrayElement([State.AL, State.AK, State.AZ, State.AR, State.CA, State.CO, State.CT, State.DE, State.FL, State.GA, State.HI, State.ID, State.IL, State.IN, State.IA, State.KS, State.KY, State.LA, State.ME, State.MD, State.MA, State.MI, State.MN, State.MS, State.MO, State.MT, State.NE, State.NV, State.NH, State.NJ, State.NM, State.NY, State.NC, State.ND, State.OH, State.OK, State.OR, State.PA, State.RI, State.SC, State.SD, State.TN, State.TX, State.UT, State.VT, State.VA, State.WA, State.WV, State.WI, State.WY] as const),
+    state: faker.lorem.words(5),
     city: faker.lorem.words(5),
     imageUrl: faker.lorem.words(5),
     committedDate: faker.date.anytime(),
@@ -76,7 +76,7 @@ export function fakeCommitComplete() {
   return {
     id: faker.string.uuid(),
     name: faker.person.fullName(),
-    state: faker.helpers.arrayElement([State.AL, State.AK, State.AZ, State.AR, State.CA, State.CO, State.CT, State.DE, State.FL, State.GA, State.HI, State.ID, State.IL, State.IN, State.IA, State.KS, State.KY, State.LA, State.ME, State.MD, State.MA, State.MI, State.MN, State.MS, State.MO, State.MT, State.NE, State.NV, State.NH, State.NJ, State.NM, State.NY, State.NC, State.ND, State.OH, State.OK, State.OR, State.PA, State.RI, State.SC, State.SD, State.TN, State.TX, State.UT, State.VT, State.VA, State.WA, State.WV, State.WI, State.WY] as const),
+    state: faker.lorem.words(5),
     city: faker.lorem.words(5),
     imageUrl: faker.lorem.words(5),
     committedDate: faker.date.anytime(),
@@ -103,14 +103,14 @@ export function fakeCoachComplete() {
 }
 export function fakeRegCoach() {
   return {
-    region: faker.helpers.arrayElement([Regions.NW, Regions.SW, Regions.S, Regions.SE, Regions.NE, Regions.MW] as const),
+    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS] as const),
   };
 }
 export function fakeRegCoachComplete() {
   return {
     id: faker.string.uuid(),
     userID: faker.string.uuid(),
-    region: faker.helpers.arrayElement([Regions.NW, Regions.SW, Regions.S, Regions.SE, Regions.NE, Regions.MW] as const),
+    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS] as const),
   };
 }
 export function fakeTeam() {
@@ -118,7 +118,7 @@ export function fakeTeam() {
     name: faker.person.fullName(),
     teamCode: undefined,
     ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
-    region: faker.helpers.arrayElement([Regions.NW, Regions.SW, Regions.S, Regions.SE, Regions.NE, Regions.MW] as const),
+    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS] as const),
   };
 }
 export function fakeTeamComplete() {
@@ -127,7 +127,7 @@ export function fakeTeamComplete() {
     name: faker.person.fullName(),
     teamCode: undefined,
     ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
-    region: faker.helpers.arrayElement([Regions.NW, Regions.SW, Regions.S, Regions.SE, Regions.NE, Regions.MW] as const),
+    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS] as const),
     state: State.TX,
     headCoachID: undefined,
   };
@@ -347,5 +347,57 @@ export function fakeArticleComplete() {
     imageUrl: undefined,
     createdAt: new Date(),
     updatedAt: faker.date.anytime(),
+  };
+}
+export function fakePortalLead() {
+  return {
+    kind: faker.helpers.arrayElement([LeadKind.PLAYER, LeadKind.PARENT] as const),
+    playerFirstName: faker.lorem.words(5),
+    playerLastName: faker.lorem.words(5),
+    ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
+    pos1: undefined,
+    pos2: undefined,
+    gradYear: undefined,
+    parentFirstName: undefined,
+    parentLastName: undefined,
+    parentEmail: undefined,
+    parentPhone: undefined,
+    email: undefined,
+    phone: undefined,
+  };
+}
+export function fakePortalLeadComplete() {
+  return {
+    id: faker.string.uuid(),
+    kind: faker.helpers.arrayElement([LeadKind.PLAYER, LeadKind.PARENT] as const),
+    playerFirstName: faker.lorem.words(5),
+    playerLastName: faker.lorem.words(5),
+    ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
+    pos1: undefined,
+    pos2: undefined,
+    gradYear: undefined,
+    parentFirstName: undefined,
+    parentLastName: undefined,
+    parentEmail: undefined,
+    parentPhone: undefined,
+    email: undefined,
+    phone: undefined,
+    createdAt: new Date(),
+    convertedPlayerId: undefined,
+  };
+}
+export function fakeRefreshToken() {
+  return {
+    hashedToken: faker.lorem.words(5),
+    revokedAt: undefined,
+  };
+}
+export function fakeRefreshTokenComplete() {
+  return {
+    id: faker.string.uuid(),
+    userId: faker.string.uuid(),
+    hashedToken: faker.lorem.words(5),
+    createdAt: new Date(),
+    revokedAt: undefined,
   };
 }

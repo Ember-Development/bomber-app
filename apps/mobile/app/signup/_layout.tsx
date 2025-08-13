@@ -1,7 +1,8 @@
+// app/signup/_layout.tsx
+import { Stack } from 'expo-router';
 import { PlayerSignupProvider } from '@/context/PlayerSignupContext';
 import { CoachSignupProvider } from '@/context/CoachSignupContext';
 import { ParentSignupProvider } from '@/context/ParentSignupContext';
-import { Slot } from 'expo-router';
 import { MultiPlayerSignupProvider } from '@/context/MultiPlayerContext';
 
 export default function SignupLayout() {
@@ -10,7 +11,7 @@ export default function SignupLayout() {
       <PlayerSignupProvider>
         <CoachSignupProvider>
           <ParentSignupProvider>
-            <Slot />
+            <Stack screenOptions={{ headerShown: false }} />
           </ParentSignupProvider>
         </CoachSignupProvider>
       </PlayerSignupProvider>

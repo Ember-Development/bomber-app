@@ -1,4 +1,4 @@
-import { Prisma, prisma } from '@bomber-app/database';
+import { AgeGroup, CommitDB, Prisma, prisma } from '@bomber-app/database';
 import { Role } from '../auth/permissions';
 
 export interface CreatePlayerInput extends Prisma.PlayerCreateInput {}
@@ -49,6 +49,9 @@ export interface UpdatePlayerInput
   [key: string]: any;
 }
 
+type CommitCreateInput = Omit<CommitDB, 'id' | 'players'>;
+type CommitUpdateInput = Partial<CommitCreateInput>;
+
 const canAccessPlayer = async (
   actingUserId: string,
   playerId: string,
@@ -64,31 +67,35 @@ const canAccessPlayer = async (
           region: true,
           coaches: {
             where: { userID: actingUserId },
+            select: { userID: true },
           },
         },
       },
-      parents: { where: { userID: actingUserId } },
+      parents: { where: { userID: actingUserId }, select: { userID: true } },
     },
   });
 
-  if (!player || !player.team) return false;
+  if (!player) return false;
 
-  switch (role) {
-    case 'COACH':
-      return player.team.coaches.length > 0;
+  const isParentOfPlayer = player.parents.length > 0;
+  if (isParentOfPlayer) return true;
 
-    case 'REGIONAL_COACH':
-      const regionalCoach = await prisma.regCoach.findUnique({
-        where: { userID: actingUserId },
-      });
-      return regionalCoach?.region === player.team.region;
-
-    case 'PARENT':
-      return player.parents.some((p) => p.userID === actingUserId);
-
-    default:
-      return false;
+  if (role === 'COACH') {
+    return !!player.team && player.team.coaches.length > 0;
   }
+
+  if (role === 'REGIONAL_COACH') {
+    if (!player.team) return false;
+    const rc = await prisma.regCoach.findUnique({
+      where: { userID: actingUserId },
+      select: { region: true },
+    });
+    return !!rc && rc.region === player.team.region;
+  }
+
+  if (role === 'PARENT') return false;
+
+  return false;
 };
 
 export const playerService = {
@@ -104,6 +111,7 @@ export const playerService = {
         team: true,
         parents: true,
         address: true,
+        commit: { select: { imageUrl: true, name: true } },
       },
     });
   },
@@ -141,6 +149,73 @@ export const playerService = {
         gradYear: 'desc',
       },
     });
+  },
+
+  getUnassignedPlayers: async ({
+    cursor,
+    limit = 20,
+    search,
+    ageGroup,
+  }: {
+    cursor?: string;
+    limit?: number;
+    search?: string;
+    ageGroup?: string;
+  }) => {
+    const where: Prisma.PlayerWhereInput = {
+      teamID: null,
+      ...(ageGroup ? { ageGroup: ageGroup as AgeGroup } : {}),
+      ...(search
+        ? {
+            OR: [
+              { user: { fname: { contains: search, mode: 'insensitive' } } },
+              { user: { lname: { contains: search, mode: 'insensitive' } } },
+              { jerseyNum: { contains: search } },
+            ],
+          }
+        : {}),
+    };
+
+    const items = await prisma.player.findMany({
+      take: limit,
+      skip: cursor ? 1 : 0,
+      cursor: cursor ? { id: cursor } : undefined,
+      where,
+      include: {
+        commit: { select: { imageUrl: true, name: true } },
+        user: {
+          select: {
+            id: true,
+            fname: true,
+            lname: true,
+            email: true,
+            phone: true,
+            primaryRole: true,
+          },
+        },
+        team: { select: { id: true, name: true } },
+        address: true,
+        parents: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                fname: true,
+                lname: true,
+                email: true,
+                phone: true,
+              },
+            },
+            address: true,
+          },
+        },
+      },
+      orderBy: { id: 'asc' },
+    });
+
+    const nextCursor =
+      items.length === limit ? items[items.length - 1].id : null;
+    return { items, nextCursor };
   },
 
   createPlayer: async (data: CreatePlayerInput) => {
@@ -193,13 +268,24 @@ export const playerService = {
       lname,
       email,
       phone,
+      commitId,
+      college,
       ...playerData
     } = data;
+
+    let commitMutation: any = undefined;
+    if (typeof commitId !== 'undefined') {
+      commitMutation = commitId
+        ? { commit: { connect: { id: String(commitId) } } }
+        : { commit: { disconnect: true } };
+    }
 
     return prisma.player.update({
       where: { id: playerId },
       data: {
         ...playerData,
+        ...(typeof college !== 'undefined' ? { college } : {}),
+        ...(commitMutation ?? {}),
         user: {
           update: {
             fname,
@@ -232,7 +318,11 @@ export const playerService = {
       include: {
         user: true,
         team: true,
-        parents: true,
+        parents: {
+          include: {
+            user: true,
+          },
+        },
         address: true,
       },
     });
@@ -262,6 +352,37 @@ export const playerService = {
 
     return prisma.player.delete({
       where: { id: playerId },
+    });
+  },
+
+  createAndAttachToPlayer: async (
+    playerId: string,
+    data: CommitCreateInput
+  ) => {
+    return prisma.$transaction(async (tx) => {
+      const commit = await tx.commit.create({
+        data: {
+          ...data,
+          committedDate:
+            data.committedDate instanceof Date
+              ? data.committedDate
+              : new Date(data.committedDate),
+        },
+      });
+
+      await tx.player.update({
+        where: { id: playerId },
+        data: { commitId: commit.id },
+      });
+
+      return tx.commit.findUnique({
+        where: { id: commit.id },
+        include: {
+          players: {
+            include: { user: true, address: true },
+          },
+        },
+      });
     });
   },
 };

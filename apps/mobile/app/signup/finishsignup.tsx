@@ -7,6 +7,8 @@ import { GlobalColors } from '@/constants/Colors';
 import { api } from '@/api/api';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import EditPlayerContent from '../user/components/edit-player-form';
+import FinishProfileContent from '../component/finishsignupcontent';
+import { UserFE } from '@bomber-app/database';
 
 export default function FinishSignupScreen() {
   const { user, setUser } = useUserContext();
@@ -57,7 +59,7 @@ export default function FinishSignupScreen() {
     <BackgroundWrapper>
       <SafeAreaView style={styles.wrapper}>
         <Text style={styles.header}>Let's Complete Your Profile Signup</Text>
-        <EditPlayerContent player={player} onSuccess={handleSuccess} />
+        <FinishProfileContent user={user as UserFE} onSuccess={handleSuccess} />
       </SafeAreaView>
     </BackgroundWrapper>
   );

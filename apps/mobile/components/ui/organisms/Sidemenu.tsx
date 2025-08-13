@@ -376,7 +376,7 @@ function SidebarContent(props: {
                     case 'Profile':
                       return navigateAndClose('/profile');
                     case 'Settings':
-                      return navigateAndClose('/settings');
+                      return navigateAndClose('/side/settings');
                     case 'Contact':
                       return navigateAndClose('/side/contact');
                     case 'Payment':

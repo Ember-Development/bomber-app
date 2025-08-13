@@ -20,7 +20,7 @@ export const mockArticles = [
   {
     title: 'BOMBERS FASTPITCH PARTNERS WITH INDUSTRY LEADING TECH COMPANIES',
     image: require('@/assets/images/bomberimage1.jpg'),
-    onPress: () => console.log('Article clicked'),
+    onPress: () => {},
   },
 ];
 
@@ -29,11 +29,11 @@ export const mockVideos = [
   {
     title: 'BOMBER ACCESS EP 1',
     image: require('@/assets/images/bomberimage1.jpg'),
-    onPress: () => console.log('Video clicked'),
+    onPress: () => {},
   },
   {
     title: 'BOMBER ACCESS EP 2',
     image: require('@/assets/images/bomberimage1.jpg'),
-    onPress: () => console.log('Video clicked'),
+    onPress: () => {},
   },
 ];

@@ -45,11 +45,13 @@ import Reanimated, {
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { useAllArticles } from '@/hooks/media/useArticle';
+import BecomeBomberModal from '../component/bomberModal';
 
 export default function HomeScreen() {
   const { user } = useUserContext();
   const router = useRouter();
   const styles = createHomeStyles();
+  const [leadOpen, setLeadOpen] = useState(false);
 
   const scrollY = useRef(new RNAnimated.Value(0)).current;
   const headerHeight = scrollY.interpolate({
@@ -417,7 +419,7 @@ export default function HomeScreen() {
               <ThemedText type="title">Become a Bomber</ThemedText>
               <TouchableOpacity
                 style={styles.bomberCard}
-                onPress={() => router.push('/signup')}
+                onPress={() => setLeadOpen(true)}
                 activeOpacity={0.85}
               >
                 <Image
@@ -448,6 +450,12 @@ export default function HomeScreen() {
             </View>
           )}
         </RNAnimated.ScrollView>
+
+        <BecomeBomberModal
+          visible={leadOpen}
+          onClose={() => setLeadOpen(false)}
+          onComplete={() => {}}
+        />
       </SafeAreaView>
     </BackgroundWrapper>
   );

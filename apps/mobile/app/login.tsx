@@ -10,7 +10,6 @@ import {
   Keyboard,
   Platform,
   ScrollView,
-  SafeAreaView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
@@ -18,8 +17,7 @@ import CustomInput from '@/components/ui/atoms/Inputs';
 import GlassCard from '@/components/ui/molecules/GlassCard';
 import CustomButton from '@/components/ui/atoms/Button';
 import { GlobalColors } from '@/constants/Colors';
-import { api } from '@/api/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api, saveTokenPair } from '@/api/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUserContext } from '@/context/useUserContext';
 
@@ -42,17 +40,9 @@ export default function LoginScreen() {
     try {
       const { data } = await api.post('/api/auth/login', { email, password });
 
-      await AsyncStorage.setItem('accessToken', data.access);
-      await AsyncStorage.setItem('refreshToken', data.refresh);
-
+      await saveTokenPair(data.access, data.refresh);
+      api.defaults.headers.common.Authorization = `Bearer ${data.access}`;
       setUser(data.user);
-
-      console.log(
-        'should finish signup?',
-        data.user.primaryRole,
-        data.user.phone,
-        data.user.primaryRole === 'PLAYER' && data.user.phone === '0000000000'
-      );
 
       qc.invalidateQueries({ queryKey: ['currentUser'] });
 
@@ -105,6 +95,9 @@ export default function LoginScreen() {
                 value={email}
                 onChangeText={setEmail}
                 fullWidth
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoCorrect={false}
               />
               <CustomInput
                 label="Password"
@@ -137,6 +130,25 @@ export default function LoginScreen() {
                 </Text>
               </TouchableOpacity>
             </GlassCard>
+            <View style={styles.footer}>
+              <Text style={styles.terms}>
+                By signing up you accept the{' '}
+                <Text
+                  style={styles.link}
+                  onPress={() => router.push('/side/terms')}
+                >
+                  Terms of Service
+                </Text>{' '}
+                and{' '}
+                <Text
+                  style={styles.link}
+                  onPress={() => router.push('/side/privacy')}
+                >
+                  Privacy Policy
+                </Text>
+                .
+              </Text>
+            </View>
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
@@ -170,6 +182,9 @@ const styles = StyleSheet.create({
   footerLink: {
     marginTop: 16,
   },
+  footer: { marginTop: 12, alignItems: 'center', paddingVertical: 16 },
+  terms: { fontSize: 12, color: GlobalColors.gray, textAlign: 'center' },
+  link: { color: GlobalColors.bomber, textDecorationLine: 'underline' },
   switch: {
     color: GlobalColors.white,
     fontSize: 14,

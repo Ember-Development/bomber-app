@@ -61,12 +61,14 @@ const EditCoachContent: React.FC<Props> = ({ coach, loading, onSubmit }) => {
               label="First Name"
               value={formData.fname}
               fullWidth
+              autoCapitalize="words"
               onChangeText={(text) => setFormData({ ...formData, fname: text })}
             />
             <CustomInput
               label="Last Name"
               value={formData.lname}
               fullWidth
+              autoCapitalize="words"
               onChangeText={(text) => setFormData({ ...formData, lname: text })}
             />
           </View>
@@ -78,6 +80,9 @@ const EditCoachContent: React.FC<Props> = ({ coach, loading, onSubmit }) => {
               label="Email"
               value={formData.email}
               fullWidth
+              autoCorrect={false}
+              autoCapitalize="none"
+              keyboardType="email-address"
               onChangeText={(text) => setFormData({ ...formData, email: text })}
             />
             <CustomInput
@@ -89,6 +94,7 @@ const EditCoachContent: React.FC<Props> = ({ coach, loading, onSubmit }) => {
             <CustomInput
               label="Address 1"
               value={formData.address1}
+              autoCapitalize="words"
               fullWidth
               onChangeText={(text) =>
                 setFormData({ ...formData, address1: text })
@@ -97,6 +103,7 @@ const EditCoachContent: React.FC<Props> = ({ coach, loading, onSubmit }) => {
             <CustomInput
               label="Address 2"
               value={formData.address2}
+              autoCapitalize="words"
               fullWidth
               onChangeText={(text) =>
                 setFormData({ ...formData, address2: text })
@@ -107,6 +114,7 @@ const EditCoachContent: React.FC<Props> = ({ coach, loading, onSubmit }) => {
                 <CustomInput
                   label="City"
                   value={formData.city}
+                  autoCapitalize="words"
                   onChangeText={(text) =>
                     setFormData({ ...formData, city: text })
                   }
@@ -116,6 +124,7 @@ const EditCoachContent: React.FC<Props> = ({ coach, loading, onSubmit }) => {
                 <CustomInput
                   label="Zipcode"
                   value={formData.zip}
+                  keyboardType="number-pad"
                   onChangeText={(text) =>
                     setFormData({ ...formData, zip: text })
                   }

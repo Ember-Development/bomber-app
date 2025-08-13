@@ -6,10 +6,12 @@ import {
   StyleSheet,
   ScrollView,
   Platform,
+  Alert,
 } from 'react-native';
 import {
   JerseySize,
   PantsSize,
+  PlayerFE,
   Position,
   ShortsSize,
   StirrupSize,
@@ -29,6 +31,13 @@ import { useUpdateUser } from '@/hooks/useUser';
 import { useUserContext } from '@/context/useUserContext';
 import { GlobalColors } from '@/constants/Colors';
 import { useNormalizedUser } from '@/utils/user';
+
+import SchoolInput from '@/components/ui/atoms/SchoolInput';
+import type { FlatSchool } from '@/utils/SchoolUtil';
+import { api } from '@/api/api';
+import Checkbox from '@/components/ui/atoms/Checkbox';
+import { useUpdatePlayer } from '@/hooks/teams/usePlayerById';
+import { buildCommitCreatePayload } from '@/hooks/user/usePatchCommit';
 
 interface Props {
   user: UserFE;
@@ -50,10 +59,15 @@ const EditProfileContent: React.FC<Props> = ({
   const { refetch } = useUserContext();
   const [isPending, setIsPending] = useState(false);
 
-  const { mutate: updateUser } = useUpdateUser(intitialUser.id, {
+  const { mutateAsync: updateUser } = useUpdateUser(intitialUser.id, {
     onSuccess: () => console.log('Update successful'),
   });
 
+  const playerId = intitialUser.player?.id as string | undefined;
+  const existingCommitId =
+    (intitialUser.player as PlayerFE)?.commitId ?? undefined;
+
+  // 🔽 state for form + commit UI
   const [formData, setFormData] = useState({
     fname: intitialUser.fname,
     lname: intitialUser.lname,
@@ -63,7 +77,7 @@ const EditProfileContent: React.FC<Props> = ({
     pos2: intitialUser.player?.pos2,
     jerseyNum: intitialUser.player?.jerseyNum,
     gradYear: intitialUser.player?.gradYear,
-    college: intitialUser.player?.college,
+    college: intitialUser.player?.college ?? '', // keep display string here
     address1:
       intitialUser.player?.address?.address1 ||
       intitialUser.coach?.address?.address1 ||
@@ -91,17 +105,66 @@ const EditProfileContent: React.FC<Props> = ({
     practiceShortSize: intitialUser.player?.practiceShortSize,
   });
 
-  const handleSubmit = () => {
-    setIsPending(true);
-    updateUser(formData, {
-      onSuccess: () => {
-        refetch();
-        onSuccess?.();
-      },
-      onSettled: () => {
-        setIsPending(false);
-      },
-    });
+  const [committed, setCommitted] = useState<boolean>(!!existingCommitId);
+  const [collegeSchool, setCollegeSchool] = useState<FlatSchool | undefined>(
+    undefined
+  );
+  const [commitDate, setCommitDate] = useState<string>(''); // YYYY-MM-DD
+
+  const { mutateAsync: updatePlayer } = useUpdatePlayer(playerId ?? '', {});
+
+  const handleSubmit = async () => {
+    try {
+      setIsPending(true);
+
+      // Always start with normal profile updates
+      const updates: any = { ...formData };
+
+      const isPlayer = !!playerId && !isCoach;
+      const hadCommit = !!existingCommitId;
+
+      if (isPlayer) {
+        if (committed) {
+          if (hadCommit) {
+            const patch = buildCommitCreatePayload({
+              collegeSchool,
+              collegeDisplay: formData.college,
+              commitDate,
+              fallbackState: undefined,
+              fallbackCity: undefined,
+            });
+
+            if (Object.keys(patch).length > 0) {
+              await api.patch(`/api/commits/${existingCommitId}`, patch);
+            }
+          } else {
+            const createPayload = buildCommitCreatePayload({
+              collegeSchool,
+              collegeDisplay: formData.college,
+              fallbackState: formData.state,
+              fallbackCity: formData.city,
+              commitDate,
+            });
+            const { data: created } = await api.post(
+              '/api/commits',
+              createPayload
+            );
+            updates.commitId = created.id;
+          }
+        } else if (!committed && hadCommit) {
+          updates.commitId = null;
+        }
+      }
+
+      await updateUser(updates);
+
+      refetch();
+      await onSuccess?.();
+    } catch (err: any) {
+      Alert.alert('Update failed', err?.message ?? 'Something went wrong.');
+    } finally {
+      setIsPending(false);
+    }
   };
 
   const renderTab = () => {
@@ -112,19 +175,22 @@ const EditProfileContent: React.FC<Props> = ({
             <CustomInput
               label="First Name"
               defaultValue={formData.fname}
+              autoCapitalize="words"
               fullWidth
               onChangeText={(text) => setFormData({ ...formData, fname: text })}
             />
             <CustomInput
               label="Last Name"
               defaultValue={formData.lname}
+              autoCapitalize="words"
               fullWidth
               onChangeText={(text) => setFormData({ ...formData, lname: text })}
             />
+
             {!isCoach && (
               <>
                 <View style={styles.row}>
-                  <View style={styles.half}>
+                  <View className="half" style={styles.half}>
                     <CustomSelect
                       label="Position 1"
                       options={POSITIONS}
@@ -134,7 +200,7 @@ const EditProfileContent: React.FC<Props> = ({
                       }
                     />
                   </View>
-                  <View style={styles.half}>
+                  <View className="half" style={styles.half}>
                     <CustomSelect
                       label="Position 2"
                       options={POSITIONS}
@@ -145,6 +211,7 @@ const EditProfileContent: React.FC<Props> = ({
                     />
                   </View>
                 </View>
+
                 <CustomInput
                   label="Jersey #"
                   defaultValue={formData.jerseyNum}
@@ -161,14 +228,38 @@ const EditProfileContent: React.FC<Props> = ({
                     setFormData({ ...formData, gradYear: text })
                   }
                 />
-                <CustomInput
-                  label="College Committed"
-                  defaultValue={formData.college ?? undefined}
-                  fullWidth
-                  onChangeText={(text) =>
-                    setFormData({ ...formData, college: text })
-                  }
+
+                {/* 🔽 College commit block */}
+                <Checkbox
+                  label="Is this athlete committed to a college?"
+                  checked={committed}
+                  onChange={setCommitted}
                 />
+
+                {committed && (
+                  <>
+                    <SchoolInput
+                      label="College"
+                      placeholder="Search for a college"
+                      value={collegeSchool}
+                      onChange={(school) => {
+                        setCollegeSchool(school);
+                        setFormData((prev) => ({
+                          ...prev,
+                          college: school?.name ?? prev.college ?? '',
+                        }));
+                      }}
+                    />
+                    <CustomInput
+                      label="College (Display Name)"
+                      fullWidth
+                      value={formData.college}
+                      onChangeText={(text) =>
+                        setFormData({ ...formData, college: text })
+                      }
+                    />
+                  </>
+                )}
               </>
             )}
           </View>
@@ -180,6 +271,9 @@ const EditProfileContent: React.FC<Props> = ({
               label="Email"
               defaultValue={formData.email}
               fullWidth
+              autoCorrect={false}
+              autoCapitalize="none"
+              keyboardType="email-address"
               onChangeText={(text) => setFormData({ ...formData, email: text })}
             />
             <CustomInput
@@ -192,6 +286,7 @@ const EditProfileContent: React.FC<Props> = ({
               label="Address 1"
               defaultValue={formData.address1}
               fullWidth
+              autoCapitalize="words"
               onChangeText={(text) =>
                 setFormData({ ...formData, address1: text })
               }
@@ -201,6 +296,7 @@ const EditProfileContent: React.FC<Props> = ({
                 <CustomInput
                   label="City"
                   defaultValue={formData.city}
+                  autoCapitalize="words"
                   onChangeText={(text) =>
                     setFormData({ ...formData, city: text })
                   }
@@ -210,6 +306,7 @@ const EditProfileContent: React.FC<Props> = ({
                 <CustomInput
                   label="Zipcode"
                   defaultValue={formData.zip}
+                  keyboardType="number-pad"
                   onChangeText={(text) =>
                     setFormData({ ...formData, zip: text })
                   }
@@ -357,7 +454,7 @@ const EditProfileContent: React.FC<Props> = ({
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop: 30,
     paddingHorizontal: 10,
   },
   tabs: {
@@ -386,7 +483,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   formGlass: {
-    backgroundColor: 'rgba(20, 20, 20, 0.85)', // matches notification modal
+    backgroundColor: 'rgba(20, 20, 20, 0.85)',
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,

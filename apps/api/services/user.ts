@@ -1,5 +1,6 @@
 import { Prisma, prisma, User, UserFE } from '@bomber-app/database';
 import { updateUser } from '../controllers/userController';
+import { hashPassword, verifyPassword } from '../utils/crypto';
 
 //FIXME: replace the any once we have full types
 const validateUser = (user: any) => {
@@ -252,6 +253,13 @@ export const userService = {
 
     if (!existingUser) throw new Error('User not found');
 
+    const commitMutation =
+      typeof data.commitId === 'undefined'
+        ? undefined
+        : data.commitId === null
+          ? { commit: { disconnect: true } }
+          : { commit: { connect: { id: String(data.commitId) } } };
+
     return await prisma.user.update({
       where: { id: userId },
       data: {
@@ -272,6 +280,9 @@ export const userService = {
               stirrupSize: data.stirrupSize,
               shortSize: data.shortSize,
               practiceShortSize: data.practiceShortSize,
+
+              ...(commitMutation ?? {}),
+
               address: {
                 upsert: {
                   create: {
@@ -371,6 +382,31 @@ export const userService = {
         state,
         zip,
       },
+    });
+  },
+
+  changePassword: async ({
+    userId,
+    currentPassword,
+    newPassword,
+  }: {
+    userId: string;
+    currentPassword: string;
+    newPassword: string;
+  }) => {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { pass: true },
+    });
+    if (!user) throw new Error('USER_NOT_FOUND');
+
+    const ok = await verifyPassword(currentPassword, user.pass);
+    if (!ok) throw new Error('BAD_CURRENT_PASSWORD');
+
+    const hashed = await hashPassword(newPassword);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { pass: hashed },
     });
   },
 };

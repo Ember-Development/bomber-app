@@ -106,12 +106,6 @@ export default function CoachPlayers() {
         coachData.state &&
         coachData.zip
       ) {
-        console.log('[COACH+PARENT] Creating address for coach:', {
-          address1: coachData.address,
-          city: coachData.city,
-          state: coachData.state,
-          zip: coachData.zip,
-        });
         const { data: addr } = await api.post('/api/users/address', {
           address1: coachData.address,
           city: coachData.city,
@@ -119,18 +113,9 @@ export default function CoachPlayers() {
           zip: coachData.zip,
         });
         addressID = addr.id;
-        console.log('[COACH+PARENT] Address created with ID:', addressID);
       }
 
       // nested create both coach + parent
-      console.log('[COACH+PARENT] Signing up coach+parent with payload:', {
-        email: coachData.email,
-        fname: coachData.firstName,
-        lname: coachData.lastName,
-        phone: coachData.phone,
-        coach: { addressID, teamCode: coachData.teamCode },
-        parent: { addressID },
-      });
 
       const { data } = await api.post('/api/auth/signup', {
         email: coachData.email,
@@ -143,8 +128,6 @@ export default function CoachPlayers() {
         parent: { addressID },
       });
 
-      console.log('[COACH+PARENT] Signup response:', data);
-
       // pull out new parent.id
       const parentRec = data.user.parent;
       if (!parentRec?.id) {
@@ -156,7 +139,6 @@ export default function CoachPlayers() {
       }
 
       const parentId = parentRec.id;
-      console.log('[COACH+PARENT] New parentId:', parentId);
 
       // stash into ParentSignupContext for AddPlayersScreen
       setParentData({ parentId, addressID });
@@ -246,8 +228,20 @@ export default function CoachPlayers() {
             <View style={styles.footer}>
               <Text style={styles.terms}>
                 By signing up you accept the{' '}
-                <Text style={styles.link}>Terms of Service</Text> and{' '}
-                <Text style={styles.link}>Privacy Policy</Text>.
+                <Text
+                  style={styles.link}
+                  onPress={() => router.push('/side/terms')}
+                >
+                  Terms of Service
+                </Text>{' '}
+                and{' '}
+                <Text
+                  style={styles.link}
+                  onPress={() => router.push('/side/privacy')}
+                >
+                  Privacy Policy
+                </Text>
+                .
               </Text>
             </View>
           </ScrollView>

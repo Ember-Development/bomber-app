@@ -3,6 +3,7 @@ import { authService } from '../services/auth';
 import { UserFE } from '@bomber-app/database';
 import { Action, Role } from '../auth/permissions';
 import { AuthenticatedRequest } from '../utils/express';
+import { revokeAllUserRefreshTokens } from '../auth/token';
 
 type ExtendedRequest = {
   user: {
@@ -74,30 +75,17 @@ export const getCurrentUser = async (
   next: NextFunction
 ) => {
   try {
-    console.log('[CONTROLLER] GET /api/auth/me hit');
-    console.log(
-      '[CONTROLLER] Authorization header:',
-      req.header('Authorization')
-    );
-
     const user = req.user;
-    console.log('[CONTROLLER] req.user:', user);
 
     if (!user || !user.id) {
-      console.log('[CONTROLLER] No user attached to request → 401');
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
     const fullProfile = await authService.getUserById(user.id);
     if (!fullProfile) {
-      console.log(`[CONTROLLER] No user found in DB for id=${user.id} → 404`);
       return res.status(404).json({ error: 'User not found' });
     }
 
-    console.log(
-      '[CONTROLLER] Returning full profile for user:',
-      fullProfile.id
-    );
     return res.json(fullProfile);
   } catch (err) {
     console.error('[CONTROLLER] Error in getCurrentUser:', err);
@@ -148,7 +136,6 @@ export async function signupBase(
   next: NextFunction
 ) {
   try {
-    console.log(req.body)
     const {
       email,
       password,
@@ -199,8 +186,8 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function logout(_req: Request, res: Response) {
-  // Optionally revoke refresh here
+export async function logout(req: AuthenticatedRequest, res: Response) {
+  const userId = req.user?.id;
+  if (userId) await revokeAllUserRefreshTokens(userId);
   return res.sendStatus(204);
 }
-
