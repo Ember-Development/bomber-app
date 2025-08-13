@@ -5,13 +5,14 @@ import {
   retryMessage,
   sendMessage,
 } from '../controllers/messageController';
+import { auth } from '../auth/auth';
 
 const router = express.Router();
 
 // ALL OF THESE NEED AUTH GUARDS
-router.get('/:groupId', getMessages);
-router.post('/', sendMessage);
-router.post('/:messageId/retry', retryMessage);
-router.get('/', getAllMessages);
+router.get('/:groupId', auth, getMessages);
+router.post('/', auth, sendMessage);
+router.post('/:messageId/retry', auth, retryMessage);
+router.get('/', auth, getAllMessages);
 
 export default router;

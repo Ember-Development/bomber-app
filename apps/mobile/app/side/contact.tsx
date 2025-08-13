@@ -1,5 +1,3 @@
-// src/screens/ContactScreen.tsx
-
 import React, { useState } from 'react';
 import {
   SafeAreaView,
@@ -11,6 +9,7 @@ import {
   Platform,
   StatusBar,
   Dimensions,
+  Linking,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
@@ -70,8 +69,8 @@ export default function ContactScreen() {
                 OFFICE ADDRESS
               </ThemedText>
               <ThemedText style={[styles.addressText, { color: textColor }]}>
-                5615 Bicentennial St{'\n'}
-                San Antonio, TX 78219
+                218 Trade Center Dr{'\n'}
+                New Braunfels, TX 78130
               </ThemedText>
 
               <View
@@ -82,21 +81,60 @@ export default function ContactScreen() {
               />
 
               {[
-                { icon: 'logo-instagram', label: 'BOMBERSFASTPITCH', tag: 'INSTAGRAM' },
-                { icon: 'logo-facebook',  label: 'BOMBERSINC',       tag: 'FACEBOOK'  },
-                { icon: 'logo-twitter',   label: 'BOMBERCACATAW',    tag: 'X'         },
-                { icon: 'mail-outline',   label: 'INFO@BOMBERSFASTPITCH.COM', tag: 'EMAIL' },
-                { icon: 'logo-youtube',   label: 'BOMBERSFASTPITCH', tag: 'YOUTUBE'   },
+                {
+                  icon: 'logo-instagram',
+                  label: 'BOMBERSFASTPITCH',
+                  tag: 'INSTAGRAM',
+                  url: 'https://www.instagram.com/bombersfastpitch',
+                },
+                {
+                  icon: 'logo-facebook',
+                  label: 'BOMBERSINC',
+                  tag: 'FACEBOOK',
+                  url: 'https://www.facebook.com/bombersinc',
+                },
+                {
+                  icon: 'logo-twitter',
+                  label: 'BOMBERCACATAW',
+                  tag: 'X',
+                  url: 'https://twitter.com/bombers_fp',
+                },
+                {
+                  icon: 'mail-outline',
+                  label: 'INFO@BOMBERSFASTPITCH.COM',
+                  tag: 'EMAIL',
+                  url: 'mailto:info@bombersfastpitch.com',
+                },
+                {
+                  icon: 'logo-youtube',
+                  label: 'BOMBERSFASTPITCH',
+                  tag: 'YOUTUBE',
+                  url: 'https://www.youtube.com/@bombersfastpitch',
+                },
               ].map((s) => (
-                <View key={s.tag} style={styles.socialItem}>
-                  <Ionicons name={s.icon as any} size={20} color={componentColor} />
+                <TouchableOpacity
+                  key={s.tag}
+                  style={styles.socialItem}
+                  onPress={() =>
+                    Linking.openURL(s.url).catch((err) =>
+                      console.error('Error opening link:', err)
+                    )
+                  }
+                >
+                  <Ionicons
+                    name={s.icon as any}
+                    size={20}
+                    color={componentColor}
+                  />
                   <ThemedText style={[styles.socialText, { color: textColor }]}>
                     {s.label}
                   </ThemedText>
-                  <ThemedText style={[styles.socialLabel, { color: componentColor }]}>
+                  <ThemedText
+                    style={[styles.socialLabel, { color: componentColor }]}
+                  >
                     {s.tag}
                   </ThemedText>
-                </View>
+                </TouchableOpacity>
               ))}
             </View>
           </BlurView>
@@ -147,7 +185,10 @@ export default function ContactScreen() {
                 placeholderTextColor="#999"
                 multiline
                 numberOfLines={4}
-                style={[styles.textArea, { borderColor: componentColor + '55' }]}
+                style={[
+                  styles.textArea,
+                  { borderColor: componentColor + '55' },
+                ]}
               />
 
               <CustomButton

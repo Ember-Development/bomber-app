@@ -59,14 +59,32 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteMe = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const { id } = req.params;
+    const id = (req as any)?.user?.id;
+    if (!id) return res.status(401).json({ error: 'Not authenticated' });
     await userService.softDeleteUser(id);
     return res.status(204).send();
-  } catch (err) {
-    console.error('[deleteUser]', err);
-    return res.status(500).json({ error: 'Failed to delete user' });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const adminSoftDeleteUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = String(req.params.id);
+    await userService.softDeleteUser(id);
+    return res.status(204).send();
+  } catch (e) {
+    next(e);
   }
 };
 

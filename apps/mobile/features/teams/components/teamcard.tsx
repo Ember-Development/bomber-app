@@ -1,5 +1,6 @@
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { TeamFE } from '@bomber-app/database';
+import { formatAgeGroup } from '@/utils/enumOptions';
 
 interface TeamCardProps {
   team: TeamFE;
@@ -21,7 +22,7 @@ export default function TeamCard({ team, onPress }: TeamCardProps) {
         <Text style={styles.name}>{team.name}</Text>
         <Text style={styles.detail}>{coachName}</Text>
         <Text style={styles.meta}>
-          {team.ageGroup} • {team.region} • {team.state}
+          {formatAgeGroup(team.ageGroup)} • {team.region} • {team.state}
         </Text>
       </View>
     </TouchableOpacity>

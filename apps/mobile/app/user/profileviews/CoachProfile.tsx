@@ -52,7 +52,11 @@ export default function CoachProfile({
           },
           { label: 'City', value: user?.coach?.address?.city ?? 'N/A' },
           { label: 'State', value: user?.coach?.address?.state ?? 'N/A' },
-          { label: 'Zipcode', value: user?.coach?.address?.zip ?? 'N/A' },
+          {
+            label: 'Zipcode',
+            value: user?.coach?.address?.zip ?? 'N/A',
+            fullWidth: true,
+          },
         ]}
       />
     );
@@ -85,8 +89,8 @@ export default function CoachProfile({
           title="+ Add New Player"
           onPress={() =>
             router.push({
-              pathname: '/profile/components/add-new-player',
-              params: { parentUserId },
+              pathname: '/user/components/add-player-start',
+              params: { parentUserId: String(parentUserId ?? '') },
             })
           }
         />

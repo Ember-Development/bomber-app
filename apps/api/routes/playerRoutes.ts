@@ -1,24 +1,35 @@
 import express from 'express';
 import {
   addPlayerToTeam,
+  createForPlayer,
   createPlayer,
   deletePlayer,
   getAllPlayers,
   getAlumniPlayers,
   getPlayerById,
   updatePlayer,
+  getUnassignedPlayers,
+  attachParentToPlayer,
 } from '../controllers/playerController';
-import { devAuth } from '../auth/devAuth';
 import { authorize } from '../middleware/authorize';
+import { auth } from '../auth/auth';
 
 const router = express.Router();
 
-router.get('/', getAllPlayers);
-router.get('/alumni', getAlumniPlayers);
-router.get('/:id', getPlayerById);
-router.post('/', createPlayer);
-router.post('/add-to-team', addPlayerToTeam);
-router.put('/:id', devAuth, authorize('edit-player'), updatePlayer);
-router.delete('/:id', devAuth, authorize('remove-player'), deletePlayer);
+router.get('/', auth, getAllPlayers);
+router.get('/alumni', auth, getAlumniPlayers);
+router.get('/unassigned', auth, getUnassignedPlayers);
+router.get('/:id', auth, getPlayerById);
+router.post('/', auth, createPlayer);
+router.post('/:id/commit', auth, createForPlayer);
+router.post('/add-to-team', auth, addPlayerToTeam);
+router.put('/:id', auth, authorize('edit-player'), updatePlayer);
+router.post(
+  '/:id/parents',
+  auth,
+  authorize('edit-player'),
+  attachParentToPlayer
+);
+router.delete('/:id', auth, authorize('remove-player'), deletePlayer);
 
 export default router;

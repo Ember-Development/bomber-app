@@ -1,8 +1,9 @@
 import express from 'express';
 import {
+  adminSoftDeleteUser,
   createAddress,
   createUser,
-  deleteUser,
+  deleteMe,
   getAllUsers,
   getUserChats,
   getUserEvents,
@@ -11,17 +12,19 @@ import {
 } from '../controllers/userController';
 import { devAuth } from '../auth/devAuth';
 import { authorize } from '../middleware/authorize';
+import { auth } from '../auth/auth';
 
 const router = express.Router();
 
 // ALL OF THESE NEED AUTH GUARDS
-router.get('/', getAllUsers);
-router.post('/', createUser);
-router.get('/group/:chatId', getUsersInGroup);
-router.get('/:id/events', getUserEvents);
-router.get('/:id/chats', getUserChats);
-router.put('/:id', devAuth, authorize('edit-my-info'), updateUser);
-router.delete('/:id', deleteUser);
+router.get('/', auth, getAllUsers);
+router.post('/', auth, createUser);
+router.get('/group/:chatId', auth, getUsersInGroup);
+router.get('/:id/events', auth, getUserEvents);
+router.get('/:id/chats', auth, getUserChats);
+router.put('/:id', auth, authorize('edit-my-info'), updateUser);
+router.delete('/me', auth, deleteMe);
+router.delete('/:id', auth, authorize('delete-user'), adminSoftDeleteUser);
 router.post('/address', createAddress);
 
 export default router;

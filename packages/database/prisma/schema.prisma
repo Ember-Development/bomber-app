@@ -111,6 +111,11 @@ enum MediaCategory {
   MERCH
 }
 
+enum LeadKind {
+  PLAYER     // “I want to become a Bomber”
+  PARENT     // “My child wants to become a Bomber”
+}
+
 enum PantsSize {
     SIZE_20
     SIZE_22
@@ -195,6 +200,7 @@ model User {
     chats         UserChat[]
     events        EventAttendance[]
     notifications UserNotification[]
+    refreshTokens  RefreshToken[]
 
     isDeleted Boolean @default(false)
 }
@@ -231,15 +237,18 @@ model Player {
     address   Address? @relation(fields: [addressID], references: [id])
     addressID String?  @db.Uuid
 
+    
+
     college String?
     commitId String? @db.Uuid
     commit    Commit?     @relation("PlayerCommit", fields: [commitId], references: [id])
+    convertedFromLead  PortalLead? @relation("PortalLeadConvertedPlayer")
 }
 
 model Commit {
   id           String   @id @default(uuid()) @db.Uuid
   name         String
-  state        State
+  state        String
   city         String
   imageUrl     String
   committedDate DateTime
@@ -474,3 +483,39 @@ model Article {
   updatedAt   DateTime @updatedAt
 }
 
+model PortalLead {
+  id        String   @id @default(uuid()) @db.Uuid
+  kind      LeadKind
+
+  playerFirstName String
+  playerLastName  String
+  ageGroup        AgeGroup
+  pos1            Position?
+  pos2            Position?
+  gradYear        String?
+
+  parentFirstName String?
+  parentLastName  String?
+  parentEmail     String?
+  parentPhone     String?
+
+  email  String?
+  phone  String?
+
+  createdAt DateTime @default(now())
+
+  // link to a created Player later
+  convertedPlayerId String?  @unique @db.Uuid
+  convertedPlayer   Player?  @relation("PortalLeadConvertedPlayer", fields: [convertedPlayerId], references: [id])
+}
+
+model RefreshToken {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  hashedToken String
+  createdAt   DateTime @default(now())
+  revokedAt   DateTime?
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+}

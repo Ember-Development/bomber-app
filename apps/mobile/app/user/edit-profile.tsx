@@ -112,12 +112,14 @@ const EditProfileContent: React.FC<Props> = ({
             <CustomInput
               label="First Name"
               defaultValue={formData.fname}
+              autoCapitalize="words"
               fullWidth
               onChangeText={(text) => setFormData({ ...formData, fname: text })}
             />
             <CustomInput
               label="Last Name"
               defaultValue={formData.lname}
+              autoCapitalize="words"
               fullWidth
               onChangeText={(text) => setFormData({ ...formData, lname: text })}
             />
@@ -180,6 +182,9 @@ const EditProfileContent: React.FC<Props> = ({
               label="Email"
               defaultValue={formData.email}
               fullWidth
+              autoCorrect={false}
+              autoCapitalize="none"
+              keyboardType="email-address"
               onChangeText={(text) => setFormData({ ...formData, email: text })}
             />
             <CustomInput
@@ -192,6 +197,7 @@ const EditProfileContent: React.FC<Props> = ({
               label="Address 1"
               defaultValue={formData.address1}
               fullWidth
+              autoCapitalize="words"
               onChangeText={(text) =>
                 setFormData({ ...formData, address1: text })
               }
@@ -201,6 +207,7 @@ const EditProfileContent: React.FC<Props> = ({
                 <CustomInput
                   label="City"
                   defaultValue={formData.city}
+                  autoCapitalize="words"
                   onChangeText={(text) =>
                     setFormData({ ...formData, city: text })
                   }
@@ -210,6 +217,7 @@ const EditProfileContent: React.FC<Props> = ({
                 <CustomInput
                   label="Zipcode"
                   defaultValue={formData.zip}
+                  keyboardType="number-pad"
                   onChangeText={(text) =>
                     setFormData({ ...formData, zip: text })
                   }
@@ -357,7 +365,7 @@ const EditProfileContent: React.FC<Props> = ({
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop: 30,
     paddingHorizontal: 10,
   },
   tabs: {

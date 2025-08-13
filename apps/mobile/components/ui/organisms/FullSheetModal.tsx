@@ -73,6 +73,7 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 20,
+    marginTop: 40,
     borderBottomWidth: 1,
     borderColor: GLASS_COLORS.border,
     flexDirection: 'row',

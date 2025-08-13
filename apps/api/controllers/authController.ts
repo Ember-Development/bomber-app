@@ -3,6 +3,7 @@ import { authService } from '../services/auth';
 import { UserFE } from '@bomber-app/database';
 import { Action, Role } from '../auth/permissions';
 import { AuthenticatedRequest } from '../utils/express';
+import { revokeAllUserRefreshTokens } from '../auth/token';
 
 type ExtendedRequest = {
   user: {
@@ -148,7 +149,7 @@ export async function signupBase(
   next: NextFunction
 ) {
   try {
-    console.log(req.body)
+    console.log(req.body);
     const {
       email,
       password,
@@ -199,8 +200,8 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function logout(_req: Request, res: Response) {
-  // Optionally revoke refresh here
+export async function logout(req: AuthenticatedRequest, res: Response) {
+  const userId = req.user?.id;
+  if (userId) await revokeAllUserRefreshTokens(userId);
   return res.sendStatus(204);
 }
-

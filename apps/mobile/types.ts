@@ -58,7 +58,8 @@ export type Action =
   | 'cms:create-article'
   | 'cms:edit-article'
   | 'cms:delete-article'
-  | 'cms:publish-article';
+  | 'cms:publish-article'
+  | 'edit-player';
 
 export const roleToActions: Record<Role, Action[]> = {
   ADMIN: [
@@ -77,6 +78,7 @@ export const roleToActions: Record<Role, Action[]> = {
     'create-trophy',
     'edit-trophy',
     'remove-trophy',
+    'edit-player',
   ],
   COACH: [
     'view-my-info',
@@ -94,6 +96,7 @@ export const roleToActions: Record<Role, Action[]> = {
     'create-trophy',
     'edit-trophy',
     'remove-trophy',
+    'edit-player',
   ],
   REGIONAL_COACH: [
     'view-my-info',
@@ -107,8 +110,9 @@ export const roleToActions: Record<Role, Action[]> = {
     'create-trophy',
     'edit-trophy',
     'remove-trophy',
+    'edit-player',
   ],
   PLAYER: ['view-my-info', 'edit-my-info', 'view-my-team'],
-  PARENT: ['view-my-info', 'edit-my-info', 'view-my-team'],
+  PARENT: ['view-my-info', 'edit-my-info', 'view-my-team', 'edit-player'],
   FAN: ['view-my-info', 'edit-my-info', 'view-my-team'],
 };

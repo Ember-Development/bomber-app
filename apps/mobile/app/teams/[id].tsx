@@ -18,6 +18,8 @@ import { getRegionLabel } from '@/utils/region';
 import ProfileModal from '../../features/teams/components/profileModal';
 import { usePlayerById } from '@/hooks/teams/usePlayerById';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
+import fallbackImage from '@/assets/images/bomber-icon-blue.png';
+import { formatAgeGroup, formatPosition } from '@/utils/enumOptions';
 
 const { width } = Dimensions.get('window');
 
@@ -70,7 +72,7 @@ export default function TeamPage() {
 
   const coachName = team.headCoach?.user
     ? `${team.headCoach.user.fname} ${team.headCoach.user.lname}`
-    : 'Unknown Coach';
+    : 'No Head Coach';
 
   const stateLabel =
     US_STATES.find((s) => s.value === team.state)?.label ?? team.state;
@@ -84,7 +86,7 @@ export default function TeamPage() {
           <View style={styles.heroTextWrap}>
             <Text style={styles.heroTitle}>{team.name}</Text>
             <Text style={styles.heroSubtitle}>
-              {team.ageGroup} • {regionLabel} • {stateLabel}
+              {formatAgeGroup(team.ageGroup)} • {regionLabel} • {stateLabel}
             </Text>
           </View>
 
@@ -112,7 +114,9 @@ export default function TeamPage() {
               </View>
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Age Group</Text>
-                <Text style={styles.infoValue}>{team.ageGroup}</Text>
+                <Text style={styles.infoValue}>
+                  {formatAgeGroup(team.ageGroup)}
+                </Text>
               </View>
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>State</Text>
@@ -148,33 +152,55 @@ export default function TeamPage() {
           {activeTab === 'Roster' && (
             <View style={styles.infoCard}>
               <Text style={styles.infoTitle}>Team Roster</Text>
-              {team.players.map((player) => (
-                <TouchableOpacity
-                  key={player.id}
-                  style={styles.playerCard}
-                  onPress={() => openPlayerModal(player.id)}
-                >
-                  <View style={styles.playerAvatar} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.playerName}>
-                      {player.user?.fname} {player.user?.lname}
-                    </Text>
-                    <Text style={styles.playerDetails}>
-                      #{player.jerseyNum} • {player.pos1} / {player.pos2} • Grad{' '}
-                      {player.gradYear}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
+              {team.players.map((player) => {
+                const img = player.commit?.imageUrl;
+                return (
+                  <TouchableOpacity
+                    key={player.id}
+                    style={styles.playerCard}
+                    onPress={() => openPlayerModal(player.id)}
+                  >
+                    <View style={styles.avatarWrap}>
+                      <Image
+                        source={
+                          player.commit?.imageUrl
+                            ? { uri: player.commit.imageUrl }
+                            : fallbackImage
+                        }
+                        style={styles.avatarImg}
+                        resizeMode="contain"
+                        onError={(e) => {}}
+                      />
+                    </View>
+
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.playerName}>
+                        {player.user?.fname} {player.user?.lname}
+                      </Text>
+                      <Text style={styles.playerDetails}>
+                        #{player.jerseyNum} • {formatPosition(player.pos1)} /{' '}
+                        {formatPosition(player.pos2)} • Grad {player.gradYear}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           )}
-
           {activeTab === 'Staff' && (
             <View style={styles.infoCard}>
               <Text style={styles.infoTitle}>Coaching Staff</Text>
               {team.coaches.map((coach) => (
                 <View key={coach.id} style={styles.playerCard}>
-                  <View style={styles.playerAvatar} />
+                  <View style={styles.avatarWrap}>
+                    <Image
+                      source={fallbackImage}
+                      style={styles.avatarImg}
+                      resizeMode="cover"
+                      onError={(e) => {}}
+                    />
+                  </View>
+
                   <View style={{ flex: 1 }}>
                     <Text style={styles.playerName}>
                       {coach.user?.fname} {coach.user?.lname}
@@ -332,5 +358,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
+  },
+  avatarWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+  },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
   },
 });

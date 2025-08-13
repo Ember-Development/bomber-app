@@ -47,7 +47,7 @@ export default function CustomInput({
       case 'name':
         return 'Enter your name';
       default:
-        return placeholder || 'Enter Your Value';
+        return placeholder || 'Enter Here';
     }
   };
 

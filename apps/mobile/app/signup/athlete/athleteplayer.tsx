@@ -43,7 +43,7 @@ const choices: Choice[] = [
   },
 ];
 
-export default function AthleteInfo() {
+export default function AthletePlayerInfo() {
   const router = useRouter();
   const [selection, setSelection] = React.useState<string | null>(null);
 

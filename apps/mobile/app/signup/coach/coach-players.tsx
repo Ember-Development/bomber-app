@@ -246,8 +246,20 @@ export default function CoachPlayers() {
             <View style={styles.footer}>
               <Text style={styles.terms}>
                 By signing up you accept the{' '}
-                <Text style={styles.link}>Terms of Service</Text> and{' '}
-                <Text style={styles.link}>Privacy Policy</Text>.
+                <Text
+                  style={styles.link}
+                  onPress={() => router.push('/side/terms')}
+                >
+                  Terms of Service
+                </Text>{' '}
+                and{' '}
+                <Text
+                  style={styles.link}
+                  onPress={() => router.push('/side/privacy')}
+                >
+                  Privacy Policy
+                </Text>
+                .
               </Text>
             </View>
           </ScrollView>
