@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: '20.11'
       - name: Install dependencies
-        run: pnpm install
+        run: npm install -g pnpm && pnpm install
         working-directory: ./
 
   deploy:
