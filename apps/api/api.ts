@@ -16,6 +16,8 @@ import mediaRoutes from './routes/mediaRoutes';
 import articleRoutes from './routes/articleRoutes';
 import coachRoutes from './routes/coachRoutes';
 import commitRoutes from './routes/commitRoutes';
+import portalRoutes from './routes/portalRoutes';
+import parentRoutes from './routes/parentRoutes';
 import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -49,6 +51,8 @@ app.use('/api/medias', mediaRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/coaches', coachRoutes);
 app.use('/api/commits', commitRoutes);
+app.use('/api/portal', portalRoutes);
+app.use('/api/parents', parentRoutes);
 
 app.use((err: Err, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);

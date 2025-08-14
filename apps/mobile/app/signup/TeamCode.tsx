@@ -94,23 +94,21 @@ export default function TeamCode() {
       role: role ?? '',
       count: count ?? '',
       teamCode,
+      ageDivision: ageDivision ?? '',
     };
+
     if (isCoach && hasPlayers) {
       params.coachPlayerCodeMatches = sameCode ? 'true' : 'false';
     }
 
     let pathname: string;
+
     if (isCoach) {
       pathname = '/signup/coach/coach-players';
     } else if (isParent) {
       pathname = '/signup/parent/parentform';
     } else {
-      // PLAYER: branch by ageDivision
-      if (ageDivision === 'U18' || ageDivision === 'U16') {
-        pathname = '/signup/athlete/athleteInfo';
-      } else {
-        pathname = '/signup/athlete/athleteRestrictions';
-      }
+      pathname = '/signup/athlete';
     }
 
     router.push({ pathname, params });
@@ -199,8 +197,20 @@ export default function TeamCode() {
               <View style={styles.footer}>
                 <Text style={styles.terms}>
                   By signing up you accept the{' '}
-                  <Text style={styles.link}>Terms of Service</Text> and{' '}
-                  <Text style={styles.link}>Privacy Policy</Text>.
+                  <Text
+                    style={styles.link}
+                    onPress={() => router.push('/side/terms')}
+                  >
+                    Terms of Service
+                  </Text>{' '}
+                  and{' '}
+                  <Text
+                    style={styles.link}
+                    onPress={() => router.push('/side/privacy')}
+                  >
+                    Privacy Policy
+                  </Text>
+                  .
                 </Text>
               </View>
             </ScrollView>

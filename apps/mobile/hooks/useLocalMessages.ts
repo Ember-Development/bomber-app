@@ -8,7 +8,6 @@ export function useLocalMessages(initialMessages: MessageFE[]) {
     useState<CombinedMessage[]>(initialMessages);
 
   const addLocalMessage = (message: LocalMessage) => {
-    console.log('📤 Adding local message:', message);
     setLocalMessages((prev) => [...prev, message]);
   };
 

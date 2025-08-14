@@ -7,18 +7,19 @@ import {
 } from '../controllers/groupController';
 import { devAuth } from '../auth/devAuth';
 import { authorize } from '../middleware/authorize';
+import { auth } from '../auth/auth';
 
 const router = express.Router();
 
 // ALL OF THESE NEED AUTH GUARDS
-router.get('/', getGroups);
-router.post('/', devAuth, authorize('create-team-group'), createGroup);
+router.get('/', auth, getGroups);
+router.post('/', auth, authorize('create-team-group'), createGroup);
 router.post(
   '/:groupId/users',
-  devAuth,
+  auth,
   authorize('add-user-to-group'),
   addUsersToGroup
 );
-router.post('/admin/backfill-last-message-at', backfillLastMessageAt);
+router.post('/admin/backfill-last-message-at', auth, backfillLastMessageAt);
 
 export default router;

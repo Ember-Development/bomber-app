@@ -72,6 +72,10 @@ export const createHomeStyles = () =>
       flexDirection: 'column',
       gap: 8,
     },
+    legacyPressable: {
+      borderRadius: 20,
+      overflow: 'hidden',
+    },
     legacyCard: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -87,6 +91,9 @@ export const createHomeStyles = () =>
       shadowOpacity: 0.2,
       shadowRadius: 6,
       elevation: 4,
+      ...(Platform.OS === 'android'
+        ? { backgroundColor: 'rgba(12, 28, 48, 0.9)' }
+        : null),
     },
     legacyItems: {
       flexDirection: 'row',

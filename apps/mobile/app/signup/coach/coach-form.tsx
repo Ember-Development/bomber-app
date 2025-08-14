@@ -109,6 +109,7 @@ export default function CoachInfo() {
                 variant="name"
                 fullWidth
                 value={firstName}
+                autoCapitalize="words"
                 onChangeText={setFirstName}
               />
               <CustomInput
@@ -116,6 +117,7 @@ export default function CoachInfo() {
                 variant="name"
                 fullWidth
                 value={lastName}
+                autoCapitalize="words"
                 onChangeText={setLastName}
               />
               <CustomInput
@@ -124,6 +126,8 @@ export default function CoachInfo() {
                 fullWidth
                 value={email}
                 keyboardType="email-address"
+                autoCorrect={false}
+                autoCapitalize="none"
                 onChangeText={setEmail}
               />
               <CustomInput
@@ -138,6 +142,7 @@ export default function CoachInfo() {
               <CustomInput
                 label="Password"
                 variant="password"
+                description="Must be atleast 8 Characters"
                 fullWidth
                 secureTextEntry
                 value={password}
@@ -165,8 +170,20 @@ export default function CoachInfo() {
             <View style={styles.footer}>
               <Text style={styles.terms}>
                 By signing up you accept the{' '}
-                <Text style={styles.link}>Terms of Service</Text> and{' '}
-                <Text style={styles.link}>Privacy Policy</Text>.
+                <Text
+                  style={styles.link}
+                  onPress={() => router.push('/side/terms')}
+                >
+                  Terms of Service
+                </Text>{' '}
+                and{' '}
+                <Text
+                  style={styles.link}
+                  onPress={() => router.push('/side/privacy')}
+                >
+                  Privacy Policy
+                </Text>
+                .
               </Text>
             </View>
           </ScrollView>

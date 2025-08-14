@@ -73,7 +73,7 @@ export default function AddressInfo() {
     }
 
     router.push({
-      pathname,
+      pathname: pathname as any,
       params: { role, count, teamCode },
     });
   };
@@ -117,6 +117,7 @@ export default function AddressInfo() {
               <CustomInput
                 label="Street Address"
                 variant="default"
+                autoCapitalize="words"
                 fullWidth
                 value={address}
                 onChangeText={setAddress}
@@ -124,6 +125,7 @@ export default function AddressInfo() {
               <CustomInput
                 label="City"
                 variant="default"
+                autoCapitalize="words"
                 value={city}
                 onChangeText={setCity}
               />
@@ -136,6 +138,7 @@ export default function AddressInfo() {
               <CustomInput
                 label="Zip Code"
                 variant="default"
+                keyboardType="number-pad"
                 fullWidth
                 value={zip}
                 onChangeText={setZip}
@@ -160,8 +163,20 @@ export default function AddressInfo() {
             <View style={styles.footer}>
               <Text style={styles.terms}>
                 By signing up you accept the{' '}
-                <Text style={styles.link}>Terms of Service</Text> and{' '}
-                <Text style={styles.link}>Privacy Policy</Text>.
+                <Text
+                  style={styles.link}
+                  onPress={() => router.push('/side/terms')}
+                >
+                  Terms of Service
+                </Text>{' '}
+                and{' '}
+                <Text
+                  style={styles.link}
+                  onPress={() => router.push('/side/privacy')}
+                >
+                  Privacy Policy
+                </Text>
+                .
               </Text>
             </View>
           </ScrollView>

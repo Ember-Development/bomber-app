@@ -24,7 +24,6 @@ export function IconSymbol({
   style?: StyleProp<TextStyle>;
   weight?: SymbolWeight;
 }) {
-  console.log('IconSymbol props:', { name, size, color, style });
   const mappedName = MAPPING[name];
 
   if (!mappedName) {

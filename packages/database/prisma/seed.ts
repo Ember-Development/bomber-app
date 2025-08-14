@@ -29,7 +29,7 @@ import { PlayerDB } from '../types/player';
 const seed = 459398;
 
 //dont remove, this is used for debugging
-console.log(`Using seed: ${seed}`);
+// console.log(`Using seed: ${seed}`);
 
 faker.seed(seed);
 const createAdminUsers = async () => {

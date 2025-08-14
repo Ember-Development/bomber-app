@@ -120,10 +120,20 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     marginVertical: 8,
   },
-
   emptyText: {
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+  },
+  addButton: {
+    backgroundColor: '#1f6feb',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    alignSelf: 'flex-start',
+  },
+  addButtonText: {
+    color: 'white',
+    fontWeight: '700',
   },
 });

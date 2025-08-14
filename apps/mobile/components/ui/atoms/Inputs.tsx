@@ -17,6 +17,7 @@ interface CustomInputProps extends TextInputProps {
   iconName?: keyof typeof Ionicons.glyphMap;
   fullWidth?: boolean;
   placeholder?: string;
+  description?: string;
 }
 
 const GLASS_COLORS = {
@@ -34,6 +35,7 @@ export default function CustomInput({
   fullWidth = false,
   secureTextEntry,
   placeholder,
+  description,
   ...props
 }: CustomInputProps) {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
@@ -47,13 +49,20 @@ export default function CustomInput({
       case 'name':
         return 'Enter your name';
       default:
-        return placeholder || 'Enter Your Value';
+        return placeholder || 'Enter Here';
     }
   };
 
   return (
     <View style={[styles.container, fullWidth && styles.fullWidth]}>
-      <Text style={[styles.label, { color: GLASS_COLORS.text }]}>{label}</Text>
+      <View style={styles.labelRow}>
+        <Text style={[styles.label, { color: GLASS_COLORS.text }]}>
+          {label}
+        </Text>
+        {description && (
+          <Text style={styles.subdescription}>{description}</Text>
+        )}
+      </View>
       <View
         style={[
           styles.inputWrapper,
@@ -98,9 +107,19 @@ const styles = StyleSheet.create({
   fullWidth: {
     width: '100%',
   },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   label: {
     fontSize: 14,
     fontWeight: '600',
+    marginBottom: 6,
+  },
+  subdescription: {
+    fontSize: 12,
+    color: 'gray',
     marginBottom: 6,
   },
   inputWrapper: {
