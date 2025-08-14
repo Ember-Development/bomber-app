@@ -35,7 +35,7 @@ export default function AddPlayerStart() {
   >();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const canClaim = !!selectedPlayerId && !!parentUserId && !isSubmitting;
+  const canClaim = !!selectedPlayerId && !isSubmitting;
 
   const options = useMemo(() => {
     return (
@@ -48,27 +48,36 @@ export default function AddPlayerStart() {
     );
   }, [players]);
 
-  const handleCreateNew = () => {
-    router.push({
-      pathname: '/user/components/add-new-player',
-      params: { parentUserId: String(parentUserId ?? '') },
-    });
+  const ensureParentId = async (): Promise<string> => {
+    if (parentUserId) return String(parentUserId);
+
+    const { data } = await api.post('/api/parents/ensure');
+    return String(data.id);
+  };
+
+  const handleCreateNew = async () => {
+    setIsSubmitting(true);
+    try {
+      const ensuredParentId = await ensureParentId();
+      router.push({
+        pathname: '/user/components/add-new-player',
+        params: { parentUserId: ensuredParentId },
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleClaim = async () => {
-    if (!canClaim) return;
+    if (!selectedPlayerId) return;
     try {
       setIsSubmitting(true);
 
-      const pid = String(selectedPlayerId); // player UUID
-      const parId = String(parentUserId); // parent UUID
+      const pid = String(selectedPlayerId);
+      const parId = await ensureParentId();
 
-      // Do ONE call: connect player -> parent
+      // Connect player -> parent
       await api.post(`/api/players/${pid}/parents`, { parentId: parId });
-
-      // Optional: if you *know* you’re logged in as that same parent and want to try
-      // to update the parent record too, you could do it as best-effort:
-      // try { await api.post(`/api/parents/${parId}/children`, { playerId: pid }); } catch {}
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
@@ -81,6 +90,7 @@ export default function AddPlayerStart() {
       setIsSubmitting(false);
     }
   };
+
   return (
     <BackgroundWrapper>
       <Stack.Screen options={{ headerShown: false }} />

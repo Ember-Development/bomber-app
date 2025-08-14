@@ -623,6 +623,7 @@ export default function AddNewPlayersScreen() {
             variant="password"
             fullWidth
             secureTextEntry
+            description="must be atleast 8 characters"
             value={form.password || ''}
             onChangeText={(v) => setForm({ ...form, password: v })}
           />
@@ -666,18 +667,20 @@ export default function AddNewPlayersScreen() {
             onChangeText={(v) => setForm({ ...form, lastName: v })}
           />
           <CustomInput
-            label=" Athlete Email (Optional)"
+            label=" Athlete Email"
             variant="email"
             fullWidth
             autoCorrect={false}
             autoCapitalize="none"
+            description="optional but recommended"
             keyboardType="email-address"
             value={form.email}
             onChangeText={(v) => setForm({ ...form, email: v })}
           />
           <CustomInput
-            label=" Athlete Phone Number (Optional)"
+            label=" Athlete Phone Number"
             variant="default"
+            description="optional"
             fullWidth
             keyboardType="number-pad"
             value={form.phone}
@@ -692,6 +695,7 @@ export default function AddNewPlayersScreen() {
             variant="password"
             fullWidth
             secureTextEntry
+            description="must be atleast 8 characters"
             value={form.password || ''}
             onChangeText={(v) => setForm({ ...form, password: v })}
           />

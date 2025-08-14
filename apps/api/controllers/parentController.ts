@@ -43,3 +43,18 @@ export async function removeChildFromParent(req: Request, res: Response) {
       .json({ message: e?.message ?? 'Failed to unlink player from parent' });
   }
 }
+
+export async function ensureForMe(req: Request, res: Response) {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) return res.status(401).json({ message: 'UNAUTHORIZED' });
+
+    const parent = await parentService.ensureForUser(userId);
+    res.json({ id: parent.id, parent });
+  } catch (e: any) {
+    console.error('ensure parentid error:', e);
+    return res
+      .status(400)
+      .json({ message: e?.message ?? 'Failed to ensure id' });
+  }
+}
