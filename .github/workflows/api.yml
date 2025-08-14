@@ -41,8 +41,9 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key
           chmod 600 ssh_key
           ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'ENDSSH'
+          export PATH=$PATH:/home/ubuntu/.local/share/pnpm
           cd ~/deploy/apps/api
-          pnpm install -y
+          pnpm install 
 
           # FIXME: add .env proper to api
           # echo "IS_SECURE=true" > .env
