@@ -26,6 +26,20 @@ export interface UpdateTeamInput {
   headCoachUserID?: string | null;
 }
 
+type TeamWithPlayers = Prisma.TeamGetPayload<{
+  include: {
+    trophyCase: true;
+    players: {
+      include: {
+        user: true;
+        commit: { select: { imageUrl: true; name: true } };
+      };
+    };
+    coaches: { include: { user: true } };
+    headCoach: { include: { user: true } };
+  };
+}>;
+
 export const canAccessTrophy = async (
   trophyId: string,
   actingUserId: string,
@@ -89,7 +103,7 @@ export const teamService = {
     });
   },
 
-  getTeamById: async (id: string) => {
+  getTeamById: async (id: string): Promise<TeamWithPlayers | null> => {
     return prisma.team.findUnique({
       where: { id },
       include: {
@@ -97,18 +111,11 @@ export const teamService = {
         players: {
           include: {
             user: true,
+            commit: { select: { imageUrl: true, name: true } },
           },
         },
-        coaches: {
-          include: {
-            user: true,
-          },
-        },
-        headCoach: {
-          include: {
-            user: true,
-          },
-        },
+        coaches: { include: { user: true } },
+        headCoach: { include: { user: true } },
       },
     });
   },

@@ -6,13 +6,14 @@ import {
   updateSponsor,
   deleteSponsor,
 } from '../controllers/sponsorController';
+import { auth } from '../auth/auth';
 
 const router = express.Router();
 
-router.get('/', getAllSponsors);
-router.get('/:id', getSponsorById);
-router.post('/', createSponsor);
-router.put('/:id', updateSponsor);
-router.delete('/:id', deleteSponsor);
+router.get('/', auth, getAllSponsors);
+router.get('/:id', auth, getSponsorById);
+router.post('/', auth, createSponsor);
+router.put('/:id', auth, updateSponsor);
+router.delete('/:id', auth, deleteSponsor);
 
 export default router;

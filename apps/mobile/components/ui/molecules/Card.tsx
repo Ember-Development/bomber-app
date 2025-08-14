@@ -42,7 +42,9 @@ export default function Card({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={title}
+      android_ripple={{ color: 'rgba(255,255,255,0.08)', borderless: false }}
       style={[
+        styles.pressable,
         styles.card,
         type === 'quickAction' && styles.quickAction,
         type === 'groupChat' && { width: 220, marginRight: 10 },
@@ -83,8 +85,12 @@ export default function Card({
 }
 
 const styles = StyleSheet.create({
+  pressable: {
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 20,
     padding: 12,
     marginVertical: 6,
@@ -93,8 +99,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    elevation: 5,
+    borderColor: 'rgba(255,255,255,0.15)',
+    elevation: 6,
+    ...(Platform.OS === 'android'
+      ? {
+          backgroundColor: 'rgba(12, 28, 48, 0.9)',
+        }
+      : null),
     ...(Platform.OS === 'web' ? { backdropFilter: 'blur(10px)' } : {}),
     flex: 1,
   },

@@ -105,6 +105,7 @@ export default function ParentInfo() {
               <CustomInput
                 label="First Name"
                 variant="name"
+                autoCapitalize="words"
                 fullWidth
                 value={firstName}
                 onChangeText={setFirstName}
@@ -112,6 +113,7 @@ export default function ParentInfo() {
               <CustomInput
                 label="Last Name"
                 variant="name"
+                autoCapitalize="words"
                 fullWidth
                 value={lastName}
                 onChangeText={setLastName}
@@ -122,6 +124,8 @@ export default function ParentInfo() {
                 fullWidth
                 value={email}
                 keyboardType="email-address"
+                autoCorrect={false}
+                autoCapitalize="none"
                 onChangeText={setEmail}
               />
               <CustomInput
@@ -136,6 +140,7 @@ export default function ParentInfo() {
               <CustomInput
                 label="Password"
                 variant="password"
+                description="Must be atleast 8 Characters"
                 fullWidth
                 secureTextEntry
                 value={password}
@@ -163,8 +168,20 @@ export default function ParentInfo() {
             <View style={styles.footer}>
               <Text style={styles.terms}>
                 By signing up you accept the{' '}
-                <Text style={styles.link}>Terms of Service</Text> and{' '}
-                <Text style={styles.link}>Privacy Policy</Text>.
+                <Text
+                  style={styles.link}
+                  onPress={() => router.push('/side/terms')}
+                >
+                  Terms of Service
+                </Text>{' '}
+                and{' '}
+                <Text
+                  style={styles.link}
+                  onPress={() => router.push('/side/privacy')}
+                >
+                  Privacy Policy
+                </Text>
+                .
               </Text>
             </View>
           </ScrollView>

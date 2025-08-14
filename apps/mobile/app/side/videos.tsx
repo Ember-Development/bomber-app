@@ -8,7 +8,6 @@ import {
   Image,
   Modal,
   ActivityIndicator,
-  Platform,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -24,7 +23,7 @@ import SearchField from '@/components/ui/atoms/Search';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { useAllMedia } from '@/hooks/media/useMedia';
 import { Media as MediaFE } from '@bomber-app/database';
-import { MEDIA_CATEGORIES } from '../../utils/enumOptions';
+import { MEDIA_CATEGORIES } from '@/utils/enumOptions';
 import CategoryCard from '@/components/ui/molecules/CategoryCard';
 import {
   createVideoScreenStyles,
@@ -40,47 +39,41 @@ export default function VideosScreen() {
   const router = useRouter();
   const styles = createVideoScreenStyles();
 
-  // Data + state
-  const { data: videos, isLoading } = useAllMedia();
+  const { data: videos, isLoading, error: mediaError } = useAllMedia();
   const [searchText, setSearchText] = useState('');
   const [selectedItem, setSelectedItem] = useState<MediaFE | null>(null);
 
   // Vertical hero scroll
   const scrollY = useSharedValue(0);
-  const onVerticalScroll = useAnimatedScrollHandler({
-    onScroll: (e) => {
-      scrollY.value = e.contentOffset.y;
-    },
+  const onVerticalScroll = useAnimatedScrollHandler(e => {
+    scrollY.value = e.contentOffset.y;
   });
 
   // Horizontal carousel scroll
   const scrollX = useSharedValue(0);
-  const onHorizontalScroll = useAnimatedScrollHandler({
-    onScroll: (e) => {
-      scrollX.value = e.contentOffset.x;
-    },
+  const onHorizontalScroll = useAnimatedScrollHandler(e => {
+    scrollX.value = e.contentOffset.x;
   });
 
   // Filter + sort
   const filtered = useMemo(() => {
     if (!videos) return [];
-    return videos.filter((v) =>
+    return videos.filter(v =>
       v.title.toLowerCase().includes(searchText.toLowerCase())
     );
   }, [videos, searchText]);
 
   const featured = useMemo(() => {
-    return (
-      filtered
-        .slice()
-        .sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        )[0] || null
-    );
+    if (!filtered.length) return null;
+    return filtered
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() -
+          new Date(a.createdAt).getTime()
+      )[0];
   }, [filtered]);
 
-  // Hero parallax style
   const heroStyle = useAnimatedStyle(() => ({
     height: interpolate(
       scrollY.value,
@@ -91,7 +84,6 @@ export default function VideosScreen() {
     opacity: interpolate(scrollY.value, [0, 100], [1, 0.8], 'clamp'),
   }));
 
-  // Loading spinner
   if (isLoading) {
     return (
       <BackgroundWrapper>
@@ -106,10 +98,17 @@ export default function VideosScreen() {
     );
   }
 
+  if (mediaError) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>Error loading videos.</Text>
+      </View>
+    );
+  }
+
   return (
     <BackgroundWrapper>
       <SafeAreaView style={styles.safeContainer}>
-        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backBtn}
@@ -119,8 +118,6 @@ export default function VideosScreen() {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Explore Videos</Text>
         </View>
-
-        {/* Search */}
         <View style={styles.searchBox}>
           <SearchField
             placeholder="Search videos..."
@@ -129,24 +126,26 @@ export default function VideosScreen() {
           />
         </View>
 
-        {/* Content */}
         <Animated.ScrollView
           onScroll={onVerticalScroll}
           scrollEventThrottle={16}
           contentContainerStyle={styles.scrollContainer}
         >
-          {/* Featured */}
           {featured && (
             <>
               <Text style={styles.sectionLabel}>Featured Video</Text>
-              <Animated.View style={[styles.heroContainer, heroStyle]}>
+              <Animated.View
+                style={[styles.heroContainer, heroStyle]}
+              >
                 <TouchableOpacity
                   activeOpacity={0.8}
                   onPress={() => setSelectedItem(featured)}
                 >
                   <Image
                     source={{
-                      uri: `https://img.youtube.com/vi/${featured.videoUrl.match(/v=([^&]+)/)?.[1]}/hqdefault.jpg`,
+                      uri: `https://img.youtube.com/vi/${
+                        featured.videoUrl.match(/v=([^&]+)/)?.[1]
+                      }/hqdefault.jpg`,
                     }}
                     style={styles.heroImage}
                   />
@@ -165,13 +164,11 @@ export default function VideosScreen() {
             </>
           )}
 
-          {/* Categories */}
-          {MEDIA_CATEGORIES.map((cat) => {
+          {MEDIA_CATEGORIES.map(cat => {
             const items = filtered.filter(
-              (v) => v.category === cat.value && v.id !== featured?.id
+              v => v.category === cat.value && v.id !== featured?.id
             );
             if (!items.length) return null;
-
             return (
               <View key={cat.value} style={styles.section}>
                 <Text style={styles.sectionLabel}>
@@ -180,9 +177,8 @@ export default function VideosScreen() {
                 <Animated.FlatList
                   data={items}
                   horizontal
-                  keyExtractor={(i) => i.id}
+                  keyExtractor={i => i.id}
                   showsHorizontalScrollIndicator={false}
-                  pagingEnabled
                   snapToInterval={CATEGORY_ITEM_WIDTH + CARD_MARGIN}
                   decelerationRate="fast"
                   contentContainerStyle={styles.carousel}
@@ -202,7 +198,6 @@ export default function VideosScreen() {
           })}
         </Animated.ScrollView>
 
-        {/* Video Player Modal */}
         <Modal
           visible={!!selectedItem}
           animationType="slide"
@@ -219,7 +214,9 @@ export default function VideosScreen() {
               <YoutubePlayer
                 height={(width * 9) / 16}
                 width={width}
-                videoId={selectedItem.videoUrl.match(/v=([^&]+)/)?.[1] || ''}
+                videoId={
+                  selectedItem.videoUrl.match(/v=([^&]+)/)?.[1] || ''
+                }
                 play
                 initialPlayerParams={{ controls: true }}
               />

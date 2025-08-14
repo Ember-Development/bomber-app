@@ -53,7 +53,7 @@ export default function TabLayout() {
       />
 
       {/* Shop: everyone */}
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="shop"
         options={{
           title: 'Shop',
@@ -65,10 +65,10 @@ export default function TabLayout() {
             />
           ),
         }}
-      />
+      /> */}
 
       {/* groups: only non-Fans */}
-      {!isFan && (
+      {/* {!isFan && (
         <Tabs.Screen
           name="groups"
           options={{
@@ -82,10 +82,10 @@ export default function TabLayout() {
             ),
           }}
         />
-      )}
+      )} */}
 
       {/* Events: only non-Fans */}
-      {!isFan && (
+      {/* {!isFan && (
         <Tabs.Screen
           name="events"
           options={{
@@ -99,24 +99,24 @@ export default function TabLayout() {
             ),
           }}
         />
-      )}
+      )} */}
 
       {/* Media: only Fans */}
-      {isFan && (
-        <Tabs.Screen
-          name="media"
-          options={{
-            title: 'Media',
-            tabBarIcon: ({ color, focused }) => (
-              <AnimatedIcon
-                name="play-circle-outline"
-                color={color}
-                focused={focused}
-              />
-            ),
-          }}
-        />
-      )}
+      <Tabs.Screen
+        name="media"
+        options={{
+          title: 'Media',
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedIcon
+              name="play-circle-outline"
+              color={color}
+              focused={focused}
+            />
+          ),
+          // hide from the tab bar & routing when not Fan
+          href: !isFan ? null : undefined,
+        }}
+      />
 
       {/* Profile: everyone */}
       <Tabs.Screen

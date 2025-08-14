@@ -3,10 +3,18 @@ import { PlayerFE } from '@bomber-app/database';
 import {
   addPlayerToTeam,
   deletePlayer,
+  fetchPlayers,
   getPlayerById,
   updatePlayer,
 } from '@/api/player/player';
 import { useNormalizedUser } from '@/utils/user';
+
+export const usePlayers = () => {
+  return useQuery<PlayerFE[]>({
+    queryKey: ['players'],
+    queryFn: fetchPlayers,
+  });
+};
 
 export const usePlayerById = (id: string) => {
   return useQuery<PlayerFE>({
@@ -14,6 +22,11 @@ export const usePlayerById = (id: string) => {
     queryFn: () => getPlayerById(id),
     enabled: !!id && id.length === 36,
   });
+};
+
+export type PlayerUpdatePayload = Partial<PlayerFE> & {
+  commitId?: string | null;
+  college?: string;
 };
 
 export const useUpdatePlayer = (
@@ -26,7 +39,7 @@ export const useUpdatePlayer = (
   const { refetch } = useNormalizedUser();
 
   return useMutation({
-    mutationFn: (data: Partial<PlayerFE>) => updatePlayer(id, data),
+    mutationFn: (data: PlayerUpdatePayload) => updatePlayer(id, data),
     onSuccess: (data) => {
       refetch();
       options?.onSuccess?.(data);

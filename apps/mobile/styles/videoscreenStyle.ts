@@ -48,6 +48,15 @@ export const createVideoScreenStyles = () =>
       marginBottom: 8,
       marginTop: 10,
     },
+    emptyContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    emptyText: {
+      fontSize: 16,
+      color: '#fff',
+    },
 
     // Hero
     heroContainer: {

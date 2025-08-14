@@ -13,7 +13,7 @@ const router = Router();
 router.post('/signup', signupBase);
 // router.get('/login', getMockLogins);
 router.post('/login', login);
-router.post('/refresh', auth, refresh);
+router.post('/refresh', refresh);
 router.post('/logout', auth, logout);
 router.get('/me', auth, getCurrentUser);
 

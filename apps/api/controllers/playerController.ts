@@ -25,7 +25,6 @@ export const getPlayerById = async (req: Request, res: Response) => {
 export const getAllPlayers = async (_req: Request, res: Response) => {
   try {
     const players = await playerService.getAllPlayers();
-    console.log('get players', players);
     return res.status(200).json(players);
   } catch (error) {
     console.error('getAllPlayers error:', error);
@@ -43,6 +42,22 @@ export const getAlumniPlayers = async (req: Request, res: Response) => {
     return res.status(200).json(players);
   } catch (error) {
     console.error('getAlumniPlayers error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getUnassignedPlayers = async (req: Request, res: Response) => {
+  try {
+    const { cursor, limit = 20, search, ageGroup } = req.query;
+    const result = await playerService.getUnassignedPlayers({
+      cursor: cursor as string | undefined,
+      limit: parseInt(limit as string) || 20,
+      search: (search as string) || undefined,
+      ageGroup: (ageGroup as string) || undefined,
+    });
+    return res.status(200).json(result); // { items, nextCursor }
+  } catch (error) {
+    console.error('getUnassignedPlayers error:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -66,11 +81,13 @@ export const updatePlayer = async (
 ) => {
   try {
     const payload = req.body as UpdatePlayerInput;
+    const role = (req.user as any)?.role ?? req.user!.primaryRole;
+
     const player = await playerService.updatePlayer(
       req.params.id,
       payload,
       req.user!.id,
-      req.user!.primaryRole
+      role
     );
 
     return res.status(200).json(player);
@@ -121,5 +138,51 @@ export async function addPlayerToTeam(
     return res.status(200).json(updatedPlayer);
   } catch (err) {
     next(err);
+  }
+}
+
+export async function createForPlayer(req: Request, res: Response) {
+  const { playerId } = req.params;
+  const { name, state, city, imageUrl, committedDate } = req.body;
+
+  try {
+    const result = await playerService.createAndAttachToPlayer(playerId, {
+      name,
+      state,
+      city,
+      imageUrl,
+      committedDate,
+    });
+
+    return res.status(201).json(result);
+  } catch (err: any) {
+    const msg = err?.message ?? 'Failed to create commit';
+    return res.status(400).json({ error: msg });
+  }
+}
+
+export async function attachParentToPlayer(req: Request, res: Response) {
+  try {
+    const playerId = String(req.params.id);
+    const { parentId } = req.body as { parentId: string | number };
+    if (!parentId)
+      return res.status(400).json({ message: 'parentId is required' });
+
+    const updated = await prisma.player.update({
+      where: { id: playerId },
+      data: { parents: { connect: { id: String(parentId) } } },
+      include: {
+        user: true,
+        team: true,
+        parents: { include: { user: true } },
+        address: true,
+      },
+    });
+    return res.status(200).json(updated);
+  } catch (e: any) {
+    console.error('attachParentToPlayer error:', e);
+    return res
+      .status(400)
+      .json({ message: e?.message ?? 'Failed to link parent to player' });
   }
 }
