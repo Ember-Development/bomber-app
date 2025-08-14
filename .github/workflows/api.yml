@@ -15,7 +15,8 @@ jobs:
         with:
           node-version: '20.11'
       - name: Install dependencies
-        run: npm install -g pnpm && pnpm install
+        # needs the frozen option for some reason... ughh
+        run: npm install -g pnpm && pnpm install --no-frozen-lockfile
         working-directory: ./
 
   deploy:
