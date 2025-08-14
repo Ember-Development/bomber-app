@@ -1,4 +1,3 @@
-// src/screens/HomeScreen.tsx
 import {
   SafeAreaView,
   Animated as RNAnimated,
@@ -7,6 +6,7 @@ import {
   ActivityIndicator,
   Image,
   StyleSheet,
+  Pressable,
 } from 'react-native';
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useRouter } from 'expo-router';
@@ -33,7 +33,7 @@ import { formatEvents } from '@/utils/FormatEvents';
 import { legacyItems } from '@/constants/items';
 import { createHomeStyles } from '@/styles/homeStyle';
 import { GlobalColors } from '@/constants/Colors';
-import { QuickAction, quickActionMap } from '@/constants/quickActions';
+import { QuickAction, useQuickActions } from '@/constants/quickActions';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -45,13 +45,14 @@ import Reanimated, {
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { useAllArticles } from '@/hooks/media/useArticle';
+import BecomeBomberModal from '../component/bomberModal';
 
 export default function HomeScreen() {
   const { user } = useUserContext();
   const router = useRouter();
   const styles = createHomeStyles();
+  const [leadOpen, setLeadOpen] = useState(false);
 
-  // Header stretch/shrink using RN Animated
   const scrollY = useRef(new RNAnimated.Value(0)).current;
   const headerHeight = scrollY.interpolate({
     inputRange: [0, 80],
@@ -71,21 +72,15 @@ export default function HomeScreen() {
   const isFan = primaryRole.toUpperCase() === 'FAN';
 
   const roles = primaryRole ? [primaryRole] : [];
-  const actionsToShow: QuickAction[] = Array.from(
-    new Map(
-      roles
-        .flatMap(
-          (role) => quickActionMap[role as keyof typeof quickActionMap] || []
-        )
-        .map((action) => [action.title, action] as [string, QuickAction])
-    ).values()
+  const actionsToShow: QuickAction[] = useQuickActions(
+    primaryRole as import('@/types').Role
   );
 
   // Data fetching
   const { data: rawEvents, isLoading: isEventsLoading } = useUserEvents(
     user?.id
   );
-  const { data: userChats, isLoading: isChatsLoading } = useUserChats(user?.id);
+  const { isLoading: isChatsLoading } = useUserChats(user?.id);
   const { data: banners, isLoading: bannersLoading } = useBanners();
   const { data: videos, isLoading: isMediaLoading } = useAllMedia();
   const { data: articles = [], isLoading: isArticlesLoading } =
@@ -396,10 +391,14 @@ export default function HomeScreen() {
             </View>
             <View style={styles.legacyList}>
               {legacyItems.map((item) => (
-                <TouchableOpacity
+                <Pressable
                   key={item.title}
-                  style={styles.legacyCard}
                   onPress={() => router.push(item.routes)}
+                  android_ripple={{
+                    color: 'rgba(255,255,255,0.08)',
+                    borderless: false,
+                  }}
+                  style={[styles.legacyPressable, styles.legacyCard]}
                 >
                   <View style={styles.legacyItems}>
                     <Ionicons
@@ -410,7 +409,7 @@ export default function HomeScreen() {
                     <ThemedText type="default">{item.title}</ThemedText>
                   </View>
                   <Ionicons name="chevron-forward" size={20} color="#ccc" />
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
           </View>
@@ -420,7 +419,7 @@ export default function HomeScreen() {
               <ThemedText type="title">Become a Bomber</ThemedText>
               <TouchableOpacity
                 style={styles.bomberCard}
-                onPress={() => router.push('/signup')}
+                onPress={() => setLeadOpen(true)}
                 activeOpacity={0.85}
               >
                 <Image
@@ -429,25 +428,20 @@ export default function HomeScreen() {
                   resizeMode="cover"
                 />
 
-                {/* Bottom overlay bar */}
                 <View style={styles.bomberOverlay}>
-                  {/* Bottom fade up into content */}
                   <LinearGradient
                     colors={['transparent', 'rgba(0,0,0,0)']}
                     style={StyleSheet.absoluteFill}
                   />
-                  {/* Blur effect across the footer */}
                   <BlurView
                     intensity={60}
                     tint="dark"
                     style={StyleSheet.absoluteFill}
                   />
-                  {/* Top edge softener */}
                   <LinearGradient
                     colors={['rgba(0,0,0,0)', 'transparent']}
                     style={styles.bomberFadeTop}
                   />
-                  {/* Centered Text */}
                   <ThemedText type="title" style={styles.bomberText}>
                     FIND OUT HOW
                   </ThemedText>
@@ -456,6 +450,12 @@ export default function HomeScreen() {
             </View>
           )}
         </RNAnimated.ScrollView>
+
+        <BecomeBomberModal
+          visible={leadOpen}
+          onClose={() => setLeadOpen(false)}
+          onComplete={() => {}}
+        />
       </SafeAreaView>
     </BackgroundWrapper>
   );

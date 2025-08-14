@@ -7,13 +7,14 @@ import {
   updateBanner,
   deleteBanner,
 } from '../controllers/bannerController';
+import { auth } from '../auth/auth';
 
 const router = express.Router();
 
-router.get('/', getAllBanners);
-router.get('/:id', getBannerById);
-router.post('/', createBanner);
-router.put('/:id', updateBanner);
-router.delete('/:id', deleteBanner);
+router.get('/', auth, getAllBanners);
+router.get('/:id', auth, getBannerById);
+router.post('/', auth, createBanner);
+router.put('/:id', auth, updateBanner);
+router.delete('/:id', auth, deleteBanner);
 
 export default router;

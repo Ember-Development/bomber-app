@@ -9,7 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { useTeams } from '@/hooks/teams/useTeams';
-import TeamCard from './components/teamcard';
+import TeamCard from '../../features/teams/components/teamcard';
 import FilterChips from '@/components/ui/molecules/FilterChip';
 import { createTeamsScreenStyles } from '../../styles/teamscreenStyle';
 import { useRouter } from 'expo-router';

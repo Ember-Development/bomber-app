@@ -59,13 +59,6 @@ export default function PlayerGearInfo() {
         signupData.state &&
         signupData.zip
       ) {
-        console.log('[SIGNUP] Creating address with:', {
-          address1: signupData.address,
-          city: signupData.city,
-          state: signupData.state,
-          zip: signupData.zip,
-        });
-
         const { data: address } = await api.post('/api/users/address', {
           address1: signupData.address,
           city: signupData.city,
@@ -104,18 +97,12 @@ export default function PlayerGearInfo() {
 
       // 3. Add to team
       if (playerId && signupData.teamCode) {
-        console.log('[SIGNUP] Adding player to team:', {
-          playerId,
-          teamCode: signupData.teamCode,
-        });
-
         await api.post('/api/players/add-to-team', {
           playerId,
           teamCode: signupData.teamCode,
         });
       }
 
-      console.log('[SIGNUP] Signup complete, resetting data and routing home.');
       await AsyncStorage.setItem('accessToken', data.access);
       await AsyncStorage.setItem('refreshToken', data.refresh);
 

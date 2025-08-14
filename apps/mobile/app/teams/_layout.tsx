@@ -1,8 +1,6 @@
 import { Stack } from 'expo-router';
 
 export default function TeamsLayout() {
-  console.log('TeamsLayout loaded');
-
   return (
     <Stack>
       <Stack.Screen

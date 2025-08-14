@@ -32,14 +32,20 @@ export const commitService = {
     });
   },
 
-  create: async (data: CommitCreateInput) => {
+  createCommit: async (data: {
+    name: string;
+    state: string;
+    city: string;
+    imageUrl?: string;
+    committedDate: Date;
+  }) => {
     return prisma.commit.create({
       data: {
-        ...data,
-        committedDate:
-          data.committedDate instanceof Date
-            ? data.committedDate
-            : new Date(data.committedDate),
+        name: data.name,
+        state: data.state,
+        city: data.city,
+        imageUrl: data.imageUrl || '',
+        committedDate: data.committedDate,
       },
     });
   },

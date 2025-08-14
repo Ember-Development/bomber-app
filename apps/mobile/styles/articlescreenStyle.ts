@@ -194,5 +194,6 @@ export const createArticleScreenStyles = () =>
       backgroundColor: 'rgba(0,0,0,0.5)',
       borderRadius: 20,
       padding: 8,
+      zIndex: 99,
     },
   });

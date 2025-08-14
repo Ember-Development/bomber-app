@@ -1,4 +1,3 @@
-// components/ui/organisms/TeamCode.tsx
 import React, { useRef, useState } from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
