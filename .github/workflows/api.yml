@@ -1,87 +1,27 @@
-name: Node.js CI/CD to AWS EC2
+name: Deploy API to EC2
 
 on:
   push:
     branches: [main]
-  workflow_dispatch:
+    paths:
+      - 'apps/api/**'
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '20.11'
-      - name: Install dependencies
-        run: npm install
-        working-directory: ./frontend
-      - name: Build frontend
-        run: npm run build
-        working-directory: ./frontend
-        env:
-          VITE_SOCKET_IO_URL: 'chartiq.net'
-          VITE_API_URL: 'https://chartiq.net/api'
-          VITE_DEV: 'false'
-          VITE_PUBLIC_POSTHOG_KEY: 'phc_3A81aPrFAjPQYprhYl6p6glibf8tli6mrUkJ5zIQSgG'
-          VITE_PUBLIC_POSTHOG_HOST: 'https://us.i.posthog.com'
-
   deploy:
     runs-on: ubuntu-latest
-    needs: build-and-test
-    environment: prod
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '20.11'
-      - name: Check node version
-        run: node -v
-      - name: Install dependencies
-        run: npm install
-        working-directory: ./frontend
-        # TODO: figure out why this needs to be repeated
-      - name: Build frontend
-        run: npm run build
-        working-directory: ./frontend
-        env:
-          VITE_SOCKET_IO_URL: 'chartiq.net'
-          VITE_API_URL: 'https://chartiq.net/api'
-          VITE_DEV: 'false'
-          VITE_PUBLIC_POSTHOG_KEY: 'phc_3A81aPrFAjPQYprhYl6p6glibf8tli6mrUkJ5zIQSgG'
-          VITE_PUBLIC_POSTHOG_HOST: 'https://us.i.posthog.com'
-      - name: Deploy to Server
-        uses: easingthemes/ssh-deploy@main
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.EC2_HOST }}
-          REMOTE_USER: ubuntu
-          SOURCE: './'
-          TARGET: ~/deploy
-          EXCLUDE: ./frontend/node_modules/
-          INCLUDE: 'frontend/ backend/'
+      - uses: actions/checkout@v3
 
-      - name: Move build to /var/www/html and restart pm2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy API
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key
-          chmod 600 ssh_key
-          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'ENDSSH'
-          cd ~/deploy/frontend
-          npm install -y
-          rsync -av --delete --exclude='.htaccess' /home/ubuntu/deploy/frontend/dist/ /var/www/html/
-          cd ~/deploy/backend
-          npm install -y
-
-          echo "IS_SECURE=true" > .env
-          echo "FE_URL=https://chartiq.net" >> .env
-          echo "FE_URL_WWW=https://www.chartiq.net" >> .env
-          echo "OUR_EMAIL=no-reply@chartiq.net" >> .env
-          echo "MONGODB_URI=mongodb://localhost:27017/bombers" >> .env 
-          echo "SENDGRID_API_KEY=${{secrets.SENDGRID_API_KEY}}" >> .env
-          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
-          echo "PORT=5000" >> .env
-          pm2 restart all
-          ENDSSH
-          rm -f ssh_key
+          aws deploy create-deployment \
+            --application-name ${{ secrets.API_APP_NAME }} \
+            --deployment-group-name ${{ secrets.API_DEPLOYMENT_GROUP_NAME }} \
+            --github-location repository=${{ github.repository }},commitId=${{ github.sha }}
