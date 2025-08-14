@@ -7,12 +7,13 @@ import {
 } from '../controllers/coachController';
 import { devAuth } from '../auth/devAuth';
 import { authorize } from '../middleware/authorize';
+import { auth } from '../auth/auth';
 
 const router = express.Router();
 
-router.get('/', getAllCoaches);
-router.get('/:id', getCoachById);
-router.put('/:id', devAuth, authorize('edit-coach'), updateCoach);
-router.delete('/:id', devAuth, authorize('remove-coach'), deleteCoach);
+router.get('/', auth, getAllCoaches);
+router.get('/:id', auth, getCoachById);
+router.put('/:id', auth, authorize('edit-coach'), updateCoach);
+router.delete('/:id', auth, authorize('remove-coach'), deleteCoach);
 
 export default router;

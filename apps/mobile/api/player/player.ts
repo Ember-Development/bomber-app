@@ -1,5 +1,26 @@
 import { PlayerFE } from '@bomber-app/database';
 import { api } from '../api';
+import { PlayerUpdatePayload } from '@/hooks/teams/usePlayerById';
+
+export const fetchPlayers = async (): Promise<PlayerFE[]> => {
+  try {
+    const response = await api.get<PlayerFE[]>('/api/players');
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch teams:', error);
+    return [];
+  }
+};
+
+export const getUnassignedPlayers = async (params?: {
+  cursor?: string;
+  limit?: number;
+  search?: string;
+  ageGroup?: string;
+}): Promise<{ items: PlayerFE[]; nextCursor?: string | null }> => {
+  const { data } = await api.get('/api/players/unassigned', { params });
+  return data;
+};
 
 export const getPlayerById = async (id: string): Promise<PlayerFE> => {
   const res = await api.get(`/api/players/${id}`);
@@ -19,12 +40,9 @@ export const getAlumniPlayersPaginated = async ({
   return res.data; // Should return PlayerFE[]
 };
 
-export const updatePlayer = async (
-  id: string,
-  data: Partial<PlayerFE>
-): Promise<PlayerFE> => {
-  const res = await api.put(`/api/players/${id}`, data);
-  return res.data;
+export const updatePlayer = async (id: string, body: PlayerUpdatePayload) => {
+  const { data } = await api.put(`/api/players/${id}`, body);
+  return data;
 };
 
 export const deletePlayer = async (id: string): Promise<void> => {

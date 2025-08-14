@@ -1,13 +1,17 @@
-// app/_layout.tsx
+import React, { useEffect } from 'react';
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider as NavigationThemeProvider,
 } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack, useRouter } from 'expo-router';
+import {
+  Slot,
+  usePathname,
+  useRootNavigationState,
+  useRouter,
+} from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useFonts } from 'expo-font';
 import 'react-native-reanimated';
 import { ThemeProvider, useColorScheme } from '@/hooks/useColorScheme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -18,21 +22,38 @@ import { View, ActivityIndicator } from 'react-native';
 
 SplashScreen.preventAutoHideAsync();
 
-function InnerLayout() {
+function RootNavigator() {
   const { user, isLoading } = useUserContext();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      // Delay navigation to login until the stack is rendered
-      requestAnimationFrame(() => {
-        router.replace('/login');
-      });
-    }
-  }, [user, isLoading]);
+    if (isLoading) return;
 
-  console.log('[LAYOUT] isLoading:', isLoading);
-  console.log('[LAYOUT] user:', user);
+    const inSignup = pathname.startsWith('/signup');
+    const inOnboarding =
+      pathname.startsWith('/onboarding') || pathname.startsWith('/welcome');
+    const atAuth =
+      pathname.startsWith('/login') || pathname.startsWith('/signup');
+    const atRoot = pathname === '/' || pathname === '';
+
+    const safeReplace = (path: string) => {
+      if (pathname !== path) router.replace(path);
+    };
+
+    if (!user) {
+      if (!atAuth) safeReplace('/login');
+      return;
+    }
+
+    if (inSignup || inOnboarding) {
+      return;
+    }
+
+    if (atRoot || atAuth) {
+      safeReplace('/(tabs)');
+    }
+  }, [isLoading, user]);
 
   if (isLoading) {
     return (
@@ -46,15 +67,7 @@ function InnerLayout() {
     );
   }
 
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="login" />
-      <Stack.Screen name="teams" />
-      <Stack.Screen name="side" />
-      <Stack.Screen name="+not-found" />
-    </Stack>
-  );
+  return <Slot />;
 }
 
 export default function RootLayout() {
@@ -64,14 +77,16 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  const theme = colorScheme.theme === 'dark' ? DarkTheme : DefaultTheme;
+  const navTheme = colorScheme.theme === 'dark' ? DarkTheme : DefaultTheme;
   const TransparentTheme = {
-    ...theme,
-    colors: { ...theme.colors, background: 'transparent' },
+    ...navTheme,
+    colors: { ...navTheme.colors, background: 'transparent' },
   };
 
   useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
   }, [loaded]);
 
   if (!loaded) return null;
@@ -83,7 +98,7 @@ export default function RootLayout() {
           <UserProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <View style={{ flex: 1 }}>
-                <InnerLayout />
+                <RootNavigator />
               </View>
             </GestureHandlerRootView>
           </UserProvider>

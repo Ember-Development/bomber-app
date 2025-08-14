@@ -20,9 +20,11 @@ import { US_STATES } from '@/utils/state';
 import { useParentSignup } from '@/context/ParentSignupContext';
 import { api } from '@/api/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function ParentAddressInfo() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const {
     role = 'athlete',
     count,
@@ -89,13 +91,13 @@ export default function ParentAddressInfo() {
         throw new Error('Parent record missing from signup response');
       }
       const parentId = parentRecord.id;
-      console.log(parentId);
       updateSignupData({ parentId });
 
       // 3) Store tokens and navigate to AddPlayers
       const { access, refresh } = res.data;
       await AsyncStorage.setItem('accessToken', access);
       await AsyncStorage.setItem('refreshToken', refresh);
+      queryClient.setQueryData(['currentUser'], res.data.user);
 
       router.push('/signup/add-player');
     } catch (err: any) {
@@ -143,6 +145,7 @@ export default function ParentAddressInfo() {
               <CustomInput
                 label="Street Address"
                 variant="default"
+                autoCapitalize="words"
                 fullWidth
                 value={address}
                 onChangeText={setAddress}
@@ -150,6 +153,7 @@ export default function ParentAddressInfo() {
               <CustomInput
                 label="City"
                 variant="default"
+                autoCapitalize="words"
                 value={city}
                 onChangeText={setCity}
               />
@@ -162,6 +166,7 @@ export default function ParentAddressInfo() {
               <CustomInput
                 label="Zip Code"
                 variant="default"
+                keyboardType="number-pad"
                 fullWidth
                 value={zip}
                 onChangeText={setZip}
@@ -186,8 +191,20 @@ export default function ParentAddressInfo() {
             <View style={styles.footer}>
               <Text style={styles.terms}>
                 By signing up you accept the{' '}
-                <Text style={styles.link}>Terms of Service</Text> and{' '}
-                <Text style={styles.link}>Privacy Policy</Text>.
+                <Text
+                  style={styles.link}
+                  onPress={() => router.push('/side/terms')}
+                >
+                  Terms of Service
+                </Text>{' '}
+                and{' '}
+                <Text
+                  style={styles.link}
+                  onPress={() => router.push('/side/privacy')}
+                >
+                  Privacy Policy
+                </Text>
+                .
               </Text>
             </View>
           </ScrollView>

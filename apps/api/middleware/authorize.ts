@@ -1,5 +1,5 @@
 import { RequestHandler, Request, Response, NextFunction } from 'express';
-import { Role, Action } from '../auth/permissions';
+import { Role, Action, roleToActions } from '../auth/permissions';
 
 type AuthenticatedRequest = Request & {
   user?: {
@@ -9,16 +9,20 @@ type AuthenticatedRequest = Request & {
     primaryRole: Role;
   };
 };
-
 export function authorize(requiredAction: Action): RequestHandler {
   return (req, res, next) => {
-    // cast so TS knows about `user`
     const r = req as AuthenticatedRequest;
 
-    if (!r.user) {
-      return res.sendStatus(401);
-    }
-    if (!r.user.actions.includes(requiredAction)) {
+    if (!r.user) return res.sendStatus(401);
+
+    const derived =
+      r.user.actions && r.user.actions.length
+        ? r.user.actions
+        : (r.user.roles || [r.user.primaryRole]).flatMap(
+            (role) => roleToActions[role] || []
+          );
+
+    if (!derived.includes(requiredAction)) {
       return res
         .status(403)
         .json({ error: `Missing permission: ${requiredAction}` });

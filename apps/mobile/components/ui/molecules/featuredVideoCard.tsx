@@ -1,4 +1,3 @@
-// src/components/ui/molecules/FeaturedVideoCard.tsx
 import React from 'react';
 import {
   TouchableOpacity,
