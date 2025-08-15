@@ -50,7 +50,7 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key
           chmod 600 ssh_key
           ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.WEB_HOST }} << 'ENDSSH'
-          rsync -av --delete --exclude='.htaccess' ~/deploy/apps/web/dist/ /var/www/html/
+          rsync -av --delete --exclude='.htaccess' /home/ubuntu/deploy/apps/web/dist/ /var/www/html/
 
           ENDSSH
           rm -f ssh_key
