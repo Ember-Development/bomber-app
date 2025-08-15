@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View, TextInput, StyleSheet } from 'react-native';
+import { View, TextInput, StyleSheet, Keyboard } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { GlobalColors } from '@/constants/Colors';
 
@@ -25,6 +25,10 @@ export default function CodeInput({ length = 5, onChange }: CodeInputProps) {
     // focus next
     if (text && index < length - 1) {
       inputRefs.current[index + 1]?.focus();
+    }
+
+    if (text && index === length - 1) {
+      Keyboard.dismiss();
     }
 
     // bubble up full code on any change

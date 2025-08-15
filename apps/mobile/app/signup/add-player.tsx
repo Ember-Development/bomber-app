@@ -956,7 +956,7 @@ export default function AddPlayersScreen() {
         onSelect={(v) => setForm({ ...form, shortSize: v })}
       />
       <CustomSelect
-        label="Practice Short Size"
+        label="Practice Shirt Size"
         options={SHORTS_SIZES}
         defaultValue={form.practiceShirtSize ?? undefined}
         onSelect={(v) => setForm({ ...form, practiceShirtSize: v })}
