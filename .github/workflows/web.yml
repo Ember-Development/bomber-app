@@ -50,10 +50,7 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key
           chmod 600 ssh_key
           ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.WEB_HOST }} << 'ENDSSH'
-          export PATH=$PATH:/home/ubuntu/.local/share/pnpm
-          cd ~/deploy/apps/web
-          pnpm install 
-          rsync -av --delete --exclude='.htaccess' apps/web/dist/ /var/www/html/
+          rsync -av --delete --exclude='.htaccess' ~/deploy/apps/web/dist/ /var/www/html/
 
           ENDSSH
           rm -f ssh_key
