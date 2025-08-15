@@ -53,8 +53,7 @@ export default function ProfileModal({
 
   const contactCards = [
     { label: 'Email', value: player.user?.email ?? 'N/A', fullWidth: true },
-    { label: 'Phone', value: player.user?.phone ?? 'N/A' },
-    { label: 'Date of Birth', value: player.dob ?? 'N/A' },
+    { label: 'Phone', value: player.user?.phone ?? 'N/A', fullWidth: true },
     {
       label: 'Street Address',
       value: player.address
@@ -72,7 +71,7 @@ export default function ProfileModal({
     { label: 'Pant Size', value: formatPantSize(player.pantSize) },
     { label: 'Stirrup Size', value: player.stirrupSize },
     { label: 'Short Size', value: player.shortSize },
-    { label: 'Practice Short Size', value: player.practiceShortSize },
+    { label: 'Practice Shirt Size', value: player.practiceShortSize },
   ];
 
   const renderCards = (
