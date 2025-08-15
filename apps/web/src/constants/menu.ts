@@ -7,6 +7,9 @@ import {
   ChatBubbleLeftIcon,
   Cog8ToothIcon,
   QuestionMarkCircleIcon,
+  UserIcon,
+  AcademicCapIcon,
+  BellAlertIcon,
 } from '@heroicons/react/24/outline';
 
 export interface MenuItem {
@@ -18,12 +21,12 @@ export interface MenuItem {
 export const MENU: MenuItem[] = [
   { name: 'Dashboard', path: '/', Icon: HomeIcon },
   { name: 'Teams', path: '/teams', Icon: UsersIcon },
-  { name: 'Users', path: '/users', Icon: PhotoIcon },
-  { name: 'Players', path: '/players', Icon: PhotoIcon },
+  { name: 'Users', path: '/users', Icon: UserIcon },
+  { name: 'Players', path: '/players', Icon: AcademicCapIcon },
   { name: 'Events', path: '/events', Icon: CalendarIcon },
   { name: 'Media', path: '/media', Icon: PhotoIcon },
   // { name: 'Legacy', path: '/legacy', Icon: PhotoIcon },
-  { name: 'Notifications', path: '/notifications', Icon: PhotoIcon },
+  { name: 'Notifications', path: '/notifications', Icon: BellAlertIcon },
   { name: 'Sponsor', path: '/sponsor', Icon: PhotoIcon },
   { name: 'Message Logs', path: '/logs', Icon: ChatBubbleLeftIcon },
 ];

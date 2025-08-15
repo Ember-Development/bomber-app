@@ -52,6 +52,37 @@ const canAccessCoach = async (
   }
 };
 
+const canManageTeam = async (
+  actingUserId: string,
+  teamId: string,
+  role: Role
+) => {
+  if (role === 'ADMIN') return true;
+
+  if (role === 'COACH') {
+    const onTeam = await prisma.team.findFirst({
+      where: { id: teamId, coaches: { some: { userID: actingUserId } } },
+      select: { id: true },
+    });
+    return !!onTeam;
+  }
+
+  if (role === 'REGIONAL_COACH') {
+    const rc = await prisma.regCoach.findUnique({
+      where: { userID: actingUserId },
+      select: { region: true },
+    });
+    if (!rc) return false;
+    const team = await prisma.team.findUnique({
+      where: { id: teamId },
+      select: { region: true },
+    });
+    return !!team && team.region === rc.region;
+  }
+
+  return false;
+};
+
 export const coachService = {
   getAllCoaches: async () => {
     return prisma.coach.findMany({
@@ -91,63 +122,99 @@ export const coachService = {
       city,
       state,
       zip,
-      fname,
-      lname,
-      email,
-      phone,
-      ...coachData
+      user: userPayload, // <-- nested user.update may be here
+      ...rest
     } = data as any;
 
-    const coach = await prisma.coach.findUnique({
+    // Pull potential top-level fields (if client sends them that way)
+    const topFname = (data as any).fname;
+    const topLname = (data as any).lname;
+    const topEmail = (data as any).email;
+    const topPhone = (data as any).phone;
+
+    // Merge nested user.update with top-level overrides (top-level wins if provided)
+    const mergedUserUpdate: any = {
+      ...(userPayload?.update ?? {}),
+      ...(typeof topFname !== 'undefined' ? { fname: topFname } : {}),
+      ...(typeof topLname !== 'undefined' ? { lname: topLname } : {}),
+      ...(typeof topEmail !== 'undefined' ? { email: topEmail } : {}),
+      ...(typeof topPhone !== 'undefined' ? { phone: topPhone } : {}),
+    };
+
+    const hasUserUpdate = Object.keys(mergedUserUpdate).length > 0;
+
+    const hasAddressInput = [address1, address2, city, state, zip].some(
+      (v) => typeof v !== 'undefined'
+    );
+
+    return prisma.coach.update({
       where: { id: coachId },
-      include: { user: true, address: true },
+      data: {
+        // make sure we don't pass the raw user payload back in
+        ...rest,
+        ...(hasUserUpdate ? { user: { update: mergedUserUpdate } } : {}),
+        ...(hasAddressInput
+          ? {
+              address: {
+                upsert: {
+                  create: {
+                    address1: address1 ?? '',
+                    address2: address2 ?? null,
+                    city: city ?? '',
+                    state: state ?? '',
+                    zip: zip ?? '',
+                  },
+                  update: {
+                    address1: address1 ?? '',
+                    address2: address2 ?? null,
+                    city: city ?? '',
+                    state: state ?? '',
+                    zip: zip ?? '',
+                  },
+                },
+              },
+            }
+          : {}),
+      },
+      include: { user: true, headTeams: true, teams: true, address: true },
     });
+  },
 
-    if (!coach) throw new Error('Coach not found');
+  removeCoachFromTeam: async (
+    coachId: string,
+    teamId: string,
+    actingUserId: string,
+    role: Role
+  ) => {
+    const allowed = await canManageTeam(actingUserId, teamId, role);
+    if (!allowed) throw new Error('Not authorized to modify this team.');
+
     return prisma.$transaction(async (tx) => {
-      // 1. Update user
-      const updatedUser = await tx.user.update({
-        where: { id: coach.userID },
-        data: {
-          ...(fname && { fname }),
-          ...(lname && { lname }),
-          ...(email && { email }),
-          ...(phone && { phone }),
-        },
+      const team = await tx.team.findUnique({
+        where: { id: teamId },
+        select: { id: true, headCoachID: true },
       });
+      if (!team) throw new Error('Team not found');
 
-      // 2. Update or create address
-      if (address1) {
-        if (coach.address?.id) {
-          const updatedAddress = await tx.address.update({
-            where: { id: coach.address.id },
-            data: { address1, address2, city, state, zip },
-          });
-        } else {
-          const newAddress = await tx.address.create({
-            data: { address1, address2, city, state, zip },
-          });
-
-          await tx.coach.update({
-            where: { id: coachId },
-            data: {
-              address: { connect: { id: newAddress.id } },
-            },
-          });
-        }
+      const data: any = {
+        coaches: { disconnect: { id: coachId } },
+      };
+      if (team.headCoachID === coachId) {
+        data.headCoachID = null;
       }
 
-      const finalCoach = await tx.coach.findUnique({
-        where: { id: coachId },
+      const updated = await tx.team.update({
+        where: { id: teamId },
+        data,
         include: {
-          user: true,
-          headTeams: true,
-          teams: true,
-          address: true,
+          headCoach: { include: { user: true } },
+          coaches: { include: { user: true } },
+          players: { include: { user: true } },
+          trophyCase: true,
         },
       });
 
-      return finalCoach;
+      return updated;
     });
   },
 
