@@ -2,8 +2,13 @@ name: Node.js CI/CD to AWS EC2
 
 on:
   push:
-    #FIXME: do dir specific changes
     branches: [main, ci-cd-rushed]
+    paths:
+      - '*' # root files
+      - '.github/**' # this ci/cd stuff
+      - 'packages/**' # supporting files i.e. db types
+      - 'apps/web/**' # web app specifics
+
   workflow_dispatch:
 
 jobs:
