@@ -27,6 +27,16 @@ jobs:
       - name: Build frontend
         run: pnpm run dumb # dumb version of build that throws away the whole type system for no reason... masterful gambit sir
         working-directory: apps/web
+      - name: Deploy to Server
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.EC2_HOST }}
+          REMOTE_USER: ubuntu
+          SOURCE: './'
+          TARGET: ~/deploy
+          EXCLUDE: ./frontend/node_modules/
+          INCLUDE: 'frontend/ backend/'
 
   deploy:
     runs-on: ubuntu-latest
@@ -34,17 +44,6 @@ jobs:
     environment: prod
     steps:
       - uses: actions/checkout@v2
-      - name: Deploy to Server
-        uses: easingthemes/ssh-deploy@main
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.WEB_HOST }}
-          REMOTE_USER: ubuntu
-          SOURCE: './'
-          TARGET: ~/deploy
-          EXCLUDE: ./frontend/node_modules/
-          INCLUDE: 'frontend/ backend/'
-
       - name: Move build to /var/www/html
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key
