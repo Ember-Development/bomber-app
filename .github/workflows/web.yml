@@ -22,12 +22,6 @@ jobs:
       - name: Build frontend
         run: pnpm run build
         working-directory: ./apps/web
-        env:
-          # FIXME: shouldnt these be prefaced by 'VITE_'???
-          API_BASE_URL: 'https://api.bomberadmin.net'
-          # This isn't set up but then again neither is messaging so it
-          # shouldn't matter methinks
-          SOCKET_SERVER_URL: 'https://wss.bomberadmin.net'
 
   deploy:
     runs-on: ubuntu-latest
@@ -39,7 +33,6 @@ jobs:
         uses: easingthemes/ssh-deploy@main
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          # FIXME: change web and api host to their own vars
           REMOTE_HOST: ${{ secrets.WEB_HOST }}
           REMOTE_USER: ubuntu
           SOURCE: './'
