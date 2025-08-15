@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { coachService, UpdateCoachInput } from '../services/coach';
 import { AuthenticatedRequest } from '../auth/devAuth';
+import { error } from 'console';
 
 export const getAllCoaches = async (_req: Request, res: Response) => {
   try {
@@ -48,6 +49,33 @@ export const updateCoach = async (req: AuthenticatedRequest, res: Response) => {
     return res
       .status(400)
       .json({ message: error.message || 'Failed to update coach' });
+  }
+};
+
+export const removeCoachFromTeam = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const { coachId, teamId } = req.body as { coachId: string; teamId: string };
+    if (!coachId || !teamId) {
+      return res
+        .status(400)
+        .json({ message: 'coachId and teamId are required' });
+    }
+
+    const actingUserId = req.user!.id;
+    const role = req.user!.primaryRole;
+
+    const updatedTeam = await coachService.removeCoachFromTeam(
+      coachId,
+      teamId,
+      actingUserId,
+      role
+    );
+    return res.status(200).json(updatedTeam);
+  } catch (err) {
+    error(err);
   }
 };
 

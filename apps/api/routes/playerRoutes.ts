@@ -10,6 +10,7 @@ import {
   updatePlayer,
   getUnassignedPlayers,
   attachParentToPlayer,
+  removePlayerFromTeam,
 } from '../controllers/playerController';
 import { authorize } from '../middleware/authorize';
 import { auth } from '../auth/auth';
@@ -24,6 +25,12 @@ router.post('/', auth, createPlayer);
 router.post('/:id/commit', auth, createForPlayer);
 router.post('/add-to-team', addPlayerToTeam);
 router.put('/:id', auth, authorize('edit-player'), updatePlayer);
+router.delete(
+  '/:id/team',
+  auth,
+  authorize('edit-player'),
+  removePlayerFromTeam
+);
 router.post(
   '/:id/parents',
   auth,

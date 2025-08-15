@@ -355,6 +355,28 @@ export const playerService = {
     });
   },
 
+  removePlayerFromTeam: async (
+    playerId: string,
+    actingUserId: string,
+    role: Role
+  ) => {
+    const authorized = await canAccessPlayer(actingUserId, playerId, role);
+    if (!authorized) throw new Error('Not authorized to modify this player.');
+
+    return prisma.player.update({
+      where: { id: playerId },
+      data: {
+        team: { disconnect: true }, // sets teamID to null
+      },
+      include: {
+        user: true,
+        team: true,
+        parents: { include: { user: true } },
+        address: true,
+      },
+    });
+  },
+
   createAndAttachToPlayer: async (
     playerId: string,
     data: CommitCreateInput

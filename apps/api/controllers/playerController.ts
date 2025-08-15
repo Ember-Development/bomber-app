@@ -141,6 +141,30 @@ export async function addPlayerToTeam(
   }
 }
 
+export const removePlayerFromTeam = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const playerId = req.params.id;
+    const actingUserId = req.user!.id;
+    const role = req.user!.primaryRole;
+
+    const updated = await playerService.removePlayerFromTeam(
+      playerId,
+      actingUserId,
+      role
+    );
+
+    return res.status(200).json(updated);
+  } catch (error: any) {
+    console.error('removePlayerFromTeam error:', error);
+    return res
+      .status(error?.status ?? 400)
+      .json({ message: error?.message ?? 'Failed to remove player from team' });
+  }
+};
+
 export async function createForPlayer(req: Request, res: Response) {
   const { playerId } = req.params;
   const { name, state, city, imageUrl, committedDate } = req.body;

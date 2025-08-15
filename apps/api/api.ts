@@ -18,6 +18,8 @@ import coachRoutes from './routes/coachRoutes';
 import commitRoutes from './routes/commitRoutes';
 import portalRoutes from './routes/portalRoutes';
 import parentRoutes from './routes/parentRoutes';
+import regCoachRoutes from './routes/regCoachRoutes';
+
 import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -53,6 +55,7 @@ app.use('/api/coaches', coachRoutes);
 app.use('/api/commits', commitRoutes);
 app.use('/api/portal', portalRoutes);
 app.use('/api/parents', parentRoutes);
+app.use('/api/regCoaches', regCoachRoutes);
 
 app.use((err: Err, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);

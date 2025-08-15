@@ -127,7 +127,9 @@ export default function MessageLogs() {
     <div className="flex flex-col space-y-6 text-white min-h-screen p-4">
       {/* Header & Filters */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">Group Message Logs</h1>
+        <div className="text-3xl lg:text-3xl font-bold text-white">
+          Group Message Logs
+        </div>
         <div className="flex flex-wrap gap-3 items-center">
           <input
             type="text"
