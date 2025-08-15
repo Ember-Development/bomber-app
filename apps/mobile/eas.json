@@ -4,13 +4,21 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "ios": { "resourceClass": "m-medium" }
+      "ios": { "resourceClass": "m-medium" },
+      "env": {
+        "API_BASE_URL": "https://api.bomberadmin.net",
+        "SOCKET_SERVER_URL": "http://192.168.1.76:3000"
+      }
     },
     "simulator": {
       "ios": { "simulator": true, "resourceClass": "m-medium" }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "API_BASE_URL": "https://api.bomberadmin.net",
+        "SOCKET_SERVER_URL": "http://192.168.1.76:3000"
+      }
     }
   },
   "submit": { "production": {} }
