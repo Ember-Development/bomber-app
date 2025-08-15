@@ -37,7 +37,10 @@ import type { FlatSchool } from '@/utils/SchoolUtil';
 import { api } from '@/api/api';
 import Checkbox from '@/components/ui/atoms/Checkbox';
 import { useUpdatePlayer } from '@/hooks/teams/usePlayerById';
-import { buildCommitCreatePayload } from '@/hooks/user/usePatchCommit';
+import {
+  buildCommitCreatePayload,
+  buildCommitPatchPayload,
+} from '@/hooks/user/usePatchCommit';
 
 interface Props {
   user: UserFE;
@@ -126,12 +129,9 @@ const EditProfileContent: React.FC<Props> = ({
       if (isPlayer) {
         if (committed) {
           if (hadCommit) {
-            const patch = buildCommitCreatePayload({
+            const patch = buildCommitPatchPayload({
               collegeSchool,
               collegeDisplay: formData.college,
-              commitDate,
-              fallbackState: undefined,
-              fallbackCity: undefined,
             });
 
             if (Object.keys(patch).length > 0) {
