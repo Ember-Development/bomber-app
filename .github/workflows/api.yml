@@ -5,7 +5,7 @@ on:
     branches: [main, ci-cd-rushed]
     paths:
       - '*' # root files
-      - '.github/**' # this ci/cd stuff
+      - '.github/workflows/api.yml' # this ci/cd stuff
       - 'packages/**' # supporting files i.e. db types
       - 'apps/api/**' # api specifics
 
