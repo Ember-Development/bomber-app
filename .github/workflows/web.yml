@@ -1,4 +1,4 @@
-name: Node.js CI/CD to AWS EC2
+name: Web App Deploy
 
 on:
   push:
