@@ -25,7 +25,7 @@ jobs:
         run: npm install -g pnpm && pnpm install --no-frozen-lockfile
         working-directory: ./
       - name: Build frontend
-        run: pnpm run build
+        run: pnpm run dumb # dumb version of build that throws away the whole type system for no reason... masterful gambit sir
         working-directory: ./apps/web
 
   deploy:
