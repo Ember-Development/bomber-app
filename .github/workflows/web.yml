@@ -12,8 +12,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
+  deploy:
     runs-on: ubuntu-latest
+    environment: prod
     steps:
       - uses: actions/checkout@v2
       - name: Set up Node.js
@@ -31,19 +32,13 @@ jobs:
         uses: easingthemes/ssh-deploy@main
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.EC2_HOST }}
+          REMOTE_HOST: ${{ secrets.WEB_HOST }}
           REMOTE_USER: ubuntu
           SOURCE: './'
           TARGET: ~/deploy
           EXCLUDE: ./frontend/node_modules/
           INCLUDE: 'frontend/ backend/'
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    environment: prod
-    steps:
-      - uses: actions/checkout@v2
       - name: Move build to /var/www/html
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key
