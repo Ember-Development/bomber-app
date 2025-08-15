@@ -6,8 +6,7 @@ import {
   TrashIcon,
   UserIcon,
 } from '@heroicons/react/24/outline';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import SideDialog from '@/components/sideDialog';
+import SideDialog from '@/components/SideDialog';
 import {
   fetchUsers,
   createUser,
