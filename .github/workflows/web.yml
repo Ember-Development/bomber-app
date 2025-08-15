@@ -19,6 +19,15 @@ jobs:
         # needs the frozen option for some reason... ughh
         run: npm install -g pnpm && pnpm install --no-frozen-lockfile
         working-directory: ./
+      - name: Build frontend
+        run: pnpm run build
+        working-directory: ./apps/web
+        env:
+          # FIXME: shouldnt these be prefaced by 'VITE_'???
+          API_BASE_URL: 'https://api.bomberadmin.net'
+          # This isn't set up but then again neither is messaging so it
+          # shouldn't matter methinks
+          SOCKET_SERVER_URL: 'https://wss.bomberadmin.net'
 
   deploy:
     runs-on: ubuntu-latest
@@ -30,45 +39,23 @@ jobs:
         uses: easingthemes/ssh-deploy@main
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.EC2_HOST }}
+          # FIXME: change web and api host to their own vars
+          REMOTE_HOST: ${{ secrets.WEB_HOST }}
           REMOTE_USER: ubuntu
           SOURCE: './'
           TARGET: ~/deploy
           EXCLUDE: ./frontend/node_modules/
           INCLUDE: 'frontend/ backend/'
 
-      - name: Restart PM2
+      - name: Move build to /var/www/html
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key
           chmod 600 ssh_key
-          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'ENDSSH'
+          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.WEB_HOST }} << 'ENDSSH'
           export PATH=$PATH:/home/ubuntu/.local/share/pnpm
-          cd ~/deploy/apps/api
+          cd ~/deploy/apps/web
           pnpm install 
-
-          # Database
-          echo "DB_URI=postgresql://ubuntu:Bomber0505!@10.0.0.99:5432/bomber_db?schema=public" > .env
-
-
-          #FIXME: this is probably wrong
-          echo "REDIS_HOST=localhost" >> .env
-          echo "REDIS_PORT=6379" >> .env
-
-
-          # Serve
-          echo "PORT=3000" >> .env
-
-          # JWT secrets
-          # FIXME: bad pass, will get got by dictionary attacks
-          echo "JWT_ACCESS_SECRET=your_random_access_secret_here" >> .env
-          echo "JWT_REFRESH_SECRET=your_random_refresh_secret_here" >> .env
-
-          # Token lifetimes
-          echo "ACCESS_EXPIRES_IN=1d" >> .env
-          echo "REFRESH_EXPIRES_IN=7d" >> .env
-
-          # Password hashing
-          echo "BCRYPT_SALT_ROUNDS=12" >> .env
+          rsync -av --delete --exclude='.htaccess' /home/ubuntu/deploy/apps/web/dist/ /var/www/html/
 
           ENDSSH
           rm -f ssh_key
