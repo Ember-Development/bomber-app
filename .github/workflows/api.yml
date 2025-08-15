@@ -29,7 +29,7 @@ jobs:
         uses: easingthemes/ssh-deploy@main
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.EC2_HOST }}
+          REMOTE_HOST: ${{ secrets.API_HOST }}
           REMOTE_USER: ubuntu
           SOURCE: './'
           TARGET: ~/deploy
@@ -40,7 +40,7 @@ jobs:
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key
           chmod 600 ssh_key
-          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'ENDSSH'
+          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.API_HOST }} << 'ENDSSH'
           export PATH=$PATH:/home/ubuntu/.local/share/pnpm
           cd ~/deploy/apps/api
           pnpm install 
