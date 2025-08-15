@@ -375,7 +375,7 @@ const EditProfileContent: React.FC<Props> = ({
               </View>
             </View>
             <CustomSelect
-              label="Practice Short Size"
+              label="Practice Shirt Size"
               options={SHORTS_SIZES}
               defaultValue={formData.practiceShortSize}
               onSelect={(value) =>
