@@ -72,7 +72,7 @@ export default function PlayerProfile({ user, activeTab }: any) {
       { label: 'Stirrup Size', value: user?.player?.stirrupSize ?? 'N/A' },
       { label: 'Short Size', value: user?.player?.shortSize ?? 'N/A' },
       {
-        label: 'Practice Short Size',
+        label: 'Practice Shirt Size',
         value: user?.player?.practiceShortSize ?? 'N/A',
       },
     ];

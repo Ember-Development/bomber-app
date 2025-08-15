@@ -238,6 +238,14 @@ export default function SettingsScreen() {
                   text="COPPA Notice"
                   onPress={() => router.push('/side/coppa')}
                 />
+                {(currentUser.role === 'ADMIN' ||
+                  currentUser.role === 'COACH' ||
+                  currentUser.role === 'REGIONAL_COACH') && (
+                  <PressLink
+                    text="Coach Responsibilities"
+                    onPress={() => router.push('/side/coach-waiver')}
+                  />
+                )}
                 <PressLink
                   text="Contact Support"
                   onPress={() => router.push('/side/contact')}

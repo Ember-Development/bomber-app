@@ -548,7 +548,7 @@ export default function AthleteStepper() {
         onSelect={setShortSize}
       />
       <CustomSelect
-        label="Practice Short Size"
+        label="Practice Shirt Size"
         options={SHORTS_SIZES}
         defaultValue={practiceShirtSize ?? undefined}
         onSelect={setPracticeShirtSize}

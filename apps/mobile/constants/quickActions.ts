@@ -39,7 +39,7 @@ export function useQuickActions(role: Role): QuickAction[] {
   const myPlayers: QuickAction = {
     title: 'My Players',
     iconName: 'person-outline',
-    onPress: () => router.push('/players'),
+    onPress: () => router.push('/profile'),
   };
 
   const myProfile: QuickAction = {
@@ -51,13 +51,13 @@ export function useQuickActions(role: Role): QuickAction[] {
   const bomberTeams: QuickAction = {
     title: 'Bomber Teams',
     iconName: 'shield-outline',
-    onPress: () => router.push('/bomber-teams'),
+    onPress: () => router.push('/teams'),
   };
 
   const myRegion: QuickAction = {
     title: 'My Region',
     iconName: 'map-outline',
-    onPress: () => router.push('/region'),
+    onPress: () => router.push('/profile'),
   };
 
   const map: Record<Role, QuickAction[]> = {
