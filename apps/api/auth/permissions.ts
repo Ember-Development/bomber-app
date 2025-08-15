@@ -37,6 +37,7 @@ export const roleToActions: Record<Role, Action[]> = {
     'delete-my-team',
     'edit-my-team',
     'edit-my-info',
+    'edit-coach',
     'view-my-team',
     'create-team-group',
     'add-user-to-group',
@@ -50,6 +51,7 @@ export const roleToActions: Record<Role, Action[]> = {
     'remove-trophy',
     'edit-player',
     'delete-user',
+    'remove-player',
   ],
   COACH: [
     'view-my-info',
