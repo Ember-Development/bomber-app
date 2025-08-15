@@ -22,7 +22,6 @@ export const auth: RequestHandler = async (req, res, next) => {
   }
 
   const userId: string | undefined = payload.sub;
-  // Be defensive about claim names and shapes
   let primaryRole: Role | undefined =
     payload.role || payload.primaryRole || undefined;
 
@@ -33,7 +32,7 @@ export const auth: RequestHandler = async (req, res, next) => {
         ? [primaryRole]
         : [];
 
-  // If we still don't have a role, fall back to DB (saves you from reissuing tokens)
+  // If we still don't have a role, fall back to DB
   if ((!roles || roles.length === 0) && userId) {
     try {
       const user = await prisma.user.findUnique({
@@ -44,9 +43,7 @@ export const auth: RequestHandler = async (req, res, next) => {
         primaryRole = user.primaryRole as Role;
         roles = [primaryRole];
       }
-    } catch (e) {
-      // swallow; we'll fail below if roles still empty
-    }
+    } catch (e) {}
   }
 
   if (!roles || roles.length === 0) {
@@ -56,9 +53,6 @@ export const auth: RequestHandler = async (req, res, next) => {
   const actions: Action[] = Array.from(
     new Set(roles.flatMap((r) => roleToActions[r] || []))
   );
-
-  // Optional debug to mirror what you saw:
-  // console.log('[auth] payload=', payload, 'primaryRole=', primaryRole, 'roles=', roles, 'actions=', actions);
 
   (req as AuthenticatedRequest).user = {
     id: userId!,
