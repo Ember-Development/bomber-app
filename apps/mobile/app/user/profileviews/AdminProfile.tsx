@@ -40,7 +40,7 @@ export default function AdminProfile({
   hasParentRecord,
   view,
   setView,
-  regionTeams, // <- contains ALL teams for Admin
+  regionTeams,
   selectedRegionTeamId,
   setSelectedRegionTeamId,
   setEditPlayerId,

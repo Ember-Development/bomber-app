@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { regCoachService } from '../services/regCoach';
-import { AuthenticatedRequest } from '../auth/devAuth';
+import { AuthenticatedRequest } from '../utils/express';
 
 export const createOrUpdateRegCoach = async (
   req: AuthenticatedRequest,

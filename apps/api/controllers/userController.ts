@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { CreateUserInput, userService } from '../services/user';
-import { AuthenticatedRequest } from '../auth/devAuth';
 import { hashPassword, verifyPassword } from '../utils/crypto';
+import { AuthenticatedRequest } from '../utils/express';
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {

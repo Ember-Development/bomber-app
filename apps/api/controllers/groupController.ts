@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { groupService } from '../services/groups';
 import { prisma } from '@bomber-app/database';
-import { AuthenticatedRequest } from '../auth/devAuth';
+import { AuthenticatedRequest } from '../utils/express';
 
 export const getGroups = async (req: Request, res: Response) => {
   try {

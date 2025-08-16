@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { coachService, UpdateCoachInput } from '../services/coach';
-import { AuthenticatedRequest } from '../auth/devAuth';
 import { error } from 'console';
+import { AuthenticatedRequest } from '../utils/express';
 
 export const getAllCoaches = async (_req: Request, res: Response) => {
   try {

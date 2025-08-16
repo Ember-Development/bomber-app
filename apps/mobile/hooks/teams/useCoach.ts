@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CoachFE } from '@bomber-app/database';
-import { deleteCoach, getCoachById, updateCoach } from '@/api/teams/coach';
+import { CoachFE, TeamFE } from '@bomber-app/database';
+import {
+  deleteCoach,
+  getCoachById,
+  removeCoachFromTeam,
+  updateCoach,
+} from '@/api/teams/coach';
 import { useNormalizedUser } from '@/utils/user';
 
 interface Params {
@@ -56,5 +61,32 @@ export const useDeleteCoach = (options?: { onSuccess?: () => void }) => {
     },
     onError: (err) => console.error('[HOOK] deleteCoach failed:', err),
     ...options,
+  });
+};
+
+type Vars = { coachId: string; teamId: string };
+
+export const useRemoveCoachFromTeam = (options?: {
+  onSuccess?: (team: TeamFE) => void;
+  onError?: (err: unknown) => void;
+  teamId?: string;
+}) => {
+  const qc = useQueryClient();
+  const { refetch: refetchMe } = useNormalizedUser();
+
+  return useMutation({
+    mutationFn: ({ coachId, teamId }: Vars) =>
+      removeCoachFromTeam(coachId, teamId),
+    onSuccess: (team) => {
+      // keep cache fresh
+      qc.invalidateQueries({ queryKey: ['teams'] });
+      qc.invalidateQueries({ queryKey: ['team', team.id] });
+      if (options?.teamId) {
+        qc.setQueryData(['team', options.teamId], team);
+      }
+      refetchMe();
+      options?.onSuccess?.(team);
+    },
+    onError: options?.onError,
   });
 };

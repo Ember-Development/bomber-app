@@ -6,7 +6,6 @@ import {
   deleteCoach,
   removeCoachFromTeam,
 } from '../controllers/coachController';
-import { devAuth } from '../auth/devAuth';
 import { authorize } from '../middleware/authorize';
 import { auth } from '../auth/auth';
 
