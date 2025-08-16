@@ -178,10 +178,16 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 
 export async function refresh(req: Request, res: Response, next: NextFunction) {
   try {
+    console.log('[REFRESH] body keys:', Object.keys(req.body || {}));
     const { token } = validateRefresh(req.body);
     const data = await authService.refreshToken(token);
     return res.json(data);
-  } catch (err) {
+  } catch (err: any) {
+    console.error('[REFRESH] fail:', err?.message || err);
+    if (err.status === 401)
+      return res.status(401).json({ error: 'Invalid refresh' });
+    next(err);
+
     next(err);
   }
 }
