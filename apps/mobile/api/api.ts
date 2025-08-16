@@ -94,6 +94,13 @@ api.interceptors.request.use(async (config) => {
       config.headers = { Authorization: `Bearer ${token}` } as any;
     }
   }
+  console.log(
+    '[REQ]',
+    config.method,
+    config.url,
+    'Auth?',
+    !!(config.headers as any)?.Authorization
+  );
   return config;
 });
 
