@@ -44,10 +44,11 @@ async function refreshAccess(): Promise<string | null> {
   if (isRefreshing) return new Promise((res) => waiters.push(res));
   isRefreshing = true;
   try {
-    const refresh = await getRefresh();
+    const raw = await getRefresh();
+    const refresh = raw?.trim();
     if (!refresh) throw new Error('no-refresh');
 
-    // IMPORTANT: backend expects { token }
+    // Backend expects { token }
     const { data } = await axios.post(`${API_BASE_URL}/api/auth/refresh`, {
       token: refresh,
     });
@@ -68,32 +69,38 @@ async function refreshAccess(): Promise<string | null> {
   }
 }
 
-// ---- attach token + proactive refresh ----
-api.interceptors.request.use(async (config) => {
+// ---- proactive refresh helper with skew ----
+const SKEW = 120; // seconds
+async function getPossiblyRefreshedAccess(): Promise<string | null> {
   let token = await getAccess();
+  if (!token) return null;
 
-  if (token) {
-    try {
-      const { exp } = jwtDecode<{ exp?: number }>(token);
-      const now = Math.floor(Date.now() / 1000);
-      if (exp && exp - now < 60) {
-        const t = await refreshAccess();
-        if (t) token = t;
-      }
-    } catch {}
-  }
-
-  if (token) {
-    if (config.headers) {
-      if (typeof config.headers.set === 'function') {
-        config.headers.set('Authorization', `Bearer ${token}`);
-      } else {
-        (config.headers as any)['Authorization'] = `Bearer ${token}`;
-      }
-    } else {
-      config.headers = { Authorization: `Bearer ${token}` } as any;
+  try {
+    const { exp } = jwtDecode<{ exp?: number }>(token);
+    const now = Math.floor(Date.now() / 1000);
+    if (exp && exp - now < SKEW) {
+      const t = await refreshAccess();
+      if (t) token = t;
     }
+  } catch {
+    // If decode fails, try to refresh once
+    const t = await refreshAccess();
+    if (t) token = t;
   }
+  return token;
+}
+
+// ---- request interceptor #1: attach Authorization + mark __hadAuth ----
+api.interceptors.request.use(async (config) => {
+  const token = await getPossiblyRefreshedAccess();
+  if (token) {
+    config.headers = config.headers ?? {};
+    (config.headers as any).Authorization = `Bearer ${token}`;
+    (config as any).__hadAuth = true; // mark that auth was set
+  } else {
+    (config as any).__hadAuth = false;
+  }
+
   console.log(
     '[REQ]',
     config.method,
@@ -104,12 +111,35 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// ---- retry once on 401 after refresh ----
+// ---- request interceptor #2 (finalizer): re-assert Authorization if clobbered ----
+api.interceptors.request.use(async (config) => {
+  const hadAuthAlready = !!(config.headers as any)?.Authorization;
+  if (!hadAuthAlready) {
+    // Callsite likely overwrote headers; re-assert using current access token
+    const token = await getAccess(); // no second refresh here
+    if (token) {
+      config.headers = config.headers ?? {};
+      (config.headers as any).Authorization = `Bearer ${token}`;
+      if ((config as any).__hadAuth === false) {
+        (config as any).__hadAuth = true;
+      }
+    }
+  }
+  return config;
+});
+
+// ---- response interceptor: retry once on 401 after refresh ----
 api.interceptors.response.use(
   (r) => r,
   async (error) => {
     const original = error.config as any;
     if (!original || original._retry) throw error;
+
+    // Don't try to refresh the refresh call itself
+    const isRefreshCall =
+      typeof original?.url === 'string' &&
+      original.url.includes('/api/auth/refresh');
+    if (isRefreshCall) throw error;
 
     if (error.response?.status === 401) {
       original._retry = true;

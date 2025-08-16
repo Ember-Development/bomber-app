@@ -36,7 +36,14 @@ app.get('/', (_: Request, res: Response) => {
 app.use(express.json());
 
 app.use(helmet());
-app.use(cors({ origin: process.env.CORS_ORIGINS?.split(',') || [] }));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGINS?.split(',') || [],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  })
+);
+app.options('*', cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
