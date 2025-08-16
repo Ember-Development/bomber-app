@@ -7,6 +7,7 @@ import { prisma } from '@bomber-app/database';
 
 export const auth: RequestHandler = async (req, res, next) => {
   const header = req.header('Authorization') || '';
+  console.log('[AUTH:jwt] header len=', header.length);
   if (!header) return res.status(401).json({ error: 'No token provided' });
 
   const [scheme, token] = header.split(' ');

@@ -55,7 +55,9 @@ const EditProfileContent: React.FC<Props> = ({
   const isCoach =
     primaryRole === 'COACH' ||
     primaryRole === 'PARENT' ||
-    primaryRole === 'FAN';
+    primaryRole === 'FAN' ||
+    primaryRole === 'ADMIN' ||
+    primaryRole === 'REGIONAL_COACH';
   const [activeTab, setActiveTab] = useState<'info' | 'contact' | 'gear'>(
     isCoach ? 'info' : 'info'
   );

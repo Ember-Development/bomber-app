@@ -28,7 +28,7 @@ export default function ModalManager({
   removeCoachId,
   setRemoveCoachId,
   selectedCoachToRemove,
-  deleteCoach,
+  removeCoach,
 
   // trophies
   editTrophy,
@@ -85,7 +85,10 @@ export default function ModalManager({
           coachName={`${selectedCoachToRemove.user?.fname} ${selectedCoachToRemove.user?.lname}`}
           onClose={() => setRemoveCoachId(null)}
           onConfirm={() => {
-            deleteCoach(removeCoachId);
+            removeCoach({
+              coachId: removeCoachId.coachId,
+              teamId: removeCoachId.teamId,
+            });
             setRemoveCoachId(null);
           }}
         />

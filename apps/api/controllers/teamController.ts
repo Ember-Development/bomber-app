@@ -1,6 +1,6 @@
-import { AuthenticatedRequest } from '../auth/devAuth';
 import { CreateTeamInput, teamService } from '../services/teams';
 import { Request, Response } from 'express';
+import { AuthenticatedRequest } from '../utils/express';
 
 export const getAllTeams = async (req: Request, res: Response) => {
   try {

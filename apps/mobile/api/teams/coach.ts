@@ -1,4 +1,4 @@
-import { CoachFE } from '@bomber-app/database';
+import { CoachFE, TeamFE } from '@bomber-app/database';
 import { api } from '../api';
 
 export const getCoachById = async (id: string): Promise<CoachFE> => {
@@ -16,4 +16,18 @@ export const updateCoach = async (
 
 export const deleteCoach = async (id: string): Promise<void> => {
   await api.delete(`/api/coaches/${id}`);
+};
+
+export const removeCoachFromTeam = async (
+  coachId: string,
+  teamId: string
+): Promise<TeamFE> => {
+  const { data } = await api.post<TeamFE>(
+    '/api/coaches/remove-coach-from-team',
+    {
+      coachId,
+      teamId,
+    }
+  );
+  return data;
 };

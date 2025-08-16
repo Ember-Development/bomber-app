@@ -1,5 +1,4 @@
 import express from 'express';
-import { devAuth } from '../auth/devAuth';
 import { authorize } from '../middleware/authorize';
 import {
   addCoachToTeam,

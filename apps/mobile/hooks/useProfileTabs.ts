@@ -1,7 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useNormalizedUser } from '@/utils/user';
 import { usePlayerById, useDeletePlayer } from '@/hooks/teams/usePlayerById';
-import { useCoachById, useDeleteCoach } from '@/hooks/teams/useCoach';
+import {
+  useCoachById,
+  useDeleteCoach,
+  useRemoveCoachFromTeam,
+} from '@/hooks/teams/useCoach';
 import { useTeams } from '@/hooks/teams/useTeams';
 
 export type ProfileTab = 'info' | 'contact' | 'gear' | 'region' | 'players';
@@ -24,7 +28,10 @@ export function useProfileTabs() {
   const [editPlayerId, setEditPlayerId] = useState<string | null>(null);
   const [removePlayerId, setRemovePlayerId] = useState<string | null>(null);
   const [editCoachId, setEditCoachId] = useState<string | null>(null);
-  const [removeCoachId, setRemoveCoachId] = useState<string | null>(null);
+  const [removeCoachId, setRemoveCoachId] = useState<{
+    coachId: string;
+    teamId: string;
+  } | null>(null);
   const [editTrophy, setEditTrophy] = useState<{
     teamId: string;
     trophy: any;
@@ -41,7 +48,9 @@ export function useProfileTabs() {
   const { data: selectedPlayer } = usePlayerById(editPlayerId ?? '');
   const { data: selectedPlayerToRemove } = usePlayerById(removePlayerId ?? '');
   const { data: selectedCoach } = useCoachById(editCoachId ?? '');
-  const { data: selectedCoachToRemove } = useCoachById(removeCoachId ?? '');
+  const { data: selectedCoachToRemove } = useCoachById(
+    removeCoachId?.coachId ?? ''
+  );
   const { data: allTeams = [] } = useTeams();
 
   const regionTeams = useMemo(() => {
@@ -55,7 +64,7 @@ export function useProfileTabs() {
   const { mutate: deletePlayer } = useDeletePlayer({
     onSuccess: () => setRemovePlayerId(null),
   });
-  const { mutate: deleteCoach } = useDeleteCoach({
+  const { mutate: removeCoach } = useRemoveCoachFromTeam({
     onSuccess: () => setRemoveCoachId(null),
   });
 
@@ -103,6 +112,6 @@ export function useProfileTabs() {
     regionTeams,
 
     deletePlayer,
-    deleteCoach,
+    removeCoach,
   };
 }

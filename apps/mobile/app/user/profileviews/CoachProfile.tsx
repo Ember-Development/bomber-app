@@ -14,7 +14,7 @@ type Props = {
   setEditPlayerId: (id: string) => void;
   setRemovePlayerId: (id: string) => void;
   setEditCoachId: (id: string) => void;
-  setRemoveCoachId: (id: string) => void;
+  setRemoveCoachId: (x: { coachId: string; teamId: string }) => void;
   setEditTrophy: (x: any) => void;
   setRemoveTrophy: (x: any) => void;
   setSelectedProfile: (x: any) => void;
@@ -156,7 +156,8 @@ export default function CoachProfile({
               value: 'Coach',
               fullWidth: true,
               onEdit: () => setEditCoachId(c.id),
-              onRemove: () => setRemoveCoachId(c.id),
+              onRemove: () =>
+                setRemoveCoachId({ coachId: c.id, teamId: team.id }),
             })) || [],
           trophies:
             team.trophyCase?.map((t: any) => ({
