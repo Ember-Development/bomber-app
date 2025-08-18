@@ -75,5 +75,8 @@ jobs:
           # Password hashing
           echo "BCRYPT_SALT_ROUNDS=12" >> .env
 
+          pm2 restart all
+
+
           ENDSSH
           rm -f ssh_key
