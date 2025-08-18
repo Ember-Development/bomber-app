@@ -39,8 +39,6 @@ jobs:
           REMOTE_USER: ubuntu
           SOURCE: './'
           TARGET: ~/deploy
-          EXCLUDE: ./frontend/node_modules/
-          INCLUDE: 'frontend/ backend/'
 
       - name: Restart PM2
         run: |
