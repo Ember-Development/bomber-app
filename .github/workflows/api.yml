@@ -52,7 +52,7 @@ jobs:
           pnpm install 
 
           # Database
-          echo "DB_URI=postgresql://ubuntu:Bomber0505!@10.0.0.99:5432/bomber_db?schema=public" > .env
+          echo "DB_URI=postgresql://postgres:Bomber0505!@10.0.0.99:5432/bombers" > .env
 
 
           #FIXME: this is probably wrong
