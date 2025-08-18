@@ -47,6 +47,24 @@ app.options('*', cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
+// for debug remove after
+app.use((req, _res, next) => {
+  if (req.method === 'PUT' && req.path.startsWith('/api/users/')) {
+    console.log('[HEADERS BEFORE AUTH]', {
+      method: req.method,
+      path: req.path,
+      auth: req.headers['authorization'] || req.headers['Authorization'],
+      ct: req.headers['content-type'],
+      ua: req.headers['user-agent'],
+      hv: req.httpVersionMajor + '.' + req.httpVersionMinor,
+      host: req.headers['host'],
+      origin: req.headers['origin'],
+      referer: req.headers['referer'],
+    });
+  }
+  next();
+});
+
 app.use('/api/groups', groupRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/users', userRoutes);
