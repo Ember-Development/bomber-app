@@ -74,13 +74,7 @@ jobs:
           echo "BCRYPT_SALT_ROUNDS=12" >> .env
 
           # couldnt tell you why we need this here but not for chart...
-          # Install pm2 locally for ubuntu user if not already
-          if ! command -v pm2 >/dev/null 2>&1; then
-            pnpm add -g pm2
-          fi
-
-          # Restart apps
-          pm2 restart all || pm2 start ecosystem.config.js
+          npx pm2 restart all
 
 
           ENDSSH
