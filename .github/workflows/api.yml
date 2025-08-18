@@ -45,7 +45,10 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key
           chmod 600 ssh_key
           ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.API_HOST }}  << 'ENDSSH'
+          # didn't need to do this for chart but whatever
           source ~/.bashrc  
+          source ~/.nvm/nvm.sh
+
           export PATH=$PATH:/home/ubuntu/.local/share/pnpm
 
           cd ~/deploy/apps/api
