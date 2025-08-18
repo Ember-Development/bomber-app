@@ -73,9 +73,7 @@ jobs:
           # Password hashing
           echo "BCRYPT_SALT_ROUNDS=12" >> .env
 
-          # couldnt tell you why we need this here but not for chart...
-          npx pm2 restart all
-
+          pm2 restart all
 
           ENDSSH
           rm -f ssh_key
