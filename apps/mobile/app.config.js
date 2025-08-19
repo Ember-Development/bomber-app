@@ -14,7 +14,10 @@ module.exports = {
     newArchEnabled: true,
 
     ios: {
-      bundleIdentifier: 'com.emberdevco.bomberapp',
+      bundleIdentifier: 'com.bomberfastpitch.bomberapp',
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+      },
       supportsTablet: true,
     },
 
@@ -34,6 +37,7 @@ module.exports = {
 
     plugins: [
       'expo-router',
+      'expo-secure-store',
       [
         'expo-splash-screen',
         {

@@ -13,13 +13,31 @@
     "simulator": {
       "ios": { "simulator": true, "resourceClass": "m-medium" }
     },
-    "production": {
-      "autoIncrement": true,
+    "preview": {
+      "distribution": "store",
+      "packageManager": "pnpm",
+      "autoIncrement": "true",
+      "ios": { "resourceClass": "m-medium" },
       "env": {
         "API_BASE_URL": "https://api.bomberadmin.net",
-        "SOCKET_SERVER_URL": "http://192.168.1.76:3000"
+        "EXPO_NO_METRO_CACHE": "1"
+      }
+    },
+    "production": {
+      "distribution": "store",
+      "autoIncrement": "true",
+      "ios": { "resourceClass": "m-medium" },
+      "env": {
+        "API_BASE_URL": "https://api.bomberadmin.net"
       }
     }
   },
-  "submit": { "production": {} }
+  "submit": {
+    "preview": {
+      "ios": {}
+    },
+    "production": {
+      "ios": {}
+    }
+  }
 }
