@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "5716a622-1434-422d-a9af-fb8aab33b8c3"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.bomberfastpitch.bomberapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    }
+  }
+}
