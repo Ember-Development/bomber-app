@@ -36,19 +36,9 @@ app.get('/', (_: Request, res: Response) => {
 app.use(express.json());
 
 app.use(helmet());
-const allowlist = [
-  'http://localhost:5173',
-  'http://192.168.1.76:5173',
-  'http://18.214.158.188',
-];
 app.use(
   cors({
-    origin(origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowlist.includes(origin)) return callback(null, true);
-      return callback(new Error(`Not allowed by CORS: ${origin}`));
-    },
-    credentials: true,
+    origin: process.env.CORS_ORIGINS?.split(',') || [],
     allowedHeaders: ['Content-Type', 'Authorization'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   })
