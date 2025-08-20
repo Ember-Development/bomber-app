@@ -36,10 +36,7 @@ app.get('/', (_: Request, res: Response) => {
 app.use(express.json());
 
 app.use(helmet());
-const allowlist = (process.env.CORS_ORIGINS || '')
-  .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
+const allowlist = ['http://localhost:5173', 'http://192.168.1.76:5173'];
 app.use(
   cors({
     origin(origin, callback) {
