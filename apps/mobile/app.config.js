@@ -13,6 +13,8 @@ module.exports = {
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
 
+    entryPoint: './index.js',
+
     ios: {
       bundleIdentifier: 'com.bomberfastpitch.bomberapp',
       infoPlist: {
@@ -23,6 +25,7 @@ module.exports = {
 
     android: {
       package: 'com.emberdevco.bomberapp',
+      versionCode: 1,
       adaptiveIcon: {
         foregroundImage: './assets/images/bombericonios.png',
         backgroundColor: '#ffffff',

@@ -21,6 +21,16 @@ import { US_STATES } from '@/utils/state';
 import type { CreateTeamDTO, UpdateTeamDTO } from '@/api/team';
 import { PublicUserFE, Regions } from '@bomber-app/database';
 
+const REGION_OPTIONS: { value: Regions; label: string }[] = [
+  { value: 'ACADEMY', label: 'Academy' },
+  { value: 'PACIFIC', label: 'Pacific' },
+  { value: 'MOUNTAIN', label: 'Mountain' },
+  { value: 'MIDWEST', label: 'Midwest' },
+  { value: 'NORTHEAST', label: 'Northeast' },
+  { value: 'SOUTHEAST', label: 'Southeast' },
+  { value: 'TEXAS', label: 'Texas' },
+];
+
 export default function Teams() {
   const navigate = useNavigate();
 
@@ -61,7 +71,7 @@ export default function Teams() {
   const [newTeam, setNewTeam] = useState<CreateTeamDTO>({
     name: '',
     ageGroup: 'U8',
-    region: 'Texas',
+    region: 'TEXAS',
     state: 'TX',
     headCoachUserID: null,
   });
@@ -72,7 +82,7 @@ export default function Teams() {
     setNewTeam({
       name: '',
       ageGroup: 'U8',
-      region: 'Texas',
+      region: 'TEXAS',
       state: 'TX',
       headCoachUserID: null,
     });
@@ -464,7 +474,7 @@ export default function Teams() {
             <select
               value={newTeam.region}
               onChange={(e) =>
-                setNewTeam((t) => ({ ...t, region: e.target.value }))
+                setNewTeam((t) => ({ ...t, region: e.target.value as Regions }))
               }
               className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
             >
@@ -489,7 +499,10 @@ export default function Teams() {
             <select
               value={newTeam.state}
               onChange={(e) =>
-                setNewTeam((t) => ({ ...t, state: e.target.value }))
+                setNewTeam((t) => ({
+                  ...t,
+                  state: e.target.value as CreateTeamDTO['state'],
+                }))
               }
               className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
             >

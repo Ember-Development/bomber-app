@@ -15,7 +15,6 @@
     },
     "preview": {
       "distribution": "store",
-      "packageManager": "pnpm",
       "autoIncrement": "true",
       "ios": { "resourceClass": "m-medium" },
       "env": {
