@@ -1,9 +1,17 @@
 import { api } from './api';
 
+export type MediaCategory =
+  | 'TRAINING'
+  | 'PODCAST'
+  | 'HIGHLIGHTS'
+  | 'INTERVIEWS'
+  | 'MERCH';
+
 export interface MediaFE {
   id: string;
   title: string;
   videoUrl: string;
+  category: MediaCategory;
   createdAt: string;
   updatedAt: string;
 }
@@ -11,11 +19,13 @@ export interface MediaFE {
 export interface CreateMediaDTO {
   title: string;
   videoUrl: string;
+  category: MediaCategory;
 }
 
 export interface UpdateMediaDTO {
   title?: string;
   videoUrl?: string;
+  category: MediaCategory;
 }
 
 export const fetchMedia = async (): Promise<MediaFE[]> => {

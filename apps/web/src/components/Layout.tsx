@@ -10,6 +10,8 @@ import {
   ChevronDoubleRightIcon,
 } from '@heroicons/react/24/outline';
 import logoSrc from '@/assets/images/Bomber Script-White-ADMIN.png';
+import { useAuth } from '@/context/AuthContext';
+import { UserFE } from '@bomber-app/database';
 
 const RAIL_W = 80;
 const FULL_W = 304;
@@ -17,6 +19,25 @@ const FULL_W = 304;
 export default function Layout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [pinned, setPinned] = useState(false);
+
+  const { user, logout } = useAuth();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const fullName =
+    [user?.fname, user?.lname].filter(Boolean).join(' ') ||
+    (user as any)?.name ||
+    (user?.email ? user.email.split('@')[0] : '') ||
+    'User';
+
+  const initials =
+    (
+      (user?.fname?.[0] || '') + (user?.lname?.[0] || '') ||
+      fullName
+        .split(' ')
+        .map((p: UserFE[]) => p[0])
+        .slice(0, 2)
+        .join('')
+    ).toUpperCase() || 'U';
 
   const Sidebar = (
     <aside
@@ -194,8 +215,59 @@ export default function Layout() {
               <button className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
                 <BellIcon className="w-6 h-6 text-white" />
               </button>
-              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-medium text-white">
-                JS
+              <div
+                className="relative"
+                tabIndex={0}
+                onBlur={() => setTimeout(() => setUserMenuOpen(false), 120)}
+              >
+                <button
+                  onClick={() => setUserMenuOpen((v) => !v)}
+                  className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-semibold text-white hover:bg-white/30 transition"
+                  aria-haspopup="menu"
+                  aria-expanded={userMenuOpen}
+                  aria-label={`${fullName} menu`}
+                >
+                  {initials}
+                </button>
+
+                {userMenuOpen && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 mt-2 w-56 rounded-xl border border-white/15 bg-[rgba(15,15,25,0.9)] backdrop-blur-xl shadow-2xl overflow-hidden z-30"
+                  >
+                    <div className="px-4 py-3 border-b border-white/10">
+                      <div className="text-sm text-white/60">Signed in as</div>
+                      <div className="mt-0.5 font-semibold truncate">
+                        {fullName}
+                      </div>
+                    </div>
+
+                    <button
+                      role="menuitem"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        logout();
+                      }}
+                      className="w-full text-left px-4 py-3 text-white/90 hover:bg-white/10 transition flex items-center gap-2"
+                    >
+                      <svg
+                        className="w-5 h-5 opacity-80"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"
+                        />
+                      </svg>
+                      Logout
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

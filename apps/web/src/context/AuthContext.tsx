@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { UserFE } from '@bomber-app/database';
-import { api } from '@/api/api';
+import { api, bootstrapAuthFromStorage, tryRefresh } from '@/api/api';
 
 type AuthContextType = {
   user: UserFE | null;
@@ -30,7 +30,19 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({
   };
 
   useEffect(() => {
-    fetchMe();
+    (async () => {
+      bootstrapAuthFromStorage();
+
+      if (!localStorage.getItem('access') && localStorage.getItem('refresh')) {
+        try {
+          await tryRefresh();
+        } catch {
+          /* ignore */
+        }
+      }
+
+      await fetchMe();
+    })();
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -42,6 +54,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({
   };
 
   const logout = () => {
+    api.post('/auth/logout').catch(() => {});
     localStorage.removeItem('access');
     localStorage.removeItem('refresh');
     delete api.defaults.headers.Authorization;
