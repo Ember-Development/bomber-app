@@ -36,7 +36,7 @@ app.get('/', (_: Request, res: Response) => {
 app.use(express.json());
 
 app.use(helmet());
-const allowlist = (process.env.CORS_ORIGINS || 'http://18.214.158.188')
+const allowlist = (process.env.CORS_ORIGINS || '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
