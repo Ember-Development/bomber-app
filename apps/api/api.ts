@@ -36,7 +36,11 @@ app.get('/', (_: Request, res: Response) => {
 app.use(express.json());
 
 app.use(helmet());
-const allowlist = ['http://localhost:5173', 'http://192.168.1.76:5173'];
+const allowlist = [
+  'http://localhost:5173',
+  'http://192.168.1.76:5173',
+  'http://18.214.158.188',
+];
 app.use(
   cors({
     origin(origin, callback) {
