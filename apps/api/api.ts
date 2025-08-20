@@ -31,7 +31,7 @@ const PORT = process.env.PORT || 3000;
 const prisma = new PrismaClient();
 
 app.get('/', (_: Request, res: Response) => {
-  res.send('Ready 4 Biznes');
+  res.send('Ready 4 Biznes!');
 });
 app.use(express.json());
 

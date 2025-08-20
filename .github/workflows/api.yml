@@ -39,20 +39,23 @@ jobs:
           REMOTE_USER: ubuntu
           SOURCE: './'
           TARGET: ~/deploy
-          EXCLUDE: ./frontend/node_modules/
-          INCLUDE: 'frontend/ backend/'
 
       - name: Restart PM2
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key
           chmod 600 ssh_key
-          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.API_HOST }} << 'ENDSSH'
+          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.API_HOST }}  << 'ENDSSH'
+          # didn't need to do this for chart but whatever
+          source ~/.bashrc  
+          source ~/.nvm/nvm.sh
+
           export PATH=$PATH:/home/ubuntu/.local/share/pnpm
+
           cd ~/deploy/apps/api
           pnpm install 
 
           # Database
-          echo "DB_URI=postgresql://ubuntu:Bomber0505!@10.0.0.99:5432/bomber_db?schema=public" > .env
+          echo "DB_URI=postgresql://postgres:Bomber0505!@10.0.0.99:5432/bombers" > .env
 
 
           #FIXME: this is probably wrong
@@ -74,6 +77,8 @@ jobs:
 
           # Password hashing
           echo "BCRYPT_SALT_ROUNDS=12" >> .env
+
+          pm2 restart all
 
           ENDSSH
           rm -f ssh_key
