@@ -186,41 +186,126 @@ export async function createForPlayer(req: Request, res: Response) {
 }
 
 export async function attachParentToPlayer(req: Request, res: Response) {
+  const playerId = String(req.params.id);
+  const rawParentId = (req.body?.parentId ?? '').toString().trim();
+
+  console.log('[attachParentToPlayer] start', { playerId, rawParentId });
+
+  if (!rawParentId) {
+    console.log('[attachParentToPlayer] missing parentId in body');
+    return res.status(400).json({ message: 'parentId is required' });
+  }
+
   try {
-    const playerId = String(req.params.id);
-    const { parentId } = req.body as { parentId: string | number };
-    if (!parentId)
-      return res.status(400).json({ message: 'parentId is required' });
-
-    const parentIdStr = String(parentId);
-
     const result = await prisma.$transaction(async (tx) => {
-      // 1) Hard 404s to prevent P2025
-      const [player, parent] = await Promise.all([
-        tx.player.findUnique({ where: { id: playerId }, select: { id: true } }),
-        tx.parent.findUnique({
-          where: { id: parentIdStr },
-          select: { id: true },
-        }),
-      ]);
-      if (!player) return res.status(404).json({ message: 'Player not found' });
-      if (!parent) return res.status(404).json({ message: 'Parent not found' });
+      // --- Step 1: resolve Parent.id from either Parent.id or User.id
+      console.log('[attachParentToPlayer] resolve parent start');
 
-      // 2) Idempotency: only connect if not already linked
+      // Try as Parent.id
+      let parent = await tx.parent.findUnique({
+        where: { id: rawParentId },
+        select: { id: true, userID: true },
+      });
+
+      if (parent) {
+        console.log('[attachParentToPlayer] resolved via Parent.id', {
+          parentId: parent.id,
+        });
+      } else {
+        // Try as User.id -> existing Parent?
+        const parentByUser = await tx.parent.findUnique({
+          where: { userID: rawParentId },
+          select: { id: true, userID: true },
+        });
+
+        if (parentByUser) {
+          parent = parentByUser;
+          console.log(
+            '[attachParentToPlayer] resolved via User.id -> existing Parent',
+            {
+              parentId: parent.id,
+              userID: parent.userID,
+            }
+          );
+        } else {
+          // Try as User.id -> create Parent (ensure) if the User exists
+          const user = await tx.user.findUnique({
+            where: { id: rawParentId },
+            select: { id: true },
+          });
+
+          if (!user) {
+            console.log('[attachParentToPlayer] not a Parent.id or User.id', {
+              rawParentId,
+            });
+            return res
+              .status(404)
+              .json({ message: 'Parent (or User) not found' });
+          }
+
+          console.log(
+            '[attachParentToPlayer] creating Parent via ensure() for user',
+            { userId: user.id }
+          );
+          parent = await tx.parent.upsert({
+            where: { userID: user.id },
+            update: {},
+            create: {
+              user: { connect: { id: user.id } },
+              // address is required in your schema; create a minimal one
+              address: {
+                create: {
+                  state: 'TX',
+                  city: 'Unknown',
+                  zip: '00000',
+                  address1: 'Pending',
+                },
+              },
+            },
+            select: { id: true, userID: true },
+          });
+          console.log('[attachParentToPlayer] created/ensured Parent', {
+            parentId: parent.id,
+            userID: parent.userID,
+          });
+        }
+      }
+
+      // --- Step 2: verify Player exists
+      const player = await tx.player.findUnique({
+        where: { id: playerId },
+        select: { id: true },
+      });
+      if (!player) {
+        console.log('[attachParentToPlayer] player not found', { playerId });
+        return res.status(404).json({ message: 'Player not found' });
+      }
+
+      // --- Step 3: idempotency check
       const alreadyLinked = await tx.player.findFirst({
-        where: { id: playerId, parents: { some: { id: parentIdStr } } },
+        where: { id: playerId, parents: { some: { id: parent.id } } },
         select: { id: true },
       });
 
-      if (!alreadyLinked) {
+      if (alreadyLinked) {
+        console.log('[attachParentToPlayer] already linked, no-op', {
+          playerId,
+          parentId: parent.id,
+        });
+      } else {
+        console.log('[attachParentToPlayer] linking now', {
+          playerId,
+          parentId: parent.id,
+        });
         await tx.player.update({
           where: { id: playerId },
-          data: { parents: { connect: { id: parentIdStr } } },
+          data: { parents: { connect: { id: parent.id } } },
         });
+        console.log('[attachParentToPlayer] link complete');
       }
 
-      // 3) Return hydrated PlayerFE (user, team, parents, address)
-      return tx.player.findUnique({
+      // --- Step 4: return hydrated PlayerFE
+      const hydrated = await tx.player.findUnique({
         where: { id: playerId },
         include: {
           user: true,
@@ -229,10 +314,17 @@ export async function attachParentToPlayer(req: Request, res: Response) {
           address: true,
         },
       });
+
+      console.log('[attachParentToPlayer] done', {
+        playerId,
+        parentId: parent.id,
+        parentsCount: hydrated?.parents?.length ?? 0,
+      });
+
+      return hydrated;
     });
 
-    if (!result || (result as any).statusCode) return;
-
+    if (!result || (result as any).statusCode) return; // early response already sent inside tx
     return res.status(200).json(result);
   } catch (e: any) {
     console.error('attachParentToPlayer error:', e);
