@@ -192,21 +192,50 @@ export async function attachParentToPlayer(req: Request, res: Response) {
     if (!parentId)
       return res.status(400).json({ message: 'parentId is required' });
 
-    const updated = await prisma.player.update({
-      where: { id: playerId },
-      data: { parents: { connect: { id: String(parentId) } } },
-      include: {
-        user: true,
-        team: true,
-        parents: { include: { user: true } },
-        address: true,
-      },
+    const parentIdStr = String(parentId);
+
+    try {
+    const result = await prisma.$transaction(async (tx) => {
+      // 1) Hard 404s to prevent P2025
+      const [player, parent] = await Promise.all([
+        tx.player.findUnique({ where: { id: playerId }, select: { id: true } }),
+        tx.parent.findUnique({ where: { id: parentIdStr }, select: { id: true } }),
+      ]);
+      if (!player) return res.status(404).json({ message: 'Player not found' });
+      if (!parent) return res.status(404).json({ message: 'Parent not found' });
+
+      // 2) Idempotency: only connect if not already linked
+      const alreadyLinked = await tx.player.findFirst({
+        where: { id: playerId, parents: { some: { id: parentIdStr } } },
+        select: { id: true },
+      });
+
+      if (!alreadyLinked) {
+        await tx.player.update({
+          where: { id: playerId },
+          data: { parents: { connect: { id: parentIdStr } } },
+        });
+      }
+
+      // 3) Return hydrated PlayerFE (user, team, parents, address)
+      return tx.player.findUnique({
+        where: { id: playerId },
+        include: {
+          user: true,
+          team: true,
+          parents: { include: { user: true } },
+          address: true,
+        },
+      });
     });
-    return res.status(200).json(updated);
+
+    // If we returned early with a 404, result is a Response already
+    if (!result || (result as any).statusCode) return;
+
+    return res.status(200).json(result);
   } catch (e: any) {
     console.error('attachParentToPlayer error:', e);
-    return res
-      .status(400)
-      .json({ message: e?.message ?? 'Failed to link parent to player' });
+    return res.status(400).json({ message: e?.message ?? 'Failed to link parent to player' });
   }
+}
 }
