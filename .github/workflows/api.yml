@@ -38,6 +38,7 @@ jobs:
           REMOTE_HOST: ${{ secrets.API_HOST }}
           REMOTE_USER: ubuntu
           SOURCE: './'
+          EXCLUDE: 'apps/web apps/mobile'
           TARGET: ~/deploy
 
       - name: Restart PM2
