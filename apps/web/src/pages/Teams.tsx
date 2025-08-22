@@ -1,5 +1,4 @@
-// apps/web/src/pages/Teams.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeftIcon,
@@ -11,8 +10,8 @@ import {
   MapIcon,
   CalendarDaysIcon,
   MapPinIcon,
+  ArrowsUpDownIcon,
 } from '@heroicons/react/24/outline';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import SideDialog from '@/components/SideDialog';
 import { fetchTeams, createTeam, updateTeam, deleteTeam } from '@/api/team';
 import { fetchUsers } from '@/api/user';
@@ -20,7 +19,11 @@ import type { TeamFE } from '@bomber-app/database/types/team';
 import { US_STATES } from '@/utils/state';
 import type { CreateTeamDTO, UpdateTeamDTO } from '@/api/team';
 import { PublicUserFE, Regions } from '@bomber-app/database';
+import { ClipboardIcon } from '@heroicons/react/24/outline';
+import { useToast } from '@/context/ToastProvider';
+import { ColumnDef, exportCSV, exportXLS } from '@/utils/exporter';
 
+// If you prefer labels for Regions in selects
 const REGION_OPTIONS: { value: Regions; label: string }[] = [
   { value: 'ACADEMY', label: 'Academy' },
   { value: 'PACIFIC', label: 'Pacific' },
@@ -31,12 +34,28 @@ const REGION_OPTIONS: { value: Regions; label: string }[] = [
   { value: 'TEXAS', label: 'Texas' },
 ];
 
+const AGE_OPTIONS = [
+  'U8',
+  'U10',
+  'U12',
+  'U14',
+  'U16',
+  'U18',
+  'ALUMNI',
+] as const;
+
+// Sorting types
+type SortKey = 'name' | 'coach' | 'state' | 'ageGroup' | 'region';
+type SortDir = 'asc' | 'desc';
+type SortRule = { key: SortKey; dir: SortDir };
+
 export default function Teams() {
   const navigate = useNavigate();
 
   // --- Data & loading ---
   const [teams, setTeams] = useState<TeamFE[]>([]);
   const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     setLoading(true);
     fetchTeams()
@@ -44,18 +63,28 @@ export default function Teams() {
       .finally(() => setLoading(false));
   }, []);
 
-  // --- Filters & view mode ---
+  // --- View mode ---
   const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
-  const [search, setSearch] = useState('');
-  const [ageFilter, setAgeFilter] = useState<'all' | TeamFE['ageGroup']>('all');
-  const [stateFilter, setStateFilter] = useState<'all' | string>('all');
+  const { addToast } = useToast();
 
-  // --- Head coach users for dropdown ---
+  // --- Column Filters (independent, combine-able) ---
+  const [nameFilter, setNameFilter] = useState(''); // Team Name text filter
+  const [coachFilter, setCoachFilter] = useState(''); // Coach text filter
+  const [stateFilter, setStateFilter] = useState<'all' | string>('all');
+  const [ageFilter, setAgeFilter] = useState<'all' | TeamFE['ageGroup']>('all');
+  const [regionFilter, setRegionFilter] = useState<'all' | Regions>('all');
+
+  // --- Head coach users for dropdown (create/edit forms) ---
   const [allUsers, setAllUsers] = useState<PublicUserFE[]>([]);
   const [coachSearch, setCoachSearch] = useState('');
+  const [pendingHeadCoachId, setPendingHeadCoachId] = useState<string | null>(
+    null
+  );
+
   useEffect(() => {
     fetchUsers().then(setAllUsers);
   }, []);
+
   const coachOptions = allUsers.filter((u) =>
     `${u.fname} ${u.lname}`.toLowerCase().includes(coachSearch.toLowerCase())
   );
@@ -76,6 +105,73 @@ export default function Teams() {
     headCoachUserID: null,
   });
 
+  // --- MULTI-COLUMN SORTING ---
+  const [sortRules, setSortRules] = useState<SortRule[]>([
+    { key: 'region', dir: 'asc' },
+    { key: 'state', dir: 'asc' },
+    { key: 'ageGroup', dir: 'desc' },
+    { key: 'name', dir: 'asc' },
+  ]);
+  const AGE_ORDER = useMemo(
+    () =>
+      AGE_OPTIONS.reduce<Record<string, number>>((acc, val, idx) => {
+        acc[val] = idx;
+        return acc;
+      }, {}),
+    []
+  );
+
+  function cycleDir(current?: SortDir): SortDir | null {
+    // asc -> desc -> null (remove)
+    if (!current) return 'asc';
+    if (current === 'asc') return 'desc';
+    return null;
+  }
+
+  function toggleSort(key: SortKey) {
+    setSortRules((prev) => {
+      const idx = prev.findIndex((r) => r.key === key);
+      if (idx === -1) {
+        // Not present → add to the end as ASC
+        return [...prev, { key, dir: 'asc' as const }];
+      }
+      // Present → cycle asc -> desc -> remove
+      const current = prev[idx];
+      const nextDir = current.dir === 'asc' ? 'desc' : null;
+
+      if (!nextDir) {
+        // remove this key, keep others
+        const copy = [...prev];
+        copy.splice(idx, 1);
+        return copy;
+      }
+
+      // update direction in place, keep others
+      const copy = [...prev];
+      copy[idx] = { key, dir: nextDir };
+      return copy;
+    });
+  }
+
+  // helper to extract comparable strings/numbers per key
+  function getSortable(a: TeamFE, key: SortKey): string | number {
+    if (key === 'name') return a.name ?? '';
+    if (key === 'coach') {
+      return a.headCoach?.user
+        ? `${a.headCoach.user.fname} ${a.headCoach.user.lname}`
+        : '';
+    }
+    if (key === 'state') return a.state ?? '';
+    if (key === 'ageGroup') {
+      // order by AGE_ORDER, fallback to end
+      const idx =
+        AGE_ORDER[(a.ageGroup as string) || ''] ?? Number.MAX_SAFE_INTEGER;
+      return idx;
+    }
+    // region
+    return a.region ?? '';
+  }
+
   // --- Open/close helpers ---
   function openCreate() {
     setDialogType('create');
@@ -89,6 +185,7 @@ export default function Teams() {
     setCoachSearch('');
     setDialogOpen(true);
   }
+
   function openEdit(team: TeamFE) {
     setDialogType('edit');
     setSelectedTeam(team);
@@ -97,42 +194,81 @@ export default function Teams() {
         ? `${team.headCoach.user.fname} ${team.headCoach.user.lname}`
         : ''
     );
+    setPendingHeadCoachId(team.headCoach?.user?.id ?? null);
     setDialogOpen(true);
   }
+
   function openDelete(team: TeamFE) {
     setDialogType('delete');
     setSelectedTeam(team);
     setDialogOpen(true);
   }
+
   function closeDialog() {
     setDialogOpen(false);
     setDialogType(null);
     setSelectedTeam(null);
+    setPendingHeadCoachId(null);
   }
 
-  // --- Filtered list ---
-  const filtered = teams.filter((t) => {
-    const coachName = t.headCoach?.user
-      ? `${t.headCoach.user.fname} ${t.headCoach.user.lname}`.toLowerCase()
-      : '';
-    return (
-      (t.name.toLowerCase().includes(search.toLowerCase()) ||
-        coachName.includes(search.toLowerCase())) &&
-      (ageFilter === 'all' || t.ageGroup === ageFilter) &&
-      (stateFilter === 'all' ||
-        t.players.some((p) => p.user?.player?.address?.state === stateFilter))
-    );
-  });
-  const stateOptions = Array.from(
-    new Set(
-      teams.flatMap(
-        (t) =>
-          t.players
-            .map((p) => p.user?.player?.address?.state)
-            .filter(Boolean) as string[]
-      )
-    )
+  // --- Options for dropdowns (derived) ---
+  const stateOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(teams.map((t) => t.state).filter(Boolean) as string[])
+      ).sort(),
+    [teams]
   );
+
+  // --- Combine ALL filters + apply multi-sort ---
+  const filtered = useMemo(() => {
+    const nf = nameFilter.trim().toLowerCase();
+    const cf = coachFilter.trim().toLowerCase();
+
+    let result = teams.filter((t) => {
+      const coachName = t.headCoach?.user
+        ? `${t.headCoach.user.fname} ${t.headCoach.user.lname}`.toLowerCase()
+        : '';
+
+      const byName = nf ? t.name.toLowerCase().includes(nf) : true;
+      const byCoach = cf ? coachName.includes(cf) : true;
+      const byState = stateFilter === 'all' ? true : t.state === stateFilter;
+      const byAge = ageFilter === 'all' ? true : t.ageGroup === ageFilter;
+      const byRegion =
+        regionFilter === 'all' ? true : t.region === regionFilter;
+
+      return byName && byCoach && byState && byAge && byRegion;
+    });
+
+    if (sortRules.length > 0) {
+      result = [...result].sort((a, b) => {
+        for (const { key, dir } of sortRules) {
+          const A = getSortable(a, key);
+          const B = getSortable(b, key);
+
+          let cmp = 0;
+          if (typeof A === 'number' && typeof B === 'number') {
+            cmp = A - B;
+          } else {
+            cmp = String(A).localeCompare(String(B));
+          }
+
+          if (cmp !== 0) return dir === 'asc' ? cmp : -cmp;
+        }
+        return 0;
+      });
+    }
+
+    return result;
+  }, [
+    teams,
+    nameFilter,
+    coachFilter,
+    stateFilter,
+    ageFilter,
+    regionFilter,
+    sortRules,
+  ]);
 
   // --- CRUD handlers ---
   async function handleConfirmCreate() {
@@ -142,6 +278,7 @@ export default function Teams() {
       closeDialog();
     }
   }
+
   async function handleSaveEdit() {
     if (!selectedTeam) return;
     const payload: UpdateTeamDTO = {
@@ -149,7 +286,7 @@ export default function Teams() {
       ageGroup: selectedTeam.ageGroup,
       region: selectedTeam.region,
       state: selectedTeam.state,
-      headCoachUserID: selectedTeam.headCoachID ?? null,
+      headCoachUserID: pendingHeadCoachId,
     };
     const updated = await updateTeam(selectedTeam.id, payload);
     if (updated) {
@@ -157,6 +294,7 @@ export default function Teams() {
       closeDialog();
     }
   }
+
   async function handleConfirmDelete() {
     if (!selectedTeam) return;
     const ok = await deleteTeam(selectedTeam.id);
@@ -166,6 +304,60 @@ export default function Teams() {
     }
   }
 
+  // --- Helpers for header UI ---
+  function SortButton({ col }: { col: SortKey }) {
+    const idx = sortRules.findIndex((r) => r.key === col);
+    const active = idx !== -1;
+    const dir = active ? sortRules[idx].dir : null;
+    const dirLabel = dir === 'asc' ? '↑' : dir === 'desc' ? '↓' : '';
+    const orderBadge = active ? idx + 1 : null;
+
+    return (
+      <button
+        onClick={() => toggleSort(col)}
+        className={`ml-1 inline-flex items-center rounded px-1.5 py-0.5 text-xs transition ${
+          active ? 'bg-blue-500/80 text-white' : 'bg-white/10 text-white/70'
+        }`}
+        title="Click to add/rotate multi-sort"
+      >
+        <ArrowsUpDownIcon className="w-3.5 h-3.5 mr-1" />
+        {dirLabel}
+        {orderBadge && (
+          <span className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full bg-black/30 text-[10px]">
+            {orderBadge}
+          </span>
+        )}
+      </button>
+    );
+  }
+
+  function copyToClipboard(e: MouseEvent, code?: string | null) {
+    e.stopPropagation(); // prevent row click (navigation)
+    if (!code) return;
+    navigator.clipboard.writeText(code).then(() => {
+      // optional: toast or alert
+      console.log(`Copied: ${code}`);
+      addToast('Code Copied.', 'success');
+    });
+  }
+
+  // ------------- Exporter -------------------
+  const teamColumns: ColumnDef<TeamFE>[] = [
+    { header: 'Team Name', accessor: (t) => t.name },
+    { header: 'Team Code', accessor: (t) => t.teamCode ?? '' },
+    {
+      header: 'Coach',
+      accessor: (t) =>
+        t.headCoach?.user
+          ? `${t.headCoach.user.fname} ${t.headCoach.user.lname}`
+          : '',
+    },
+    { header: 'State', accessor: (t) => t.state ?? '' },
+    { header: 'Age', accessor: (t) => t.ageGroup },
+    { header: 'Region', accessor: (t) => t.region },
+  ];
+
+  // ------------------- UI -------------------
   return (
     <div className="flex flex-col bg-transparent relative">
       <div
@@ -193,60 +385,58 @@ export default function Teams() {
                 <UserGroupIcon className="w-5 h-5" />
                 <span className="hidden xs:inline">Add New Team</span>
               </button>
+              <button
+                onClick={() => {
+                  exportCSV(filtered, teamColumns, {
+                    filenameBase: 'teams-filtered',
+                  });
+                  addToast('Exported CSV', 'success');
+                }}
+                className="inline-flex items-center gap-2 px-3 sm:px-4 py-[6px] rounded-full
+             bg-white/10 hover:bg-white/20 border border-white/20 text-white transition"
+                title="Export filtered rows to CSV"
+              >
+                CSV
+              </button>
+
+              <button
+                onClick={() => {
+                  exportXLS(filtered, teamColumns, {
+                    filenameBase: 'teams-filtered',
+                  });
+                  addToast('Exported Excel', 'success');
+                }}
+                className="inline-flex items-center gap-2 px-3 sm:px-4 py-[6px] rounded-full
+             bg-white/10 hover:bg-white/20 border border-white/20 text-white transition"
+                title="Export filtered rows to Excel"
+              >
+                Excel
+              </button>
               <div className="inline-flex rounded-lg overflow-hidden">
                 <button
                   onClick={() => setViewMode('table')}
-                  className={`p-2 sm:p-2.5 transition ${viewMode === 'table' ? 'bg-blue-500 text-white' : 'bg-white/10 text-white/70'}`}
+                  className={`p-2 sm:p-2.5 transition ${
+                    viewMode === 'table'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-white/10 text-white/70'
+                  }`}
                   aria-label="Table view"
                 >
                   <TableCellsIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
                 <button
                   onClick={() => setViewMode('card')}
-                  className={`p-2 sm:p-2.5 transition ${viewMode === 'card' ? 'bg-blue-500 text-white' : 'bg-white/10 text-white/70'}`}
+                  className={`p-2 sm:p-2.5 transition ${
+                    viewMode === 'card'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-white/10 text-white/70'
+                  }`}
                   aria-label="Card view"
                 >
                   <Squares2X2Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
-          <input
-            type="text"
-            placeholder="Search for team or coach..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-64 px-4 py-2 bg-white/10 text-white placeholder-white/70 rounded-lg"
-          />
-          <div className="flex gap-3 sm:gap-4 w-full sm:w-auto">
-            <select
-              value={ageFilter}
-              onChange={(e) => setAgeFilter(e.target.value as any)}
-              className="flex-1 sm:flex-none px-3 py-2 bg-white/10 text-white rounded-lg"
-            >
-              <option value="all">All Ages</option>
-              {['U8', 'U10', 'U12', 'U14', 'U16', 'U18', 'ALUMNI'].map((a) => (
-                <option key={a} value={a} className="text-black">
-                  {a}
-                </option>
-              ))}
-            </select>
-            <select
-              value={stateFilter}
-              onChange={(e) => setStateFilter(e.target.value)}
-              className="flex-1 sm:flex-none px-3 py-2 bg-white/10 text-white rounded-lg"
-            >
-              <option value="all">All States</option>
-              {stateOptions.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
           </div>
         </div>
 
@@ -318,32 +508,134 @@ export default function Teams() {
           </div>
         )}
 
-        {/* Table View */}
+        {/* Table View with MULTI column filters + multi-sort */}
         {viewMode === 'table' && (
           <div className="bg-white/5 backdrop-blur-lg rounded-2xl overflow-hidden shadow-inner">
-            {/* Horizontal scroll on small screens */}
             <div className="overflow-x-auto">
-              <table className="min-w-[720px] w-full table-auto text-white">
+              <table className="min-w-[860px] w-full table-auto text-white">
                 <thead className="sticky top-0 bg-white/10">
+                  {/* Header labels + sort */}
                   <tr>
-                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left">
-                      Team Name
+                    <th className="px-4 sm:px-6 py-2 text-left">
+                      Team Name <SortButton col="name" />
                     </th>
-                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left">
-                      Coach
+                    <th className="px-4 sm:px-6 py-2 text-left">Team Code</th>
+                    <th className="px-4 sm:px-6 py-2 text-left">
+                      Coach <SortButton col="coach" />
                     </th>
-                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left">
-                      State
+                    <th className="px-4 sm:px-6 py-2 text-left">
+                      State <SortButton col="state" />
                     </th>
-                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left">Age</th>
-                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left">
-                      Region
+                    <th className="px-4 sm:px-6 py-2 text-left">
+                      Age <SortButton col="ageGroup" />
                     </th>
-                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-right">
-                      Actions
+                    <th className="px-4 sm:px-6 py-2 text-left">
+                      Region <SortButton col="region" />
+                    </th>
+                    <th className="px-4 sm:px-6 py-2 text-right">Actions</th>
+                  </tr>
+                  {/* Filter controls (second header row) */}
+                  <tr className="bg-white/5">
+                    <th className="px-4 sm:px-6 py-2">
+                      <input
+                        value={nameFilter}
+                        onChange={(e) => setNameFilter(e.target.value)}
+                        placeholder="Filter team name…"
+                        className="w-full px-3 py-1.5 rounded bg-white/10 placeholder-white/60"
+                      />
+                    </th>
+                    <th>{''}</th>
+                    <th className="px-4 sm:px-6 py-2">
+                      <input
+                        value={coachFilter}
+                        onChange={(e) => setCoachFilter(e.target.value)}
+                        placeholder="Filter coach…"
+                        className="w-full px-3 py-1.5 rounded bg-white/10 placeholder-white/60"
+                      />
+                    </th>
+                    <th className="px-4 sm:px-6 py-2">
+                      <select
+                        value={stateFilter}
+                        onChange={(e) => setStateFilter(e.target.value)}
+                        className="w-full px-3 py-1.5 rounded bg-white/10"
+                      >
+                        <option value="all" className="text-black">
+                          All
+                        </option>
+                        {stateOptions.map((s) => (
+                          <option key={s} value={s} className="text-black">
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                    </th>
+                    <th className="px-4 sm:px-6 py-2">
+                      <select
+                        value={ageFilter}
+                        onChange={(e) => setAgeFilter(e.target.value as any)}
+                        className="w-full px-3 py-1.5 rounded bg-white/10"
+                      >
+                        <option value="all" className="text-black">
+                          All
+                        </option>
+                        {AGE_OPTIONS.map((a) => (
+                          <option key={a} value={a} className="text-black">
+                            {a}
+                          </option>
+                        ))}
+                      </select>
+                    </th>
+                    <th className="px-4 sm:px-6 py-2">
+                      <select
+                        value={regionFilter}
+                        onChange={(e) =>
+                          setRegionFilter(e.target.value as Regions | 'all')
+                        }
+                        className="w-full px-3 py-1.5 rounded bg-white/10"
+                      >
+                        <option value="all" className="text-black">
+                          All
+                        </option>
+                        {REGION_OPTIONS.map((r) => (
+                          <option
+                            key={r.value}
+                            value={r.value}
+                            className="text-black"
+                          >
+                            {r.label}
+                          </option>
+                        ))}
+                      </select>
+                    </th>
+                    <th className="px-4 sm:px-6 py-2 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {sortRules.length > 0 && (
+                          <span className="text-xs text-white/70">
+                            Sorted by{' '}
+                            {sortRules
+                              .map((r, i) => `${i + 1}. ${r.key} ${r.dir}`)
+                              .join(' → ')}
+                          </span>
+                        )}
+                        <button
+                          onClick={() => {
+                            setNameFilter('');
+                            setCoachFilter('');
+                            setStateFilter('all');
+                            setAgeFilter('all');
+                            setRegionFilter('all');
+                            setSortRules([]);
+                          }}
+                          className="px-3 py-1.5 rounded bg-white/10 hover:bg-white/20"
+                          title="Clear all filters & sorts"
+                        >
+                          Clear
+                        </button>
+                      </div>
                     </th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {loading ? (
                     <tr>
@@ -372,6 +664,20 @@ export default function Teams() {
                       >
                         <td className="px-4 sm:px-6 py-3 align-middle">
                           {t.name}
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 align-middle">
+                          {t.teamCode ? (
+                            <button
+                              onClick={(e) => copyToClipboard(e, t.teamCode)}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded bg-white/10 hover:bg-blue-500/70 transition text-xs"
+                              title="Click to copy team code"
+                            >
+                              <span>{t.teamCode}</span>
+                              <ClipboardIcon className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <span className="italic text-white/50">N/A</span>
+                          )}
                         </td>
                         <td className="px-4 sm:px-6 py-3 align-middle">
                           {t.headCoach?.user ? (
@@ -423,7 +729,7 @@ export default function Teams() {
         )}
       </div>
 
-      {/* SideDialog (unchanged logic/colors) */}
+      {/* SideDialog */}
       <SideDialog
         open={dialogOpen}
         onClose={closeDialog}
@@ -436,7 +742,7 @@ export default function Teams() {
         }
         widthClass="w-[430px] max-w-[430px] min-w-[340px]"
       >
-        {/* CREATE FORM */}
+        {/* CREATE */}
         {dialogType === 'create' && (
           <div className="space-y-3 sm:space-y-4">
             <label className="block text-sm text-white font-semibold">
@@ -461,7 +767,7 @@ export default function Teams() {
               }
               className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
             >
-              {['U8', 'U10', 'U12', 'U14', 'U16', 'U18', 'ALUMNI'].map((a) => (
+              {AGE_OPTIONS.map((a) => (
                 <option key={a} value={a} className="text-black">
                   {a}
                 </option>
@@ -478,17 +784,9 @@ export default function Teams() {
               }
               className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
             >
-              {[
-                'ACADEMY',
-                'PACIFIC',
-                'MOUNTAIN',
-                'MIDWEST',
-                'NORTHEAST',
-                'SOUTHEAST',
-                'TEXAS',
-              ].map((r) => (
-                <option key={r} value={r} className="text-black">
-                  {r}
+              {REGION_OPTIONS.map((r) => (
+                <option key={r.value} value={r.value} className="text-black">
+                  {r.label}
                 </option>
               ))}
             </select>
@@ -565,7 +863,7 @@ export default function Teams() {
           </div>
         )}
 
-        {/* EDIT FORM */}
+        {/* EDIT */}
         {dialogType === 'edit' && selectedTeam && (
           <div className="space-y-3 sm:space-y-4">
             <label className="block text-sm text-white font-semibold">
@@ -592,7 +890,7 @@ export default function Teams() {
               }
               className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
             >
-              {['U8', 'U10', 'U12', 'U14', 'U16', 'U18', 'ALUMNI'].map((a) => (
+              {AGE_OPTIONS.map((a) => (
                 <option key={a} value={a} className="text-black">
                   {a}
                 </option>
@@ -611,9 +909,9 @@ export default function Teams() {
               }
               className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
             >
-              {['NW', 'SW', 'S', 'SE', 'NE', 'MW'].map((r) => (
-                <option key={r} value={r} className="text-black">
-                  {r}
+              {REGION_OPTIONS.map((r) => (
+                <option key={r.value} value={r.value} className="text-black">
+                  {r.label}
                 </option>
               ))}
             </select>
@@ -646,26 +944,23 @@ export default function Teams() {
               value={coachSearch}
               onChange={(e) => {
                 setCoachSearch(e.target.value);
-                setSelectedTeam((t) => t && { ...t, headCoachUserID: null });
+                setPendingHeadCoachId(null);
               }}
               className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
             />
+
             <ul className="max-h-32 overflow-auto bg-black/20 rounded-lg divide-y divide-white/10">
               <li
-                className={`px-3 py-1 text-white cursor-pointer ${selectedTeam.headCoachID === null ? 'bg-blue-500' : ''}`}
-                onClick={() =>
-                  setSelectedTeam((t) => t && { ...t, headCoachUserID: null })
-                }
+                className={`px-3 py-1 text-white cursor-pointer ${pendingHeadCoachId === null ? 'bg-blue-500' : ''}`}
+                onClick={() => setPendingHeadCoachId(null)}
               >
                 — none —
               </li>
               {coachOptions.map((c) => (
                 <li
                   key={c.id}
-                  className={`px-3 py-1 text-white cursor-pointer ${selectedTeam.headCoachID === c.id ? 'bg-blue-500' : ''}`}
-                  onClick={() =>
-                    setSelectedTeam((t) => t && { ...t, headCoachUserID: c.id })
-                  }
+                  className={`px-3 py-1 text-white cursor-pointer ${pendingHeadCoachId === c.id ? 'bg-blue-500' : ''}`}
+                  onClick={() => setPendingHeadCoachId(c.id)}
                 >
                   {c.fname} {c.lname}
                 </li>
@@ -689,12 +984,12 @@ export default function Teams() {
           </div>
         )}
 
-        {/* DELETE CONFIRM */}
+        {/* DELETE */}
         {dialogType === 'delete' && selectedTeam && (
           <div>
             <p className="text-white">
               Are you sure you want to remove the Team{' '}
-              <b className=" uppercase text-red-800">{selectedTeam.name}</b>?
+              <b className="uppercase text-red-800">{selectedTeam.name}</b>?
             </p>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-6">
               <button
