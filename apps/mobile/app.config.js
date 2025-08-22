@@ -54,6 +54,10 @@ module.exports = {
 
     experiments: { typedRoutes: true },
 
+    runtimeVersion: {
+      policy: 'appVersion',
+    },
+
     extra: {
       API_BASE_URL: process.env.API_BASE_URL,
       SOCKET_SERVER_URL: process.env.SOCKET_SERVER_URL,
