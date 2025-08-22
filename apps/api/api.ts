@@ -36,14 +36,33 @@ app.get('/', (_: Request, res: Response) => {
 app.use(express.json());
 
 app.use(helmet());
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGINS?.split(',') || [],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  })
-);
-app.options('*', cors());
+const envList = (process.env.CORS_ORIGINS ?? '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+// Build a matcher that also allows typical local ports
+const originMatcher = (origin?: string | undefined) => {
+  if (!origin) return true; // mobile apps, curl, Postman
+  if (envList.includes(origin)) return true;
+  // Allow localhost:* and 192.168.1.*:* during dev
+  if (/^http:\/\/localhost:\d+$/.test(origin)) return true;
+  if (/^http:\/\/192\.168\.1\.\d+:\d+$/.test(origin)) return true;
+  return false;
+};
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, cb) => {
+    if (originMatcher(origin)) return cb(null, true);
+    return cb(new Error(`Not allowed by CORS: ${origin}`));
+  },
+  credentials: true, // keep if you send cookies/auth headers
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(morgan('dev'));
 

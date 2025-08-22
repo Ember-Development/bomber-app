@@ -77,6 +77,8 @@ export const PANT_SIZES = [
   'SIZE_22',
   'SIZE_24',
   'SIZE_26',
+  'SIZE_27',
+  'SIZE_28',
   'SIZE_30',
   'SIZE_32',
   'SIZE_33',
@@ -90,10 +92,12 @@ export const formatPantSize = (value?: string) => {
   return value.replace('SIZE_', '');
 };
 
-export const STIRRUP_SIZES = ['SM', 'LG', 'XL'].map((s) => ({
-  label: s,
-  value: s,
-}));
+export const STIRRUP_SIZES = ['ADULT', 'ADULT_LONG', 'XL', 'XL_WIDE'].map(
+  (s) => ({
+    label: s,
+    value: s,
+  })
+);
 
 export const SHORTS_SIZES = ['YXL', 'ASM', 'AMD', 'ALG', 'AXL', 'A2XL'].map(
   (s) => ({ label: s, value: s })
