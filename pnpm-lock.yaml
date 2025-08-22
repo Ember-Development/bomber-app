@@ -19,7 +19,7 @@ importers:
         version: 10.1.8(eslint@8.57.1)
       eslint-plugin-import:
         specifier: ^2.31.0
-        version: 2.32.0(@typescript-eslint/parser@8.40.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)
+        version: 2.32.0(eslint@8.57.1)
       eslint-plugin-n:
         specifier: ^16.6.2
         version: 16.6.2(eslint@8.57.1)
@@ -291,7 +291,7 @@ importers:
         version: 29.7.0(@types/node@22.17.2)(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.2)(typescript@5.7.3))
       jest-expo:
         specifier: ~52.0.5
-        version: 52.0.6(8c7b37e318d607d8dc4b420e8ea8cb08)
+        version: 52.0.6(@babel/core@7.28.3)(expo@52.0.47(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@expo/metro-runtime@4.0.1(react-native@0.76.9(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli@14.1.2(typescript@5.7.3))(@types/react@18.3.23)(react@18.3.1)))(react-native-webview@13.12.5(react-native@0.76.9(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli@14.1.2(typescript@5.7.3))(@types/react@18.3.23)(react@18.3.1))(react@18.3.1))(react-native@0.76.9(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli@14.1.2(typescript@5.7.3))(@types/react@18.3.23)(react@18.3.1))(react@18.3.1))(jest@29.7.0)(react-dom@18.3.1(react@18.3.1))(react-native@0.76.9(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli@14.1.2(typescript@5.7.3))(@types/react@18.3.23)(react@18.3.1))(react@18.3.1)(webpack@5.101.3)
       react-test-renderer:
         specifier: 18.3.1
         version: 18.3.1(react@18.3.1)
@@ -10631,10 +10631,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/eslint-plugin@8.40.0(@typescript-eslint/parser@8.40.0(eslint@8.57.1)(typescript@5.7.3))(eslint@9.33.0(jiti@2.5.1))(typescript@5.7.3)':
+  '@typescript-eslint/eslint-plugin@8.40.0(@typescript-eslint/parser@8.40.0(eslint@9.33.0(jiti@2.5.1))(typescript@5.7.3))(eslint@9.33.0(jiti@2.5.1))(typescript@5.7.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 8.40.0(eslint@8.57.1)(typescript@5.7.3)
+      '@typescript-eslint/parser': 8.40.0(eslint@9.33.0(jiti@2.5.1))(typescript@5.7.3)
       '@typescript-eslint/scope-manager': 8.40.0
       '@typescript-eslint/type-utils': 8.40.0(eslint@9.33.0(jiti@2.5.1))(typescript@5.7.3)
       '@typescript-eslint/utils': 8.40.0(eslint@9.33.0(jiti@2.5.1))(typescript@5.7.3)
@@ -12114,11 +12114,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.40.0(eslint@8.57.1)(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint@8.57.1):
+  eslint-module-utils@2.12.1(eslint-import-resolver-node@0.3.9)(eslint@8.57.1):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
-      '@typescript-eslint/parser': 8.40.0(eslint@8.57.1)(typescript@5.7.3)
       eslint: 8.57.1
       eslint-import-resolver-node: 0.3.9
     transitivePeerDependencies:
@@ -12131,7 +12130,7 @@ snapshots:
       eslint: 8.57.1
       eslint-compat-utils: 0.5.1(eslint@8.57.1)
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.40.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1):
+  eslint-plugin-import@2.32.0(eslint@8.57.1):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -12142,7 +12141,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.1
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.40.0(eslint@8.57.1)(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint@8.57.1)
+      eslint-module-utils: 2.12.1(eslint-import-resolver-node@0.3.9)(eslint@8.57.1)
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -12153,8 +12152,6 @@ snapshots:
       semver: 6.3.1
       string.prototype.trimend: 1.0.9
       tsconfig-paths: 3.15.0
-    optionalDependencies:
-      '@typescript-eslint/parser': 8.40.0(eslint@8.57.1)(typescript@5.7.3)
     transitivePeerDependencies:
       - eslint-import-resolver-typescript
       - eslint-import-resolver-webpack
@@ -13524,7 +13521,7 @@ snapshots:
       jest-mock: 29.7.0
       jest-util: 29.7.0
 
-  jest-expo@52.0.6(8c7b37e318d607d8dc4b420e8ea8cb08):
+  jest-expo@52.0.6(@babel/core@7.28.3)(expo@52.0.47(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@expo/metro-runtime@4.0.1(react-native@0.76.9(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli@14.1.2(typescript@5.7.3))(@types/react@18.3.23)(react@18.3.1)))(react-native-webview@13.12.5(react-native@0.76.9(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli@14.1.2(typescript@5.7.3))(@types/react@18.3.23)(react@18.3.1))(react@18.3.1))(react-native@0.76.9(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli@14.1.2(typescript@5.7.3))(@types/react@18.3.23)(react@18.3.1))(react@18.3.1))(jest@29.7.0)(react-dom@18.3.1(react@18.3.1))(react-native@0.76.9(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli@14.1.2(typescript@5.7.3))(@types/react@18.3.23)(react@18.3.1))(react@18.3.1)(webpack@5.101.3):
     dependencies:
       '@expo/config': 10.0.11
       '@expo/json-file': 9.1.5
@@ -13537,11 +13534,11 @@ snapshots:
       jest-environment-jsdom: 29.7.0
       jest-snapshot: 29.7.0
       jest-watch-select-projects: 2.0.0
-      jest-watch-typeahead: 2.2.1(jest@29.7.0(@types/node@22.17.2)(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.2)(typescript@5.7.3)))
+      jest-watch-typeahead: 2.2.1(jest@29.7.0)
       json5: 2.2.3
       lodash: 4.17.21
       react-native: 0.76.9(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli@14.1.2(typescript@5.7.3))(@types/react@18.3.23)(react@18.3.1)
-      react-server-dom-webpack: 19.0.0-rc-6230622a1a-20240610(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(webpack@5.101.3(@swc/core@1.13.3))
+      react-server-dom-webpack: 19.0.0-rc-6230622a1a-20240610(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(webpack@5.101.3)
       react-test-renderer: 18.3.1(react@18.3.1)
       server-only: 0.0.1
       stacktrace-js: 2.0.2
@@ -13732,7 +13729,7 @@ snapshots:
       chalk: 3.0.0
       prompts: 2.4.2
 
-  jest-watch-typeahead@2.2.1(jest@29.7.0(@types/node@22.17.2)(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.2)(typescript@5.7.3))):
+  jest-watch-typeahead@2.2.1(jest@29.7.0):
     dependencies:
       ansi-escapes: 6.2.1
       chalk: 4.1.2
@@ -15100,13 +15097,13 @@ snapshots:
     optionalDependencies:
       react-dom: 18.3.1(react@18.3.1)
 
-  react-server-dom-webpack@19.0.0-rc-6230622a1a-20240610(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(webpack@5.101.3(@swc/core@1.13.3)):
+  react-server-dom-webpack@19.0.0-rc-6230622a1a-20240610(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(webpack@5.101.3):
     dependencies:
       acorn-loose: 8.5.2
       neo-async: 2.6.2
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      webpack: 5.101.3(@swc/core@1.13.3)
+      webpack: 5.101.3
 
   react-shallow-renderer@16.15.0(react@18.3.1):
     dependencies:
@@ -15823,16 +15820,14 @@ snapshots:
       ansi-escapes: 4.3.2
       supports-hyperlinks: 2.3.0
 
-  terser-webpack-plugin@5.3.14(@swc/core@1.13.3)(webpack@5.101.3(@swc/core@1.13.3)):
+  terser-webpack-plugin@5.3.14(webpack@5.101.3):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.30
       jest-worker: 27.5.1
       schema-utils: 4.3.2
       serialize-javascript: 6.0.2
       terser: 5.43.1
-      webpack: 5.101.3(@swc/core@1.13.3)
-    optionalDependencies:
-      '@swc/core': 1.13.3
+      webpack: 5.101.3
 
   terser@5.43.1:
     dependencies:
@@ -16006,7 +16001,7 @@ snapshots:
 
   typescript-eslint@8.40.0(eslint@9.33.0(jiti@2.5.1))(typescript@5.7.3):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.40.0(@typescript-eslint/parser@8.40.0(eslint@8.57.1)(typescript@5.7.3))(eslint@9.33.0(jiti@2.5.1))(typescript@5.7.3)
+      '@typescript-eslint/eslint-plugin': 8.40.0(@typescript-eslint/parser@8.40.0(eslint@9.33.0(jiti@2.5.1))(typescript@5.7.3))(eslint@9.33.0(jiti@2.5.1))(typescript@5.7.3)
       '@typescript-eslint/parser': 8.40.0(eslint@9.33.0(jiti@2.5.1))(typescript@5.7.3)
       '@typescript-eslint/typescript-estree': 8.40.0(typescript@5.7.3)
       '@typescript-eslint/utils': 8.40.0(eslint@9.33.0(jiti@2.5.1))(typescript@5.7.3)
@@ -16236,7 +16231,7 @@ snapshots:
 
   webpack-sources@3.3.3: {}
 
-  webpack@5.101.3(@swc/core@1.13.3):
+  webpack@5.101.3:
     dependencies:
       '@types/eslint-scope': 3.7.7
       '@types/estree': 1.0.8
@@ -16260,7 +16255,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 4.3.2
       tapable: 2.2.2
-      terser-webpack-plugin: 5.3.14(@swc/core@1.13.3)(webpack@5.101.3(@swc/core@1.13.3))
+      terser-webpack-plugin: 5.3.14(webpack@5.101.3)
       watchpack: 2.4.4
       webpack-sources: 3.3.3
     transitivePeerDependencies:

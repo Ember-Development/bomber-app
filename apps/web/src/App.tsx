@@ -15,30 +15,33 @@ import TeamDetails from './components/TeamDetails';
 import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import RequireAdmin from './components/RequireAdmin';
+import { ToastProvider } from './context/ToastProvider';
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route element={<RequireAdmin />}>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="teams" element={<Teams />} />
-              <Route path="teams/:id" element={<TeamDetails />} />
-              <Route path="users" element={<Users />} />
-              <Route path="players" element={<Players />} />
-              <Route path="events" element={<Events />} />
-              <Route path="media" element={<Media />} />
-              <Route path="legacy" element={<Legacy />} />
-              <Route path="notifications" element={<Notifications />} />
-              <Route path="sponsor" element={<Sponsor />} />
-              <Route path="logs" element={<MessageLogs />} />
+    <ToastProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route element={<RequireAdmin />}>
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="teams" element={<Teams />} />
+                <Route path="teams/:id" element={<TeamDetails />} />
+                <Route path="users" element={<Users />} />
+                <Route path="players" element={<Players />} />
+                <Route path="events" element={<Events />} />
+                <Route path="media" element={<Media />} />
+                <Route path="legacy" element={<Legacy />} />
+                <Route path="notifications" element={<Notifications />} />
+                <Route path="sponsor" element={<Sponsor />} />
+                <Route path="logs" element={<MessageLogs />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+    </ToastProvider>
   );
 }
