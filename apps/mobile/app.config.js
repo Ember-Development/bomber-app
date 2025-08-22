@@ -6,7 +6,7 @@ module.exports = {
     name: 'bomber-app',
     slug: 'bomber-app',
     owner: 'emberdevco',
-    version: '1.0.0',
+    version: '1.0.1',
     orientation: 'portrait',
     icon: './assets/images/bombericonios.png',
     scheme: 'myapp',
@@ -53,6 +53,14 @@ module.exports = {
     ],
 
     experiments: { typedRoutes: true },
+
+    updates: {
+      url: 'https://u.expo.dev/5716a622-1434-422d-a9af-fb8aab33b8c3',
+      // optional but recommended:
+      enabled: true,
+      checkAutomatically: 'ON_LOAD',
+      fallbackToCacheTimeout: 0,
+    },
 
     runtimeVersion: {
       policy: 'appVersion',
