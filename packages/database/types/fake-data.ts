@@ -33,8 +33,8 @@ export function fakePlayer() {
     jerseyNum: faker.lorem.words(5),
     gradYear: faker.lorem.words(5),
     jerseySize: faker.helpers.arrayElement([JerseySize.YXS, JerseySize.YS, JerseySize.YM, JerseySize.YL, JerseySize.YXL, JerseySize.AS, JerseySize.AM, JerseySize.AL, JerseySize.AXL, JerseySize.A2XL] as const),
-    pantSize: faker.helpers.arrayElement([PantsSize.SIZE_20, PantsSize.SIZE_22, PantsSize.SIZE_24, PantsSize.SIZE_26, PantsSize.SIZE_30, PantsSize.SIZE_32, PantsSize.SIZE_33, PantsSize.SIZE_34, PantsSize.SIZE_36, PantsSize.SIZE_38] as const),
-    stirrupSize: faker.helpers.arrayElement([StirrupSize.SM, StirrupSize.LG, StirrupSize.XL] as const),
+    pantSize: faker.helpers.arrayElement([PantsSize.SIZE_20, PantsSize.SIZE_22, PantsSize.SIZE_24, PantsSize.SIZE_26, PantsSize.SIZE_27, PantsSize.SIZE_28, PantsSize.SIZE_30, PantsSize.SIZE_32, PantsSize.SIZE_33, PantsSize.SIZE_34, PantsSize.SIZE_36, PantsSize.SIZE_38] as const),
+    stirrupSize: faker.helpers.arrayElement([StirrupSize.ADULT, StirrupSize.ADULT_LONG, StirrupSize.XL, StirrupSize.XL_WIDE] as const),
     shortSize: faker.helpers.arrayElement([ShortsSize.YXL, ShortsSize.ASM, ShortsSize.AMD, ShortsSize.ALG, ShortsSize.AXL, ShortsSize.A2XL] as const),
     practiceShortSize: faker.helpers.arrayElement([ShortsSize.YXL, ShortsSize.ASM, ShortsSize.AMD, ShortsSize.ALG, ShortsSize.AXL, ShortsSize.A2XL] as const),
     ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
@@ -50,8 +50,8 @@ export function fakePlayerComplete() {
     jerseyNum: faker.lorem.words(5),
     gradYear: faker.lorem.words(5),
     jerseySize: faker.helpers.arrayElement([JerseySize.YXS, JerseySize.YS, JerseySize.YM, JerseySize.YL, JerseySize.YXL, JerseySize.AS, JerseySize.AM, JerseySize.AL, JerseySize.AXL, JerseySize.A2XL] as const),
-    pantSize: faker.helpers.arrayElement([PantsSize.SIZE_20, PantsSize.SIZE_22, PantsSize.SIZE_24, PantsSize.SIZE_26, PantsSize.SIZE_30, PantsSize.SIZE_32, PantsSize.SIZE_33, PantsSize.SIZE_34, PantsSize.SIZE_36, PantsSize.SIZE_38] as const),
-    stirrupSize: faker.helpers.arrayElement([StirrupSize.SM, StirrupSize.LG, StirrupSize.XL] as const),
+    pantSize: faker.helpers.arrayElement([PantsSize.SIZE_20, PantsSize.SIZE_22, PantsSize.SIZE_24, PantsSize.SIZE_26, PantsSize.SIZE_27, PantsSize.SIZE_28, PantsSize.SIZE_30, PantsSize.SIZE_32, PantsSize.SIZE_33, PantsSize.SIZE_34, PantsSize.SIZE_36, PantsSize.SIZE_38] as const),
+    stirrupSize: faker.helpers.arrayElement([StirrupSize.ADULT, StirrupSize.ADULT_LONG, StirrupSize.XL, StirrupSize.XL_WIDE] as const),
     shortSize: faker.helpers.arrayElement([ShortsSize.YXL, ShortsSize.ASM, ShortsSize.AMD, ShortsSize.ALG, ShortsSize.AXL, ShortsSize.A2XL] as const),
     practiceShortSize: faker.helpers.arrayElement([ShortsSize.YXL, ShortsSize.ASM, ShortsSize.AMD, ShortsSize.ALG, ShortsSize.AXL, ShortsSize.A2XL] as const),
     ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
@@ -103,14 +103,14 @@ export function fakeCoachComplete() {
 }
 export function fakeRegCoach() {
   return {
-    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS] as const),
+    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS, Regions.SOUTHWEST] as const),
   };
 }
 export function fakeRegCoachComplete() {
   return {
     id: faker.string.uuid(),
     userID: faker.string.uuid(),
-    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS] as const),
+    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS, Regions.SOUTHWEST] as const),
   };
 }
 export function fakeTeam() {
@@ -118,7 +118,7 @@ export function fakeTeam() {
     name: faker.person.fullName(),
     teamCode: undefined,
     ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
-    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS] as const),
+    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS, Regions.SOUTHWEST] as const),
   };
 }
 export function fakeTeamComplete() {
@@ -127,7 +127,7 @@ export function fakeTeamComplete() {
     name: faker.person.fullName(),
     teamCode: undefined,
     ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
-    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS] as const),
+    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS, Regions.SOUTHWEST] as const),
     state: State.TX,
     headCoachID: undefined,
   };

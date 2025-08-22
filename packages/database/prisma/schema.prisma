@@ -102,6 +102,7 @@ enum Regions {
   NORTHEAST
   SOUTHEAST
   TEXAS
+  SOUTHWEST
 }
 
 enum MediaCategory {
@@ -122,6 +123,8 @@ enum PantsSize {
     SIZE_22
     SIZE_24
     SIZE_26
+    SIZE_27
+    SIZE_28
     SIZE_30
     SIZE_32
     SIZE_33
@@ -167,9 +170,10 @@ enum JerseySize {
 }
 
 enum StirrupSize {
-    SM
-    LG
+    ADULT
+    ADULT_LONG
     XL
+    XL_WIDE
 }
 
 enum ShortsSize {
