@@ -16,6 +16,7 @@ import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import RequireAdmin from './components/RequireAdmin';
 import { ToastProvider } from './context/ToastProvider';
+import Coaches from './pages/coaches';
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
                 <Route path="teams/:id" element={<TeamDetails />} />
                 <Route path="users" element={<Users />} />
                 <Route path="players" element={<Players />} />
+                <Route path="coaches" element={<Coaches />} />
                 <Route path="events" element={<Events />} />
                 <Route path="media" element={<Media />} />
                 <Route path="legacy" element={<Legacy />} />

@@ -1,10 +1,13 @@
 // apps/web/src/pages/Players.tsx
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, MouseEvent } from 'react';
 import {
   ArrowLeftIcon,
   PencilSquareIcon,
   TrashIcon,
   EyeIcon,
+  ArrowsUpDownIcon,
+  ArrowDownTrayIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 import type {
   PlayerFE,
@@ -25,6 +28,22 @@ import {
 } from '@/api/player';
 import { POSITIONS, SHORTS_SIZES } from '@/utils/enum';
 import EditPlayerModal from '@/components/forms/Modals/edit-player';
+import { useToast } from '@/context/ToastProvider';
+import { ColumnDef, exportCSV, exportXLS } from '@/utils/exporter';
+
+// ---- Sorting types (same pattern as Teams) ----
+type SortKey =
+  | 'name'
+  | 'team'
+  | 'ageGroup'
+  | 'pos1'
+  | 'pos2'
+  | 'college'
+  | 'gradYear'
+  | 'state'
+  | 'jerseyNum';
+type SortDir = 'asc' | 'desc';
+type SortRule = { key: SortKey; dir: SortDir };
 
 type Player = {
   id: string;
@@ -54,10 +73,31 @@ type Player = {
 
 const PAGE_SIZE = 15;
 
+// For age sorting (U18 -> U8)
+const AGE_ORDER_ARRAY = [
+  'U8',
+  'U10',
+  'U12',
+  'U14',
+  'U16',
+  'U18',
+  'ALUMNI',
+] as const;
+const AGE_ORDER: Record<string, number> = AGE_ORDER_ARRAY.reduce(
+  (acc, v, i) => {
+    acc[v] = i;
+    return acc;
+  },
+  {} as Record<string, number>
+);
+
 export default function Players() {
   const navigate = useNavigate();
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(false);
+  const { addToast } = useToast();
+
+  // filters / paging
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -75,19 +115,98 @@ export default function Players() {
   const [jerseySizeFilter, setJerseySizeFilter] = useState('all');
   const [pantSizeFilter, setPantSizeFilter] = useState('all');
 
+  // dialogs
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<'edit' | 'delete' | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
 
-  // state for the external edit content
+  // external edit modal state
   const [editPlayerFE, setEditPlayerFE] = useState<PlayerFE | null>(null);
   const [editLoading, setEditLoading] = useState(false);
-  const [saveLoading, setSaveLoading] = useState(false);
 
+  // ----- Multi-sort: default similar to Teams -----
+  const [sortRules, setSortRules] = useState<SortRule[]>([
+    { key: 'team', dir: 'asc' },
+    { key: 'ageGroup', dir: 'desc' }, // shows U18 -> U8
+    { key: 'name', dir: 'asc' },
+  ]);
+
+  function toggleSort(key: SortKey) {
+    setSortRules((prev) => {
+      const idx = prev.findIndex((r) => r.key === key);
+      if (idx === -1) return [...prev, { key, dir: 'asc' }];
+      const current = prev[idx];
+      const nextDir = current.dir === 'asc' ? 'desc' : null;
+      if (!nextDir) {
+        const copy = [...prev];
+        copy.splice(idx, 1);
+        return copy;
+      }
+      const copy = [...prev];
+      copy[idx] = { key, dir: nextDir };
+      return copy;
+    });
+  }
+
+  function SortButton({ col }: { col: SortKey }) {
+    const idx = sortRules.findIndex((r) => r.key === col);
+    const active = idx !== -1;
+    const dir = active ? sortRules[idx].dir : null;
+    const dirLabel = dir === 'asc' ? '↑' : dir === 'desc' ? '↓' : '';
+    const orderBadge = active ? idx + 1 : null;
+
+    return (
+      <button
+        onClick={() => toggleSort(col)}
+        className={`ml-1 inline-flex items-center rounded px-1.5 py-0.5 text-xs transition ${
+          active ? 'bg-blue-500/80 text-white' : 'bg-white/10 text-white/70'
+        }`}
+        title="Click to add/rotate multi-sort"
+      >
+        <ArrowsUpDownIcon className="w-3.5 h-3.5 mr-1" />
+        {dirLabel}
+        {orderBadge && (
+          <span className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full bg-black/30 text-[10px]">
+            {orderBadge}
+          </span>
+        )}
+      </button>
+    );
+  }
+
+  // helper to normalize values for sort
+  function getSortable(p: Player, key: SortKey): string | number {
+    switch (key) {
+      case 'name':
+        return p.name || '';
+      case 'team':
+        return p.team || '';
+      case 'ageGroup': {
+        const idx = AGE_ORDER[p.ageGroup] ?? Number.MAX_SAFE_INTEGER;
+        return idx;
+      }
+      case 'pos1':
+        return p.pos1 || '';
+      case 'pos2':
+        return p.pos2 || '';
+      case 'college':
+        return p.college || '';
+      case 'gradYear':
+        return Number(p.gradYear) || 0;
+      case 'state':
+        return p.state || '';
+      case 'jerseyNum':
+        return Number(p.jerseyNum) || 0;
+      default:
+        return '';
+    }
+  }
+
+  // ----- Data load -----
   useEffect(() => {
     setLoading(true);
     fetchPlayers()
-      .then((data) => {
+      .then((data: any[]) => {
         setPlayers(
           data.map((p: any) => ({
             id: p.id,
@@ -97,8 +216,8 @@ export default function Players() {
             pos1: p.pos1,
             pos2: p.pos2,
             ageGroup: p.ageGroup,
-            jerseyNum: p.jerseyNum,
-            gradYear: p.gradYear,
+            jerseyNum: p.jerseyNum?.toString?.() ?? '',
+            gradYear: p.gradYear?.toString?.() ?? '',
             jerseySize: p.jerseySize,
             pantSize: p.pantSize,
             stirrupSize: p.stirrupSize,
@@ -106,7 +225,7 @@ export default function Players() {
             practiceShortSize: p.practiceShortSize,
             commitId: p.commitId,
             college: p.college,
-            isTrusted: p.isTrusted,
+            isTrusted: !!p.isTrusted,
             addressID: p.addressID,
             address1: p.address1,
             address2: p.address2,
@@ -120,6 +239,7 @@ export default function Players() {
       .finally(() => setLoading(false));
   }, []);
 
+  // ----- Filter options -----
   const teams = useMemo(
     () => Array.from(new Set(players.map((p) => p.team).filter(Boolean))),
     [players]
@@ -138,54 +258,66 @@ export default function Players() {
     [players]
   );
 
-  const filtered = useMemo(
-    () =>
-      players.filter((p) => {
-        if (teamFilter !== 'all' && p.team !== teamFilter) return false;
-        if (ageGroupFilter !== 'all' && p.ageGroup !== ageGroupFilter)
-          return false;
-        if (posFilter !== 'all' && p.pos1 !== posFilter) return false;
-        if (trustedFilter === 'yes' && !p.isTrusted) return false;
-        if (trustedFilter === 'no' && p.isTrusted) return false;
-        if (collegeFilter === 'yes' && !p.college) return false;
-        if (collegeFilter === 'no' && p.college) return false;
-        if (stateFilter !== 'all' && p.state !== stateFilter) return false;
-        if (geradYearFilter !== 'all' && p.gradYear !== geradYearFilter)
-          return false;
-        if (jerseySizeFilter !== 'all' && p.jerseySize !== jerseySizeFilter)
-          return false;
-        if (pantSizeFilter !== 'all' && p.pantSize !== pantSizeFilter)
-          return false;
-        if (search) {
-          const q = search.toLowerCase();
-          if (
-            !(
-              p.name.toLowerCase().includes(q) ||
-              p.team.toLowerCase().includes(q)
-            )
+  // ----- Filtering + Sorting -----
+  const filteredSorted = useMemo(() => {
+    const result = players.filter((p) => {
+      if (teamFilter !== 'all' && p.team !== teamFilter) return false;
+      if (ageGroupFilter !== 'all' && p.ageGroup !== ageGroupFilter)
+        return false;
+      if (posFilter !== 'all' && p.pos1 !== posFilter) return false;
+      if (trustedFilter === 'yes' && !p.isTrusted) return false;
+      if (trustedFilter === 'no' && p.isTrusted) return false;
+      if (collegeFilter === 'yes' && !p.college) return false;
+      if (collegeFilter === 'no' && p.college) return false;
+      if (stateFilter !== 'all' && p.state !== stateFilter) return false;
+      if (geradYearFilter !== 'all' && p.gradYear !== geradYearFilter)
+        return false;
+      if (jerseySizeFilter !== 'all' && p.jerseySize !== jerseySizeFilter)
+        return false;
+      if (pantSizeFilter !== 'all' && p.pantSize !== pantSizeFilter)
+        return false;
+      if (search) {
+        const q = search.toLowerCase();
+        if (
+          !(
+            p.name.toLowerCase().includes(q) || p.team.toLowerCase().includes(q)
           )
-            return false;
-        }
-        return true;
-      }),
-    [
-      players,
-      teamFilter,
-      ageGroupFilter,
-      posFilter,
-      jerseySizeFilter,
-      pantSizeFilter,
-      trustedFilter,
-      search,
-      collegeFilter,
-      stateFilter,
-      geradYearFilter,
-    ]
-  );
+        )
+          return false;
+      }
+      return true;
+    });
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    if (sortRules.length === 0) return result;
 
+    return [...result].sort((a, b) => {
+      for (const { key, dir } of sortRules) {
+        const A = getSortable(a, key);
+        const B = getSortable(b, key);
+        const cmp =
+          typeof A === 'number' && typeof B === 'number'
+            ? A - B
+            : String(A).localeCompare(String(B));
+        if (cmp !== 0) return dir === 'asc' ? cmp : -cmp;
+      }
+      return 0;
+    });
+  }, [
+    players,
+    teamFilter,
+    ageGroupFilter,
+    posFilter,
+    jerseySizeFilter,
+    pantSizeFilter,
+    trustedFilter,
+    search,
+    collegeFilter,
+    stateFilter,
+    geradYearFilter,
+    sortRules,
+  ]);
+
+  // reset page on filter changes
   useEffect(() => {
     setPage(1);
   }, [
@@ -196,8 +328,18 @@ export default function Players() {
     trustedFilter,
     jerseySizeFilter,
     pantSizeFilter,
+    collegeFilter,
+    stateFilter,
+    geradYearFilter,
   ]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredSorted.length / PAGE_SIZE));
+  const paginated = filteredSorted.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
+
+  // ----- Edit / Delete -----
   const mapFEToRow = (p: PlayerFE): Player => ({
     id: p.id,
     name: p.user ? `${p.user.fname} ${p.user.lname}` : '(No Name)',
@@ -253,9 +395,75 @@ export default function Players() {
     setSelectedPlayer(null);
     setEditPlayerFE(null);
     setEditLoading(false);
-    setSaveLoading(false);
   };
 
+  // ----- Export (CSV / XLSX) from the filtered list -----
+  const exportRows = filteredSorted.map((p) => ({
+    Name: p.name,
+    Email: p.email,
+    Team: p.team,
+    'Age Group': p.ageGroup,
+    Positions: `${p.pos1} / ${p.pos2}`,
+    College: p.college ?? '',
+    'Jersey #': p.jerseyNum,
+    'Grad Year': p.gradYear,
+    State: p.state ?? '',
+    'Jersey Size': p.jerseySize,
+    'Pant Size': p.pantSize,
+    'Stirrup Size': p.stirrupSize,
+    'Shorts Size':
+      typeof p.shortSize === 'object' && p.shortSize !== null
+        ? ((p.shortSize as any).label ?? (p.shortSize as any).value)
+        : (p.shortSize as string),
+    'Practice Shorts':
+      typeof p.practiceShortSize === 'object' && p.practiceShortSize !== null
+        ? ((p.practiceShortSize as any).label ??
+          (p.practiceShortSize as any).value)
+        : (p.practiceShortSize as string),
+    Trusted: p.isTrusted ? 'YES' : 'NO',
+    Address: [p.address1, p.city, p.state, p.zip].filter(Boolean).join(', '),
+  }));
+
+  // --- exports
+  const [exportOpen, setExportOpen] = useState(false);
+
+  const columns: ColumnDef<Player>[] = [
+    { header: 'Name', accessor: (p) => p.name },
+    { header: 'Email', accessor: (p) => p.email },
+    { header: 'Team', accessor: (p) => p.team },
+    { header: 'Age Group', accessor: (p) => p.ageGroup },
+    { header: 'Positions', accessor: (p) => `${p.pos1} / ${p.pos2}` },
+    { header: 'College', accessor: (p) => p.college ?? '' },
+    { header: 'Jersey #', accessor: (p) => p.jerseyNum },
+    { header: 'Grad Year', accessor: (p) => p.gradYear },
+    { header: 'State', accessor: (p) => p.state ?? '' },
+    { header: 'Jersey Size', accessor: (p) => p.jerseySize },
+    { header: 'Pant Size', accessor: (p) => p.pantSize },
+    { header: 'Stirrup Size', accessor: (p) => p.stirrupSize },
+    {
+      header: 'Shorts Size',
+      accessor: (p) =>
+        typeof p.shortSize === 'object' && p.shortSize !== null
+          ? ((p.shortSize as any).label ?? (p.shortSize as any).value)
+          : (p.shortSize as string),
+    },
+    {
+      header: 'Practice Shorts',
+      accessor: (p) =>
+        typeof p.practiceShortSize === 'object' && p.practiceShortSize !== null
+          ? ((p.practiceShortSize as any).label ??
+            (p.practiceShortSize as any).value)
+          : (p.practiceShortSize as string),
+    },
+    { header: 'Trusted', accessor: (p) => (p.isTrusted ? 'YES' : 'NO') },
+    {
+      header: 'Address',
+      accessor: (p) =>
+        [p.address1, p.city, p.state, p.zip].filter(Boolean).join(', '),
+    },
+  ];
+
+  // ---------------- UI ----------------
   return (
     <div className="flex flex-col gap-6 sm:gap-8">
       <div
@@ -273,6 +481,50 @@ export default function Players() {
             <div className="text-3xl lg:text-3xl font-bold text-white">
               Manage Players
             </div>
+          </div>
+          <div className="relative">
+            <button
+              onClick={() => setExportOpen((v) => !v)}
+              onBlur={() => setTimeout(() => setExportOpen(false), 150)}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white transition"
+              title="Export filtered users"
+            >
+              <ArrowDownTrayIcon className="w-5 h-5" />
+              <span className="hidden sm:inline">Export</span>
+              <ChevronDownIcon className="w-4 h-4 opacity-80" />
+            </button>
+            {/* Export buttons */}
+            {exportOpen && (
+              <div className="absolute md:right-0 mt-2 min-w-[180px] rounded-xl bg-black/80 backdrop-blur-xl border border-white/15 shadow-2xl overflow-hidden">
+                <button
+                  className="w-full text-left px-4 py-2 text-white/90 hover:bg-white/10 transition"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    exportCSV(filteredSorted, columns, {
+                      filenameBase: 'players-filtered',
+                    });
+                    addToast('Exported CSV', 'success');
+                    setExportOpen(false);
+                  }}
+                >
+                  CSV (filtered)
+                </button>
+
+                <button
+                  className="w-full text-left px-4 py-2 text-white/90 hover:bg-white/10 transition"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    exportXLS(filteredSorted, columns, {
+                      filenameBase: 'players-filtered',
+                    });
+                    addToast('Exported Excel', 'success');
+                    setExportOpen(false);
+                  }}
+                >
+                  Excel (filtered)
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -399,27 +651,65 @@ export default function Players() {
           </div>
         </div>
 
-        {/* Data table on sm+, mobile card list on xs */}
+        {/* Data table */}
         <div className="bg-[rgba(255,255,255,0.05)] backdrop-blur-lg rounded-2xl overflow-hidden shadow-inner">
-          {/* sm+ table */}
+          {/* xl table */}
           <div className="hidden xl:block">
             <div className="overflow-x-auto">
-              <table className="min-w-[900px] w-full table-auto text-white">
-                <thead className="sticky top-0 bg-[rgba(90,165,255,0.18)] border-b border-white/15">
+              <table className="min-w-[980px] w-full table-auto text-white">
+                <thead className="sticky top-0 bg-[rgba(255,255,255,0.1)] border-b border-white/15">
                   <tr>
-                    <th className="px-4 py-4 text-left">Name</th>
-                    <th className="px-4 py-4 text-left">Team</th>
-                    <th className="px-4 py-4 text-left">Age Group</th>
-                    <th className="px-4 py-4 text-left">Positions</th>
-                    <th className="px-4 py-4 text-left">College</th>
-                    <th className="px-4 py-4 text-right">Actions</th>
+                    <th className="px-4 py-3 text-left">
+                      Name <SortButton col="name" />
+                    </th>
+                    <th className="px-4 py-3 text-left">
+                      Team <SortButton col="team" />
+                    </th>
+                    <th className="px-4 py-3 text-left">
+                      Age Group <SortButton col="ageGroup" />
+                    </th>
+                    <th className="px-4 py-3 text-left">
+                      Positions <SortButton col="pos1" />
+                    </th>
+                    <th className="px-4 py-3 text-left">
+                      College <SortButton col="college" />
+                    </th>
+                    <th className="px-4 py-3 text-left">
+                      Grad Year <SortButton col="gradYear" />
+                    </th>
+                    <th className="px-4 py-3 text-left">
+                      State <SortButton col="state" />
+                    </th>
+                    <th className="px-4 py-3 text-left">
+                      Jersey # <SortButton col="jerseyNum" />
+                    </th>
+                    <th className="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                  <tr className="bg-white/5">
+                    <th colSpan={9} className="px-4 py-2">
+                      <div className="flex items-center justify-between text-xs text-white/70">
+                        <div className="truncate">
+                          {sortRules.length > 0 &&
+                            `Sorted by ${sortRules
+                              .map((r, i) => `${i + 1}. ${r.key} ${r.dir}`)
+                              .join(' → ')}`}
+                        </div>
+                        <button
+                          onClick={() => setSortRules([])}
+                          className="px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-white"
+                          title="Clear sorts"
+                        >
+                          Clear sorts
+                        </button>
+                      </div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={9}
                         className="px-6 py-10 text-center text-white/60"
                       >
                         Loading...
@@ -428,7 +718,7 @@ export default function Players() {
                   ) : paginated.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={9}
                         className="px-6 py-10 text-center text-white/60"
                       >
                         No players found.
@@ -450,6 +740,9 @@ export default function Players() {
                             {p.pos1} / {p.pos2}
                           </td>
                           <td className="px-4 py-3">{p.college}</td>
+                          <td className="px-4 py-3">{p.gradYear}</td>
+                          <td className="px-4 py-3">{p.state}</td>
+                          <td className="px-4 py-3">{p.jerseyNum}</td>
                           <td className="px-4 py-3 text-right space-x-2">
                             <button
                               onClick={async (e) => {
@@ -474,7 +767,11 @@ export default function Players() {
                                 e.stopPropagation();
                                 setExpanded(expanded === p.id ? null : p.id);
                               }}
-                              className={`p-2 rounded-lg transition ${expanded === p.id ? 'bg-[#5AA5FF] text-white' : 'bg-white/10 hover:bg-[#5AA5FF]/70 text-white'}`}
+                              className={`p-2 rounded-lg transition ${
+                                expanded === p.id
+                                  ? 'bg-[#5AA5FF] text-white'
+                                  : 'bg-white/10 hover:bg-[#5AA5FF]/70 text-white'
+                              }`}
                             >
                               <EyeIcon className="w-5 h-5" />
                             </button>
@@ -482,7 +779,7 @@ export default function Players() {
                         </tr>
                         {expanded === p.id && (
                           <tr>
-                            <td colSpan={6} className="p-0 bg-transparent">
+                            <td colSpan={9} className="p-0 bg-transparent">
                               <div className="bg-[rgba(90,165,255,0.10)] rounded-b-xl m-2 p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-sm text-white">
                                 <div>
                                   <div>
@@ -517,8 +814,9 @@ export default function Players() {
                                     </span>{' '}
                                     {typeof p.shortSize === 'object' &&
                                     p.shortSize !== null
-                                      ? (p.shortSize.label ?? p.shortSize.value)
-                                      : p.shortSize}
+                                      ? ((p.shortSize as any).label ??
+                                        (p.shortSize as any).value)
+                                      : (p.shortSize as string)}
                                   </div>
                                   <div>
                                     <span className="font-semibold">
@@ -526,15 +824,9 @@ export default function Players() {
                                     </span>{' '}
                                     {typeof p.practiceShortSize === 'object' &&
                                     p.practiceShortSize !== null
-                                      ? (p.practiceShortSize.label ??
-                                        p.practiceShortSize.value)
-                                      : p.practiceShortSize}
-                                  </div>
-                                  <div>
-                                    <span className="font-semibold">
-                                      Graduation:
-                                    </span>{' '}
-                                    {p.gradYear}
+                                      ? ((p.practiceShortSize as any).label ??
+                                        (p.practiceShortSize as any).value)
+                                      : (p.practiceShortSize as string)}
                                   </div>
                                   <div>
                                     <span className="font-semibold">
@@ -549,11 +841,23 @@ export default function Players() {
                                       Trusted:
                                     </span>
                                     <span
-                                      className={`ml-2 inline-block px-2 py-0.5 rounded-full text-xs ${p.isTrusted ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'}`}
+                                      className={`ml-2 inline-block px-2 py-0.5 rounded-full text-xs ${
+                                        p.isTrusted
+                                          ? 'bg-green-200 text-green-700'
+                                          : 'bg-red-200 text-red-700'
+                                      }`}
                                     >
                                       {p.isTrusted ? 'YES' : 'NO'}
                                     </span>
                                   </div>
+                                  {p.email && (
+                                    <div className="mt-2">
+                                      <span className="font-semibold">
+                                        Email:
+                                      </span>{' '}
+                                      {p.email}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </td>
@@ -567,7 +871,7 @@ export default function Players() {
             </div>
           </div>
 
-          {/* xs mobile card list */}
+          {/* xs / lg card list */}
           <div className="xl:hidden divide-y divide-white/10">
             {loading ? (
               <div className="p-4 text-center text-white/60">Loading...</div>
@@ -609,7 +913,11 @@ export default function Players() {
                         <TrashIcon className="w-5 h-5 text-white" />
                       </button>
                       <button
-                        className={`p-2 rounded-lg transition ${expanded === p.id ? 'bg-[#5AA5FF] text-white' : 'bg-white/10 hover:bg-[#5AA5FF]/70 text-white'}`}
+                        className={`p-2 rounded-lg transition ${
+                          expanded === p.id
+                            ? 'bg-[#5AA5FF] text-white'
+                            : 'bg-white/10 hover:bg-[#5AA5FF]/70 text-white'
+                        }`}
                         onClick={() =>
                           setExpanded(expanded === p.id ? null : p.id)
                         }
@@ -636,24 +944,24 @@ export default function Players() {
                         <span className="font-semibold">Pant Size:</span>{' '}
                         {p.pantSize}
                       </div>
-
-                      <div className="">
+                      <div>
                         <span className="font-semibold">Stirrup Size:</span>{' '}
                         {p.stirrupSize}
                       </div>
-                      <div className="">
+                      <div>
                         <span className="font-semibold">Shorts Size:</span>{' '}
                         {typeof p.shortSize === 'object' && p.shortSize !== null
-                          ? (p.shortSize.label ?? p.shortSize.value)
-                          : p.shortSize}
+                          ? ((p.shortSize as any).label ??
+                            (p.shortSize as any).value)
+                          : (p.shortSize as string)}
                       </div>
-                      <div className="">
+                      <div>
                         <span className="font-semibold">Practice Shorts:</span>{' '}
                         {typeof p.practiceShortSize === 'object' &&
                         p.practiceShortSize !== null
-                          ? (p.practiceShortSize.label ??
-                            p.practiceShortSize.value)
-                          : p.practiceShortSize}
+                          ? ((p.practiceShortSize as any).label ??
+                            (p.practiceShortSize as any).value)
+                          : (p.practiceShortSize as string)}
                       </div>
                       <div className="col-span-2">
                         <span className="font-semibold">Address:</span>{' '}
@@ -662,7 +970,11 @@ export default function Players() {
                       <div className="col-span-2">
                         <span className="font-semibold">Trusted:</span>
                         <span
-                          className={`ml-2 inline-block px-2 py-0.5 rounded-full ${p.isTrusted ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'}`}
+                          className={`ml-2 inline-block px-2 py-0.5 rounded-full ${
+                            p.isTrusted
+                              ? 'bg-green-200 text-green-700'
+                              : 'bg-red-200 text-red-700'
+                          }`}
                         >
                           {p.isTrusted ? 'YES' : 'NO'}
                         </span>
@@ -712,7 +1024,6 @@ export default function Players() {
               <EditPlayerModal
                 player={editPlayerFE}
                 onSuccess={async () => {
-                  // Re-fetch the freshly saved player and update the table row
                   const fresh = await fetchPlayerById(editPlayerFE.id);
                   setPlayers((ps) =>
                     ps.map((row) =>
@@ -722,8 +1033,6 @@ export default function Players() {
                   closeDialog();
                 }}
                 onCancel={closeDialog}
-                // If you want to override the default PATCH:
-                // updatePlayerApi={async (playerId, payload) => updatePlayer(playerId, payload)}
               />
             )}
           </>
