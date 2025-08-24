@@ -16,7 +16,7 @@ import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import RequireAdmin from './components/RequireAdmin';
 import { ToastProvider } from './context/ToastProvider';
-import Coaches from './pages/coaches';
+import Coaches from './pages/Coaches';
 
 export default function App() {
   return (
