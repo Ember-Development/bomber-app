@@ -125,7 +125,9 @@ export default function Coaches() {
         `${r.user?.fname ?? ''} ${r.user?.lname ?? ''}`.trim() || '(No Name)',
       email: r.user?.email ?? '',
       phone: r.user?.phone ?? '',
-      teams: (r.teams ?? []).map((t) => t.name).join(', '),
+      teams: (Array.isArray(r.teams) ? r.teams : [])
+        .map((t: { name: string }) => t.name)
+        .join(', '),
       headTeams: '',
       region: r.region as string | undefined,
       address: undefined,
