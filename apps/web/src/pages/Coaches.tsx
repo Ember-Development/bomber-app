@@ -24,11 +24,13 @@ import {
 } from '@/api/coach';
 
 import type { CoachFE, RegCoachFE } from '@bomber-app/database';
+import { demoteRegCoach, upsertRegCoachRegion } from '@/api/regCoach';
 
 type RowType = 'COACH' | 'REGIONAL_COACH';
 
 type Row = {
   id: string;
+  userId: string;
   type: RowType;
   name: string;
   email: string;
@@ -103,6 +105,7 @@ export default function Coaches() {
   const rowsAll: Row[] = useMemo(() => {
     const coachRows: Row[] = rawCoaches.map((c) => ({
       id: String(c.id),
+      userId: String(c.user?.id ?? ''),
       type: 'COACH',
       name:
         `${c.user?.fname ?? ''} ${c.user?.lname ?? ''}`.trim() || '(No Name)',
@@ -120,6 +123,7 @@ export default function Coaches() {
 
     const regRows: Row[] = rawRegCoaches.map((r) => ({
       id: String(r.id),
+      userId: String(r.user?.id ?? ''),
       type: 'REGIONAL_COACH',
       name:
         `${r.user?.fname ?? ''} ${r.user?.lname ?? ''}`.trim() || '(No Name)',
@@ -247,7 +251,6 @@ export default function Coaches() {
 
   // dialog helpers (edit only for Coaches in this page; Reg Coaches are view-only here)
   const openEdit = (r: Row) => {
-    if (r.type !== 'COACH') return;
     setSelected(r);
     setDialogType('edit');
     setDialogOpen(true);
@@ -348,6 +351,98 @@ export default function Coaches() {
         </div>
 
         <FormActions onSave={onSave} onCancel={closeDialog} />
+      </div>
+    );
+  }
+
+  function EditRegCoachForm({ row }: { row: Row }) {
+    const { addToast } = useToast();
+    const [mode, setMode] = useState<'region' | 'demote'>('region');
+    const [region, setRegion] = useState(row.region ?? REGIONS[0]);
+    const [newRole, setNewRole] = useState<'COACH' | 'ADMIN' | 'FAN'>('COACH');
+    const [busy, setBusy] = useState(false);
+
+    async function onSave() {
+      try {
+        setBusy(true);
+        if (mode === 'region') {
+          await upsertRegCoachRegion(row.userId, region);
+          addToast('Region updated', 'success');
+        } else {
+          await demoteRegCoach(row.userId, newRole);
+          addToast(`Demoted to ${newRole}`, 'success');
+        }
+        // refresh lists
+        const [coaches, regCoaches] = await Promise.all([
+          fetchCoaches(),
+          fetchRegCoaches(),
+        ]);
+        setRawCoaches(coaches);
+        setRawRegCoaches(regCoaches);
+        closeDialog();
+      } catch (e) {
+        addToast('Something went wrong', 'error');
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    return (
+      <div className="space-y-4">
+        <div className="inline-flex rounded-lg bg-white/10 p-1">
+          <button
+            className={`px-3 py-1 rounded-lg ${mode === 'region' ? 'bg-[#5AA5FF]' : ''}`}
+            onClick={() => setMode('region')}
+          >
+            Update Region
+          </button>
+          <button
+            className={`px-3 py-1 rounded-lg ${mode === 'demote' ? 'bg-red-600' : ''}`}
+            onClick={() => setMode('demote')}
+          >
+            Demote
+          </button>
+        </div>
+
+        {mode === 'region' ? (
+          <Field label="Region">
+            <select
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+              className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
+            >
+              {REGIONS.map((r) => (
+                <option key={r} value={r} className="text-black">
+                  {r}
+                </option>
+              ))}
+            </select>
+          </Field>
+        ) : (
+          <Field label="New Role">
+            <select
+              value={newRole}
+              onChange={(e) => setNewRole(e.target.value as any)}
+              className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
+            >
+              <option value="COACH" className="text-black">
+                Coach
+              </option>
+              <option value="ADMIN" className="text-black">
+                Admin
+              </option>
+              <option value="FAN" className="text-black">
+                Fan
+              </option>
+            </select>
+          </Field>
+        )}
+
+        <FormActions onSave={onSave} onCancel={closeDialog} />
+        <p className="text-xs text-white/60">
+          Demote removes the Regional Coach record and sets the user’s primary
+          role to your selection.
+        </p>
       </div>
     );
   }
@@ -556,7 +651,14 @@ export default function Coaches() {
                               </button>
                             </div>
                           ) : (
-                            <span className="text-white/50 text-sm">—</span>
+                            <div className="inline-flex gap-2">
+                              <button
+                                className="p-2 bg-white/10 rounded-lg hover:bg-[#5AA5FF]"
+                                onClick={() => openEdit(r)}
+                              >
+                                <PencilSquareIcon className="w-5 h-5 text-white" />
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>
@@ -618,9 +720,14 @@ export default function Coaches() {
                           </button>
                         </>
                       ) : (
-                        <span className="text-white/50 text-xs self-center">
-                          —
-                        </span>
+                        <div className="inline-flex gap-2">
+                          <button
+                            className="p-2 bg-white/10 rounded-lg hover:bg-[#5AA5FF]"
+                            onClick={() => openEdit(r)}
+                          >
+                            <PencilSquareIcon className="w-5 h-5 text-white" />
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -658,11 +765,23 @@ export default function Coaches() {
       <SideDialog
         open={dialogOpen}
         onClose={closeDialog}
-        title={dialogType === 'edit' ? 'Edit Coach' : 'Remove Coach'}
+        title={
+          dialogType === 'edit'
+            ? selected?.type === 'REGIONAL_COACH'
+              ? 'Edit Regional Coach'
+              : 'Edit Coach'
+            : 'Remove Coach'
+        }
       >
         {dialogType === 'edit' && selected && selected.type === 'COACH' && (
           <EditForm row={selected} />
         )}
+
+        {dialogType === 'edit' &&
+          selected &&
+          selected.type === 'REGIONAL_COACH' && (
+            <EditRegCoachForm row={selected} />
+          )}
 
         {dialogType === 'delete' && selected && selected.type === 'COACH' && (
           <div className="space-y-4">

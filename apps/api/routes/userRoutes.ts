@@ -5,10 +5,13 @@ import {
   createAddress,
   createUser,
   deleteMe,
+  demoteFromRegCoach,
+  ensureRoleAndSettable,
   getAllUsers,
   getUserChats,
   getUserEvents,
   getUsersInGroup,
+  updateRegCoachRegion,
   updateUser,
 } from '../controllers/userController';
 import { authorize } from '../middleware/authorize';
@@ -19,6 +22,12 @@ const router = express.Router();
 // ALL OF THESE NEED AUTH GUARDS
 router.get('/', auth, getAllUsers);
 router.post('/', auth, createUser);
+router.post(
+  '/:userId/ensure-role',
+  auth,
+  authorize('edit-coach'),
+  ensureRoleAndSettable
+);
 router.get('/group/:chatId', auth, getUsersInGroup);
 router.get('/:id/events', auth, getUserEvents);
 router.get('/:id/chats', auth, getUserChats);
@@ -31,6 +40,19 @@ router.post(
   auth,
   authorize('edit-my-info'),
   changePassword
+);
+router.patch(
+  '/:userId/reg-coach',
+  auth,
+  authorize('edit-coach'),
+  updateRegCoachRegion
+);
+
+router.delete(
+  '/:userId/reg-coach',
+  auth,
+  authorize('edit-coach'),
+  demoteFromRegCoach
 );
 
 export default router;

@@ -13,7 +13,6 @@ import {
 } from '@bomber-app/database';
 import { api } from './api';
 
-// base Prisma types
 type CreatePlayerInput = Prisma.PlayerCreateInput;
 type UpdatePlayerInput = Prisma.PlayerUpdateInput;
 
@@ -125,3 +124,25 @@ export const removePlayerFromTeam = async (id: string): Promise<boolean> => {
     return false;
   }
 };
+
+// parent relationship
+export type AttachParentPayload =
+  | { parentId: string }
+  | { parentUserId: number }
+  | { parentEmail: string; createIfMissing?: boolean };
+
+export async function attachParentToPlayer(
+  playerId: string | number,
+  body: AttachParentPayload
+) {
+  const { data } = await api.post(`/players/${playerId}/parents`, body);
+  return data;
+}
+
+export async function detachParentFromPlayer(
+  playerId: string | number,
+  parentId: string | number
+) {
+  const { data } = await api.delete(`/players/${playerId}/parents/${parentId}`);
+  return data;
+}
