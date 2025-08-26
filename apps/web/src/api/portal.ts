@@ -56,13 +56,13 @@ export type CreateLeadInput = {
 };
 
 export async function fetchPortalLeads(): Promise<PortalLeadFE[]> {
-  const { data } = await api.get<PortalLeadFE[]>('/leads');
+  const { data } = await api.get<PortalLeadFE[]>('/portal/leads');
   return data;
 }
 
 export async function createPortalLead(
   payload: CreateLeadInput
 ): Promise<PortalLeadFE> {
-  const { data } = await api.post<PortalLeadFE>('/leads', payload);
+  const { data } = await api.post<PortalLeadFE>('/portal/leads', payload);
   return data;
 }

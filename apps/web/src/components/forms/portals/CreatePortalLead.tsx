@@ -144,7 +144,7 @@ export default function CreatePortalLead({ open, onClose, onCreated }: Props) {
         </div>
 
         {/* Player fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           <Input
             placeholder="Player first name"
             value={pf}
@@ -188,9 +188,9 @@ export default function CreatePortalLead({ open, onClose, onCreated }: Props) {
         {/* Contact blocks */}
         {who === 'PLAYER' &&
           (disabledForPlayer ? (
-            <Notice text="Players 14U and under must apply with a parent/guardian." />
+            <Notice text="Players 14U and under must apply with a parent/guardian information." />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               <Input
                 placeholder="Your email (or phone)"
                 value={email}
