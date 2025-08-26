@@ -69,9 +69,7 @@ export default function Teams() {
   // Sorting
   const [sortRules, setSortRules] = useState<SortRule[]>([
     { key: 'region', dir: 'asc' },
-    { key: 'state', dir: 'asc' },
     { key: 'ageGroup', dir: 'desc' },
-    { key: 'name', dir: 'asc' },
   ]);
 
   // Pagination

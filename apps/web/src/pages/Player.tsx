@@ -1,5 +1,5 @@
 // apps/web/src/pages/Players.tsx
-import React, { useEffect, useMemo, useState, MouseEvent } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeftIcon,
   PencilSquareIcon,
@@ -16,6 +16,8 @@ import type {
   StirrupSize,
   Position,
   AgeGroup,
+  // NEW
+  PublicUserFE,
 } from '@bomber-app/database';
 import { useNavigate } from 'react-router-dom';
 import SideDialog from '@/components/SideDialog';
@@ -23,13 +25,19 @@ import {
   fetchPlayers,
   updatePlayer,
   UpdatePlayerPayload,
+  detachParentFromPlayer,
+  attachParentToPlayer,
   removePlayerFromTeam,
   fetchPlayerById,
+  AttachParentPayload,
 } from '@/api/player';
 import { POSITIONS, SHORTS_SIZES } from '@/utils/enum';
 import EditPlayerModal from '@/components/forms/Modals/edit-player';
 import { useToast } from '@/context/ToastProvider';
 import { ColumnDef, exportCSV, exportXLS } from '@/utils/exporter';
+
+// NEW: bring in a users fetcher (rename if your module differs)
+import { fetchUsers } from '@/api/user';
 
 // ---- Sorting types (same pattern as Teams) ----
 type SortKey =
@@ -71,6 +79,15 @@ type Player = {
   zip?: string;
 };
 
+// ---------- Parent preview type + cache ----------
+type ParentPreview = {
+  id: string | number;
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  address?: string;
+};
+
 const PAGE_SIZE = 15;
 
 // For age sorting (U18 -> U8)
@@ -97,6 +114,44 @@ export default function Players() {
   const [loading, setLoading] = useState(false);
   const { addToast } = useToast();
 
+  // ---------- NEW: public users for dropdown ----------
+  const [users, setUsers] = useState<PublicUserFE[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setUsersLoading(true);
+        const list = await fetchUsers();
+        if (!mounted) return;
+        setUsers(Array.isArray(list) ? list : []);
+      } catch (e: any) {
+        if (!mounted) return;
+        setUsersError(e?.message || 'Failed to load users');
+        setUsers([]);
+      } finally {
+        if (!mounted) return;
+        setUsersLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Eligible parents = users with a parent relation (and with an email we can send to backend)
+  const parentUserOptions = useMemo(() => {
+    return (users || [])
+      .filter((u) => !!u.parent)
+      .map((u) => ({
+        value: u.parent?.id?.toString() ?? u.id.toString(), // prefer Parent.id
+        label: `${u.fname ?? ''} ${u.lname ?? ''}`.trim() || 'Unnamed',
+        email: u.email ?? '',
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [users]);
   // filters / paging
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -172,34 +227,6 @@ export default function Players() {
         )}
       </button>
     );
-  }
-
-  // helper to normalize values for sort
-  function getSortable(p: Player, key: SortKey): string | number {
-    switch (key) {
-      case 'name':
-        return p.name || '';
-      case 'team':
-        return p.team || '';
-      case 'ageGroup': {
-        const idx = AGE_ORDER[p.ageGroup] ?? Number.MAX_SAFE_INTEGER;
-        return idx;
-      }
-      case 'pos1':
-        return p.pos1 || '';
-      case 'pos2':
-        return p.pos2 || '';
-      case 'college':
-        return p.college || '';
-      case 'gradYear':
-        return Number(p.gradYear) || 0;
-      case 'state':
-        return p.state || '';
-      case 'jerseyNum':
-        return Number(p.jerseyNum) || 0;
-      default:
-        return '';
-    }
   }
 
   // ----- Data load -----
@@ -317,6 +344,34 @@ export default function Players() {
     sortRules,
   ]);
 
+  // helper to normalize values for sort
+  function getSortable(p: Player, key: SortKey): string | number {
+    switch (key) {
+      case 'name':
+        return p.name || '';
+      case 'team':
+        return p.team || '';
+      case 'ageGroup': {
+        const idx = AGE_ORDER[p.ageGroup] ?? Number.MAX_SAFE_INTEGER;
+        return idx;
+      }
+      case 'pos1':
+        return p.pos1 || '';
+      case 'pos2':
+        return p.pos2 || '';
+      case 'college':
+        return p.college || '';
+      case 'gradYear':
+        return Number(p.gradYear) || 0;
+      case 'state':
+        return p.state || '';
+      case 'jerseyNum':
+        return Number(p.jerseyNum) || 0;
+      default:
+        return '';
+    }
+  }
+
   // reset page on filter changes
   useEffect(() => {
     setPage(1);
@@ -341,7 +396,7 @@ export default function Players() {
 
   // ----- Edit / Delete -----
   const mapFEToRow = (p: PlayerFE): Player => ({
-    id: p.id,
+    id: p.id as unknown as string,
     name: p.user ? `${p.user.fname} ${p.user.lname}` : '(No Name)',
     email: p.user?.email || '',
     team: p.team?.name || '',
@@ -357,7 +412,7 @@ export default function Players() {
     practiceShortSize: p.practiceShortSize as any,
     college: p.college || '',
     isTrusted: !!p.isTrusted,
-    addressID: p.address?.id,
+    addressID: p.address?.id as any,
     address1: p.address?.address1 || '',
     address2: p.address?.address2 || '',
     city: p.address?.city || '',
@@ -463,6 +518,115 @@ export default function Players() {
     },
   ];
 
+  // -------- parents lazy-load cache + loader state --------
+  const [parentsByPlayerId, setParentsByPlayerId] = useState<
+    Record<string, ParentPreview[] | 'EMPTY'>
+  >({});
+  const [loadingParentsFor, setLoadingParentsFor] = useState<string | null>(
+    null
+  );
+
+  const [showAttachParentFor, setShowAttachParentFor] = useState<string | null>(
+    null
+  );
+  // selected parent email from dropdown
+  const [attachSelectedParentId, setAttachSelectedParentId] =
+    useState<string>('');
+  const [attachBusy, setAttachBusy] = useState(false);
+
+  const onAttachParent = async (playerId: string) => {
+    if (!attachSelectedParentId) return;
+    try {
+      setAttachBusy(true);
+      await attachParentToPlayer(playerId, {
+        parentId: attachSelectedParentId,
+      });
+
+      setParentsByPlayerId((m) => {
+        const clone = { ...m };
+        delete clone[playerId];
+        return clone;
+      });
+      await loadParentsIfNeeded(playerId);
+
+      setAttachSelectedParentId('');
+      setShowAttachParentFor(null);
+      addToast('Parent attached', 'success');
+    } catch (e: any) {
+      addToast(e?.message || 'Failed to attach parent', 'error');
+    } finally {
+      setAttachBusy(false);
+    }
+  };
+
+  const onRemoveParent = async (
+    playerId: string,
+    parentId: string | number
+  ) => {
+    try {
+      await detachParentFromPlayer(playerId, parentId);
+
+      setParentsByPlayerId((m) => {
+        const clone = { ...m };
+        delete clone[playerId];
+        return clone;
+      });
+      await loadParentsIfNeeded(playerId);
+
+      addToast('Parent removed', 'success');
+    } catch (e: any) {
+      addToast(e?.message || 'Failed to remove parent', 'error');
+    }
+  };
+
+  const formatAddr = (a?: {
+    address1?: string | null;
+    address2?: string | null;
+    city?: string | null;
+    state?: string | null;
+    zip?: string | null;
+  }) =>
+    a
+      ? [a.address1, a.address2, a.city, a.state, a.zip]
+          .filter(Boolean)
+          .join(', ')
+      : undefined;
+
+  const loadParentsIfNeeded = async (playerId: string) => {
+    if (parentsByPlayerId[playerId] !== undefined) return;
+    try {
+      setLoadingParentsFor(playerId);
+      const full: PlayerFE = await fetchPlayerById(playerId);
+      const parents =
+        full.parents && full.parents.length
+          ? full.parents.map((par: any) => ({
+              id: par.id,
+              name:
+                par.user?.fname || par.user?.lname
+                  ? `${par.user?.fname ?? ''} ${par.user?.lname ?? ''}`.trim()
+                  : 'Parent',
+              email: par.user?.email ?? null,
+              phone: par.user?.phone ?? null,
+              address: formatAddr(par.address ?? undefined),
+            }))
+          : 'EMPTY';
+      setParentsByPlayerId((m) => ({ ...m, [playerId]: parents }));
+    } catch (err) {
+      console.error('Failed to load parents', err);
+      setParentsByPlayerId((m) => ({ ...m, [playerId]: 'EMPTY' }));
+    } finally {
+      setLoadingParentsFor((cur) => (cur === playerId ? null : cur));
+    }
+  };
+
+  const toggleExpand = async (playerId: string) => {
+    const willExpand = expanded !== playerId;
+    setExpanded(willExpand ? playerId : null);
+    if (willExpand) {
+      await loadParentsIfNeeded(playerId);
+    }
+  };
+
   // ---------------- UI ----------------
   return (
     <div className="flex flex-col gap-6 sm:gap-8">
@@ -486,7 +650,7 @@ export default function Players() {
             <button
               onClick={() => setExportOpen((v) => !v)}
               onBlur={() => setTimeout(() => setExportOpen(false), 150)}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white transition"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 hover:bgwhite/20 border border-white/20 text-white transition"
               title="Export filtered users"
             >
               <ArrowDownTrayIcon className="w-5 h-5" />
@@ -728,9 +892,7 @@ export default function Players() {
                     paginated.map((p) => (
                       <React.Fragment key={p.id}>
                         <tr
-                          onClick={() =>
-                            setExpanded(expanded === p.id ? null : p.id)
-                          }
+                          onClick={() => toggleExpand(p.id)}
                           className="hover:bg-[rgba(255,255,255,0.07)] cursor-pointer"
                         >
                           <td className="px-4 py-3">{p.name}</td>
@@ -763,9 +925,9 @@ export default function Players() {
                               <TrashIcon className="w-5 h-5 text-white" />
                             </button>
                             <button
-                              onClick={(e) => {
+                              onClick={async (e) => {
                                 e.stopPropagation();
-                                setExpanded(expanded === p.id ? null : p.id);
+                                await toggleExpand(p.id);
                               }}
                               className={`p-2 rounded-lg transition ${
                                 expanded === p.id
@@ -781,6 +943,7 @@ export default function Players() {
                           <tr>
                             <td colSpan={9} className="p-0 bg-transparent">
                               <div className="bg-[rgba(90,165,255,0.10)] rounded-b-xl m-2 p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-sm text-white">
+                                {/* Column 1 */}
                                 <div>
                                   <div>
                                     <span className="font-semibold">
@@ -807,6 +970,7 @@ export default function Players() {
                                     {p.stirrupSize}
                                   </div>
                                 </div>
+                                {/* Column 2 */}
                                 <div>
                                   <div>
                                     <span className="font-semibold">
@@ -835,6 +999,7 @@ export default function Players() {
                                     {p.address1}, {p.city}, {p.state} {p.zip}
                                   </div>
                                 </div>
+                                {/* Column 3 */}
                                 <div>
                                   <div>
                                     <span className="font-semibold">
@@ -859,6 +1024,146 @@ export default function Players() {
                                     </div>
                                   )}
                                 </div>
+
+                                {/* ---------- Parents panel (TABLE) ---------- */}
+                                <div className="sm:col-span-2 md:col-span-3">
+                                  <div className="mt-4 p-3 rounded-xl bg-white/5 border border-white/10">
+                                    <div className="flex items-center justify-between">
+                                      <div className="font-semibold">
+                                        Parents
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        {loadingParentsFor === p.id && (
+                                          <div className="text-xs text-white/70">
+                                            Loading…
+                                          </div>
+                                        )}
+                                        <button
+                                          className="px-2 py-1 text-xs rounded bg-white/10 hover:bg-white/20"
+                                          onClick={() =>
+                                            setShowAttachParentFor(
+                                              showAttachParentFor === p.id
+                                                ? null
+                                                : p.id
+                                            )
+                                          }
+                                        >
+                                          {showAttachParentFor === p.id
+                                            ? 'Cancel'
+                                            : 'Attach Parent'}
+                                        </button>
+                                      </div>
+                                    </div>
+
+                                    {showAttachParentFor === p.id && (
+                                      <form
+                                        className="mt-2 flex flex-col sm:flex-row gap-2"
+                                        onSubmit={(e) => {
+                                          e.preventDefault();
+                                          onAttachParent(p.id);
+                                        }}
+                                      >
+                                        <select
+                                          className="flex-1 px-3 py-2 rounded bg-white/10 text-white outline-none"
+                                          value={attachSelectedParentId}
+                                          onChange={(e) =>
+                                            setAttachSelectedParentId(
+                                              e.target.value
+                                            )
+                                          }
+                                          required
+                                        >
+                                          <option
+                                            value=""
+                                            disabled
+                                            className="text-black"
+                                          >
+                                            {usersLoading
+                                              ? 'Loading users…'
+                                              : usersError
+                                                ? 'Failed to load users'
+                                                : 'Select a parent user'}
+                                          </option>
+                                          {parentUserOptions.map((opt) => (
+                                            <option
+                                              key={opt.value}
+                                              value={opt.value}
+                                              className="text-black"
+                                            >
+                                              {opt.label}{' '}
+                                              {opt.email
+                                                ? `(${opt.email})`
+                                                : ''}
+                                            </option>
+                                          ))}
+                                        </select>
+                                        <button
+                                          type="submit"
+                                          disabled={
+                                            attachBusy ||
+                                            usersLoading ||
+                                            !!usersError
+                                          }
+                                          className="px-3 py-2 rounded bg-[#5AA5FF] text-white disabled:opacity-60"
+                                        >
+                                          {attachBusy ? 'Attaching…' : 'Attach'}
+                                        </button>
+                                      </form>
+                                    )}
+
+                                    {/* Content */}
+                                    <div className="mt-2">
+                                      {parentsByPlayerId[p.id] === 'EMPTY' && (
+                                        <span className="inline-block text-xs px-2 py-1 rounded-full bg-white/10 text-white/70">
+                                          No parents linked
+                                        </span>
+                                      )}
+
+                                      {Array.isArray(
+                                        parentsByPlayerId[p.id]
+                                      ) && (
+                                        <div className="grid gap-2 md:grid-cols-2">
+                                          {(
+                                            parentsByPlayerId[
+                                              p.id
+                                            ] as ParentPreview[]
+                                          ).map((par) => (
+                                            <div
+                                              key={par.id}
+                                              className="p-2 rounded-lg bg-black/20 border border-white/10 flex justify-between items-start"
+                                            >
+                                              <div>
+                                                <div className="text-sm font-medium">
+                                                  {par.name}
+                                                </div>
+                                                <div className="text-xs text-white/80">
+                                                  {par.email || '—'}
+                                                </div>
+                                                <div className="text-xs text-white/80">
+                                                  {par.phone || '—'}
+                                                </div>
+                                                {par.address && (
+                                                  <div className="text-xs text-white/70 mt-1">
+                                                    {par.address}
+                                                  </div>
+                                                )}
+                                              </div>
+                                              <button
+                                                onClick={() =>
+                                                  onRemoveParent(p.id, par.id)
+                                                }
+                                                className="ml-2 px-2 py-1 text-xs rounded bg-red-600 hover:bg-red-700 text-white"
+                                              >
+                                                Remove
+                                              </button>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                {/* ---------- /Parents panel (TABLE) ---------- */}
                               </div>
                             </td>
                           </tr>
@@ -918,9 +1223,7 @@ export default function Players() {
                             ? 'bg-[#5AA5FF] text-white'
                             : 'bg-white/10 hover:bg-[#5AA5FF]/70 text-white'
                         }`}
-                        onClick={() =>
-                          setExpanded(expanded === p.id ? null : p.id)
-                        }
+                        onClick={async () => await toggleExpand(p.id)}
                       >
                         <EyeIcon className="w-5 h-5" />
                       </button>
@@ -979,6 +1282,130 @@ export default function Players() {
                           {p.isTrusted ? 'YES' : 'NO'}
                         </span>
                       </div>
+
+                      {/* Parents panel (MOBILE) */}
+                      <div className="col-span-2 mt-1">
+                        <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                          <div className="flex items-center justify-between">
+                            <div className="font-semibold">Parents</div>
+                            <div className="flex items-center gap-2">
+                              {loadingParentsFor === p.id && (
+                                <div className="text-xs text-white/70">
+                                  Loading…
+                                </div>
+                              )}
+                              <button
+                                className="px-2 py-1 text-xs rounded bg-white/10 hover:bg-white/20"
+                                onClick={() =>
+                                  setShowAttachParentFor(
+                                    showAttachParentFor === p.id ? null : p.id
+                                  )
+                                }
+                              >
+                                {showAttachParentFor === p.id
+                                  ? 'Cancel'
+                                  : 'Attach Parent'}
+                              </button>
+                            </div>
+                          </div>
+
+                          {showAttachParentFor === p.id && (
+                            <form
+                              className="mt-2 flex flex-col sm:flex-row gap-2"
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                onAttachParent(p.id);
+                              }}
+                            >
+                              <select
+                                className="flex-1 px-3 py-2 rounded bg-white/10 text-white outline-none"
+                                value={attachSelectedParentId}
+                                onChange={(e) =>
+                                  setAttachSelectedParentId(e.target.value)
+                                }
+                                required
+                              >
+                                <option
+                                  value=""
+                                  disabled
+                                  className="text-black"
+                                >
+                                  {usersLoading
+                                    ? 'Loading users…'
+                                    : usersError
+                                      ? 'Failed to load users'
+                                      : 'Select a parent user'}
+                                </option>
+                                {parentUserOptions.map((opt) => (
+                                  <option
+                                    key={opt.value}
+                                    value={opt.value}
+                                    className="text-black"
+                                  >
+                                    {opt.label}{' '}
+                                    {opt.email ? `(${opt.email})` : ''}
+                                  </option>
+                                ))}
+                              </select>
+                              <button
+                                type="submit"
+                                disabled={
+                                  attachBusy || usersLoading || !!usersError
+                                }
+                                className="px-3 py-2 rounded bg-[#5AA5FF] text-white disabled:opacity-60"
+                              >
+                                {attachBusy ? 'Attaching…' : 'Attach'}
+                              </button>
+                            </form>
+                          )}
+
+                          <div className="mt-2">
+                            {parentsByPlayerId[p.id] === 'EMPTY' && (
+                              <span className="inline-block text-xs px-2 py-1 rounded-full bg-white/10 text-white/70">
+                                No parents linked
+                              </span>
+                            )}
+                            {Array.isArray(parentsByPlayerId[p.id]) && (
+                              <div className="grid gap-2">
+                                {(
+                                  parentsByPlayerId[p.id] as ParentPreview[]
+                                ).map((par) => (
+                                  <div
+                                    key={par.id}
+                                    className="p-2 rounded-lg bg-black/20 border border-white/10 flex justify-between items-start"
+                                  >
+                                    <div>
+                                      <div className="text-sm font-medium">
+                                        {par.name}
+                                      </div>
+                                      <div className="text-xs text-white/80">
+                                        {par.email || '—'}
+                                      </div>
+                                      <div className="text-xs text-white/80">
+                                        {par.phone || '—'}
+                                      </div>
+                                      {par.address && (
+                                        <div className="text-xs text-white/70 mt-1">
+                                          {par.address}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <button
+                                      onClick={() =>
+                                        onRemoveParent(p.id, par.id)
+                                      }
+                                      className="ml-2 px-2 py-1 text-xs rounded bg-red-600 hover:bg-red-700 text-white"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      {/* /Parents panel (MOBILE) */}
                     </div>
                   )}
                 </div>
@@ -1024,10 +1451,10 @@ export default function Players() {
               <EditPlayerModal
                 player={editPlayerFE}
                 onSuccess={async () => {
-                  const fresh = await fetchPlayerById(editPlayerFE.id);
+                  const fresh = await fetchPlayerById(editPlayerFE.id as any);
                   setPlayers((ps) =>
                     ps.map((row) =>
-                      row.id === fresh.id ? mapFEToRow(fresh) : row
+                      row.id === (fresh.id as any) ? mapFEToRow(fresh) : row
                     )
                   );
                   closeDialog();

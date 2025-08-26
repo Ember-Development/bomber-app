@@ -1,4 +1,4 @@
-import { Prisma, prisma, User, UserFE } from '@bomber-app/database';
+import { Prisma, prisma, User, UserFE, UserRole } from '@bomber-app/database';
 import { updateUser } from '../controllers/userController';
 import { hashPassword, verifyPassword } from '../utils/crypto';
 
@@ -105,6 +105,7 @@ export const userService = {
 
         parent: {
           select: {
+            id: true,
             children: {
               select: {
                 team: {
@@ -552,6 +553,55 @@ export const userService = {
     await prisma.user.update({
       where: { id: userId },
       data: { pass: hashed },
+    });
+  },
+
+  ensureRole: async (userIdRaw: string, role: 'COACH' | 'ADMIN' | 'FAN') => {
+    const userId = String(userIdRaw);
+
+    // create-if-missing for roles that require no extra fields
+    if (role === 'COACH') {
+      await prisma.coach.upsert({
+        where: { userID: userId },
+        update: {},
+        create: { userID: userId },
+      });
+    } else if (role === 'ADMIN') {
+      await prisma.admin.upsert({
+        where: { userID: userId },
+        update: {},
+        create: { userID: userId },
+      });
+    } else if (role === 'FAN') {
+      await prisma.fan.upsert({
+        where: { userID: userId },
+        update: {},
+        create: { userID: userId },
+      });
+    }
+  },
+
+  upsertRegionForUser: async (userIdRaw: string, region: any) => {
+    const userID = String(userIdRaw);
+    return prisma.regCoach.upsert({
+      where: { userID },
+      update: { region },
+      create: { userID, region },
+      include: { user: true },
+    });
+  },
+
+  deleteByUserId: async (userIdRaw: string) => {
+    const userID = String(userIdRaw);
+    // idempotent delete
+    await prisma.regCoach.deleteMany({ where: { userID } });
+  },
+
+  setPrimaryRole: async (userIdRaw: string | number, role: UserRole) => {
+    const id = String(userIdRaw);
+    await prisma.user.update({
+      where: { id },
+      data: { primaryRole: role },
     });
   },
 };

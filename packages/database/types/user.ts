@@ -66,6 +66,7 @@ export type PublicUserFE = Omit<
     }[];
   };
   parent?: {
+    id: string;
     children: Array<{
       team?: {
         id: string;
