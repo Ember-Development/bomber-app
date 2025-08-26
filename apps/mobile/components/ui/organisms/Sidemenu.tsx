@@ -17,7 +17,7 @@ import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GlobalColors } from '@/constants/Colors';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import { SIDEMENU_ITEMS } from '@/constants/sidebarItems';
 import { useLogout } from '@/hooks/user/useLogout';
 
@@ -49,7 +49,7 @@ export default function UserAvatar({
     role
   );
 
-  const navigateAndClose = (path: string) => {
+  const navigateAndClose = <P extends Href>(path: P) => {
     setMenuVisible(false);
     router.push(path);
   };
@@ -132,12 +132,11 @@ export default function UserAvatar({
   );
 }
 
-/** Extracted so we can reuse for iOS/Android containers above */
 function SidebarContent(props: {
   textColor: string;
   initials: string;
   onClose: () => void;
-  navigateAndClose: (p: string) => void;
+  navigateAndClose: (p: Href) => void;
   canSeeBomberPortal: boolean;
   isFan: boolean;
   logout: () => Promise<void>;
@@ -347,7 +346,11 @@ function SidebarContent(props: {
             <Pressable
               key={item.name}
               style={styles.menuItem}
-              onPress={() => item.routes && navigateAndClose(item.routes)}
+              onPress={() => {
+                if ('routes' in item && item.routes) {
+                  navigateAndClose(item.routes);
+                }
+              }}
             >
               <Ionicons
                 name={item.icon}

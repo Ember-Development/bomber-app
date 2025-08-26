@@ -45,20 +45,20 @@ export default function VideosScreen() {
 
   // Vertical hero scroll
   const scrollY = useSharedValue(0);
-  const onVerticalScroll = useAnimatedScrollHandler(e => {
+  const onVerticalScroll = useAnimatedScrollHandler((e) => {
     scrollY.value = e.contentOffset.y;
   });
 
   // Horizontal carousel scroll
   const scrollX = useSharedValue(0);
-  const onHorizontalScroll = useAnimatedScrollHandler(e => {
+  const onHorizontalScroll = useAnimatedScrollHandler((e) => {
     scrollX.value = e.contentOffset.x;
   });
 
   // Filter + sort
   const filtered = useMemo(() => {
     if (!videos) return [];
-    return videos.filter(v =>
+    return videos.filter((v) =>
       v.title.toLowerCase().includes(searchText.toLowerCase())
     );
   }, [videos, searchText]);
@@ -69,8 +69,7 @@ export default function VideosScreen() {
       .slice()
       .sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() -
-          new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       )[0];
   }, [filtered]);
 
@@ -134,9 +133,7 @@ export default function VideosScreen() {
           {featured && (
             <>
               <Text style={styles.sectionLabel}>Featured Video</Text>
-              <Animated.View
-                style={[styles.heroContainer, heroStyle]}
-              >
+              <Animated.View style={[styles.heroContainer, heroStyle]}>
                 <TouchableOpacity
                   activeOpacity={0.8}
                   onPress={() => setSelectedItem(featured)}
@@ -164,9 +161,9 @@ export default function VideosScreen() {
             </>
           )}
 
-          {MEDIA_CATEGORIES.map(cat => {
+          {MEDIA_CATEGORIES.map((cat) => {
             const items = filtered.filter(
-              v => v.category === cat.value && v.id !== featured?.id
+              (v) => v.category === cat.value && v.id !== featured?.id
             );
             if (!items.length) return null;
             return (
@@ -177,7 +174,7 @@ export default function VideosScreen() {
                 <Animated.FlatList
                   data={items}
                   horizontal
-                  keyExtractor={i => i.id}
+                  keyExtractor={(i) => i.id}
                   showsHorizontalScrollIndicator={false}
                   snapToInterval={CATEGORY_ITEM_WIDTH + CARD_MARGIN}
                   decelerationRate="fast"
@@ -204,19 +201,27 @@ export default function VideosScreen() {
           onRequestClose={() => setSelectedItem(null)}
         >
           <View style={styles.playerContainer}>
-            <TouchableOpacity
-              style={styles.closeBtn}
-              onPress={() => setSelectedItem(null)}
-            >
-              <Ionicons name="close" size={24} color="#fff" />
-            </TouchableOpacity>
+            {/* Floating header */}
+            <View style={styles.modalHeader}>
+              <TouchableOpacity
+                style={styles.closeBtn}
+                onPress={() => setSelectedItem(null)}
+              >
+                <Ionicons name="close" size={24} color="#fff" />
+              </TouchableOpacity>
+
+              {selectedItem && (
+                <Text style={styles.modalTitle} numberOfLines={1}>
+                  {selectedItem.title}
+                </Text>
+              )}
+            </View>
+
             {selectedItem && (
               <YoutubePlayer
                 height={(width * 9) / 16}
                 width={width}
-                videoId={
-                  selectedItem.videoUrl.match(/v=([^&]+)/)?.[1] || ''
-                }
+                videoId={selectedItem.videoUrl.match(/v=([^&]+)/)?.[1] || ''}
                 play
                 initialPlayerParams={{ controls: true }}
               />

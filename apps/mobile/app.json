@@ -9,30 +9,30 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "extra": {
-      "eas": { "projectId": "5716a622-1434-422d-a9af-fb8aab33b8c3" }
-    },
+    "extra": { "eas": { "projectId": "5716a622-1434-422d-a9af-fb8aab33b8c3" } },
+
     "ios": {
       "bundleIdentifier": "com.bomberfastpitch.bomberapp",
       "supportsTablet": true,
-      "buildNumber": "1",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+      "buildNumber": "2",
+      "infoPlist": { "ITSAppUsesNonExemptEncryption": false }
     },
+
     "android": {
       "package": "com.emberdevco.bomberapp",
-      "versionCode": "1",
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/bomberappcover.png"
       },
       "permissions": []
     },
+
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/bomber-icon-blue.png"
     },
+
     "plugins": [
       "expo-router",
       "expo-secure-store",
@@ -46,10 +46,20 @@
         }
       ],
       "expo-font",
-      "expo-linear-gradient"
+      "expo-linear-gradient",
+
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "minSdkVersion": 23
+          }
+        }
+      ]
     ],
-    "experiments": {
-      "typedRoutes": true
-    }
+
+    "experiments": { "typedRoutes": true }
   }
 }

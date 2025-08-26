@@ -1,12 +1,13 @@
-// constants/sidebarItems.ts
-
 import { Ionicons } from '@expo/vector-icons';
+import type { Href } from 'expo-router';
 
-export const SIDEMENU_ITEMS: {
+export type SideMenuItem = {
   name: string;
   icon: keyof typeof Ionicons.glyphMap;
-  routes: string;
-}[] = [
+  routes?: Href; // optional; only present when it actually navigates
+};
+
+export const SIDEMENU_ITEMS = [
   {
     name: 'Teams',
     icon: 'people-outline',
@@ -15,12 +16,12 @@ export const SIDEMENU_ITEMS: {
   {
     name: 'Media',
     icon: 'play-outline',
-    routes: '',
+    // routes omitted on purpose; it's a submenu toggle
   },
   {
     name: 'Legacy',
     icon: 'school-outline',
-    routes: '',
+    // routes omitted; submenu toggle
   },
   {
     name: 'Bomber Portal',
@@ -35,11 +36,11 @@ export const SIDEMENU_ITEMS: {
   {
     name: 'Coaches Development',
     icon: 'baseball-outline',
-    routes: '',
+    // no route yet
   },
   {
     name: 'Player Development',
     icon: 'star-outline',
-    routes: '',
+    // no route yet
   },
-];
+] as const satisfies ReadonlyArray<SideMenuItem>;

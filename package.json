@@ -18,5 +18,8 @@
     "globals": "^15.14.0",
     "prettier": "^3.5.0",
     "typescript-eslint": "^8.22.0"
+  },
+  "dependencies": {
+    "expo-build-properties": "^0.14.8"
   }
 }

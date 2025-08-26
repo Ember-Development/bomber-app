@@ -40,6 +40,36 @@ type TeamWithPlayers = Prisma.TeamGetPayload<{
   };
 }>;
 
+// team sort
+const AGE_RANK: Record<string, number> = {
+  U18: 1,
+  U16: 2,
+  U14: 3,
+  U12: 4,
+  U10: 5,
+  U8: 6,
+  ALUMNI: 999,
+};
+
+const isAcademyName = (name: string) => name.toLowerCase().includes('academy');
+
+function teamComparator(a: any, b: any) {
+  // Age group order: U18 -> U8 -> ALUMNI
+  const ageCmp = (AGE_RANK[a.ageGroup] ?? 999) - (AGE_RANK[b.ageGroup] ?? 999);
+  if (ageCmp !== 0) return ageCmp;
+
+  // For U18..U12, Academy first; for U10/U8, no special handling
+  const ageTop = new Set(['U18', 'U16', 'U14', 'U12']);
+  if (ageTop.has(a.ageGroup) && ageTop.has(b.ageGroup)) {
+    const aAcad = isAcademyName(a.name) ? 0 : 1;
+    const bAcad = isAcademyName(b.name) ? 0 : 1;
+    if (aAcad !== bAcad) return aAcad - bAcad;
+  }
+
+  // A-Z by team name
+  return a.name.localeCompare(b.name);
+}
+
 export const canAccessTrophy = async (
   trophyId: string,
   actingUserId: string,
@@ -77,7 +107,7 @@ export const canAccessTrophy = async (
 
 export const teamService = {
   getAllTeams: async () => {
-    return prisma.team.findMany({
+    const teams = await prisma.team.findMany({
       include: {
         trophyCase: true,
         players: {
@@ -93,7 +123,6 @@ export const teamService = {
             user: true,
           },
         },
-        // regCoaches: true, // Removed as it is not a valid property
         headCoach: {
           include: {
             user: true,
@@ -101,6 +130,8 @@ export const teamService = {
         },
       },
     });
+
+    return teams.sort(teamComparator);
   },
 
   getTeamById: async (id: string): Promise<TeamWithPlayers | null> => {
