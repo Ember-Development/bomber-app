@@ -109,7 +109,20 @@ export const playerService = {
       include: {
         user: true,
         team: true,
-        parents: true,
+        parents: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                fname: true,
+                lname: true,
+                email: true,
+                phone: true,
+              },
+            },
+            address: true,
+          },
+        },
         address: true,
         commit: { select: { imageUrl: true, name: true } },
       },
@@ -121,7 +134,20 @@ export const playerService = {
       include: {
         user: true,
         team: true,
-        parents: true,
+        parents: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                fname: true,
+                lname: true,
+                email: true,
+                phone: true,
+              },
+            },
+            address: true,
+          },
+        },
         address: true,
       },
     });

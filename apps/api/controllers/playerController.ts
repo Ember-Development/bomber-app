@@ -333,3 +333,100 @@ export async function attachParentToPlayer(req: Request, res: Response) {
       .json({ message: e?.message ?? 'Failed to link parent to player' });
   }
 }
+
+export async function detachParentFromPlayer(req: Request, res: Response) {
+  const playerId = String(req.params.id);
+  // accept either /:parentId param or body.parentId for flexibility
+  const rawParentId = (req.params.parentId ?? req.body?.parentId ?? '')
+    .toString()
+    .trim();
+
+  console.log('[detachParentFromPlayer] start', { playerId, rawParentId });
+
+  if (!rawParentId) {
+    return res.status(400).json({ message: 'parentId is required' });
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // --- Step 1: resolve Parent.id from either Parent.id or User.id
+      console.log('[detachParentFromPlayer] resolve parent start');
+
+      // Try as Parent.id
+      let parent = await tx.parent.findUnique({
+        where: { id: rawParentId },
+        select: { id: true, userID: true },
+      });
+
+      if (!parent) {
+        // Try as User.id -> find existing Parent for that user
+        const parentByUser = await tx.parent.findUnique({
+          where: { userID: rawParentId },
+          select: { id: true, userID: true },
+        });
+        if (!parentByUser) {
+          console.log('[detachParentFromPlayer] parent not found', {
+            rawParentId,
+          });
+          return res
+            .status(404)
+            .json({ message: 'Parent (or User) not found' });
+        }
+        parent = parentByUser;
+      }
+
+      // --- Step 2: verify Player exists
+      const playerExists = await tx.player.findUnique({
+        where: { id: playerId },
+        select: { id: true },
+      });
+      if (!playerExists) {
+        return res.status(404).json({ message: 'Player not found' });
+      }
+
+      // --- Step 3: check link & disconnect if linked
+      const linkExists = await tx.player.findFirst({
+        where: { id: playerId, parents: { some: { id: parent.id } } },
+        select: { id: true },
+      });
+
+      if (!linkExists) {
+        console.log('[detachParentFromPlayer] not linked, no-op', {
+          playerId,
+          parentId: parent.id,
+        });
+      } else {
+        console.log('[detachParentFromPlayer] unlinking now', {
+          playerId,
+          parentId: parent.id,
+        });
+        await tx.player.update({
+          where: { id: playerId },
+          data: { parents: { disconnect: { id: parent.id } } },
+        });
+        console.log('[detachParentFromPlayer] unlink complete');
+      }
+
+      // --- Step 4: return hydrated PlayerFE (same include as attach)
+      const hydrated = await tx.player.findUnique({
+        where: { id: playerId },
+        include: {
+          user: true,
+          team: true,
+          parents: { include: { user: true } },
+          address: true,
+        },
+      });
+
+      return hydrated;
+    });
+
+    if (!result || (result as any).statusCode) return; // early response sent
+    return res.status(200).json(result);
+  } catch (e: any) {
+    console.error('detachParentFromPlayer error:', e);
+    return res
+      .status(400)
+      .json({ message: e?.message ?? 'Failed to unlink parent from player' });
+  }
+}

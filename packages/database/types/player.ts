@@ -3,7 +3,7 @@ import { Prisma } from '../generated/client';
 type Relations = {
   user: { user: true };
   team: { team: true };
-  parents: { parents: true };
+  parents: { include: { user: true; address: true } };
   address: { address: true };
   commit: { select: { imageUrl: true; name: true } };
 };

@@ -99,6 +99,16 @@ export default function Users() {
     })();
   }, []);
 
+  // Helper: regions
+  const takenRegions = useMemo(() => {
+    const set = new Set<string>();
+    for (const u of all) {
+      const r = (u as any)?.regCoach?.region as string | undefined;
+      if (r) set.add(r);
+    }
+    return set;
+  }, [all]);
+
   // Helpers: sorting
   function toggleSort(key: SortKey) {
     setSortRules((prev) => {
@@ -233,13 +243,42 @@ export default function Users() {
       primaryRole: 'PLAYER',
     });
 
+    // Only needed if creating a regional coach
+    const [region, setRegion] = useState<string>('');
+
     const onSave = async () => {
-      const created = await createUser(form);
-      if (created) {
-        setAll((u) => [created, ...u]); // add to raw
-        closeDialog();
-        addToast('User created', 'success');
+      // Validate region if they picked Regional Coach
+      if (form.primaryRole === 'REGIONAL_COACH') {
+        if (!region) {
+          alert('Please select a region for the Regional Coach.');
+          return;
+        }
+        if (takenRegions.has(region)) {
+          alert('That region is already assigned to another Regional Coach.');
+          return;
+        }
       }
+
+      const created = await createUser(form);
+      if (!created) return;
+
+      // If regional coach, attach region via regCoach upsert
+      if (form.primaryRole === 'REGIONAL_COACH') {
+        try {
+          await createOrUpdateRegCoach(created.id, region);
+        } catch (e: any) {
+          // If regCoach creation fails, you may want to soft-handle or roll back the user
+          alert(
+            e?.message || 'Could not assign region (it may already be taken).'
+          );
+          return;
+        }
+      }
+
+      // Add to list and close
+      setAll((u) => [created, ...u]);
+      closeDialog();
+      addToast('User created', 'success');
     };
 
     return (
@@ -289,12 +328,16 @@ export default function Users() {
             className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
           />
         </Field>
+
         <Field label="Role">
           <select
             value={form.primaryRole}
-            onChange={(e) =>
-              setForm({ ...form, primaryRole: e.target.value as any })
-            }
+            onChange={(e) => {
+              const role = e.target.value as CreateUserInput['primaryRole'];
+              setForm({ ...form, primaryRole: role });
+              // reset region if they switch away from reg coach
+              if (role !== 'REGIONAL_COACH') setRegion('');
+            }}
             className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
           >
             {ALL_ROLES.filter((r) => r !== 'ALL').map((r) => (
@@ -304,6 +347,33 @@ export default function Users() {
             ))}
           </select>
         </Field>
+
+        {form.primaryRole === 'REGIONAL_COACH' && (
+          <Field label="Region">
+            <select
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+              className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
+            >
+              <option value="" className="text-black">
+                Select a region…
+              </option>
+              {REGIONS.map((r) => (
+                <option
+                  key={r}
+                  value={r}
+                  className="text-black"
+                  disabled={takenRegions.has(r)}
+                >
+                  {takenRegions.has(r) ? `${r} (taken)` : r}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-white/70">
+              One Regional Coach per region.
+            </p>
+          </Field>
+        )}
 
         <FormActions onSave={onSave} onCancel={closeDialog} />
       </div>
@@ -318,23 +388,37 @@ export default function Users() {
       phone: user.phone || '',
       primaryRole: user.primaryRole,
     });
+
+    // keep existing region (if any) for REGIONAL_COACH
     const [region, setRegion] = useState<string | null>(
       user.primaryRole === 'REGIONAL_COACH'
         ? ((user as any)?.regCoach?.region ?? null)
         : null
     );
 
-    const onSave = async () => {
-      const updated = await updateUser(user.id, form);
-      if (!updated) return;
+    // allow their current region even if globally taken
+    const currentRegion = (user as any)?.regCoach?.region as string | undefined;
 
+    const onSave = async () => {
+      // if switching (or staying) as REGIONAL_COACH, enforce region selection & not taken
       if (form.primaryRole === 'REGIONAL_COACH') {
         if (!region) {
           alert('Please select a region for the Regional Coach.');
           return;
         }
+        const isTaken = takenRegions.has(region) && region !== currentRegion;
+        if (isTaken) {
+          alert('That region is already assigned to another Regional Coach.');
+          return;
+        }
+      }
+
+      const updated = await updateUser(user.id, form);
+      if (!updated) return;
+
+      if (form.primaryRole === 'REGIONAL_COACH') {
         try {
-          await createOrUpdateRegCoach(user.id, region);
+          await createOrUpdateRegCoach(user.id, region!);
         } catch (e: any) {
           alert(
             e?.message || 'Could not assign region (it may already be taken).'
@@ -386,12 +470,15 @@ export default function Users() {
             className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
           />
         </Field>
+
         <Field label="Role">
           <select
             value={form.primaryRole}
-            onChange={(e) =>
-              setForm({ ...form, primaryRole: e.target.value as any })
-            }
+            onChange={(e) => {
+              const role = e.target.value as CreateUserInput['primaryRole'];
+              setForm({ ...form, primaryRole: role });
+              if (role !== 'REGIONAL_COACH') setRegion(null);
+            }}
             className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
           >
             {ALL_ROLES.filter((r) => r !== 'ALL').map((r) => (
@@ -412,11 +499,19 @@ export default function Users() {
               <option value="" className="text-black">
                 Select a region…
               </option>
-              {REGIONS.map((r) => (
-                <option key={r} value={r} className="text-black">
-                  {r}
-                </option>
-              ))}
+              {REGIONS.map((r) => {
+                const isTaken = takenRegions.has(r) && r !== currentRegion;
+                return (
+                  <option
+                    key={r}
+                    value={r}
+                    className="text-black"
+                    disabled={isTaken}
+                  >
+                    {isTaken ? `${r} (taken)` : r}
+                  </option>
+                );
+              })}
             </select>
             <p className="mt-1 text-xs text-white/70">
               One Regional Coach per region.

@@ -17,6 +17,7 @@ import Login from './pages/Login';
 import RequireAdmin from './components/RequireAdmin';
 import { ToastProvider } from './context/ToastProvider';
 import Coaches from './pages/Coaches';
+import Portal from './pages/Portal';
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
                 <Route path="users" element={<Users />} />
                 <Route path="players" element={<Players />} />
                 <Route path="coaches" element={<Coaches />} />
+                <Route path="portal" element={<Portal />} />
                 <Route path="events" element={<Events />} />
                 <Route path="media" element={<Media />} />
                 <Route path="legacy" element={<Legacy />} />
