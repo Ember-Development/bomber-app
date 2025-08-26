@@ -11,6 +11,7 @@ import {
   getUnassignedPlayers,
   attachParentToPlayer,
   removePlayerFromTeam,
+  detachParentFromPlayer,
 } from '../controllers/playerController';
 import { authorize } from '../middleware/authorize';
 import { auth } from '../auth/auth';
@@ -36,6 +37,12 @@ router.post(
   auth,
   authorize('edit-player'),
   attachParentToPlayer
+);
+router.delete(
+  '/:id/parents/:parentId',
+  auth,
+  authorize('edit-player'),
+  detachParentFromPlayer
 );
 router.delete('/:id', auth, authorize('remove-player'), deletePlayer);
 

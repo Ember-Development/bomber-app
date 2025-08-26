@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from 'express';
 import { CreateUserInput, userService } from '../services/user';
 import { hashPassword, verifyPassword } from '../utils/crypto';
 import { AuthenticatedRequest } from '../utils/express';
+import { Regions, UserRole } from '@bomber-app/database';
+import { regCoachService } from '../services/regCoach';
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -161,5 +163,75 @@ export const changePassword = async (req: any, res: Response) => {
 
     console.error('[changePassword] error', e);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const ensureRoleAndSettable = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const { userId } = req.params;
+    const { role } = req.body as { role: 'COACH' | 'ADMIN' | 'FAN' };
+
+    if (!userId || !role)
+      return res.status(400).json({ message: 'userId and role are required' });
+
+    if (req.user?.primaryRole !== 'ADMIN') {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    await userService.ensureRole(userId, role);
+    return res.status(204).send();
+  } catch (err: any) {
+    console.error('ensureRole error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const updateRegCoachRegion = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const { userId } = req.params;
+    const { region } = req.body as { region: string };
+    if (!userId || !region)
+      return res
+        .status(400)
+        .json({ message: 'userId and region are required' });
+
+    const reg = await regCoachService.upsertRegionWithTakeover(userId, region);
+    return res.status(200).json(reg);
+  } catch (err: any) {
+    console.error('updateRegCoachRegion error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const demoteFromRegCoach = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const { userId } = req.params;
+    // Optional: choose new role; default to COACH if not provided
+    const { newRole } = req.query as { newRole?: UserRole }; // 'ADMIN' | 'COACH' | 'FAN' | etc
+    const targetRole: UserRole = (newRole as UserRole) ?? 'COACH';
+
+    // 1) delete RegCoach row (idempotent)
+    await userService.deleteByUserId(userId);
+
+    // 2) ensure the target role row exists if needed (COACH/ADMIN/FAN)
+    //    (re-uses your existing ensureRole logic)
+    await userService.ensureRole(userId, targetRole as any);
+
+    // 3) set primaryRole
+    await userService.setPrimaryRole(userId, targetRole);
+
+    return res.status(204).send();
+  } catch (err: any) {
+    console.error('demoteFromRegCoach error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };

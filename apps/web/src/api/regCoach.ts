@@ -1,3 +1,4 @@
+import { RegCoachFE } from '@bomber-app/database';
 import { api } from './api';
 
 export const createOrUpdateRegCoach = async (
@@ -12,3 +13,18 @@ export const deleteRegCoach = async (userId: string) => {
   await api.delete(`/regCoaches/${userId}`);
   return true;
 };
+
+export async function upsertRegCoachRegion(
+  userId: string | number,
+  region: string
+): Promise<RegCoachFE> {
+  const { data } = await api.patch(`/users/${userId}/reg-coach`, { region });
+  return data;
+}
+
+export async function demoteRegCoach(
+  userId: string | number,
+  newRole: 'COACH' | 'ADMIN' | 'FAN'
+) {
+  await api.delete(`/users/${userId}/reg-coach`, { params: { newRole } });
+}
