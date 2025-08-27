@@ -113,8 +113,6 @@ export default function TabLayout() {
               focused={focused}
             />
           ),
-          // hide from the tab bar & routing when not Fan
-          href: !isFan ? null : undefined,
         }}
       />
 

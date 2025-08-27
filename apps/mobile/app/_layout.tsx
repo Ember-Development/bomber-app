@@ -30,6 +30,10 @@ function RootNavigator() {
   useEffect(() => {
     if (isLoading) return;
 
+    if (__DEV__) {
+      require('../utils/backhandler-logger');
+    }
+
     const inSignup = pathname.startsWith('/signup');
     const inOnboarding =
       pathname.startsWith('/onboarding') || pathname.startsWith('/welcome');
