@@ -251,10 +251,10 @@ export default function SettingsScreen() {
                   onPress={() => router.push('/side/contact')}
                 />
                 <PressLink
-                  text="Report a Problem"
+                  text="Report a Tech Problem"
                   onPress={() => Linking.openURL('mailto:emberdevco@gmail.com')}
                 />
-                <Row label="App Version" value="1.0.0 (100)" />
+                <Row label="App Version" value="1.0.2 (100)" />
               </Group>
             </Section>
 
