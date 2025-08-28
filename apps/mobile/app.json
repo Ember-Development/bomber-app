@@ -22,7 +22,7 @@
     },
     "android": {
       "package": "com.emberdevco.bomberapp",
-      "versionCode": "1",
+      "targetSdkVersion": 35,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/bomberappcover.png"
       },
