@@ -25,7 +25,7 @@ module.exports = {
 
     android: {
       package: 'com.emberdevco.bomberapp',
-      versionCode: 1,
+      targetSdkVersion: 35,
       adaptiveIcon: {
         foregroundImage: './assets/images/bombericonios.png',
         backgroundColor: '#ffffff',

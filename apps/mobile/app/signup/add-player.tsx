@@ -344,7 +344,7 @@ export default function AddPlayersScreen() {
 
           jerseySize: form.jerseySize || 'AM',
           pantSize: form.pantSize || 'SIZE_20',
-          stirrupSize: form.stirrupSize || 'SM',
+          stirrupSize: form.stirrupSize || 'ADULT',
           shortSize: form.shortSize || 'ASM',
           practiceShirtSize: form.practiceShirtSize || 'ASM',
 
@@ -535,7 +535,7 @@ export default function AddPlayersScreen() {
             ageGroup: ath.ageDivision!,
             jerseySize: ath.jerseySize || 'AM',
             pantSize: ath.pantSize || 'AM',
-            stirrupSize: ath.stirrupSize || 'AS',
+            stirrupSize: ath.stirrupSize || 'ADULT',
             shortSize: ath.shortSize || 'AS',
             practiceShortSize: ath.practiceShirtSize || 'AS',
             isTrusted: ath.isTrusted,
