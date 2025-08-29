@@ -19,6 +19,8 @@ import commitRoutes from './routes/commitRoutes';
 import portalRoutes from './routes/portalRoutes';
 import parentRoutes from './routes/parentRoutes';
 import regCoachRoutes from './routes/regCoachRoutes';
+import { devicesRouter } from './routes/deviceRoutes';
+import { notificationsRouter } from './routes/notificationsRoutes';
 
 import helmet from 'helmet';
 import cors from 'cors';
@@ -81,6 +83,8 @@ app.use('/api/commits', commitRoutes);
 app.use('/api/portal', portalRoutes);
 app.use('/api/parents', parentRoutes);
 app.use('/api/regCoaches', regCoachRoutes);
+app.use('/api/devices', devicesRouter);
+app.use('/api/notifications', notificationsRouter);
 
 app.use((err: Err, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);

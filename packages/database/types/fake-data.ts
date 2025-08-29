@@ -215,11 +215,38 @@ export function fakeMessageComplete() {
     chatID: faker.string.uuid(),
   };
 }
+export function fakeDevice() {
+  return {
+    platform: faker.lorem.words(5),
+    token: faker.lorem.words(5),
+    appVersion: undefined,
+    updatedAt: faker.date.anytime(),
+  };
+}
+export function fakeDeviceComplete() {
+  return {
+    id: faker.string.uuid(),
+    userId: faker.string.uuid(),
+    platform: faker.lorem.words(5),
+    token: faker.lorem.words(5),
+    appVersion: undefined,
+    createdAt: new Date(),
+    updatedAt: faker.date.anytime(),
+  };
+}
 export function fakeNotification() {
   return {
     title: faker.lorem.words(5),
     body: faker.lorem.words(5),
     createdAt: faker.date.anytime(),
+    imageUrl: undefined,
+    deepLink: undefined,
+    platform: undefined,
+    status: undefined,
+    scheduledAt: undefined,
+    sentAt: undefined,
+    data: undefined,
+    audience: undefined,
   };
 }
 export function fakeNotificationComplete() {
@@ -228,6 +255,32 @@ export function fakeNotificationComplete() {
     title: faker.lorem.words(5),
     body: faker.lorem.words(5),
     createdAt: faker.date.anytime(),
+    imageUrl: undefined,
+    deepLink: undefined,
+    platform: undefined,
+    status: undefined,
+    scheduledAt: undefined,
+    sentAt: undefined,
+    data: undefined,
+    audience: undefined,
+  };
+}
+export function fakePushReceipt() {
+  return {
+    deliveredAt: undefined,
+    openedAt: undefined,
+    failureReason: undefined,
+  };
+}
+export function fakePushReceiptComplete() {
+  return {
+    id: faker.string.uuid(),
+    notificationId: faker.string.uuid(),
+    userId: faker.string.uuid(),
+    deviceId: faker.string.uuid(),
+    deliveredAt: undefined,
+    openedAt: undefined,
+    failureReason: undefined,
   };
 }
 export function fakeUserNotificationComplete() {
