@@ -26,6 +26,7 @@ module.exports = {
     android: {
       package: 'com.emberdevco.bomberapp',
       targetSdkVersion: 35,
+      versionCode: 8,
       adaptiveIcon: {
         foregroundImage: './assets/images/bombericonios.png',
         backgroundColor: '#ffffff',
@@ -48,6 +49,16 @@ module.exports = {
           imageWidth: 200,
           resizeMode: 'contain',
           backgroundColor: '#ffffff',
+        },
+      ],
+      [
+        'expo-build-properties',
+        {
+          android: {
+            compileSdkVersion: 35,
+            targetSdkVersion: 35,
+            buildToolsVersion: '35.0.0',
+          },
         },
       ],
     ],
