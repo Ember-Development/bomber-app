@@ -24,7 +24,7 @@ export async function ensurePlayerRecordFor(
       gradYear: '2025',
       jerseySize: 'AM',
       pantSize: 'SIZE_20',
-      stirrupSize: 'SM',
+      stirrupSize: 'ADULT',
       shortSize: 'ASM',
       practiceShortSize: 'ASM',
       ageGroup: 'U8',
