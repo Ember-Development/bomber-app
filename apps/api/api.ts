@@ -36,19 +36,20 @@ app.get('/', (_: Request, res: Response) => {
 app.use(express.json());
 
 app.use(helmet());
-const ALLOWED_ORIGINS = new Set<string>([
+const ALLOWED_ORIGINS = new Set([
   'http://localhost:3000',
   'http://localhost:5173',
   'http://192.168.1.76:3000',
   'https://bomberadmin.net',
   'https://www.bomberadmin.net',
 ]);
+
 app.use((req, res, next) => {
   const origin = req.headers.origin as string | undefined;
 
-  // Log preflights so we can see exactly what the browser asked for
+  // log every preflight so we know if the request reached Node
   if (req.method === 'OPTIONS') {
-    console.log('[preflight]', {
+    console.log('[preflight->node]', {
       origin,
       method: req.headers['access-control-request-method'],
       headers: req.headers['access-control-request-headers'],
@@ -64,22 +65,19 @@ app.use((req, res, next) => {
       'GET,POST,PUT,PATCH,DELETE,OPTIONS'
     );
 
-    // Mirror whatever headers the browser requested, or fall back
+    // mirror requested headers; fallback to common ones
     const reqHeaders = req.headers['access-control-request-headers'];
     res.setHeader(
       'Access-Control-Allow-Headers',
       typeof reqHeaders === 'string' ? reqHeaders : 'authorization,content-type'
     );
 
-    // Not using cookies; keep credentials off
-    // res.setHeader('Access-Control-Allow-Credentials', 'false'); // default
+    // optional but nice to have
+    res.setHeader('Access-Control-Max-Age', '86400');
   }
 
-  // Short-circuit preflight with HTTP 200 OK
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-
+  // unconditionally OK preflights
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
 });
 app.options('*', cors());
