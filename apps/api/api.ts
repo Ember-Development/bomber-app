@@ -36,50 +36,13 @@ app.get('/', (_: Request, res: Response) => {
 app.use(express.json());
 
 app.use(helmet());
-const ALLOWED_ORIGINS = new Set([
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'http://192.168.1.76:3000',
-  'https://bomberadmin.net',
-  'https://www.bomberadmin.net',
-]);
-
-app.use((req, res, next) => {
-  const origin = req.headers.origin as string | undefined;
-
-  // log every preflight so we know if the request reached Node
-  if (req.method === 'OPTIONS') {
-    console.log('[preflight->node]', {
-      origin,
-      method: req.headers['access-control-request-method'],
-      headers: req.headers['access-control-request-headers'],
-      path: req.path,
-    });
-  }
-
-  if (origin && ALLOWED_ORIGINS.has(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Vary', 'Origin');
-    res.setHeader(
-      'Access-Control-Allow-Methods',
-      'GET,POST,PUT,PATCH,DELETE,OPTIONS'
-    );
-
-    // mirror requested headers; fallback to common ones
-    const reqHeaders = req.headers['access-control-request-headers'];
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      typeof reqHeaders === 'string' ? reqHeaders : 'authorization,content-type'
-    );
-
-    // optional but nice to have
-    res.setHeader('Access-Control-Max-Age', '86400');
-  }
-
-  // unconditionally OK preflights
-  if (req.method === 'OPTIONS') return res.sendStatus(200);
-  next();
-});
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGINS?.split(',') || [],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  })
+);
 app.options('*', cors());
 app.use(express.json());
 app.use(morgan('dev'));
