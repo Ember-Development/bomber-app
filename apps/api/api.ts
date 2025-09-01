@@ -33,9 +33,7 @@ const prisma = new PrismaClient();
 app.get('/', (_: Request, res: Response) => {
   res.send('Ready 4 Biznes!');
 });
-app.use(express.json());
 
-app.use(helmet());
 const allowed = (process.env.CORS_ORIGINS ?? '')
   .split(',')
   .map((s) => s.trim())
@@ -43,21 +41,18 @@ const allowed = (process.env.CORS_ORIGINS ?? '')
 
 const corsOptions: CorsOptions = {
   origin(origin, cb) {
-    // allow server-to-server / curl (no Origin)
-    if (!origin) return cb(null, true);
+    if (!origin) return cb(null, true); // server-to-server
     if (allowed.includes(origin)) return cb(null, true);
     return cb(new Error('Not allowed by CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  // credentials: true, // enable if you ever use cookies
   optionsSuccessStatus: 204,
 };
 
-// Order matters: CORS early, then helmet
-app.use(cors(corsOptions));
-// Preflight with the SAME options (not the default!)
-app.options('*', cors(corsOptions));
+app.options('*', (_req, res) => res.sendStatus(204));
+
+app.use(helmet());
 app.use(express.json());
 app.use(morgan('dev'));
 
