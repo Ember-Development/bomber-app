@@ -79,6 +79,13 @@ jobs:
           # Password hashing
           echo "BCRYPT_SALT_ROUNDS=12" >> .env
 
+          # Updated Values
+          echo "RESEND_API_KEY=re_SeEYdcp4_H5FGFQfBfiYVnX4M3Hih5GjC" >> .env
+          echo "EMAIL_FROM=\"emberdevco@gmail.com\"" >> .env
+          echo "RESET_LINK_BASE_WEB=https://bomberadmin.net/reset-password" >> .env
+          echo "RESET_LINK_SCHEME=myapp://signup/password/reset-password" >> .env
+          echo "CORS_ORIGINS=https://bomberadmin.net,https://www.bomberadmin.net,http://localhost:5173,http://localhost:3000,http://192.168.1.76:3000" >> .env
+
           pm2 restart all
 
           ENDSSH
