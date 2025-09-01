@@ -30,6 +30,7 @@ const REGION_OPTIONS: { value: Regions; label: string }[] = [
   { value: 'MIDWEST', label: 'Midwest' },
   { value: 'NORTHEAST', label: 'Northeast' },
   { value: 'SOUTHEAST', label: 'Southeast' },
+  { value: 'SOUTHWEST', label: 'Southwest' },
   { value: 'TEXAS', label: 'Texas' },
 ];
 
@@ -614,7 +615,19 @@ export default function Teams() {
                 </tr>
               ) : (
                 paginated.map((t) => (
-                  <tr key={t.id} className="hover:bg-white/10">
+                  <tr
+                    key={t.id}
+                    className="hover:bg-white/10 cursor-pointer"
+                    onClick={() => navigate(`/teams/${t.id}`)}
+                    tabIndex={0}
+                    role="button"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        navigate(`/teams/${t.id}`);
+                      }
+                    }}
+                  >
                     <td className="px-4 py-3">{t.name}</td>
                     <td className="px-4 py-3">
                       {t.teamCode ? (

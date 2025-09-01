@@ -4,6 +4,7 @@ import { UserFE } from '@bomber-app/database';
 import { Action, Role } from '../auth/permissions';
 import { AuthenticatedRequest } from '../utils/express';
 import { revokeAllUserRefreshTokens } from '../auth/token';
+import { hashEmail, maskEmail } from '../utils/log';
 
 type ExtendedRequest = {
   user: {
@@ -196,4 +197,24 @@ export async function logout(req: AuthenticatedRequest, res: Response) {
   const userId = req.user?.id;
   if (userId) await revokeAllUserRefreshTokens(userId);
   return res.sendStatus(204);
+}
+
+export async function forgotPasswordController(req: Request, res: Response) {
+  const raw = req.body?.email;
+  console.log('[forgot] hit', {
+    emailMasked: maskEmail(raw),
+    emailHash: hashEmail(raw),
+  });
+  await authService.requestPasswordReset(raw);
+  return res.json({ ok: true });
+}
+
+export async function resetPasswordController(req: Request, res: Response) {
+  try {
+    await authService.resetPassword(req.body);
+    return res.json({ ok: true });
+  } catch (e: any) {
+    const msg = typeof e?.message === 'string' ? e.message : 'Reset failed';
+    return res.status(400).json({ message: msg });
+  }
 }
