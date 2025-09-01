@@ -36,28 +36,14 @@ app.get('/', (_: Request, res: Response) => {
 app.use(express.json());
 
 app.use(helmet());
-const origins = (process.env.CORS_ORIGINS || '')
-  .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
-
-const corsConfig: cors.CorsOptions = {
-  origin(origin, cb) {
-    // allow non-browser clients (curl/postman with no Origin)
-    if (!origin) return cb(null, true);
-    if (origins.includes(origin)) return cb(null, true);
-    return cb(new Error(`CORS blocked for ${origin}`));
-  },
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Authorization', 'Content-Type'],
-  // we are NOT using cookies; keep credentials off
-  credentials: false,
-  optionsSuccessStatus: 204, // some browsers expect 204
-};
-
-app.use(cors(corsConfig));
-// Handle preflight with the SAME config (no *).
-app.options('*', cors(corsConfig));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGINS?.split(',') || [],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  })
+);
+app.options('*', cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
