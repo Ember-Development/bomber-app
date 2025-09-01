@@ -36,11 +36,23 @@ app.get('/', (_: Request, res: Response) => {
 app.use(express.json());
 
 app.use(helmet());
+const ALLOWED_ORIGINS = new Set<string>([
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://192.168.1.76:3000',
+  'https://bomberadmin.net',
+  'https://www.bomberadmin.net',
+]);
 app.use(
   cors({
-    origin: process.env.CORS_ORIGINS?.split(',') || [],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    origin(origin, cb) {
+      if (!origin) return cb(null, true);
+      if (ALLOWED_ORIGINS.has(origin)) return cb(null, true);
+      console.warn('[CORS] blocked origin:', origin);
+      return cb(new Error(`CORS blocked for ${origin}`));
+    },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 app.options('*', cors());
