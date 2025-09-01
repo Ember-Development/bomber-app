@@ -21,7 +21,7 @@ import parentRoutes from './routes/parentRoutes';
 import regCoachRoutes from './routes/regCoachRoutes';
 
 import helmet from 'helmet';
-import cors from 'cors';
+import cors, { CorsOptions } from 'cors';
 import morgan from 'morgan';
 
 type Err = any;
@@ -36,14 +36,28 @@ app.get('/', (_: Request, res: Response) => {
 app.use(express.json());
 
 app.use(helmet());
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGINS?.split(',') || [],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  })
-);
-app.options('*', cors());
+const allowed = (process.env.CORS_ORIGINS ?? '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+const corsOptions: CorsOptions = {
+  origin(origin, cb) {
+    // allow server-to-server / curl (no Origin)
+    if (!origin) return cb(null, true);
+    if (allowed.includes(origin)) return cb(null, true);
+    return cb(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  // credentials: true, // enable if you ever use cookies
+  optionsSuccessStatus: 204,
+};
+
+// Order matters: CORS early, then helmet
+app.use(cors(corsOptions));
+// Preflight with the SAME options (not the default!)
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(morgan('dev'));
 
