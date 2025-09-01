@@ -36,16 +36,14 @@ app.get('/', (_: Request, res: Response) => {
 app.use(express.json());
 
 app.use(helmet());
-app.use(cors()); // If you need cookies: app.use(cors({ origin: true, credentials: true }));
-
-// Secure headers
 app.use(
-  helmet({
-    // Optional: if you serve images/files and see CORP issues behind a proxy
-    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  cors({
+    origin: process.env.CORS_ORIGINS?.split(',') || [],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   })
 );
-
+app.options('*', cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
