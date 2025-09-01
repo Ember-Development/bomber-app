@@ -36,13 +36,47 @@ app.get('/', (_: Request, res: Response) => {
 app.use(express.json());
 
 app.use(helmet());
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGINS?.split(',') || [],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  })
-);
+const ALLOWED = new Set([
+  'https://bomberadmin.net',
+  'https://www.bomberadmin.net',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://192.168.1.76:3000',
+]);
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin as string | undefined;
+
+  if (req.method === 'OPTIONS') {
+    console.log('[preflight]', {
+      origin,
+      method: req.headers['access-control-request-method'],
+      headers: req.headers['access-control-request-headers'],
+      path: req.path,
+    });
+  }
+
+  if (origin && ALLOWED.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+    res.setHeader(
+      'Access-Control-Allow-Methods',
+      'GET,POST,PUT,PATCH,DELETE,OPTIONS'
+    );
+
+    const reqHeaders = req.headers['access-control-request-headers'];
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      typeof reqHeaders === 'string' ? reqHeaders : 'authorization,content-type'
+    );
+
+    // cache preflights for 24h to reduce load
+    res.setHeader('Access-Control-Max-Age', '86400');
+  }
+
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
+});
 app.options('*', cors());
 app.use(express.json());
 app.use(morgan('dev'));
