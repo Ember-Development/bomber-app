@@ -36,48 +36,28 @@ app.get('/', (_: Request, res: Response) => {
 app.use(express.json());
 
 app.use(helmet());
-const ALLOWED = new Set([
-  'https://bomberadmin.net',
-  'https://www.bomberadmin.net',
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://192.168.1.76:3000',
-]);
+const origins = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin as string | undefined;
+const corsConfig: cors.CorsOptions = {
+  origin(origin, cb) {
+    // allow non-browser clients (curl/postman with no Origin)
+    if (!origin) return cb(null, true);
+    if (origins.includes(origin)) return cb(null, true);
+    return cb(new Error(`CORS blocked for ${origin}`));
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Authorization', 'Content-Type'],
+  // we are NOT using cookies; keep credentials off
+  credentials: false,
+  optionsSuccessStatus: 204, // some browsers expect 204
+};
 
-  if (req.method === 'OPTIONS') {
-    console.log('[preflight]', {
-      origin,
-      method: req.headers['access-control-request-method'],
-      headers: req.headers['access-control-request-headers'],
-      path: req.path,
-    });
-  }
-
-  if (origin && ALLOWED.has(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Vary', 'Origin');
-    res.setHeader(
-      'Access-Control-Allow-Methods',
-      'GET,POST,PUT,PATCH,DELETE,OPTIONS'
-    );
-
-    const reqHeaders = req.headers['access-control-request-headers'];
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      typeof reqHeaders === 'string' ? reqHeaders : 'authorization,content-type'
-    );
-
-    // cache preflights for 24h to reduce load
-    res.setHeader('Access-Control-Max-Age', '86400');
-  }
-
-  if (req.method === 'OPTIONS') return res.sendStatus(200);
-  next();
-});
-app.options('*', cors());
+app.use(cors(corsConfig));
+// Handle preflight with the SAME config (no *).
+app.options('*', cors(corsConfig));
 app.use(express.json());
 app.use(morgan('dev'));
 
