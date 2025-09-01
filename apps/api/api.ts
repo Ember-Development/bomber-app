@@ -43,18 +43,45 @@ const ALLOWED_ORIGINS = new Set<string>([
   'https://bomberadmin.net',
   'https://www.bomberadmin.net',
 ]);
-app.use(
-  cors({
-    origin(origin, cb) {
-      if (!origin) return cb(null, true);
-      if (ALLOWED_ORIGINS.has(origin)) return cb(null, true);
-      console.warn('[CORS] blocked origin:', origin);
-      return cb(new Error(`CORS blocked for ${origin}`));
-    },
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
+app.use((req, res, next) => {
+  const origin = req.headers.origin as string | undefined;
+
+  // Log preflights so we can see exactly what the browser asked for
+  if (req.method === 'OPTIONS') {
+    console.log('[preflight]', {
+      origin,
+      method: req.headers['access-control-request-method'],
+      headers: req.headers['access-control-request-headers'],
+      path: req.path,
+    });
+  }
+
+  if (origin && ALLOWED_ORIGINS.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+    res.setHeader(
+      'Access-Control-Allow-Methods',
+      'GET,POST,PUT,PATCH,DELETE,OPTIONS'
+    );
+
+    // Mirror whatever headers the browser requested, or fall back
+    const reqHeaders = req.headers['access-control-request-headers'];
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      typeof reqHeaders === 'string' ? reqHeaders : 'authorization,content-type'
+    );
+
+    // Not using cookies; keep credentials off
+    // res.setHeader('Access-Control-Allow-Credentials', 'false'); // default
+  }
+
+  // Short-circuit preflight with HTTP 200 OK
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
 app.options('*', cors());
 app.use(express.json());
 app.use(morgan('dev'));
