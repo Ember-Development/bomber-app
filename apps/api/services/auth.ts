@@ -189,22 +189,18 @@ export const authService = {
         }
         break;
 
-      case 'PLAYER': {
+      case 'PLAYER':
         if (!player?.pos1 || !player?.jerseyNum || !player?.gradYear) {
           throw { status: 400, message: 'Missing required player fields' };
         }
-
-        const createPlayerData: any = { ...player };
-
-        if (parent?.id) {
-          createPlayerData.parents = { connect: { id: parent.id } };
-        } else if (parent?.userId) {
-          createPlayerData.parents = { connect: { userId: parent.userId } };
-        }
-
-        createData.player = { create: createPlayerData };
+        createData.player = {
+          create: {
+            ...player,
+            // if `parent.id` was passed in, connect it:
+            ...(parent?.id && { parents: { connect: { id: parent.id } } }),
+          },
+        };
         break;
-      }
 
       case 'PARENT':
         createData.parent = {
