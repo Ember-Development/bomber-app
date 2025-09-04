@@ -44,7 +44,10 @@ export default function AddNewPlayersScreen() {
   const router = useRouter();
 
   // Parent ID passed from profile (preferred), falls back to context later
-  const { parentUserId } = useLocalSearchParams<{ parentUserId?: string }>();
+  // const { parentUserId } = useLocalSearchParams<{ parentUserId?: string }>();
+  const { parentId: parentIdParam } = useLocalSearchParams<{
+    parentId?: string;
+  }>();
 
   const queryClient = useQueryClient();
 
@@ -345,7 +348,7 @@ export default function AddNewPlayersScreen() {
               // gear defaults
               jerseySize: form.jerseySize || 'AM',
               pantSize: form.pantSize || 'SIZE_20',
-              stirrupSize: form.stirrupSize || 'SM',
+              stirrupSize: form.stirrupSize || 'ADULT',
               shortSize: form.shortSize || 'ASM',
               practiceShirtSize: form.practiceShirtSize || 'ASM',
               isTrusted: isTrusted,
@@ -404,8 +407,13 @@ export default function AddNewPlayersScreen() {
   const handleSubmitAll = async () => {
     try {
       const parentId =
-        (parentUserId as string | undefined) ?? parentData.parentId;
+        (parentIdParam as string | undefined) ?? parentData.parentId;
       const parentAddrId = parentData.addressID;
+
+      if (showSummary && !parentId) {
+        console.warn('Expected Parent.id but none found');
+        return;
+      }
 
       if (!parentId) {
         throw new Error(
