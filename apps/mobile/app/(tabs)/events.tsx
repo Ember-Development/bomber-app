@@ -15,16 +15,24 @@ import {
   Calendar,
   EventRenderer,
   ICalendarEventBase,
+  Mode,
 } from 'react-native-big-calendar';
 import { Dimensions } from 'react-native';
 import { Text } from '@react-navigation/elements';
 import { Colors, EventColors } from '@/constants/Colors';
 import { EventType } from '@bomber-app/database';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Event } from '@react-native-community/datetimepicker';
 import FullScreenModal from '@/components/ui/organisms/FullSheetModal';
 import ViewEvent from '../events/modals/ViewEvent';
+import CustomButton from '@/components/ui/atoms/Button';
+
+// TODO: something more elegant would be nice i.e. enum but this is fine
+type Modes = Exclude<Mode, 'custom'>;
+const MODE_OPTIONS: Modes[] = ['day', '3days', 'week', 'month', 'schedule'];
+const initMode: Modes = '3days';
+const initModeIndex = MODE_OPTIONS.indexOf(initMode);
 
 const eventNotes = (
   <View style={{ marginTop: 3 }}>
@@ -149,6 +157,7 @@ const MAX_READABLE_EVENT_MINUTES = 32;
 
 export default function EventsScreen() {
   const [curEventView, setCurEventView] = useState<MyCustomEventType | Event>();
+  const [curModeIndex, setCurModeIndex] = useState(initModeIndex);
   const colorScheme = useColorScheme();
 
   // needs to be inside the component since it uses hooks to define the colors
@@ -239,15 +248,26 @@ export default function EventsScreen() {
       <SafeAreaView
         style={[styles.safeContainer, { paddingBottom: insets.bottom }]}
       >
+        {/* Header   */}
+        <View style={{ flexDirection: 'row' }}>
+          <CustomButton
+            title={MODE_OPTIONS[curModeIndex]}
+            onPress={() => {
+              setCurModeIndex((curModeIndex + 1) % MODE_OPTIONS.length);
+            }}
+          />
+          <View />
+        </View>
+
+        {/* Body / Calendar */}
         <View style={{ flex: 1 }}>
-          {/* TODO: ask Gunnar what he thinks a good default is: 3days, week, or day */}
           <Calendar
             theme={darkTheme}
             events={events}
             height={calendarHeight}
             scrollOffsetMinutes={offsetMinutes}
             ampm={true}
-            mode={'3days'}
+            mode={MODE_OPTIONS[curModeIndex]}
             renderEvent={useCustomEventRenderer}
             onPressEvent={(event: MyCustomEventType) => {
               setCurEventView(event);
