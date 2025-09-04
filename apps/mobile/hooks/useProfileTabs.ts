@@ -36,6 +36,7 @@ export function useProfileTabs() {
     teamId: string;
     trophy: any;
   } | null>(null);
+  const [addtrophy, setAddTrophy] = useState<string | null>(null);
   const [removeTrophy, setRemoveTrophy] = useState<{
     teamId: string;
     trophy: any;
@@ -94,6 +95,8 @@ export function useProfileTabs() {
     removeCoachId,
     setRemoveCoachId,
 
+    addtrophy,
+    setAddTrophy,
     editTrophy,
     setEditTrophy,
     removeTrophy,

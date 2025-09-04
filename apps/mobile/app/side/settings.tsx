@@ -25,6 +25,9 @@ import EditProfileContent from '@/app/user/edit-profile';
 import { api } from '@/api/api';
 import DangerConfirmModal from '@/features/teams/dangerconfirm';
 import TeamRosterModal from '@/features/teams/TeamRosterModal';
+import CustomInput from '@/components/ui/atoms/Inputs';
+import CustomButton from '@/components/ui/atoms/Button';
+import { Alert } from 'react-native';
 
 type UserRole =
   | 'ADMIN'
@@ -39,6 +42,12 @@ export default function SettingsScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user, isLoading, error, setUser } = useUserContext();
+  const [changePwVisible, setChangePwVisible] = useState(false);
+  const [pwCurrent, setPwCurrent] = useState('');
+  const [pwNew, setPwNew] = useState('');
+  const [pwConfirm, setPwConfirm] = useState('');
+  const [pwSubmitting, setPwSubmitting] = useState(false);
+  const [pwError, setPwError] = useState<string | null>(null);
 
   const currentUser = useMemo(() => {
     const u = (user as UserFE | undefined) ?? ({} as any);
@@ -70,8 +79,8 @@ export default function SettingsScreen() {
   const canSeePlayersSection =
     currentUser.role !== 'FAN' && currentUser.role !== 'PLAYER';
 
-  const parentUserId =
-    currentUser.role === 'PARENT' ? currentUser.id : undefined;
+  const parentId = currentUser.role === 'PARENT' ? user?.parent?.id : undefined;
+
   const [editVisible, setEditVisible] = useState(false);
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [teamsVisible, setTeamsVisible] = useState(false);
@@ -170,7 +179,7 @@ export default function SettingsScreen() {
                     onPress={() =>
                       router.push({
                         pathname: '/user/components/add-player-start',
-                        params: { parentUserId: String(parentUserId ?? '') },
+                        params: { parentId: String(parentId ?? '') },
                       })
                     }
                   />
@@ -190,6 +199,16 @@ export default function SettingsScreen() {
               </Group>
               <Group title="Data Controls">
                 {/* <PressLink text="Download My Data" onPress={() => {}} /> */}
+                <PressLink
+                  text="Change Password"
+                  onPress={() => {
+                    setPwCurrent('');
+                    setPwNew('');
+                    setPwConfirm('');
+                    setPwError(null);
+                    setChangePwVisible(true);
+                  }}
+                />
                 <PressLink
                   text="Delete My Account"
                   onPress={() => setDeleteVisible(true)}
@@ -285,6 +304,91 @@ export default function SettingsScreen() {
             user={user}
           />
         ) : null}
+
+        <FullScreenModal
+          isVisible={changePwVisible}
+          onClose={() => setChangePwVisible(false)}
+          title="Change Password"
+        >
+          <View style={{ padding: 16, gap: 12 }}>
+            {pwError ? (
+              <Text style={{ color: '#ff8a8a' }}>{pwError}</Text>
+            ) : null}
+            <CustomInput
+              label="Current Password"
+              variant="password"
+              fullWidth
+              secureTextEntry
+              value={pwCurrent}
+              onChangeText={setPwCurrent}
+            />
+            <CustomInput
+              label="New Password"
+              variant="password"
+              fullWidth
+              secureTextEntry
+              description="Must be at least 8 characters"
+              value={pwNew}
+              onChangeText={setPwNew}
+            />
+            <CustomInput
+              label="Confirm New Password"
+              variant="password"
+              fullWidth
+              secureTextEntry
+              value={pwConfirm}
+              onChangeText={setPwConfirm}
+            />
+
+            <CustomButton
+              title={pwSubmitting ? 'Saving…' : 'Save New Password'}
+              onPress={async () => {
+                setPwError(null);
+                if (!pwCurrent || !pwNew || !pwConfirm) {
+                  setPwError('Please fill out all fields.');
+                  return;
+                }
+                if (pwNew.length < 8) {
+                  setPwError('New password must be at least 8 characters.');
+                  return;
+                }
+                if (pwNew !== pwConfirm) {
+                  setPwError('New password and confirmation do not match.');
+                  return;
+                }
+
+                try {
+                  setPwSubmitting(true);
+                  await api.post(
+                    `/api/users/${currentUser.id}/change-password`,
+                    {
+                      currentPassword: pwCurrent,
+                      newPassword: pwNew,
+                    }
+                  );
+                  setChangePwVisible(false);
+                  setPwCurrent('');
+                  setPwNew('');
+                  setPwConfirm('');
+                  Alert.alert(
+                    'Password updated',
+                    'Your password has been changed.'
+                  );
+                } catch (e: any) {
+                  const msg =
+                    e?.response?.data?.error ||
+                    e?.message ||
+                    'Unable to change password.';
+                  setPwError(msg);
+                } finally {
+                  setPwSubmitting(false);
+                }
+              }}
+              fullWidth
+              disabled={pwSubmitting}
+            />
+          </View>
+        </FullScreenModal>
 
         <DangerConfirmModal
           isVisible={deleteVisible}

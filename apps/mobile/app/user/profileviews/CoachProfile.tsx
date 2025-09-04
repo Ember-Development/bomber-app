@@ -15,6 +15,7 @@ type Props = {
   setRemovePlayerId: (id: string) => void;
   setEditCoachId: (id: string) => void;
   setRemoveCoachId: (x: { coachId: string; teamId: string }) => void;
+  setAddTrophy: (teamId: string | null) => void;
   setEditTrophy: (x: any) => void;
   setRemoveTrophy: (x: any) => void;
   setSelectedProfile: (x: any) => void;
@@ -30,6 +31,7 @@ export default function CoachProfile({
   setRemovePlayerId,
   setEditCoachId,
   setRemoveCoachId,
+  setAddTrophy,
   setEditTrophy,
   setRemoveTrophy,
   setSelectedProfile,
@@ -174,6 +176,14 @@ export default function CoachProfile({
         return (
           <View key={team.id} style={styles.tableSection}>
             <Text style={styles.teamTitle}>{team.name}</Text>
+            {view === 'trophies' && (
+              <View style={{ marginBottom: 12 }}>
+                <CustomButton
+                  title="+ Add Trophy"
+                  onPress={() => setAddTrophy(team.id)}
+                />
+              </View>
+            )}
 
             {items.length > 0 ? (
               <RenderCards
