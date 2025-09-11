@@ -34,34 +34,6 @@ const MODE_OPTIONS: Modes[] = ['day', '3days', 'week', 'month', 'schedule'];
 const initMode: Modes = '3days';
 const initModeIndex = MODE_OPTIONS.indexOf(initMode);
 
-const eventNotes = (
-  <View style={{ marginTop: 3 }}>
-    <Text style={{ fontSize: 10, color: 'white' }}>
-      Phone number: 555-123-4567
-    </Text>
-    <Text style={{ fontSize: 10, color: 'white' }}>
-      Arrive 15 minutes early
-    </Text>
-  </View>
-);
-
-// export interface ICalendarEventBase {
-//     start: Date;
-//     end: Date;
-//     title: string;
-//     children?: ReactElement | null;
-//     hideHours?: boolean;
-//     disabled?: boolean;
-//     /**
-//      * overlapping position of event starting from 0 (optional)
-//      */
-//     overlapPosition?: number;
-//     /**
-//      * number of events overlapping with this event (optional)
-//      */
-//     overlapCount?: number;
-// }
-
 export interface MyCustomEventType extends ICalendarEventBase {
   id: string;
   color: string;
@@ -131,7 +103,16 @@ const events: Array<MyCustomEventType> = [
     start: dayjs().set('hour', 13).set('minute', 0).toDate(),
     end: dayjs().set('hour', 14).set('minute', 15).toDate(),
     color: EventColors[EventType.GLOBAL],
-    children: eventNotes,
+    children: (
+      <View style={{ marginTop: 3 }}>
+        <Text style={{ fontSize: 10, color: 'white' }}>
+          Phone number: 555-123-4567
+        </Text>
+        <Text style={{ fontSize: 10, color: 'white' }}>
+          Arrive 15 minutes early
+        </Text>
+      </View>
+    ),
     fill: false,
   },
   {
