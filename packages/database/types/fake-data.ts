@@ -221,6 +221,9 @@ export function fakeEvent() {
     eventType: faker.helpers.arrayElement([EventType.TOURNAMENT, EventType.PRACTICE, EventType.GLOBAL] as const),
     start: faker.date.anytime(),
     end: faker.date.anytime(),
+    title: faker.lorem.words(5),
+    body: faker.lorem.words(5),
+    location: faker.lorem.words(5),
   };
 }
 export function fakeEventComplete() {
@@ -230,6 +233,9 @@ export function fakeEventComplete() {
     eventType: faker.helpers.arrayElement([EventType.TOURNAMENT, EventType.PRACTICE, EventType.GLOBAL] as const),
     start: faker.date.anytime(),
     end: faker.date.anytime(),
+    title: faker.lorem.words(5),
+    body: faker.lorem.words(5),
+    location: faker.lorem.words(5),
   };
 }
 export function fakeEventAttendanceComplete() {
@@ -242,16 +248,22 @@ export function fakeEventAttendanceComplete() {
 }
 export function fakeTournament() {
   return {
+    start: faker.date.anytime(),
+    end: faker.date.anytime(),
     title: faker.lorem.words(5),
     body: faker.lorem.words(5),
+    location: faker.lorem.words(5),
     imageURL: faker.lorem.words(5),
   };
 }
 export function fakeTournamentComplete() {
   return {
     id: faker.string.uuid(),
+    start: faker.date.anytime(),
+    end: faker.date.anytime(),
     title: faker.lorem.words(5),
     body: faker.lorem.words(5),
+    location: faker.lorem.words(5),
     imageURL: faker.lorem.words(5),
   };
 }
