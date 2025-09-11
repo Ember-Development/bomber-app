@@ -382,8 +382,8 @@ model Event {
     end   DateTime
 
     title    String
-    body     String
-    location String
+    body     String?
+    location String?
 
     attendees EventAttendance[] // constraint: DO NOT fill this for global events
 }
