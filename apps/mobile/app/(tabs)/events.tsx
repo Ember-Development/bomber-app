@@ -33,13 +33,13 @@ type Modes = Exclude<Mode, 'custom'>;
 const MODE_OPTIONS: Modes[] = ['day', '3days', 'week', 'month', 'schedule'];
 const initMode: Modes = '3days';
 const initModeIndex = MODE_OPTIONS.indexOf(initMode);
-
+const MAX_READABLE_EVENT_MINUTES = 32;
 export interface MyCustomEventType extends ICalendarEventBase {
   id: string;
   color: string;
   fill: boolean;
 }
-
+// TODO: remove mock data and call api
 const events: Array<MyCustomEventType> = [
   {
     id: '0',
@@ -133,8 +133,6 @@ const events: Array<MyCustomEventType> = [
     fill: false,
   },
 ];
-
-const MAX_READABLE_EVENT_MINUTES = 32;
 
 export default function EventsScreen() {
   const [curEventView, setCurEventView] = useState<MyCustomEventType | Event>();
