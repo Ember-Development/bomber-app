@@ -60,9 +60,9 @@ export const eventService = {
         eventType: event.eventType,
         start: new Date(event.start),
         end: new Date(event.end),
-        title: event.title ?? 'Unknown Event',
-        body: event.body ?? '',
-        location: event.location ?? '',
+        title: event.title,
+        body: event.body,
+        location: event.location,
         tournamentID,
       },
       include: {

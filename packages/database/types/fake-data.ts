@@ -222,8 +222,8 @@ export function fakeEvent() {
     start: faker.date.anytime(),
     end: faker.date.anytime(),
     title: faker.lorem.words(5),
-    body: faker.lorem.words(5),
-    location: faker.lorem.words(5),
+    body: undefined,
+    location: undefined,
   };
 }
 export function fakeEventComplete() {
@@ -234,8 +234,8 @@ export function fakeEventComplete() {
     start: faker.date.anytime(),
     end: faker.date.anytime(),
     title: faker.lorem.words(5),
-    body: faker.lorem.words(5),
-    location: faker.lorem.words(5),
+    body: undefined,
+    location: undefined,
   };
 }
 export function fakeEventAttendanceComplete() {
