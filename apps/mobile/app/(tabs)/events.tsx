@@ -160,6 +160,35 @@ export default function EventsScreen() {
   const [curModeIndex, setCurModeIndex] = useState(initModeIndex);
   const colorScheme = useColorScheme();
 
+  // TODO: figure out why the calc for the height isn't quite right
+  const insets = useSafeAreaInsets();
+  const styles = createGroupStyles('light');
+  const screenHeight = Dimensions.get('window').height;
+  const headerHeight = 0;
+  const calendarHeight =
+    screenHeight - insets.top - insets.bottom - headerHeight;
+
+  const curDate = new Date();
+  const curMinutes = curDate.getMinutes();
+  const curHours = curDate.getHours();
+  const offsetMinutes = curMinutes + 60 * curHours;
+
+  const darkTheme = {
+    palette: {
+      primary: {
+        main: '#6185d0',
+        contrastText: '#000',
+      },
+      gray: {
+        '100': '#333',
+        '200': '#666',
+        '300': '#888',
+        '500': '#aaa',
+        '800': '#ccc',
+      },
+    },
+  };
+
   // needs to be inside the component since it uses hooks to define the colors
   const useCustomEventRenderer: EventRenderer<MyCustomEventType> | Event = (
     event,
@@ -213,34 +242,6 @@ export default function EventsScreen() {
         </FullScreenModal>
       </TouchableOpacity>
     );
-  };
-  // TODO: figure out why the calc for the height isn't quite right
-  const insets = useSafeAreaInsets();
-  const styles = createGroupStyles('light');
-  const screenHeight = Dimensions.get('window').height;
-  const headerHeight = 0;
-  const calendarHeight =
-    screenHeight - insets.top - insets.bottom - headerHeight;
-
-  const curDate = new Date();
-  const curMinutes = curDate.getMinutes();
-  const curHours = curDate.getHours();
-  const offsetMinutes = curMinutes + 60 * curHours;
-
-  const darkTheme = {
-    palette: {
-      primary: {
-        main: '#6185d0',
-        contrastText: '#000',
-      },
-      gray: {
-        '100': '#333',
-        '200': '#666',
-        '300': '#888',
-        '500': '#aaa',
-        '800': '#ccc',
-      },
-    },
   };
 
   return (
