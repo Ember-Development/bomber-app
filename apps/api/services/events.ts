@@ -54,11 +54,15 @@ export const eventService = {
     tournamentID: string | null
   ) => {
     // primary model creation
+
     const newEvent = await prisma.event.create({
       data: {
         eventType: event.eventType,
         start: new Date(event.start),
         end: new Date(event.end),
+        title: event.title ?? 'Unknown Event',
+        body: event.body ?? '',
+        location: event.location ?? '',
         tournamentID,
       },
       include: {
