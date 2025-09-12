@@ -7,6 +7,7 @@ import {
   FlatList,
   Animated,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,21 +27,9 @@ interface Notification {
 const notifications: Notification[] = [
   {
     id: '1',
-    message: 'New Bomber Merch Released!',
-    timeAgo: '2hr ago',
+    message: 'Notifications Coming Soon',
+    timeAgo: 'Now',
     isNew: true,
-  },
-  {
-    id: '2',
-    message: 'Congratulations to our latest alumni commits!',
-    timeAgo: '1d ago',
-    isNew: false,
-  },
-  {
-    id: '3',
-    message: 'Don’t miss the upcoming showcase!',
-    timeAgo: '2d ago',
-    isNew: false,
   },
 ];
 
@@ -48,6 +37,8 @@ export default function NotificationCard() {
   const [modalVisible, setModalVisible] = useState(false);
   const [notificationsData, setNotificationsData] = useState(notifications);
   const cardScale = useRef(new Animated.Value(1)).current;
+  const { width } = useWindowDimensions();
+  const compact = width < 340;
 
   const modalBackground = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -80,6 +71,8 @@ export default function NotificationCard() {
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onPress={() => setModalVisible(true)}
+        android_ripple={{ color: 'rgba(255,255,255,0.08)', borderless: false }}
+        style={{ borderRadius: 18, overflow: 'hidden' }}
       >
         <Animated.View
           style={[
@@ -89,14 +82,35 @@ export default function NotificationCard() {
             },
           ]}
         >
-          <View style={styles.cardHeader}>
+          <View
+            style={[styles.cardHeader, compact && styles.cardHeaderCompact]}
+          >
             <ThemedText
               type="subtitle"
-              style={[styles.title, { color: textColor }]}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={[
+                styles.title,
+                compact && styles.titleCompact,
+                { color: textColor },
+              ]}
             >
               Recent Notifications
             </ThemedText>
-            <Ionicons name="expand-outline" size={20} color={iconColor} />
+
+            <Pressable
+              onPress={() => setModalVisible(true)}
+              hitSlop={10}
+              android_ripple={{
+                color: 'rgba(255,255,255,0.08)',
+                borderless: true,
+              }}
+              style={styles.iconBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Expand notifications"
+            >
+              <Ionicons name="expand-outline" size={20} color={iconColor} />
+            </Pressable>
           </View>
           <Separator />
           <View style={styles.notificationPreview}>
@@ -201,7 +215,7 @@ export default function NotificationCard() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 18,
     padding: 15,
     marginVertical: 6,
@@ -209,9 +223,19 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+    overflow: 'hidden',
+    ...(Platform.OS === 'android'
+      ? {
+          backgroundColor: 'rgba(12, 28, 48, 0.9)',
+        }
+      : null),
     ...(Platform.OS === 'web' ? { backdropFilter: 'blur(10px)' } : {}),
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  cardHeaderCompact: {
+    gap: 6,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -220,8 +244,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   title: {
+    flex: 1,
     fontWeight: 'bold',
     fontSize: 16,
+    marginRight: 8,
+  },
+  titleCompact: {
+    fontSize: 14,
+  },
+  iconBtn: {
+    padding: 6,
+    borderRadius: 12,
+    overflow: Platform.select({ android: 'hidden', default: 'visible' }),
   },
   notificationPreview: {
     marginTop: 8,

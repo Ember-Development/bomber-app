@@ -1,6 +1,10 @@
 // controllers/mediaController.ts
 import { Request, Response } from 'express';
 import { mediaService } from '../services/media';
+import { MediaCategory } from '@bomber-app/database';
+
+const isValidCategory = (cat: string): cat is MediaCategory =>
+  Object.values(MediaCategory).includes(cat as MediaCategory);
 
 export const getAllMedia = async (_req: Request, res: Response) => {
   try {
@@ -25,8 +29,17 @@ export const getMediaById = async (req: Request, res: Response) => {
 
 export const createMedia = async (req: Request, res: Response) => {
   try {
-    const { title, videoUrl } = req.body;
-    const newItem = await mediaService.createMedia({ title, videoUrl });
+    const { title, videoUrl, category } = req.body;
+
+    const cat: MediaCategory = isValidCategory(category)
+      ? category
+      : MediaCategory.HIGHLIGHTS; // fallback
+
+    const newItem = await mediaService.createMedia({
+      title,
+      videoUrl,
+      category: cat,
+    });
     res.status(201).json(newItem);
   } catch (e) {
     console.error(e);
@@ -37,8 +50,12 @@ export const createMedia = async (req: Request, res: Response) => {
 export const updateMedia = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, videoUrl } = req.body;
-    const updated = await mediaService.updateMedia(id, { title, videoUrl });
+    const { title, videoUrl, category } = req.body;
+    const updated = await mediaService.updateMedia(id, {
+      title,
+      videoUrl,
+      category,
+    });
     res.json(updated);
   } catch (e) {
     console.error(e);

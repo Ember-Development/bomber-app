@@ -1,0 +1,42 @@
+{
+  "cli": { "version": ">= 3.0.0", "appVersionSource": "remote" },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": { "resourceClass": "m-medium" },
+      "env": {
+        "API_BASE_URL": "https://api.bomberadmin.net",
+        "SOCKET_SERVER_URL": "http://192.168.1.76:3000"
+      }
+    },
+    "simulator": {
+      "ios": { "simulator": true, "resourceClass": "m-medium" }
+    },
+    "preview": {
+      "distribution": "store",
+      "autoIncrement": "true",
+      "ios": { "resourceClass": "m-medium" },
+      "env": {
+        "API_BASE_URL": "https://api.bomberadmin.net",
+        "EXPO_NO_METRO_CACHE": "1"
+      }
+    },
+    "production": {
+      "distribution": "store",
+      "autoIncrement": "true",
+      "ios": { "resourceClass": "m-medium" },
+      "env": {
+        "API_BASE_URL": "https://api.bomberadmin.net"
+      }
+    }
+  },
+  "submit": {
+    "preview": {
+      "ios": {}
+    },
+    "production": {
+      "ios": {}
+    }
+  }
+}

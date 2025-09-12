@@ -1,5 +1,11 @@
 import { api } from './api';
-import { TeamFE, TrophyFE } from '@bomber-app/database';
+import {
+  AgeGroup,
+  Regions,
+  State,
+  TeamFE,
+  TrophyFE,
+} from '@bomber-app/database';
 
 export const fetchTeams = async (): Promise<TeamFE[]> => {
   try {
@@ -19,9 +25,9 @@ export const getTeamById = async (id: string): Promise<TeamFE> => {
 
 export interface CreateTeamDTO {
   name: string;
-  ageGroup: string;
-  region: string;
-  state: string;
+  ageGroup: AgeGroup;
+  region: Regions;
+  state: State;
   headCoachUserID?: string | null;
 }
 

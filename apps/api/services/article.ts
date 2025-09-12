@@ -1,4 +1,3 @@
-// services/articleService.ts
 import { prisma, Article as ArticleDB } from '@bomber-app/database';
 
 export interface ArticleCreateInput {

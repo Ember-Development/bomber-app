@@ -10,13 +10,16 @@ import {
   ImageSourcePropType,
   Platform,
 } from 'react-native';
+import type { ReactNode } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { GlobalColors } from '@/constants/Colors';
 
 interface CardProps {
   type: 'info' | 'quickAction' | 'groupChat' | 'trophy';
   title?: string;
   subtitle?: string;
   image?: ImageSourcePropType;
-  icon?: ImageSourcePropType;
+  iconName?: keyof typeof Ionicons.glyphMap;
   onPress?: () => void;
   additionalInfo?: string;
 }
@@ -26,7 +29,7 @@ export default function Card({
   title,
   subtitle,
   image,
-  icon,
+  iconName,
   onPress,
   additionalInfo,
 }: CardProps) {
@@ -39,7 +42,9 @@ export default function Card({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={title}
+      android_ripple={{ color: 'rgba(255,255,255,0.08)', borderless: false }}
       style={[
+        styles.pressable,
         styles.card,
         type === 'quickAction' && styles.quickAction,
         type === 'groupChat' && { width: 220, marginRight: 10 },
@@ -47,8 +52,11 @@ export default function Card({
       onPress={onPress}
     >
       {image && <Image source={image} style={styles.image} />}
-      {icon && <Image source={icon} style={styles.icon} />}
-
+      {iconName && (
+        <View style={styles.iconContainer}>
+          <Ionicons name={iconName} size={24} color={GlobalColors.bomber} />
+        </View>
+      )}
       <View style={styles.textContainer}>
         {safeTitle && (
           <ThemedText
@@ -77,8 +85,12 @@ export default function Card({
 }
 
 const styles = StyleSheet.create({
+  pressable: {
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 20,
     padding: 12,
     marginVertical: 6,
@@ -86,9 +98,15 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 4,
-    elevation: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+    elevation: 6,
+    ...(Platform.OS === 'android'
+      ? {
+          backgroundColor: 'rgba(12, 28, 48, 0.9)',
+        }
+      : null),
     ...(Platform.OS === 'web' ? { backdropFilter: 'blur(10px)' } : {}),
-    borderColor: 'rgba(255, 255, 255, 0.2)',
     flex: 1,
   },
   quickAction: {
@@ -100,6 +118,10 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 8,
     marginBottom: 6,
+  },
+  iconContainer: {
+    marginRight: 8,
+    justifyContent: 'center',
   },
   icon: {
     width: 24,

@@ -7,211 +7,130 @@ import {
   Image,
   Dimensions,
   TouchableOpacity,
-  Animated,
   StatusBar,
   Platform,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
+  Text,
+  ActivityIndicator,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@/components/ThemedText';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useAlumniPlayersPaginated } from '@/hooks/teams/useAlumniPlayer';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import CustomSelect from '@/components/ui/atoms/dropdown';
-import CustomButton from '@/components/ui/atoms/Button';
+import { router } from 'expo-router';
 
+const fallbackLogo = require('@/assets/images/bomber-icon.png');
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2;
+const CARD_HEIGHT = CARD_WIDTH * 1.2;
 
-const ALUMNI_DATA = [
-  {
-    id: '1',
-    name: 'Alyssa Edwards',
-    year: '2009',
-    school: 'McLennan Community College',
-    logoUri: '',
-  },
-  {
-    id: '2',
-    name: 'Lily Laney',
-    year: '2009',
-    school: 'TCU / Texas A&M',
-    logoUri:
-      'https://upload.wikimedia.org/wikipedia/commons/6/60/Texas_A%26M_Aggies_Primary_Logo_%282021-Present%29.png',
-  },
-  {
-    id: '3',
-    name: 'Megan Carter',
-    year: '2012',
-    school: 'Texas State University',
-    logoUri:
-      'https://upload.wikimedia.org/wikipedia/en/thumb/f/fb/Texas_State_University_seal.svg/800px-Texas_State_University_seal.svg.png',
-  },
-  {
-    id: '4',
-    name: 'Rebecca Jones',
-    year: '2014',
-    school: 'Baylor University',
-    logoUri:
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Baylor_Athletics_logo.svg/1698px-Baylor_Athletics_logo.svg.png',
-  },
-  {
-    id: '5',
-    name: 'Jessica Martinez',
-    year: '2017',
-    school: 'University of Texas',
-    logoUri:
-      'https://sportslogohistory.com/wp-content/uploads/2021/06/texas_longhorns_2019-pres.png',
-  },
-  {
-    id: '6',
-    name: 'Sarah Thompson',
-    year: '2021',
-    school: 'Texas A&M University',
-    logoUri:
-      'https://upload.wikimedia.org/wikipedia/commons/6/60/Texas_A%26M_Aggies_Primary_Logo_%282021-Present%29.png',
-  },
-];
-
-const YEAR_OPTIONS = [
-  { label: 'All', value: 'All' },
-  ...Array.from(new Set(ALUMNI_DATA.map((a) => a.year)))
-    .sort()
-    .map((yr) => ({ label: yr, value: yr })),
-];
-
-function FlipCard({
-  item,
-  textColor,
-}: {
-  item: (typeof ALUMNI_DATA)[0];
-  textColor: string;
-}) {
-  const flipAnim = useRef(new Animated.Value(0)).current;
-  const [isFlipped, setIsFlipped] = useState(false);
-
-  const rotateY = flipAnim.interpolate({
-    inputRange: [0, 180],
-    outputRange: ['0deg', '180deg'],
-  });
-
-  const handleFlip = () => {
-    if (isFlipped) {
-      Animated.timing(flipAnim, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }).start(() => setIsFlipped(false));
-    } else {
-      Animated.timing(flipAnim, {
-        toValue: 180,
-        duration: 500,
-        useNativeDriver: true,
-      }).start(() => setIsFlipped(true));
-    }
-  };
+function AlumniCard({ item }: { item: any }) {
+  const schoolLogo = item.schoolLogo ? { uri: item.schoolLogo } : fallbackLogo;
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.9}
-      onPress={handleFlip}
-      style={styles.cardWrapper}
-    >
-      <BlurView intensity={30} tint="light" style={styles.cardBlur}>
-        <Animated.View
-          style={[
-            styles.flipContainer,
-            { transform: [{ perspective: 1000 }, { rotateY }] },
-          ]}
-        >
-          <View
-            style={[styles.faceContainer, { backfaceVisibility: 'hidden' }]}
-          >
-            <LinearGradient
-              colors={['rgba(255,255,255,0.10)', 'rgba(255,255,255,0.04)']}
-              style={styles.cardGradient}
-            >
-              <View style={styles.logoContainer}>
-                <Image
-                  source={{ uri: item.logoUri }}
-                  style={styles.logo}
-                  resizeMode="contain"
-                />
-              </View>
-              <ThemedText
-                type="subtitle"
-                style={[styles.alumName, { color: textColor }]}
-              >
-                {item.name}
-              </ThemedText>
-              <ThemedText type="default" style={styles.schoolText}>
-                {item.school} • {item.year}
-              </ThemedText>
-            </LinearGradient>
-          </View>
+    <BlurView intensity={30} tint="light" style={styles.cardWrapper}>
+      <LinearGradient
+        colors={['rgba(255,255,255,0.10)', 'rgba(255,255,255,0.04)']}
+        style={styles.cardGradient}
+      >
+        <View style={styles.logoContainer}>
+          <Image source={schoolLogo} style={styles.logo} resizeMode="contain" />
+        </View>
 
-          <View
-            style={[
-              styles.faceContainer,
-              {
-                transform: [{ rotateY: '180deg' }],
-                backfaceVisibility: 'hidden',
-              },
-            ]}
-          ></View>
-        </Animated.View>
-      </BlurView>
-    </TouchableOpacity>
+        <Text style={styles.alumName}>
+          {item.user?.fname} {item.user?.lname}
+        </Text>
+
+        <Text style={styles.schoolText}>
+          {item.college || 'Bomber Alum'} • {item.gradYear}
+        </Text>
+      </LinearGradient>
+    </BlurView>
   );
 }
 
 export default function AlumnisScreen() {
-  const textColor = useThemeColor({}, 'text');
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isLoading,
+    isError,
+    refetch,
+    isFetchingNextPage,
+  } = useAlumniPlayersPaginated();
+
   const [selectedYear, setSelectedYear] = useState<string>('All');
   const [showScrollButton, setShowScrollButton] = useState(false);
-
   const listRef = useRef<FlatList<any>>(null);
+
+  const alumni = data?.pages.flat() || [];
+
+  const yearOptions = [
+    { label: 'All', value: 'All' },
+    ...Array.from(new Set(alumni.map((a) => a.gradYear)))
+      .filter(Boolean)
+      .sort()
+      .map((yr) => ({ label: yr, value: yr })),
+  ];
 
   const filteredData =
     selectedYear === 'All'
-      ? ALUMNI_DATA
-      : ALUMNI_DATA.filter((a) => a.year === selectedYear);
+      ? alumni
+      : alumni.filter((a) => a.gradYear === selectedYear);
 
-  const scrollToTop = () => {
-    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  const onEndReached = () => {
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   };
 
-  const handleLoadMore = () => {
-    console.log('Load more alumni...');
-  };
-
-  const onScrollHandler = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+  const onScrollHandler = (e: {
+    nativeEvent: { contentOffset: { y: any } };
+  }) => {
     const yOffset = e.nativeEvent.contentOffset.y;
-    if (yOffset > 100 && !showScrollButton) {
-      setShowScrollButton(true);
-    } else if (yOffset <= 100 && showScrollButton) {
-      setShowScrollButton(false);
-    }
+    setShowScrollButton(yOffset > 100);
   };
 
-  const renderAlumniCard = ({ item }: { item: (typeof ALUMNI_DATA)[0] }) => (
-    <FlipCard item={item} textColor={textColor} />
-  );
+  if (isLoading) {
+    return (
+      <BackgroundWrapper>
+        <SafeAreaView style={styles.center}>
+          <ActivityIndicator size="large" color="#fff" />
+        </SafeAreaView>
+      </BackgroundWrapper>
+    );
+  }
+
+  if (isError) {
+    return (
+      <BackgroundWrapper>
+        <SafeAreaView style={styles.center}>
+          <Text style={{ color: '#fff' }}>Failed to load alumni</Text>
+          <TouchableOpacity onPress={() => refetch()}>
+            <Text style={{ color: '#00f', marginTop: 12 }}>Retry</Text>
+          </TouchableOpacity>
+        </SafeAreaView>
+      </BackgroundWrapper>
+    );
+  }
 
   return (
     <BackgroundWrapper>
       <SafeAreaView style={styles.container}>
-        <View style={[styles.headerContainer, { paddingTop: 20 }]}>
-          <ThemedText style={[styles.headerText, { color: textColor }]}>
-            Bomber Alumni
-          </ThemedText>
+        <View style={styles.headerContainer}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={18} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerText}>Bomber Alumni</Text>
         </View>
 
         <View style={styles.dropdownContainer}>
           <CustomSelect
             label="Select Year"
-            options={YEAR_OPTIONS}
+            options={yearOptions}
             defaultValue="All"
             onSelect={(val) => setSelectedYear(val)}
           />
@@ -224,32 +143,30 @@ export default function AlumnisScreen() {
           numColumns={2}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          renderItem={renderAlumniCard}
+          renderItem={({ item }) => <AlumniCard item={item} />}
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.6}
           onScroll={onScrollHandler}
           scrollEventThrottle={16}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View style={styles.loadingMore}>
+                <ActivityIndicator size="small" color="#ccc" />
+              </View>
+            ) : null
+          }
         />
-
-        <View style={styles.loadMoreContainer}>
-          <CustomButton
-            title="LOAD MORE"
-            onPress={() => {
-              /* TODO: hook up send logic */
-            }}
-            variant="primary"
-          />
-        </View>
 
         {showScrollButton && (
           <TouchableOpacity
             style={styles.floatingContainer}
-            onPress={scrollToTop}
-            activeOpacity={0.8}
+            onPress={() =>
+              listRef.current?.scrollToOffset({ offset: 0, animated: true })
+            }
           >
-            <View style={styles.floatingMask}>
-              <BlurView intensity={50} tint="light" style={styles.floatingBlur}>
-                <Ionicons name="arrow-up" size={24} color="#fff" />
-              </BlurView>
-            </View>
+            <BlurView intensity={50} tint="light" style={styles.floatingBlur}>
+              <Ionicons name="arrow-up" size={24} color="#fff" />
+            </BlurView>
           </TouchableOpacity>
         )}
       </SafeAreaView>
@@ -257,35 +174,29 @@ export default function AlumnisScreen() {
   );
 }
 
-const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2;
-const CARD_HEIGHT = CARD_WIDTH * 1.2;
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: Platform.OS === 'android' ? 40 : 0,
+  container: { flex: 1, paddingTop: Platform.OS === 'android' ? 40 : 0 },
+  backButton: {
+    marginRight: 12,
+    padding: 4,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop:
-      Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 12 : 12,
+    paddingTop: 20,
     paddingBottom: 8,
+    marginBottom: 20,
   },
   headerText: {
     fontSize: 28,
     fontWeight: '700',
-    paddingVertical: 20,
+    color: '#fff',
   },
-  dropdownContainer: {
-    marginHorizontal: 20,
-    marginBottom: 16,
-  },
-
-  listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-  },
-
+  dropdownContainer: { marginHorizontal: 20, marginBottom: 16 },
+  listContent: { paddingHorizontal: 16, paddingBottom: 24 },
   cardWrapper: {
     flex: 1,
     margin: 8,
@@ -293,78 +204,38 @@ const styles = StyleSheet.create({
     height: CARD_HEIGHT,
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  cardBlur: {
-    flex: 1,
     backgroundColor: 'rgba(255,255,255,0.06)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  flipContainer: {
-    width: '100%',
-    height: '100%',
-  },
-  faceContainer: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
   },
   cardGradient: {
     flex: 1,
-    padding: 12,
+    padding: 14,
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
   logoContainer: {
     width: '100%',
     height: CARD_HEIGHT * 0.4,
-    marginBottom: 8,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 12,
   },
   logo: {
     width: '80%',
     height: '80%',
+    borderRadius: 8,
   },
   alumName: {
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 4,
+    color: '#fff',
   },
   schoolText: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#bbb',
     textAlign: 'center',
-    marginBottom: 6,
   },
-
-  loadMoreContainer: {
-    alignItems: 'center',
-    marginVertical: 12,
-  },
-  loadMoreButton: {
-    backgroundColor: '#000',
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-    borderRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  loadMoreText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-
   floatingContainer: {
     position: 'absolute',
     bottom: 32,
@@ -374,21 +245,19 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     overflow: 'hidden',
   },
-
-  floatingMask: {
-    flex: 1,
-    borderRadius: 26,
-    overflow: 'hidden',
-  },
-
   floatingBlur: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  loadingMore: {
+    marginVertical: 16,
+    alignItems: 'center',
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

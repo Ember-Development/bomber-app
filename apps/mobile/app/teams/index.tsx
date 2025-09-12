@@ -9,7 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { useTeams } from '@/hooks/teams/useTeams';
-import TeamCard from './components/teamcard';
+import TeamCard from '../../features/teams/components/teamcard';
 import FilterChips from '@/components/ui/molecules/FilterChip';
 import { createTeamsScreenStyles } from '../../styles/teamscreenStyle';
 import { useRouter } from 'expo-router';
@@ -19,22 +19,35 @@ import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 
 export default function TeamsScreen() {
   const { data: teams = [], isLoading } = useTeams();
-  const stateOptions = ['ALL', ...US_STATES.map((s) => s.label)];
   const [search, setSearch] = useState('');
   const [activeState, setActiveState] = useState('ALL');
+  const [activeRegion, setActiveRegion] = useState('ALL');
   const styles = createTeamsScreenStyles();
   const router = useRouter();
+
+  const stateOptions = ['ALL', ...US_STATES.map((s) => s.label)];
+  const regionOptions: string[] = [
+    'ALL',
+    ...Array.from(new Set(teams.map((t) => t.region).filter(Boolean))),
+  ];
+
   const getFilterValue = (label: string) =>
     label === 'ALL'
       ? 'ALL'
       : (US_STATES.find((s) => s.label === label)?.value ?? label);
 
   const filteredTeams = teams.filter((team) => {
-    const matchesSearch = team.name
-      .toLowerCase()
-      .includes(search.toLowerCase());
+    const matchesSearch =
+      team.name.toLowerCase().includes(search.toLowerCase()) ||
+      team.coaches?.some((c) =>
+        `${c.user?.fname ?? ''} ${c.user?.lname ?? ''}`
+          .toLowerCase()
+          .includes(search.toLowerCase())
+      );
     const matchesState = activeState === 'ALL' || team.state === activeState;
-    return matchesSearch && matchesState;
+    const matchesRegion =
+      activeRegion === 'ALL' || team.region === activeRegion;
+    return matchesSearch && matchesState && matchesRegion;
   });
 
   return (
@@ -45,19 +58,28 @@ export default function TeamsScreen() {
             style={styles.floatingBack}
             onPress={() => router.back()}
           >
-            <Ionicons name="arrow-back" size={20} color="black" />
+            <Ionicons name="arrow-back" size={18} color="white" />
           </TouchableOpacity>
           <Text style={styles.title}>Find a Bomber Team</Text>
         </View>
 
         <View style={styles.header}>
           <View style={styles.searchBox}>
-            <SearchField />
+            <SearchField
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Search teams by name..."
+            />
           </View>
           <FilterChips
             selected={activeState}
             onSelect={(label) => setActiveState(getFilterValue(label))}
             options={stateOptions}
+          />
+          <FilterChips
+            selected={activeRegion}
+            onSelect={(label) => setActiveRegion(label)}
+            options={regionOptions}
           />
         </View>
 

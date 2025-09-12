@@ -327,24 +327,16 @@ export default function Events() {
         className={`flex-1 flex flex-col space-y-6 ${dialogOpen ? 'pr-[50px]' : ''}`}
       >
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 bg-[rgba(255,255,255,0.1)] backdrop-blur-lg rounded-lg text-white hover:bg-[rgba(255,255,255,0.2)] transition"
-            >
-              <ArrowLeftIcon className="w-5 h-5" />
-            </button>
-            <h1 className="text-2xl font-bold text-white">Events</h1>
-          </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-            <button
-              onClick={openCreate}
-              className="flex-shrink-0 flex items-center justify-center space-x-2 px-4 py-2 bg-[rgba(255,255,255,0.15)] backdrop-blur-lg border border-white/30 text-white rounded-full hover:bg-[#5AA5FF] hover:border-[#5AA5FF] transition whitespace-nowrap"
-            >
-              <PlusIcon className="w-5 h-5" />
-              <span className="font-medium">Create Event</span>
-            </button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <button
+            onClick={openCreate}
+            className="flex-shrink-0 flex items-center justify-center space-x-2 px-4 py-2 bg-[rgba(255,255,255,0.15)] backdrop-blur-lg border border-white/30 text-white rounded-full hover:bg-[#5AA5FF] hover:border-[#5AA5FF] transition whitespace-nowrap"
+          >
+            <PlusIcon className="w-5 h-5" />
+            <span className="font-medium">Create Event</span>
+          </button>
+
+          <div className="flex gap-2">
             <button
               onClick={() => setViewMode('cards')}
               className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${

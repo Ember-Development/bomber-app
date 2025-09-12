@@ -65,6 +65,7 @@ export const fetchPlayers = async (): Promise<Player[]> => {
       city: p.address?.city || '',
       state: p.address?.state || '',
       zip: p.address?.zip || '',
+      commitId: p.commitId ?? null,
     }));
   } catch (err) {
     console.error('Failed to fetch players:', err);
@@ -106,6 +107,21 @@ export const deletePlayer = async (id: string): Promise<boolean> => {
     return true;
   } catch (err) {
     console.error(`Failed to delete player ${id}:`, err);
+    return false;
+  }
+};
+
+export const fetchPlayerById = async (id: string): Promise<PlayerFE> => {
+  const { data } = await api.get(`/players/${id}`);
+  return data as PlayerFE;
+};
+
+export const removePlayerFromTeam = async (id: string): Promise<boolean> => {
+  try {
+    await api.delete(`/players/${id}/team`);
+    return true;
+  } catch (err) {
+    console.error(`Failed to remove player ${id} from team:`, err);
     return false;
   }
 };

@@ -4,30 +4,42 @@
     "slug": "bomber-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "owner": "emberdevco",
+    "icon": "./assets/images/bomberappcover.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "extra": {
+      "eas": { "projectId": "5716a622-1434-422d-a9af-fb8aab33b8c3" }
+    },
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.bomberfastpitch.bomberapp",
+      "supportsTablet": true,
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "com.emberdevco.bomberapp",
+      "versionCode": "1",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "foregroundImage": "./assets/images/bomberappcover.png"
+      },
+      "permissions": []
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/bomber-icon-blue.png"
     },
     "plugins": [
       "expo-router",
+      "expo-secure-store",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/bombersplash.jpg",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
