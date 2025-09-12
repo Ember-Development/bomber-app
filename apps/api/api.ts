@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import express from 'express';
 import http from 'http';
 import groupRoutes from './routes/groupRoutes';
@@ -13,16 +13,56 @@ import bannerRoutes from './routes/bannerRoutes';
 import mediaRoutes from './routes/mediaRoutes';
 import articleRoutes from './routes/articleRoutes';
 import { PrismaClient } from '@bomber-app/database/generated/client';
+import coachRoutes from './routes/coachRoutes';
+import commitRoutes from './routes/commitRoutes';
+import portalRoutes from './routes/portalRoutes';
+import parentRoutes from './routes/parentRoutes';
+import regCoachRoutes from './routes/regCoachRoutes';
 
+import helmet from 'helmet';
+import cors from 'cors';
+import morgan from 'morgan';
+
+type Err = any;
 const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 const prisma = new PrismaClient();
 
 app.get('/', (_: Request, res: Response) => {
-  res.send('Ready 4 Biznes');
+  res.send('Ready 4 Biznes!');
 });
 app.use(express.json());
+
+app.use(helmet());
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGINS?.split(',') || [],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  })
+);
+app.options('*', cors());
+app.use(express.json());
+app.use(morgan('dev'));
+
+// for debug remove after
+app.use((req, _res, next) => {
+  if (req.method === 'PUT' && req.path.startsWith('/api/users/')) {
+    console.log('[HEADERS BEFORE AUTH]', {
+      method: req.method,
+      path: req.path,
+      auth: req.headers['authorization'] || req.headers['Authorization'],
+      ct: req.headers['content-type'],
+      ua: req.headers['user-agent'],
+      hv: req.httpVersionMajor + '.' + req.httpVersionMinor,
+      host: req.headers['host'],
+      origin: req.headers['origin'],
+      referer: req.headers['referer'],
+    });
+  }
+  next();
+});
 
 app.use('/api/groups', groupRoutes);
 app.use('/api/messages', messageRoutes);
@@ -35,9 +75,21 @@ app.use('/api/sponsors', sponsorRoutes);
 app.use('/api/banners', bannerRoutes);
 app.use('/api/medias', mediaRoutes);
 app.use('/api/articles', articleRoutes);
+app.use('/api/coaches', coachRoutes);
+app.use('/api/commits', commitRoutes);
+app.use('/api/portal', portalRoutes);
+app.use('/api/parents', parentRoutes);
+app.use('/api/regCoaches', regCoachRoutes);
+
+app.use((err: Err, _req: Request, res: Response, _next: NextFunction) => {
+  console.error(err);
+  res
+    .status(err.status || 500)
+    .json({ error: err.message || 'Internal Server Error' });
+});
 
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-export { prisma };
+export { prisma, io };

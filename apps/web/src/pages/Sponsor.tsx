@@ -120,7 +120,9 @@ export default function Sponsors() {
             >
               <ArrowLeftIcon className="w-5 h-5" />
             </button>
-            <h1 className="text-2xl font-bold">Sponsors</h1>
+            <div className="text-3xl lg:text-3xl font-bold text-white">
+              Sponsors
+            </div>
           </div>
         </div>
 

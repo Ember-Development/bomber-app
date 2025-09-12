@@ -1,0 +1,11 @@
+terraform.tfvars
+
+.terraform/
+
+*.tfstate
+*.tfstate.*
+
+plans/*
+.tfplan
+
+id_rsa*

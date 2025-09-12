@@ -29,7 +29,7 @@ import { PlayerDB } from '../types/player';
 const seed = 459398;
 
 //dont remove, this is used for debugging
-console.log(`Using seed: ${seed}`);
+// console.log(`Using seed: ${seed}`);
 
 faker.seed(seed);
 const createAdminUsers = async () => {
@@ -126,6 +126,7 @@ const createMock8UTo12UPlayer = (
     addressID,
     teamID,
     ageGroup,
+    commitId: null,
   };
 };
 const createMock14UPlayer = (
@@ -162,6 +163,7 @@ const createMock14UPlayer = (
     isTrusted,
     ageGroup,
     college,
+    commitId: null,
   };
 };
 const createMock16UToAlumniPlayer = (
@@ -197,6 +199,7 @@ const createMock16UToAlumniPlayer = (
     ageGroup,
     isTrusted,
     college,
+    commitId: null,
   };
 };
 

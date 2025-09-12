@@ -12,7 +12,7 @@ export default function CreateTeamForm({ onSuccess }: Props) {
     ageGroup: '',
     region: '',
     state: '',
-    headCoachID: null,
+    headCoachID: '12345',
   });
   const [loading, setLoading] = useState(false);
 

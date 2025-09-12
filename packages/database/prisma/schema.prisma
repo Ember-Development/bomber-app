@@ -95,12 +95,26 @@ enum UserRole {
 }
 
 enum Regions {
-    NW
-    SW
-    S
-    SE
-    NE
-    MW
+    ACADEMY
+    PACIFIC
+    MOUNTAIN
+    MIDWEST
+    NORTHEAST
+    SOUTHEAST
+    TEXAS
+}
+
+enum MediaCategory {
+    TRAINING
+    PODCAST
+    HIGHLIGHTS
+    INTERVIEWS
+    MERCH
+}
+
+enum LeadKind {
+    PLAYER // “I want to become a Bomber”
+    PARENT // “My child wants to become a Bomber”
 }
 
 enum PantsSize {
@@ -187,6 +201,7 @@ model User {
     chats         UserChat[]
     events        EventAttendance[]
     notifications UserNotification[]
+    refreshTokens RefreshToken[]
 
     isDeleted Boolean @default(false)
 }
@@ -210,8 +225,8 @@ model Player {
     user   User?   @relation(fields: [userID], references: [id]) // constrain: all players > 12u have user login
     userID String? @unique @db.Uuid
 
-    team   Team   @relation(fields: [teamID], references: [id])
-    teamID String @db.Uuid
+    team   Team?   @relation(fields: [teamID], references: [id])
+    teamID String? @db.Uuid
 
     //8-14u
     parents Parent[]
@@ -223,7 +238,21 @@ model Player {
     address   Address? @relation(fields: [addressID], references: [id])
     addressID String?  @db.Uuid
 
-    college String?
+    college           String?
+    commitId          String?     @db.Uuid
+    commit            Commit?     @relation("PlayerCommit", fields: [commitId], references: [id])
+    convertedFromLead PortalLead? @relation("PortalLeadConvertedPlayer")
+}
+
+model Commit {
+    id            String   @id @default(uuid()) @db.Uuid
+    name          String
+    state         String
+    city          String
+    imageUrl      String
+    committedDate DateTime
+
+    players Player[] @relation("PlayerCommit")
 }
 
 model Admin {
@@ -243,6 +272,9 @@ model Coach {
 
     user   User   @relation(fields: [userID], references: [id])
     userID String @unique @db.Uuid
+
+    address   Address? @relation(fields: [addressID], references: [id])
+    addressID String?  @db.Uuid
 
     headTeams Team[]
     teams     Team[] @relation("CoachTeams")
@@ -308,6 +340,7 @@ model Address {
 
     players Player[]
     parents Parent[]
+    coaches Coach[]
 }
 
 model Chat {
@@ -437,12 +470,12 @@ model Banner {
 }
 
 model Media {
-    id       String @id @default(uuid()) @db.Uuid
-    title    String
-    videoUrl String
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    id        String        @id @default(uuid()) @db.Uuid
+    title     String
+    videoUrl  String
+    category  MediaCategory
+    createdAt DateTime      @default(now())
+    updatedAt DateTime      @updatedAt
 }
 
 model Article {
@@ -454,4 +487,42 @@ model Article {
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+}
+
+model PortalLead {
+    id   String   @id @default(uuid()) @db.Uuid
+    kind LeadKind
+
+    playerFirstName String
+    playerLastName  String
+    ageGroup        AgeGroup
+    pos1            Position?
+    pos2            Position?
+    gradYear        String?
+
+    parentFirstName String?
+    parentLastName  String?
+    parentEmail     String?
+    parentPhone     String?
+
+    email String?
+    phone String?
+
+    createdAt DateTime @default(now())
+
+    // link to a created Player later
+    convertedPlayerId String? @unique @db.Uuid
+    convertedPlayer   Player? @relation("PortalLeadConvertedPlayer", fields: [convertedPlayerId], references: [id])
+}
+
+model RefreshToken {
+    id          String    @id @default(uuid()) @db.Uuid
+    userId      String    @db.Uuid
+    hashedToken String
+    createdAt   DateTime  @default(now())
+    revokedAt   DateTime?
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
 }

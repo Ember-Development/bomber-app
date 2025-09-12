@@ -5,15 +5,15 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 
 interface SearchFieldProps {
   placeholder?: string;
-  onSearch?: (query: string) => void;
+  value: string;
+  onChangeText: (text: string) => void;
 }
 
 export default function SearchField({
   placeholder = 'Search...',
-  onSearch,
+  value,
+  onChangeText,
 }: SearchFieldProps) {
-  const [query, setQuery] = useState('');
-
   const textColor = useThemeColor({}, 'text');
   const iconColor = useThemeColor({}, 'component');
   const placeholderColor = useThemeColor({}, 'component');
@@ -25,11 +25,8 @@ export default function SearchField({
         style={[styles.input, { color: textColor }]}
         placeholder={placeholder}
         placeholderTextColor={placeholderColor}
-        value={query}
-        onChangeText={(text) => {
-          setQuery(text);
-          if (onSearch) onSearch(text);
-        }}
+        value={value}
+        onChangeText={onChangeText}
       />
     </View>
   );
@@ -41,7 +38,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: 16,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 10,
     // Apply backdropFilter conditionally for web platforms
     ...(Platform.OS === 'web' ? { backdropFilter: 'blur(12px)' } : {}), // NOTE: Web only — use BlurView on native if needed

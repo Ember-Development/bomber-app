@@ -11,6 +11,8 @@ import {
   StatusBar,
   FlatList,
   Animated,
+  Linking,
+  ImageSourcePropType,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,78 +22,83 @@ import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { GlobalColors } from '@/constants/Colors';
+import christy from '../../assets/images/christy.jpg';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_HORIZONTAL_PADDING = 20;
 const CARD_WIDTH = SCREEN_WIDTH - CARD_HORIZONTAL_PADDING * 2;
+
+type Member = {
+  id: string;
+  name: string;
+  role: string;
+  image: ImageSourcePropType; // can be a number (local) or {uri: string}
+  bio: string;
+};
 
 const TEAM_MEMBERS = [
   {
     id: 'scott',
     name: 'Scott Smith',
     role: 'CEO / President / Head Coach - 18U Gold',
-    imageUri:
-      'https://bombersfastpitch.net/wp-content/uploads/2022/03/Staff_ScottSmith.jpg',
+    image: {
+      uri: 'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Scott-Smith-scaled-landscape-e56529274e6452b73edfc3d53bbaea3e-5f90a34246c8e.jpg',
+    },
     bio: 'Scott oversees the entire program. As our head coach, he has guided multiple teams to national championships. When he’s not on the field, Scott enjoys spending time with his family and analyzing advanced softball analytics.',
   },
   {
     id: 'bo',
     name: 'Bo Vinton',
-    role: 'Director of Coaching',
-    imageUri:
-      'https://bombersfastpitch.net/wp-content/uploads/2022/03/Staff_BoVinton.jpg',
+    role: 'Chief Operating Officer/Executive Vice President',
+    image: {
+      uri: 'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Bo-Vinton-scaled-landscape-3aa2faa3a59fec1219804926fbd3a33f-5f90a34246c8e.jpg',
+    },
     bio: 'Bo heads up our player development curriculum and mentors each coach on the staff. He has a proven track record of developing hitters into Division‐I recruits. In his free time, Bo loves fishing and tinkering with baseball swing data.',
   },
   {
     id: 'david',
     name: 'David McCorkle',
-    role: 'Head Coach - 16U Platinum',
-    imageUri:
-      'https://bombersfastpitch.net/wp-content/uploads/2022/03/Staff_DavidMcCorkle.jpg',
+    role: 'Assistant Program Director/Vice President',
+    image: {
+      uri: 'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/David-McCorkle-scaled-landscape-5c5db9ae467f5c088d903022b57fd88f-5f90a34246c8e.jpg',
+    },
     bio: 'David leads the 16U Platinum squad and specializes in defensive strategy. He has coached multiple college-bound pitchers. Outside softball, David is a high school math teacher and volunteers at local youth camps.',
   },
   {
     id: 'jane',
-    name: 'Jane Doe',
-    role: 'Assistant Coach',
-    imageUri:
-      'https://bombersfastpitch.net/wp-content/uploads/2022/03/Staff_JaneDoe.jpg',
+    name: 'Jennifer Vinton',
+    role: 'Director of Operations',
+    image: {
+      uri: 'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Jennifer-Vinton-scaled-landscape-078f9bfeb75e201aab6137dde8943af5-5f90a34246c8e.jpg',
+    },
     bio: 'Jane focuses on infield development and works closely with our middle‐school camps. She holds multiple coaching clinics across the state. In her spare time, she loves reading and hiking with her dog, Daisy.',
   },
   {
-    id: 'john',
-    name: 'John Smith',
-    role: 'Pitching Coach',
-    imageUri:
-      'https://bombersfastpitch.net/wp-content/uploads/2022/03/Staff_JohnSmith.jpg',
+    id: 'christy',
+    name: 'Christy Connor',
+    role: 'Director of Brand Development',
+    image: christy,
     bio: 'John is our lead pitching instructor—he’s sent over 50 pitchers to NCAA programs. A former all‐state pitcher himself, he now devotes his time to biomechanics research. Off the mound, John enjoys woodworking.',
   },
   {
-    id: 'emily',
-    name: 'Emily Davis',
-    role: 'Strength & Conditioning',
-    imageUri:
-      'https://bombersfastpitch.net/wp-content/uploads/2022/03/Staff_EmilyDavis.jpg',
+    id: 'jade',
+    name: 'Jade Nottebrok',
+    role: 'Media Director',
+    image: {
+      uri: 'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Jade-Nottebrok-scaled-landscape-6d6f7a877b9ffb01e55b7fb63dd7d2d9-5f90a34246c8e.jpg',
+    },
     bio: 'Emily oversees all strength and conditioning regimens. With a background in sports nutrition, she keeps our athletes performing at peak levels. When not at the gym, Emily bakes sourdough and trains for marathons.',
   },
 ];
 
 const FACILITIES = [
   {
-    id: 'facility1',
-    name: 'Main Training Complex',
+    id: '1',
+    name: 'Bomber Facility',
     description:
-      'State-of-the-art turf fields, batting cages, and weight rooms, all under one roof.',
+      'State-of-the-art Pitching and Batting Training, batting cages, and weight rooms, all under one roof.',
     imageUri:
       'https://bombersfastpitch.net/wp-content/uploads/2022/03/Facility_MainComplex.jpg',
-  },
-  {
-    id: 'facility3',
-    name: 'Pitching Lab',
-    description:
-      'High-speed cameras and biomechanical analysis tools to perfect pitching mechanics.',
-    imageUri:
-      'https://bombersfastpitch.net/wp-content/uploads/2022/03/Facility_PitchingLab.jpg',
   },
 ];
 
@@ -119,11 +126,11 @@ const CULTURE_METRICS = [
   {
     id: 'metric5',
     number: '1900+',
-    label: 'Participants Nationwide',
+    label: 'Bombers Nationwide',
   },
   {
     id: 'metric6',
-    number: '20+',
+    number: '25',
     label: 'Years of Excellence',
   },
 ];
@@ -133,7 +140,7 @@ const METRIC_CARD_SPACING = 16;
 const SINGLE_SET_WIDTH =
   CULTURE_METRICS.length * (METRIC_CARD_WIDTH + METRIC_CARD_SPACING);
 
-const SCROLL_DURATION = 24000;
+const SCROLL_DURATION = 35000;
 
 export default function AboutScreen() {
   const textColor = useThemeColor({}, 'text');
@@ -209,7 +216,7 @@ export default function AboutScreen() {
                     style={styles.metricCardGlass}
                   >
                     <View style={styles.metricCardContent}>
-                      <ThemedText style={[styles.metricNumber]}>
+                      <ThemedText style={styles.metricNumber}>
                         {item.number}
                       </ThemedText>
                       <ThemedText
@@ -237,16 +244,11 @@ export default function AboutScreen() {
               key={member.id}
               activeOpacity={0.8}
               style={styles.cardOuterWrapper}
-              onPress={() => {
-                console.log('Tapped', member.name);
-              }}
+              onPress={() => {}}
             >
               <View style={styles.cardContent}>
                 <View style={styles.photoWrapper}>
-                  <Image
-                    source={{ uri: member.imageUri }}
-                    style={styles.photo}
-                  />
+                  <Image source={member.image} style={styles.photo} />
                 </View>
 
                 <View
@@ -282,7 +284,17 @@ export default function AboutScreen() {
               activeOpacity={0.8}
               style={styles.cardOuterWrapper}
               onPress={() => {
-                console.log('Tapped Facility:', facility.name);
+                const address = encodeURIComponent(
+                  '218 Trade Center Dr, New Braunfels, TX 78130'
+                );
+                const url =
+                  Platform.OS === 'ios'
+                    ? `http://maps.apple.com/?daddr=${address}`
+                    : `https://www.google.com/maps/dir/?api=1&destination=${address}`;
+
+                Linking.openURL(url).catch((err) =>
+                  console.error('Failed to open map:', err)
+                );
               }}
             >
               <BlurView intensity={30} tint="light" style={styles.cardGlass}>
@@ -313,7 +325,6 @@ export default function AboutScreen() {
               </BlurView>
             </TouchableOpacity>
           ))}
-
           <View style={{ height: 40 }} />
         </ScrollView>
 
@@ -322,7 +333,7 @@ export default function AboutScreen() {
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={20} color={GlobalColors.bomber} />
+          <Ionicons name="arrow-back" size={20} color={GlobalColors.white} />
         </TouchableOpacity>
       </SafeAreaView>
     </BackgroundWrapper>
@@ -341,7 +352,7 @@ const styles = StyleSheet.create({
 
   introContainer: {
     marginHorizontal: CARD_HORIZONTAL_PADDING,
-    marginBottom: 32,
+    marginBottom: 12,
   },
   introTitle: {
     fontSize: 28,
@@ -373,6 +384,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     overflow: 'hidden',
     alignSelf: 'center',
+    justifyContent: 'center',
   },
   carouselWrapper: {
     height: 120,
@@ -380,9 +392,10 @@ const styles = StyleSheet.create({
   },
   metricCardWrapper: {
     width: CARD_WIDTH,
-    paddingHorizontal: 0,
     alignItems: 'center',
+    justifyContent: 'center',
   },
+
   metricCardGlass: {
     width: CARD_WIDTH - 40,
     height: 100,
@@ -393,22 +406,20 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginHorizontal: 20,
   },
+
   metricCardContent: {
-    flex: 1,
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   metricNumber: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
     marginBottom: 4,
     color: GlobalColors.bomber,
   },
-  metricLabel: {
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 18,
-  },
+  metricLabel: { fontSize: 14, textAlign: 'center' },
 
   headerContainer: {
     marginHorizontal: CARD_HORIZONTAL_PADDING,
@@ -481,8 +492,8 @@ const styles = StyleSheet.create({
     top: 86,
     left: 16,
     zIndex: 10,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 24,
     padding: 4,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
 });

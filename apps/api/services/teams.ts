@@ -1,4 +1,4 @@
-import { AgeGroup, prisma, Regions, State } from '@bomber-app/database';
+import { AgeGroup, Prisma, prisma, Regions, State } from '@bomber-app/database';
 import { getUniqueTeamCode } from '../utils/teamCode';
 import {
   ensureUserIsCoach,
@@ -8,6 +8,7 @@ import {
   ensureCoachRecordFor,
   ensurePlayerRecordFor,
 } from '../utils/createCoachRecord';
+import { Role } from '../auth/permissions';
 
 export interface CreateTeamInput {
   name: string;
@@ -25,14 +26,74 @@ export interface UpdateTeamInput {
   headCoachUserID?: string | null;
 }
 
+type TeamWithPlayers = Prisma.TeamGetPayload<{
+  include: {
+    trophyCase: true;
+    players: {
+      include: {
+        user: true;
+        commit: { select: { imageUrl: true; name: true } };
+      };
+    };
+    coaches: { include: { user: true } };
+    headCoach: { include: { user: true } };
+  };
+}>;
+
+export const canAccessTrophy = async (
+  trophyId: string,
+  actingUserId: string,
+  role: Role
+): Promise<boolean> => {
+  if (role === 'ADMIN') return true;
+
+  const trophy = await prisma.trophy.findUnique({
+    where: { id: trophyId },
+    include: {
+      team: {
+        include: {
+          coaches: { where: { userID: actingUserId } },
+        },
+      },
+    },
+  });
+
+  if (!trophy || !trophy.team) return false;
+
+  switch (role) {
+    case 'REGIONAL_COACH':
+      const regCoach = await prisma.regCoach.findUnique({
+        where: { userID: actingUserId },
+      });
+      return trophy.team.region === regCoach?.region;
+
+    case 'COACH':
+      return trophy.team.coaches.length > 0;
+
+    default:
+      return false;
+  }
+};
+
 export const teamService = {
   getAllTeams: async () => {
     return prisma.team.findMany({
       include: {
         trophyCase: true,
-        players: true,
+        players: {
+          include: {
+            user: true,
+            team: true,
+            parents: true,
+            address: true,
+          },
+        },
+        coaches: {
+          include: {
+            user: true,
+          },
+        },
         // regCoaches: true, // Removed as it is not a valid property
-        coaches: true,
         headCoach: {
           include: {
             user: true,
@@ -42,7 +103,7 @@ export const teamService = {
     });
   },
 
-  getTeamById: async (id: string) => {
+  getTeamById: async (id: string): Promise<TeamWithPlayers | null> => {
     return prisma.team.findUnique({
       where: { id },
       include: {
@@ -50,17 +111,45 @@ export const teamService = {
         players: {
           include: {
             user: true,
+            commit: { select: { imageUrl: true, name: true } },
           },
+        },
+        coaches: { include: { user: true } },
+        headCoach: { include: { user: true } },
+      },
+    });
+  },
+
+  getTeamByCode: async (code: string) => {
+    return prisma.team.findUnique({
+      where: { teamCode: code },
+      include: {
+        players: true,
+        coaches: true,
+        headCoach: true,
+        trophyCase: true,
+      },
+    });
+  },
+
+  getMyTeams: async (userId: string) => {
+    return prisma.team.findMany({
+      where: {
+        OR: [
+          { headCoach: { userID: userId } },
+          { coaches: { some: { userID: userId } } },
+        ],
+      },
+      include: {
+        trophyCase: true,
+        players: {
+          include: { user: true },
         },
         coaches: {
-          include: {
-            user: true,
-          },
+          include: { user: true },
         },
         headCoach: {
-          include: {
-            user: true,
-          },
+          include: { user: true },
         },
       },
     });
@@ -172,8 +261,13 @@ export const teamService = {
 
   updateTrophy: async (
     trophyID: string,
-    data: { title?: string; imageURL?: string }
+    data: { title?: string; imageURL?: string },
+    actingUserId: string,
+    role: Role
   ) => {
+    const authorized = await canAccessTrophy(trophyID, actingUserId, role);
+    if (!authorized) throw new Error('Not authorized to update this trophy.');
+
     const trophy = await prisma.trophy.update({
       where: { id: trophyID },
       data,
@@ -182,7 +276,10 @@ export const teamService = {
     return trophy;
   },
 
-  deleteTrophy: async (trophyID: string) => {
+  deleteTrophy: async (trophyID: string, actingUserId: string, role: Role) => {
+    const authorized = await canAccessTrophy(trophyID, actingUserId, role);
+    if (!authorized) throw new Error('Not authorized to delete this trophy.');
+
     await prisma.trophy.delete({ where: { id: trophyID } });
     return true;
   },

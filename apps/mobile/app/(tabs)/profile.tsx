@@ -14,10 +14,11 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useUserContext } from '@/context/useUserContext';
 import FullScreenModal from '@/components/ui/organisms/FullSheetModal';
-import EditProfileContent from '../profile/edit-profile';
 import { useQueryClient } from '@tanstack/react-query';
 import BomberIcon from '@/assets/images/bomber-icon.png';
-import ProfileTabs from '../profile/profile-tab';
+import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
+import EditProfileContent from '@/app/user/edit-profile';
+import ProfileTabs from '@/components/ui/organisms/profile-tab';
 
 export default function ProfileScreen() {
   const { user } = useUserContext();
@@ -34,62 +35,52 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      <View style={styles.backgroundWrapper}>
-        <Image
-          source={require('@/assets/images/bomberback.jpg')}
-          style={styles.backgroundImage}
-          blurRadius={40}
-        />
-        <LinearGradient
-          colors={['rgba(0,0,0,0.4)', 'rgba(0,0,0,0.85)']}
-          style={StyleSheet.absoluteFill}
-        />
-      </View>
+    <BackgroundWrapper>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="light-content" />
 
-      <ScrollView contentContainerStyle={styles.content}>
-        <Image source={BomberIcon} style={styles.avatar} />
-        <View style={styles.nameRow}>
-          <Text style={styles.name}>
-            {user.fname} {user.lname}
-          </Text>
-          <View style={styles.rolePill}>
-            <Text style={styles.roleText}>{user.primaryRole}</Text>
+        <ScrollView contentContainerStyle={styles.content}>
+          <Image source={BomberIcon} style={styles.avatar} />
+          <View style={styles.nameRow}>
+            <Text style={styles.name}>
+              {user.fname} {user.lname}
+            </Text>
+            <View style={styles.rolePill}>
+              <Text style={styles.roleText}>{user.primaryRole}</Text>
+            </View>
           </View>
-        </View>
 
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() => setEditVisible(true)}
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => setEditVisible(true)}
+          >
+            <Text style={styles.editButtonText}>Edit Profile</Text>
+          </TouchableOpacity>
+
+          <ProfileTabs />
+        </ScrollView>
+
+        <FullScreenModal
+          isVisible={editVisible}
+          onClose={() => setEditVisible(false)}
+          title="Edit Profile"
         >
-          <Text style={styles.editButtonText}>Edit Profile</Text>
-        </TouchableOpacity>
-
-        <ProfileTabs user={user} />
-      </ScrollView>
-
-      <FullScreenModal
-        isVisible={editVisible}
-        onClose={() => setEditVisible(false)}
-        title="Edit Profile"
-      >
-        <EditProfileContent
-          user={user}
-          onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: ['current-user'] });
-            setEditVisible(false);
-          }}
-        />
-      </FullScreenModal>
-    </SafeAreaView>
+          <EditProfileContent
+            user={user}
+            onSuccess={() => {
+              queryClient.invalidateQueries({ queryKey: ['current-user'] });
+              setEditVisible(false);
+            }}
+          />
+        </FullScreenModal>
+      </SafeAreaView>
+    </BackgroundWrapper>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
     position: 'relative',
   },
   backgroundWrapper: {

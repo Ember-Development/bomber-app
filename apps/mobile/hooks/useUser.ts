@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import {
   fetchUserChats,
   fetchUserEvents,
@@ -7,6 +12,8 @@ import {
 } from '@/api/user';
 import { ChatFE, PublicUserFE, UserFE } from '@bomber-app/database';
 import { UserEvent } from '@/types';
+
+const PAGE_SIZE = 10;
 
 export const useUsers = () => {
   return useQuery<PublicUserFE[]>({

@@ -28,11 +28,8 @@ export default function initializeSocket(server: Server) {
   io.adapter(createAdapter(pubClient, subClient));
 
   io.on('connection', (socket) => {
-    console.log(`socket connected: ${socket.id}`);
-
     socket.on('joinChat', (chatId) => {
       socket.join(chatId);
-      console.log(`User has joined the chat: ${chatId}`);
     });
 
     socket.on('sendMessage', async (data, ack) => {
@@ -63,9 +60,7 @@ export default function initializeSocket(server: Server) {
       }
     });
 
-    socket.on('disconnect', () => {
-      console.log(`User disconnected: ${socket.id}`);
-    });
+    socket.on('disconnect', () => {});
   });
 
   return io;

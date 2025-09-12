@@ -1,5 +1,7 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { CreateUserInput, userService } from '../services/user';
+import { hashPassword, verifyPassword } from '../utils/crypto';
+import { AuthenticatedRequest } from '../utils/express';
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -58,23 +60,106 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteMe = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const { id } = req.params;
+    const id = (req as any)?.user?.id;
+    if (!id) return res.status(401).json({ error: 'Not authenticated' });
     await userService.softDeleteUser(id);
     return res.status(204).send();
-  } catch (err) {
-    console.error('[deleteUser]', err);
-    return res.status(500).json({ error: 'Failed to delete user' });
+  } catch (e) {
+    next(e);
   }
 };
 
-export const updateUser = async (req: Request, res: Response) => {
+export const adminSoftDeleteUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = String(req.params.id);
+    await userService.softDeleteUser(id);
+    return res.status(204).send();
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const updateUser = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = await userService.updateUser(req.params.id, req.body);
     return res.json(user);
   } catch (err) {
     console.error('Error updating user:', err);
     return res.status(500).json({ error: 'Failed to update user' });
+  }
+};
+
+export async function createAddress(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { address1, address2, city, state, zip } = req.body;
+
+    if (!address1 || !city || !state || !zip) {
+      return res
+        .status(400)
+        .json({ message: 'Missing required address fields' });
+    }
+
+    const address = await userService.createAddress({
+      address1,
+      address2,
+      city,
+      state,
+      zip,
+    });
+
+    return res.status(201).json(address);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export const changePassword = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword)
+      return res.status(400).json({ error: 'Missing current or new password' });
+
+    if (newPassword.length < 8)
+      return res
+        .status(400)
+        .json({ error: 'New password must be at least 8 characters' });
+
+    const requesterId = req.user?.id || req.user?.sub;
+    const isSelf = requesterId === id;
+    const isAdmin =
+      req.user?.roles?.includes?.('ADMIN') || req.user?.role === 'ADMIN';
+    if (!isSelf && !isAdmin)
+      return res.status(403).json({ error: 'Forbidden' });
+
+    await userService.changePassword({
+      userId: id,
+      currentPassword,
+      newPassword,
+    });
+    return res.status(204).send();
+  } catch (e: any) {
+    if (e?.message === 'USER_NOT_FOUND')
+      return res.status(404).json({ error: 'User not found' });
+    if (e?.message === 'BAD_CURRENT_PASSWORD')
+      return res.status(401).json({ error: 'Current password is incorrect' });
+
+    console.error('[changePassword] error', e);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };

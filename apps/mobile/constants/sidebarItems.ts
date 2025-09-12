@@ -25,12 +25,17 @@ export const SIDEMENU_ITEMS: {
   {
     name: 'Bomber Portal',
     icon: 'book-outline',
-    routes: '',
+    routes: '/side/bomberportal',
   },
   {
     name: 'About Us',
-    icon: 'flag-outline',
+    icon: 'information-circle-outline',
     routes: '/side/about',
+  },
+  {
+    name: 'Coaches Development',
+    icon: 'baseball-outline',
+    routes: '',
   },
   {
     name: 'Player Development',
