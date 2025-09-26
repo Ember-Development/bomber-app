@@ -1,4 +1,3 @@
-export { prisma } from './client';
 export * from './types/address';
 export * from './types/admin';
 export * from './types/chat';

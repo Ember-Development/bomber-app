@@ -27,5 +27,12 @@
     "@bomber-app/database": "link:",
     "@prisma/client": "6.4.1"
   },
+  "exports": {
+    ".": {
+      "react-native": "./index.ts",
+      "default": "./server.ts"
+    },
+    "./generated/client": "./generated/client/index.js"
+  },
   "private": true
 }
