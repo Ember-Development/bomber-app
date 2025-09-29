@@ -86,7 +86,6 @@ export const fetchNotificationFeed = async (): Promise<FeedItem[]> => {
 
 /**
  * Mark a given notification as "opened" for the current user.
- * (No-op on server if it’s already recorded.)
  */
 export const markNotificationOpened = async (
   notificationId: string
