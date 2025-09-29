@@ -9,7 +9,6 @@ export async function resolveAudience(audience: any): Promise<string[]> {
     });
     return users.map((u) => u.id);
   }
-  // TODO: implement roles/regions/teamIds using your schema
   return audience?.userIds ?? [];
 }
 
@@ -18,6 +17,7 @@ export async function sendNotificationRecord(id: string) {
   if (!n) throw new Error('Notification not found');
 
   const targetUserIds = await resolveAudience(n.audience as any);
+
   const deviceWhere =
     n.platform === 'ios'
       ? { platform: 'ios' }
@@ -32,6 +32,33 @@ export async function sendNotificationRecord(id: string) {
     },
     select: { id: true, token: true, platform: true, userId: true },
   });
+
+  if (targetUserIds.length) {
+    await Promise.all(
+      targetUserIds.map((userId) =>
+        prisma.userNotification.upsert({
+          where: {
+            userID_notificationID: { userID: userId, notificationID: n.id },
+          },
+          create: { userID: userId, notificationID: n.id, isRead: false },
+          update: {},
+        })
+      )
+    );
+  } else {
+    const userIds = [...new Set(devices.map((d) => d.userId))];
+    await Promise.all(
+      userIds.map((userId) =>
+        prisma.userNotification.upsert({
+          where: {
+            userID_notificationID: { userID: userId, notificationID: n.id },
+          },
+          create: { userID: userId, notificationID: n.id, isRead: false },
+          update: {},
+        })
+      )
+    );
+  }
 
   for (const d of devices) {
     try {
@@ -59,7 +86,6 @@ export async function sendNotificationRecord(id: string) {
       });
     } catch (e: any) {
       const msg = String(e?.message ?? e);
-      // prune invalid/expired tokens
       if (
         msg.includes('BadDeviceToken') ||
         msg.includes('not-registered') ||

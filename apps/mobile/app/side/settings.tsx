@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -39,6 +39,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user, isLoading, error, setUser } = useUserContext();
+  const KEY_NOTIFS_DISABLED = 'notifications:disabled';
 
   const currentUser = useMemo(() => {
     const u = (user as UserFE | undefined) ?? ({} as any);
@@ -90,6 +91,29 @@ export default function SettingsScreen() {
   };
 
   const handleSave = () => {};
+
+  // local notifications
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(KEY_NOTIFS_DISABLED);
+        const disabled = raw === '1';
+        setNotificationsEnabled(!disabled);
+      } catch {}
+    })();
+  }, []);
+
+  const onToggleNotifications = async (next: boolean) => {
+    setNotificationsEnabled(next);
+    try {
+      // store as disabled = '1' when switch is OFF
+      await AsyncStorage.setItem(KEY_NOTIFS_DISABLED, next ? '0' : '1');
+      // (optional) tell your API if you later add a preference endpoint:
+      // await api.post('/api/devices/preferences', { notificationsEnabled: next });
+    } catch {}
+  };
 
   return (
     <BackgroundWrapper>
@@ -144,6 +168,27 @@ export default function SettingsScreen() {
                 <PressLink
                   text="Edit Profile"
                   onPress={() => setEditVisible(true)}
+                />
+              </Group>
+            </Section>
+
+            <Section title="Notifications">
+              <Group title="Push">
+                {/* <ToggleRow
+                  label="Enable Push Notifications"
+                  value={notificationsEnabled}
+                  onValueChange={onToggleNotifications}
+                /> */}
+                <PressLink
+                  text={
+                    Platform.OS === 'ios'
+                      ? 'Open iOS Notification Settings'
+                      : 'Open App Notification Settings'
+                  }
+                  onPress={() => {
+                    // Opens the OS settings page for your app (iOS 8+, Android supported)
+                    Linking.openSettings().catch(() => {});
+                  }}
                 />
               </Group>
             </Section>

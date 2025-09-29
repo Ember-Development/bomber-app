@@ -20,6 +20,7 @@ import { PublicUserFE, Regions } from '@bomber-app/database';
 import { useToast } from '@/context/ToastProvider';
 import { ColumnDef, exportCSV, exportXLS } from '@/utils/exporter';
 import { fetchUsers } from '@/api/user';
+import { createNotification, sendNotificationNow } from '@/api/notification';
 
 /* ---------- Constants ---------- */
 
@@ -107,6 +108,28 @@ export default function Teams() {
       }, {}),
     []
   );
+
+  // Create Notification
+  async function createAndSendTeamCreatedNotification(team: TeamFE) {
+    const title = 'New Bomber Team!';
+    const bits = [team.ageGroup, team.region, team.state]
+      .filter(Boolean)
+      .join(' • ');
+    const body = `${team.name} (${bits}) has been created.`;
+    const deepLink = `bomber://teams/${team.id}`;
+
+    const draft = await createNotification({
+      title,
+      body,
+      deepLink,
+      platform: 'both',
+      audience: { all: true },
+    });
+
+    if (draft?.id) {
+      await sendNotificationNow(draft.id);
+    }
+  }
 
   /* ---------- Effects ---------- */
 
@@ -314,11 +337,20 @@ export default function Teams() {
     const created = await createTeam(newTeam);
     if (created) {
       setTeams((prev) => [created, ...prev]);
-      closeDialog();
       addToast('Team created', 'success');
+
+      // fire off notification
+      try {
+        await createAndSendTeamCreatedNotification(created);
+        addToast('Announcement sent: "New Team!"', 'success');
+      } catch (e) {
+        console.error('Failed to send New Team notification', e);
+        addToast('Team created (push failed)', 'error');
+      }
+
+      closeDialog();
     }
   }
-
   async function handleSaveEdit() {
     if (!selectedTeam) return;
     const payload: UpdateTeamDTO = {
