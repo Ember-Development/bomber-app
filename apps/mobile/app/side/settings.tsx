@@ -105,16 +105,6 @@ export default function SettingsScreen() {
     })();
   }, []);
 
-  const onToggleNotifications = async (next: boolean) => {
-    setNotificationsEnabled(next);
-    try {
-      // store as disabled = '1' when switch is OFF
-      await AsyncStorage.setItem(KEY_NOTIFS_DISABLED, next ? '0' : '1');
-      // (optional) tell your API if you later add a preference endpoint:
-      // await api.post('/api/devices/preferences', { notificationsEnabled: next });
-    } catch {}
-  };
-
   return (
     <BackgroundWrapper>
       <SafeAreaView style={styles.safe}>
