@@ -9,7 +9,7 @@ module.exports = {
     version: '1.0.2',
     orientation: 'portrait',
     icon: './assets/images/bombericonios.png',
-    scheme: 'myapp',
+    scheme: 'bomber',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
 
@@ -31,6 +31,8 @@ module.exports = {
         foregroundImage: './assets/images/bombericonios.png',
         backgroundColor: '#ffffff',
       },
+      googleServicesFile: './android/app/google-services.json',
+      useNextNotificationsApi: true,
     },
 
     web: {
@@ -59,6 +61,14 @@ module.exports = {
             targetSdkVersion: 35,
             buildToolsVersion: '35.0.0',
           },
+        },
+      ],
+      [
+        'expo-notifications',
+        {
+          // optional: provide a monochrome small icon for Android status bar
+          // icon: './assets/notification-icon.png',
+          color: '#FF231F7C',
         },
       ],
     ],

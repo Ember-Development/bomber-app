@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,42 +8,156 @@ import {
   Animated,
   Platform,
   useWindowDimensions,
+  Image,
 } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
+import { ThemedText } from '@/components/ThemedText';
 import Separator from '../atoms/Seperator';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { GlobalColors } from '@/constants/Colors';
+import * as Linking from 'expo-linking';
+import { api } from '@/api/api';
+import { timeAgo } from '@/utils/timeAgo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// todo: change to database type and add isNew Property
-interface Notification {
+type FeedItem = {
   id: string;
-  message: string;
-  timeAgo: string;
-  isNew: boolean;
+  title: string;
+  body: string;
+  imageUrl?: string | null;
+  deepLink?: string | null;
+  sentAt: string; // ISO
+};
+
+/* ------------------------- Persistence helpers ------------------------- */
+
+const KEY_CLEARED_UNTIL = 'notifications:clearedUntil';
+const KEY_DISMISSED_IDS = 'notifications:dismissedIds';
+
+async function getDismissals() {
+  const [untilRaw, idsRaw] = await Promise.all([
+    AsyncStorage.getItem(KEY_CLEARED_UNTIL),
+    AsyncStorage.getItem(KEY_DISMISSED_IDS),
+  ]);
+  const clearedUntil = untilRaw ? Number(untilRaw) : 0;
+  const dismissedIds: Record<string, true> = idsRaw ? JSON.parse(idsRaw) : {};
+  return { clearedUntil, dismissedIds };
 }
 
-// TODO: Replace with real notifications from backend
-const notifications: Notification[] = [
-  {
-    id: '1',
-    message: 'Notifications Coming Soon',
-    timeAgo: 'Now',
-    isNew: true,
-  },
-];
+async function setClearedUntil(ms: number) {
+  await AsyncStorage.setItem(KEY_CLEARED_UNTIL, String(ms));
+}
+
+async function addDismissedId(id: string) {
+  const idsRaw = (await AsyncStorage.getItem(KEY_DISMISSED_IDS)) || '{}';
+  const ids = JSON.parse(idsRaw) as Record<string, true>;
+  ids[id] = true;
+  await AsyncStorage.setItem(KEY_DISMISSED_IDS, JSON.stringify(ids));
+}
+
+async function clearDismissedIds() {
+  await AsyncStorage.setItem(KEY_DISMISSED_IDS, '{}');
+}
+
+/* ---------------------------------------------------------------------- */
 
 export default function NotificationCard() {
   const [modalVisible, setModalVisible] = useState(false);
-  const [notificationsData, setNotificationsData] = useState(notifications);
+  const [localItems, setLocalItems] = useState<FeedItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [errorText, setErrorText] = useState<string | null>(null);
+
+  // dismissal state (hydrated from AsyncStorage)
+  const [clearedUntil, setClearedUntilState] = useState<number>(0);
+  const [dismissedIds, setDismissedIds] = useState<Record<string, true>>({});
+
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cardScale = useRef(new Animated.Value(1)).current;
   const { width } = useWindowDimensions();
   const compact = width < 340;
 
-  const modalBackground = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const iconColor = useThemeColor({}, 'component');
   const borderColor = useThemeColor({}, 'border');
+
+  // hydrate local dismissal state on mount
+  useEffect(() => {
+    (async () => {
+      const { clearedUntil, dismissedIds } = await getDismissals();
+      setClearedUntilState(clearedUntil);
+      setDismissedIds(dismissedIds);
+    })();
+  }, []);
+
+  const applyDismissals = (items: FeedItem[]) => {
+    return items.filter((n) => {
+      const sentAtMs = new Date(n.sentAt).getTime();
+      if (clearedUntil && sentAtMs <= clearedUntil) return false;
+      if (dismissedIds[n.id]) return false;
+      return true;
+    });
+  };
+
+  // --- Fetch feed (unread only)
+  const fetchFeed = async (unreadOnly = true) => {
+    try {
+      setLoading(true);
+      setErrorText(null);
+
+      const { data } = await api.get<{ items: FeedItem[] }>(
+        `/api/notifications/feed?unreadOnly=${unreadOnly ? 'true' : 'false'}`
+      );
+
+      const sorted = (data.items ?? []).sort(
+        (a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
+      );
+      setLocalItems(applyDismissals(sorted));
+    } catch (e: any) {
+      console.error('Failed to fetch notifications', e);
+      setErrorText('Unable to load notifications');
+      stopPolling();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Start/stop polling gated by modal visibility
+  const startPolling = () => {
+    if (pollRef.current) return;
+    pollRef.current = setInterval(() => fetchFeed(true), 15000);
+  };
+  const stopPolling = () => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  };
+
+  // Initial fetch once on mount (no polling)
+  useEffect(() => {
+    fetchFeed(true);
+    return () => stopPolling();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // When modal opens, fetch immediately + start polling
+  useEffect(() => {
+    if (modalVisible) {
+      fetchFeed(true);
+      startPolling();
+    } else {
+      stopPolling();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modalVisible]);
+
+  const top = localItems[0];
+  const topPreview = useMemo(() => {
+    if (loading) return { line1: 'Loading…', time: '' };
+    if (errorText) return { line1: errorText, time: '' };
+    if (!top) return { line1: 'No notifications yet', time: '' };
+    return { line1: top.title || top.body, time: timeAgo(top.sentAt) };
+  }, [top, loading, errorText]);
 
   const handlePressIn = () => {
     Animated.spring(cardScale, {
@@ -51,16 +165,44 @@ export default function NotificationCard() {
       useNativeDriver: true,
     }).start();
   };
-
   const handlePressOut = () => {
-    Animated.spring(cardScale, {
-      toValue: 1,
-      useNativeDriver: true,
-    }).start();
+    Animated.spring(cardScale, { toValue: 1, useNativeDriver: true }).start();
   };
 
-  const clearAllNotifications = () => {
-    setNotificationsData([]);
+  // --- Mark single item as opened (persist locally so it stays hidden)
+  const onTapItem = async (id: string, deepLink?: string | null) => {
+    if (deepLink) Linking.openURL(deepLink).catch(() => {});
+    try {
+      // best-effort server call (ok if public/no-op)
+      await api
+        .post('/api/notifications/receipt/open', { notificationId: id })
+        .catch(() => {});
+      // persist dismissal
+      await addDismissedId(id);
+      setDismissedIds((prev) => ({ ...prev, [id]: true }));
+      setLocalItems((prev) => prev.filter((n) => n.id !== id));
+    } catch (e) {
+      console.error('Failed to mark opened', e);
+      setErrorText('Unable to update notification');
+    }
+    setModalVisible(false);
+  };
+
+  // --- Mark all as read (persist cutoff so older items never show again)
+  const clearAll = async () => {
+    try {
+      // best-effort server call (ok if it’s a no-op)
+      await api.post('/api/notifications/readAll', {}).catch(() => {});
+      const now = Date.now();
+      await setClearedUntil(now);
+      await clearDismissedIds();
+      setClearedUntilState(now);
+      setDismissedIds({});
+      setLocalItems([]);
+    } catch (e) {
+      console.error('Failed to clear all notifications', e);
+      setErrorText('Unable to clear notifications');
+    }
   };
 
   return (
@@ -70,17 +212,15 @@ export default function NotificationCard() {
         accessibilityLabel="View Notifications"
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        onPress={() => setModalVisible(true)}
+        onPress={async () => {
+          setModalVisible(true);
+          if (!localItems.length) await fetchFeed(true);
+        }}
         android_ripple={{ color: 'rgba(255,255,255,0.08)', borderless: false }}
         style={{ borderRadius: 18, overflow: 'hidden' }}
       >
         <Animated.View
-          style={[
-            styles.card,
-            {
-              transform: [{ scale: cardScale }],
-            },
-          ]}
+          style={[styles.card, { transform: [{ scale: cardScale }] }]}
         >
           <View
             style={[styles.cardHeader, compact && styles.cardHeaderCompact]}
@@ -95,8 +235,20 @@ export default function NotificationCard() {
                 { color: textColor },
               ]}
             >
-              Recent Notifications
+              Notifications
             </ThemedText>
+
+            {/* Show count badge of unread (client-filtered) */}
+            {localItems.length > 0 && (
+              <View style={styles.badge}>
+                <ThemedText
+                  type="subtitle"
+                  style={{ color: '#fff', fontSize: 12 }}
+                >
+                  {localItems.length}
+                </ThemedText>
+              </View>
+            )}
 
             <Pressable
               onPress={() => setModalVisible(true)}
@@ -112,17 +264,19 @@ export default function NotificationCard() {
               <Ionicons name="expand-outline" size={20} color={iconColor} />
             </Pressable>
           </View>
+
           <Separator />
+
           <View style={styles.notificationPreview}>
             <ThemedText
               numberOfLines={2}
               style={[styles.notificationText, { color: textColor }]}
             >
-              {notifications[0].message}
+              {topPreview.line1}
             </ThemedText>
-            <ThemedText style={styles.timeAgo}>
-              {notifications[0].timeAgo}
-            </ThemedText>
+            {!!topPreview.time && (
+              <ThemedText style={styles.timeAgo}>{topPreview.time}</ThemedText>
+            )}
           </View>
         </Animated.View>
       </Pressable>
@@ -131,21 +285,20 @@ export default function NotificationCard() {
         <View style={styles.modalContainer}>
           <View style={[styles.modalContent]}>
             <View style={styles.dragHandle} />
-
             <View style={styles.modalHeader}>
               <ThemedText type="title" style={{ color: textColor }}>
                 Notifications
               </ThemedText>
               <View style={{ flexDirection: 'row', gap: 12 }}>
-                {notificationsData.length > 0 && (
-                  <Pressable onPress={clearAllNotifications}>
+                {localItems.length > 0 && (
+                  <Pressable onPress={clearAll}>
                     <Ionicons name="trash-outline" size={22} color="red" />
                   </Pressable>
                 )}
-                <Pressable
-                  accessibilityLabel="Close notifications"
-                  onPress={() => setModalVisible(false)}
-                >
+                <Pressable onPress={() => fetchFeed(true)}>
+                  <Ionicons name="refresh" size={22} color={iconColor} />
+                </Pressable>
+                <Pressable onPress={() => setModalVisible(false)}>
                   <Ionicons name="close" size={24} color={iconColor} />
                 </Pressable>
               </View>
@@ -153,38 +306,65 @@ export default function NotificationCard() {
 
             <Separator />
 
-            {notificationsData.length > 0 ? (
+            {loading ? (
+              <View style={styles.emptyNotifications}>
+                <ThemedText type="subtitle">Loading…</ThemedText>
+              </View>
+            ) : errorText ? (
+              <View style={styles.emptyNotifications}>
+                <Ionicons
+                  name="alert-circle-outline"
+                  size={48}
+                  color="#ccc"
+                  style={{ marginBottom: 12 }}
+                />
+                <ThemedText type="subtitle" style={{ textAlign: 'center' }}>
+                  {errorText}
+                </ThemedText>
+              </View>
+            ) : localItems.length > 0 ? (
               <FlatList
-                data={notificationsData}
+                data={localItems}
                 keyExtractor={(item) => item.id}
-                initialNumToRender={5}
-                windowSize={10}
                 renderItem={({ item }) => (
-                  <View
-                    style={[
-                      styles.notificationItem,
-                      { borderBottomColor: borderColor },
-                    ]}
-                  >
-                    <View style={styles.notificationRow}>
-                      {item.isNew && <View style={styles.newDot} />}
-                      <ThemedText
-                        numberOfLines={2}
-                        style={[
-                          { color: textColor },
-                          item.isNew && {
-                            fontWeight: '700',
-                            color: GlobalColors.bomber,
-                          },
-                        ]}
-                      >
-                        {item.message}
+                  <Pressable onPress={() => onTapItem(item.id, item.deepLink)}>
+                    <View
+                      style={[
+                        styles.notificationItem,
+                        { borderBottomColor: borderColor },
+                      ]}
+                    >
+                      <View style={styles.notificationRow}>
+                        <View style={{ flex: 1, gap: 6 }}>
+                          <ThemedText
+                            style={{ color: textColor, fontWeight: '600' }}
+                          >
+                            {item.title}
+                          </ThemedText>
+                          <ThemedText
+                            style={{ color: textColor, opacity: 0.9 }}
+                          >
+                            {item.body}
+                          </ThemedText>
+                          {!!item.imageUrl && (
+                            <Image
+                              source={{ uri: item.imageUrl }}
+                              style={{
+                                width: '100%',
+                                height: 120,
+                                borderRadius: 10,
+                                marginTop: 6,
+                              }}
+                              resizeMode="cover"
+                            />
+                          )}
+                        </View>
+                      </View>
+                      <ThemedText style={styles.timeAgo}>
+                        {timeAgo(item.sentAt)}
                       </ThemedText>
                     </View>
-                    <ThemedText style={styles.timeAgo}>
-                      {item.timeAgo}
-                    </ThemedText>
-                  </View>
+                  </Pressable>
                 )}
               />
             ) : (
@@ -197,12 +377,6 @@ export default function NotificationCard() {
                 />
                 <ThemedText type="subtitle" style={{ textAlign: 'center' }}>
                   You're all caught up!
-                </ThemedText>
-                <ThemedText
-                  type="default"
-                  style={{ color: '#888', textAlign: 'center' }}
-                >
-                  No new notifications right now.
                 </ThemedText>
               </View>
             )}
@@ -228,46 +402,27 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.15)',
     overflow: 'hidden',
     ...(Platform.OS === 'android'
-      ? {
-          backgroundColor: 'rgba(12, 28, 48, 0.9)',
-        }
+      ? { backgroundColor: 'rgba(12, 28, 48, 0.9)' }
       : null),
     ...(Platform.OS === 'web' ? { backdropFilter: 'blur(10px)' } : {}),
   },
-  cardHeaderCompact: {
-    gap: 6,
-  },
+  cardHeaderCompact: { gap: 6 },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
   },
-  title: {
-    flex: 1,
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginRight: 8,
-  },
-  titleCompact: {
-    fontSize: 14,
-  },
+  title: { flex: 1, fontWeight: 'bold', fontSize: 16, marginRight: 8 },
+  titleCompact: { fontSize: 14 },
   iconBtn: {
     padding: 6,
     borderRadius: 12,
     overflow: Platform.select({ android: 'hidden', default: 'visible' }),
   },
-  notificationPreview: {
-    marginTop: 8,
-  },
-  notificationText: {
-    fontSize: 14,
-    marginBottom: 6,
-  },
-  timeAgo: {
-    fontSize: 12,
-    color: GlobalColors.bomber,
-  },
+  notificationPreview: { marginTop: 8 },
+  notificationText: { fontSize: 14, marginBottom: 6 },
+  timeAgo: { fontSize: 12, color: GlobalColors.bomber },
   modalContainer: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -279,22 +434,27 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
-    backgroundColor: 'rgba(255,255,255,0.6)',
     borderColor: 'rgba(255, 255, 255, 0.2)',
     borderWidth: 1,
     ...Platform.select({
-      web: {
-        backdropFilter: 'blur(16px)',
-      },
-      default: {
-        backgroundColor: 'rgba(30, 30, 30, 0.9)',
-      },
+      web: { backdropFilter: 'blur(16px)' },
+      default: { backgroundColor: 'rgba(30, 30, 30, 0.9)' },
     }),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 12,
+  },
+  badge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: GlobalColors.bomber,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+    paddingHorizontal: 6,
   },
   dragHandle: {
     alignSelf: 'center',
@@ -313,7 +473,6 @@ const styles = StyleSheet.create({
   },
   notificationItem: {
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.15)',
     paddingVertical: 14,
     paddingHorizontal: 4,
   },
@@ -324,15 +483,17 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     opacity: 0.8,
   },
-  notificationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
+  notificationRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   newDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: GlobalColors.bomber,
+  },
+  clearBtn: {
+    padding: 8,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
