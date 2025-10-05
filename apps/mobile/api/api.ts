@@ -29,7 +29,7 @@ export async function saveTokenPair(access?: string, refresh?: string) {
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
+  headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }, //TODO: figure out why caching existed, needs this header to get data locally for events
 });
 
 // ---- single-flight refresh queue ----
