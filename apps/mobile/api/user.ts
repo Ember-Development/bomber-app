@@ -1,4 +1,4 @@
-import { UserFE } from '@bomber-app/database';
+import { EventFE, UserFE } from '@bomber-app/database';
 import { api } from './api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -7,7 +7,7 @@ export const fetchUsers = async () => {
   return data;
 };
 
-export const fetchUserEvents = async (userId: string) => {
+export const fetchUserEvents = async (userId: string): Promise<EventFE[]> => {
   const { data } = await api.get(`/api/users/${userId}/events`);
   return data;
 };

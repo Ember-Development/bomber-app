@@ -1,12 +1,13 @@
-import { UserEvent } from '@/types';
+import { EventFE, TournamentFE } from '@bomber-app/database';
 
-export function formatEvents(rawEvents: UserEvent[]) {
+//FIXME: this should be updated in the event FE type so it's consistent
+export function formatEvents(rawEvents: EventFE[]) {
   return (
     rawEvents?.flatMap((e) => {
-      if (!e.event?.start || !e.event?.end) return [];
+      if (!e.start || !e.end) return [];
 
-      const start = new Date(e.event.start);
-      const end = new Date(e.event.end);
+      const start = new Date(e.start);
+      const end = new Date(e.end);
       const time = `${start.toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit',
@@ -17,14 +18,11 @@ export function formatEvents(rawEvents: UserEvent[]) {
 
       return [
         {
-          date:
-            typeof e.event.start === 'string'
-              ? e.event.start
-              : e.event.start.toISOString(),
-          title: e.event.tournament
-            ? `Tournament – ${e.event.tournament.title}`
-            : e.event.eventType,
-          location: e.event.tournament?.title ?? 'Unknown Location',
+          date: typeof e.start === 'string' ? e.start : e.start.toISOString(),
+          title: e.tournament
+            ? `Tournament – ${e.tournament.title}`
+            : e.eventType,
+          location: e.tournament?.title ?? 'Unknown Location',
           time,
         },
       ];

@@ -10,7 +10,7 @@ import {
   fetchUsers,
   updateUser,
 } from '@/api/user';
-import { ChatFE, PublicUserFE, UserFE } from '@bomber-app/database';
+import { ChatFE, EventFE, PublicUserFE, UserFE } from '@bomber-app/database';
 import { UserEvent } from '@/types';
 
 const PAGE_SIZE = 10;
@@ -23,7 +23,7 @@ export const useUsers = () => {
 };
 
 export const useUserEvents = (userId?: string) => {
-  return useQuery<UserEvent[]>({
+  return useQuery<EventFE[]>({
     queryKey: ['user-events', userId],
     queryFn: () => fetchUserEvents(userId!),
     enabled: !!userId,

@@ -12,9 +12,9 @@ export type EventDynamic<R extends (keyof Relations)[]> =
 
 export type EventFE = Omit<
   Prisma.EventGetPayload<{
-    include: { attendees: true };
+    include: { attendees: true; tournament: true };
   }>,
-  'id'
+  'id' | 'tournamentID'
 >;
 
 // this is weird but fixes whatever fucked up since last time

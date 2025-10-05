@@ -150,6 +150,7 @@ export const userService = {
       .filter((u) => u !== null);
   },
 
+  // TODO: should be of type eventFE
   getUserEvents: async (userId: string) => {
     return await prisma.event.findMany({
       where: {
