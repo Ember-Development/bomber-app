@@ -1,8 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import express from 'express';
 import http from 'http';
-import { PrismaClient } from '@bomber-app/database';
-import initializeSocket from './websockets/websocket';
 import groupRoutes from './routes/groupRoutes';
 import messageRoutes from './routes/messageRoutes';
 import userRoutes from './routes/userRoutes';
@@ -25,6 +23,8 @@ import { notificationsRouter } from './routes/notificationsRoutes';
 import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
+import { PrismaClient } from '@bomber-app/database/generated/client';
+import initializeSocket from './websockets/websocket';
 
 type Err = any;
 const app = express();
@@ -85,6 +85,13 @@ app.use('/api/parents', parentRoutes);
 app.use('/api/regCoaches', regCoachRoutes);
 app.use('/api/devices', devicesRouter);
 app.use('/api/notifications', notificationsRouter);
+
+app.use((err: Err, _req: Request, res: Response, _next: NextFunction) => {
+  console.error(err);
+  res
+    .status(err.status || 500)
+    .json({ error: err.message || 'Internal Server Error' });
+});
 
 app.use((err: Err, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);

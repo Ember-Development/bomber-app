@@ -1,17 +1,22 @@
-import { prisma } from '@bomber-app/database';
+import {
+  EventBE,
+  EventFE,
+  NewEvent,
+  NewEventAttendance,
+  prisma,
+} from '@bomber-app/database';
+import { EventType, Prisma } from '@bomber-app/database/generated/client';
 
-//FIXME: replace the any once we have full types
-const validateEvent = (event: any) => {
+const validateEvent = (event: EventFE) => {
   const errors = [];
 
-  //TODO: use enums when we have full types
-  if (event.eventType == 'Global') {
+  if (event.eventType == EventType.GLOBAL) {
     if (event.attendees.length > 0) {
       errors.push(
         'Global events implicitly invite all users, do not track them as this will cause a huge storage issue'
       );
     }
-  } else if (event.eventType == 'Tournament') {
+  } else if (event.eventType == EventType.TOURNAMENT) {
     if (!event.tournamentID) {
       errors.push('Tournament event types should have a tournament relation');
     }
@@ -43,36 +48,58 @@ export const eventService = {
     });
   },
 
-  createEvent: async (data: any) => {
-    const errors = validateEvent(data);
-    if (errors) throw new Error(errors.join('; '));
+  createEvent: async (
+    event: NewEvent,
+    attendees: NewEventAttendance[],
+    tournamentID: string | null
+  ) => {
+    // primary model creation
 
-    return prisma.event.create({
+    const newEvent = await prisma.event.create({
       data: {
-        eventType: data.eventType,
-        start: new Date(data.start),
-        end: new Date(data.end),
-        tournamentID: data.tournamentID || undefined,
+        eventType: event.eventType,
+        start: new Date(event.start),
+        end: new Date(event.end),
+        title: event.title,
+        body: event.body,
+        location: event.location,
+        tournamentID,
       },
       include: {
         tournament: true,
         attendees: { include: { user: true } },
       },
     });
+
+    // related fields
+    const attendance = prisma.eventAttendance.createMany({
+      data: attendees.map((attendee) => {
+        return {
+          eventID: newEvent.id,
+          userID: attendee.userID,
+          status: attendee.status,
+        };
+      }),
+    });
+
+    return { event: newEvent, attendance: attendance };
   },
 
-  updateEvent: async (id: string, data: any) => {
-    const errors = validateEvent(data);
-    if (errors) throw new Error(errors.join('; '));
+  // note this is only for direct fields for new events, not relationships i.e. tournaments / attendants
+  updateEvent: async (id: string, data: Partial<NewEvent>) => {
+    // sort of thing zod is for but this effectively strips out anything undefined
+    // intentionally will accept nulls in case we want to start omitting fields, although a bit dangerous!
+    const safeUpdate: Prisma.EventUpdateInput = Object.fromEntries(
+      Object.entries({
+        eventType: data.eventType,
+        start: data.start ? new Date(data.start) : undefined,
+        end: data.end ? new Date(data.end) : undefined,
+      }).filter(([, v]) => v !== undefined)
+    );
 
     return prisma.event.update({
       where: { id },
-      data: {
-        eventType: data.eventType,
-        start: new Date(data.start),
-        end: new Date(data.end),
-        tournamentID: data.tournamentID || undefined,
-      },
+      data: safeUpdate,
       include: {
         tournament: true,
         attendees: { include: { user: true } },

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useEffect, useMemo, useState } from 'react';
+=======
+import React, { useMemo, useState } from 'react';
+>>>>>>> events-tab
 import {
   SafeAreaView,
   ScrollView,
@@ -39,7 +43,10 @@ export default function SettingsScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user, isLoading, error, setUser } = useUserContext();
+<<<<<<< HEAD
   const KEY_NOTIFS_DISABLED = 'notifications:disabled';
+=======
+>>>>>>> events-tab
 
   const currentUser = useMemo(() => {
     const u = (user as UserFE | undefined) ?? ({} as any);
@@ -92,6 +99,7 @@ export default function SettingsScreen() {
 
   const handleSave = () => {};
 
+<<<<<<< HEAD
   // local notifications
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
@@ -105,6 +113,8 @@ export default function SettingsScreen() {
     })();
   }, []);
 
+=======
+>>>>>>> events-tab
   return (
     <BackgroundWrapper>
       <SafeAreaView style={styles.safe}>
@@ -162,6 +172,7 @@ export default function SettingsScreen() {
               </Group>
             </Section>
 
+<<<<<<< HEAD
             <Section title="Notifications">
               <Group title="Push">
                 {/* <ToggleRow
@@ -183,6 +194,8 @@ export default function SettingsScreen() {
               </Group>
             </Section>
 
+=======
+>>>>>>> events-tab
             <Section title="Privacy & Safety">
               {currentUser.role === 'PARENT' &&
                 (currentUser.linkedChildrenCount ?? 0) > 0 && (
@@ -286,10 +299,17 @@ export default function SettingsScreen() {
                   onPress={() => router.push('/side/contact')}
                 />
                 <PressLink
+<<<<<<< HEAD
                   text="Report a Tech Problem"
                   onPress={() => Linking.openURL('mailto:emberdevco@gmail.com')}
                 />
                 <Row label="App Version" value="1.0.2 (100)" />
+=======
+                  text="Report a Problem"
+                  onPress={() => Linking.openURL('mailto:emberdevco@gmail.com')}
+                />
+                <Row label="App Version" value="1.0.0 (100)" />
+>>>>>>> events-tab
               </Group>
             </Section>
 

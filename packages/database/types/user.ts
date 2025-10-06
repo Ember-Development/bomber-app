@@ -66,7 +66,10 @@ export type PublicUserFE = Omit<
     }[];
   };
   parent?: {
+<<<<<<< HEAD
     id: string;
+=======
+>>>>>>> events-tab
     children: Array<{
       team?: {
         id: string;

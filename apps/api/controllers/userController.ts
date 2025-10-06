@@ -2,8 +2,11 @@ import { NextFunction, Request, Response } from 'express';
 import { CreateUserInput, userService } from '../services/user';
 import { hashPassword, verifyPassword } from '../utils/crypto';
 import { AuthenticatedRequest } from '../utils/express';
+<<<<<<< HEAD
 import { Regions, UserRole } from '@bomber-app/database';
 import { regCoachService } from '../services/regCoach';
+=======
+>>>>>>> events-tab
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -165,6 +168,7 @@ export const changePassword = async (req: any, res: Response) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+<<<<<<< HEAD
 
 export const ensureRoleAndSettable = async (
   req: AuthenticatedRequest,
@@ -235,3 +239,5 @@ export const demoteFromRegCoach = async (
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
+=======
+>>>>>>> events-tab

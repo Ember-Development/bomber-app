@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { State, AttendanceStatus, EventType, UserRole, Regions, MediaCategory, LeadKind, PantsSize, AgeGroup, Position, JerseySize, StirrupSize, ShortsSize } from 'C:\Users\gunna\Desktop\Bomber\bomber-app\packages\database\generated\client';
+=======
+import { State, AttendanceStatus, EventType, UserRole, Regions, MediaCategory, LeadKind, PantsSize, AgeGroup, Position, JerseySize, StirrupSize, ShortsSize } from '/Users/braedon/ember/bomber-app/packages/database/generated/client';
+>>>>>>> events-tab
 import { faker } from '@faker-js/faker';
 import Decimal from 'decimal.js';
 
@@ -103,14 +107,22 @@ export function fakeCoachComplete() {
 }
 export function fakeRegCoach() {
   return {
+<<<<<<< HEAD
     region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS, Regions.SOUTHWEST] as const),
+=======
+    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS] as const),
+>>>>>>> events-tab
   };
 }
 export function fakeRegCoachComplete() {
   return {
     id: faker.string.uuid(),
     userID: faker.string.uuid(),
+<<<<<<< HEAD
     region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS, Regions.SOUTHWEST] as const),
+=======
+    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS] as const),
+>>>>>>> events-tab
   };
 }
 export function fakeTeam() {
@@ -118,7 +130,11 @@ export function fakeTeam() {
     name: faker.person.fullName(),
     teamCode: undefined,
     ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
+<<<<<<< HEAD
     region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS, Regions.SOUTHWEST] as const),
+=======
+    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS] as const),
+>>>>>>> events-tab
   };
 }
 export function fakeTeamComplete() {
@@ -127,7 +143,11 @@ export function fakeTeamComplete() {
     name: faker.person.fullName(),
     teamCode: undefined,
     ageGroup: faker.helpers.arrayElement([AgeGroup.U8, AgeGroup.U10, AgeGroup.U12, AgeGroup.U14, AgeGroup.U16, AgeGroup.U18, AgeGroup.ALUMNI] as const),
+<<<<<<< HEAD
     region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS, Regions.SOUTHWEST] as const),
+=======
+    region: faker.helpers.arrayElement([Regions.ACADEMY, Regions.PACIFIC, Regions.MOUNTAIN, Regions.MIDWEST, Regions.NORTHEAST, Regions.SOUTHEAST, Regions.TEXAS] as const),
+>>>>>>> events-tab
     state: State.TX,
     headCoachID: undefined,
   };
@@ -295,6 +315,9 @@ export function fakeEvent() {
     eventType: faker.helpers.arrayElement([EventType.TOURNAMENT, EventType.PRACTICE, EventType.GLOBAL] as const),
     start: faker.date.anytime(),
     end: faker.date.anytime(),
+    title: faker.lorem.words(5),
+    body: undefined,
+    location: undefined,
   };
 }
 export function fakeEventComplete() {
@@ -304,6 +327,9 @@ export function fakeEventComplete() {
     eventType: faker.helpers.arrayElement([EventType.TOURNAMENT, EventType.PRACTICE, EventType.GLOBAL] as const),
     start: faker.date.anytime(),
     end: faker.date.anytime(),
+    title: faker.lorem.words(5),
+    body: undefined,
+    location: undefined,
   };
 }
 export function fakeEventAttendanceComplete() {
@@ -316,16 +342,22 @@ export function fakeEventAttendanceComplete() {
 }
 export function fakeTournament() {
   return {
+    start: faker.date.anytime(),
+    end: faker.date.anytime(),
     title: faker.lorem.words(5),
     body: faker.lorem.words(5),
+    location: faker.lorem.words(5),
     imageURL: faker.lorem.words(5),
   };
 }
 export function fakeTournamentComplete() {
   return {
     id: faker.string.uuid(),
+    start: faker.date.anytime(),
+    end: faker.date.anytime(),
     title: faker.lorem.words(5),
     body: faker.lorem.words(5),
+    location: faker.lorem.words(5),
     imageURL: faker.lorem.words(5),
   };
 }

@@ -2,8 +2,11 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { useColorScheme as useRNColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const ThemeContext = createContext({
-  theme: 'light',
+const ThemeContext = createContext<{
+  theme: 'light' | 'dark';
+  toggleTheme: () => Promise<void>;
+}>({
+  theme: 'dark',
   toggleTheme: async () => {},
 });
 

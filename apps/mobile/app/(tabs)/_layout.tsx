@@ -51,6 +51,7 @@ export default function TabLayout() {
           ),
         }}
       />
+<<<<<<< HEAD
 
       {/* Shop: everyone */}
       {/* <Tabs.Screen
@@ -65,6 +66,31 @@ export default function TabLayout() {
             />
           ),
         }}
+=======
+      <Tabs.Screen
+        name="events"
+        options={{
+          title: 'Events',
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedIcon name="calendar" color={color} focused={focused} />
+          ),
+        }}
+      />
+
+      {/* Shop: everyone */}
+      {/* <Tabs.Screen
+        name="shop"
+        options={{
+          title: 'Shop',
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedIcon
+              name="pricetag-outline"
+              color={color}
+              focused={focused}
+            />
+          ),
+        }}
+>>>>>>> events-tab
       /> */}
 
       {/* groups: only non-Fans */}
@@ -113,6 +139,8 @@ export default function TabLayout() {
               focused={focused}
             />
           ),
+          // hide from the tab bar & routing when not Fan
+          href: !isFan ? null : undefined,
         }}
       />
 

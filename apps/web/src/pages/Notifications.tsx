@@ -1,5 +1,9 @@
 // src/pages/Notifications.tsx
+<<<<<<< HEAD
 import React, { useEffect, useMemo, useState } from 'react';
+=======
+import React, { useState, useEffect } from 'react';
+>>>>>>> events-tab
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeftIcon,
@@ -447,8 +451,13 @@ export default function Notifications() {
 
   return (
     <div className="flex flex-col text-white">
+<<<<<<< HEAD
       {/* Header */}
       <div className="sticky top-0 z-10 -mx-4 px-4 sm:mx-0 sm:px-0 py-2 sm:py-3 border-b border-white/10">
+=======
+      {/* Header (compact on mobile) */}
+      <div className="sticky top-0 z-10 -mx-4 px-4 sm:mx-0 sm:px-0 py-2 sm:py-3  border-b border-white/10">
+>>>>>>> events-tab
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 sm:gap-3">
           <div className="flex items-center gap-2 sm:gap-3">
             <button
@@ -457,7 +466,11 @@ export default function Notifications() {
             >
               <ArrowLeftIcon className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
+<<<<<<< HEAD
             <div className="text-3xl font-extrabold tracking-tight">
+=======
+            <div className="text-3xl lg:text-3xl font-extrabold tracking-tight">
+>>>>>>> events-tab
               Notifications
             </div>
           </div>
@@ -479,13 +492,18 @@ export default function Notifications() {
         </div>
       </div>
 
+<<<<<<< HEAD
       {/* Content */}
+=======
+      {/* Content Panel */}
+>>>>>>> events-tab
       <div className="p-4 sm:p-6">
         <div className="bg-[rgba(255,255,255,0.07)] backdrop-blur-2xl rounded-2xl p-4 sm:p-6 shadow-inner border border-white/10">
           <ScrollArea className="space-y-8">
             {tab === 'Notifications' ? (
               <>
                 {/* Create Notification */}
+<<<<<<< HEAD
                 <div className="space-y-4 mb-8">
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                     {/* Left: Message */}
@@ -1001,6 +1019,206 @@ export default function Notifications() {
                         </button>
                       </div>
                     </div>
+=======
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3 sm:gap-4 mb-8">
+                  <input
+                    type="text"
+                    placeholder="Title"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-white/10 placeholder-white/70 rounded-lg focus:outline-none text-sm sm:text-base"
+                  />
+                  <textarea
+                    placeholder="Body"
+                    value={newBody}
+                    onChange={(e) => setNewBody(e.target.value)}
+                    className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-white/10 placeholder-white/70 rounded-lg focus:outline-none h-24 sm:h-auto resize-none text-sm sm:text-base"
+                  />
+                  <button
+                    onClick={addNotification}
+                    className="px-3 py-2 sm:px-4 sm:py-2 bg-[#5AA5FF] rounded-lg hover:bg-[#3C8CE7] transition font-semibold text-sm sm:text-base whitespace-nowrap"
+                  >
+                    Create
+                  </button>
+                </div>
+
+                {/* List Notifications */}
+                <div className="space-y-3 sm:space-y-4">
+                  {notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      className="rounded-xl border border-white/10 bg-white/5 p-3 sm:p-4 hover:bg-white/10 transition"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="text-base sm:text-lg font-semibold truncate">
+                            {n.title}
+                          </h3>
+                          <span className="block text-xs sm:text-sm text-white/70">
+                            {n.createdAt.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="mt-2 text-sm sm:text-base text-white/85">
+                        {n.body}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Create Banner */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-white/70 mb-1">
+                        Banner Image
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:bg-[#5AA5FF] file:text-white file:text-sm file:border-0 file:cursor-pointer text-sm"
+                      />
+                    </div>
+
+                    {newImageUrl && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setPreviewUrl(newImageUrl)}
+                          className="px-3 py-1.5 sm:px-4 sm:py-2 bg-black/60 hover:bg-black/80 rounded-lg text-sm"
+                        >
+                          Preview
+                        </button>
+                      </div>
+                    )}
+
+                    <div>
+                      <div className="mb-1 text-xs sm:text-sm font-medium text-white/70">
+                        Duration
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                        {[1, 6, 12, 24].map((hrs) => (
+                          <button
+                            key={hrs}
+                            onClick={() => handleDurationChange(hrs)}
+                            className={`px-2.5 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm rounded-full font-semibold transition
+                              ${newDuration === hrs ? 'bg-[#5AA5FF] text-white shadow' : 'bg-white/10 text-white/75 hover:bg-[#5AA5FF]/30'}
+                            `}
+                          >
+                            {hrs} hr
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-white/70 mb-1">
+                        Expires At
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={newExpiresAt}
+                        onChange={(e) => setNewExpiresAt(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg bg-white/10 text-white focus:outline-none text-sm sm:text-base"
+                      />
+                    </div>
+
+                    <button
+                      onClick={addBanner}
+                      className="w-full md:w-auto px-3 py-2 sm:px-4 sm:py-2 bg-[#5AA5FF] rounded-lg hover:bg-[#3C8CE7] transition font-semibold text-sm sm:text-base"
+                    >
+                      Create Banner
+                    </button>
+                  </div>
+
+                  {/* Live preview card */}
+                  <div className="hidden md:block">
+                    <div className="rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-4">
+                      <div className="aspect-video w-full overflow-hidden rounded-xl bg-black/40">
+                        {newImageUrl ? (
+                          <img
+                            src={newImageUrl}
+                            alt="Preview"
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-white/40 text-sm">
+                            Banner preview
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* List Banners */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                  {banners.length === 0 ? (
+                    <div className="col-span-full text-center text-white/70 py-10">
+                      No banners
+                    </div>
+                  ) : (
+                    banners.map((b) => (
+                      <div
+                        key={b.id}
+                        className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition"
+                      >
+                        <img
+                          src={b.imageUrl}
+                          alt=""
+                          className="w-full aspect-video object-cover"
+                        />
+                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                          <button
+                            onClick={() => openEdit(b)}
+                            className="rounded bg-black/60 p-1.5 hover:bg-black/80"
+                          >
+                            <PencilSquareIcon className="w-4 h-4 text-white" />
+                          </button>
+                          <button
+                            onClick={() => openDelete(b)}
+                            className="rounded bg-black/60 p-1.5 hover:bg-black/80"
+                          >
+                            <TrashIcon className="w-4 h-4 text-white" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+
+                  {previewUrl && (
+                    <div
+                      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+                      onClick={() => setPreviewUrl(null)}
+                    >
+                      <div
+                        className="relative bg-white rounded-2xl overflow-hidden max-w-md w-full"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <img
+                          src={previewUrl}
+                          alt="Banner Preview"
+                          className="w-full h-auto object-cover"
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
+                          <button
+                            onClick={() => {}}
+                            className="w-full text-center bg-white text-black py-2 rounded-full"
+                          >
+                            Read More
+                          </button>
+                        </div>
+                        <button
+                          onClick={() => setPreviewUrl(null)}
+                          className="absolute top-2 right-2 text-white bg-black/60 hover:bg-black/80 p-1 rounded-full"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+>>>>>>> events-tab
                   )}
                 </div>
               </>
@@ -1050,13 +1268,17 @@ export default function Notifications() {
             <div className="flex flex-col sm:flex-row sm:space-x-4 mt-6">
               <button
                 onClick={handleUpdate}
-                className="flex-1 px-4 py-2 bg-[#5AA5FF] rounded-lg text-white"
+                className="flex-1 px-3 py-2 sm:px-4 sm:py-2 bg-[#5AA5FF] rounded-lg text-white"
               >
                 Save
               </button>
               <button
                 onClick={closeDialog}
+<<<<<<< HEAD
                 className="flex-1 mt-2 sm:mt-0 px-4 py-2 bg-white/10 rounded-lg text-white"
+=======
+                className="flex-1 mt-2 sm:mt-0 px-3 py-2 sm:px-4 sm:py-2 bg-white/10 rounded-lg text-white"
+>>>>>>> events-tab
               >
                 Cancel
               </button>
@@ -1071,13 +1293,17 @@ export default function Notifications() {
             <div className="flex flex-col sm:flex-row sm:space-x-4 mt-6">
               <button
                 onClick={closeDialog}
+<<<<<<< HEAD
                 className="flex-1 px-4 py-2 bg-white/10 rounded-lg text-white"
+=======
+                className="flex-1 px-3 py-2 sm:px-4 sm:py-2 bg-[#5AA5FF] rounded-lg text-white"
+>>>>>>> events-tab
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
-                className="flex-1 mt-2 sm:mt-0 px-4 py-2 bg-red-600 rounded-lg text-white"
+                className="flex-1 mt-2 sm:mt-0 px-3 py-2 sm:px-4 sm:py-2 bg-red-600 rounded-lg text-white"
               >
                 Delete
               </button>

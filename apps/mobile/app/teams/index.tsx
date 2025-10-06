@@ -65,6 +65,7 @@ export default function TeamsScreen() {
   const [search, setSearch] = useState('');
   const [activeState, setActiveState] = useState('ALL');
   const [activeRegion, setActiveRegion] = useState('ALL');
+<<<<<<< HEAD
   const [activeAge, setActiveAge] = useState<'ALL' | AgeKey>('ALL');
   const styles = createTeamsScreenStyles();
   const router = useRouter();
@@ -132,6 +133,35 @@ export default function TeamsScreen() {
     if (activeAge !== 'ALL') parts.push(`Age: ${activeAge}`);
     return parts.length ? parts.join('  •  ') : 'All teams';
   };
+=======
+  const styles = createTeamsScreenStyles();
+  const router = useRouter();
+
+  const stateOptions = ['ALL', ...US_STATES.map((s) => s.label)];
+  const regionOptions: string[] = [
+    'ALL',
+    ...Array.from(new Set(teams.map((t) => t.region).filter(Boolean))),
+  ];
+
+  const getFilterValue = (label: string) =>
+    label === 'ALL'
+      ? 'ALL'
+      : (US_STATES.find((s) => s.label === label)?.value ?? label);
+
+  const filteredTeams = teams.filter((team) => {
+    const matchesSearch =
+      team.name.toLowerCase().includes(search.toLowerCase()) ||
+      team.coaches?.some((c) =>
+        `${c.user?.fname ?? ''} ${c.user?.lname ?? ''}`
+          .toLowerCase()
+          .includes(search.toLowerCase())
+      );
+    const matchesState = activeState === 'ALL' || team.state === activeState;
+    const matchesRegion =
+      activeRegion === 'ALL' || team.region === activeRegion;
+    return matchesSearch && matchesState && matchesRegion;
+  });
+>>>>>>> events-tab
 
   return (
     <BackgroundWrapper>
@@ -161,13 +191,17 @@ export default function TeamsScreen() {
             onSelect={(label) => setActiveState(getFilterValue(label))}
             options={stateOptions}
           />
+<<<<<<< HEAD
 
           {/* Row 2: Region */}
+=======
+>>>>>>> events-tab
           <FilterChips
             selected={activeRegion}
             onSelect={(label) => setActiveRegion(label)}
             options={regionOptions}
           />
+<<<<<<< HEAD
 
           {/* Row 3: Age Division */}
           <FilterChips
@@ -175,6 +209,8 @@ export default function TeamsScreen() {
             onSelect={(label) => setActiveAge(label as 'ALL' | AgeKey)}
             options={ageOptions}
           />
+=======
+>>>>>>> events-tab
         </View>
 
         <Text style={styles.sectionTitle}>Teams</Text>

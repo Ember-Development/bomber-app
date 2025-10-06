@@ -212,10 +212,7 @@ export default function NotificationCard() {
         accessibilityLabel="View Notifications"
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        onPress={async () => {
-          setModalVisible(true);
-          if (!localItems.length) await fetchFeed(true);
-        }}
+        onPress={() => setModalVisible(true)}
         android_ripple={{ color: 'rgba(255,255,255,0.08)', borderless: false }}
         style={{ borderRadius: 18, overflow: 'hidden' }}
       >
@@ -237,18 +234,6 @@ export default function NotificationCard() {
             >
               Notifications
             </ThemedText>
-
-            {/* Show count badge of unread (client-filtered) */}
-            {localItems.length > 0 && (
-              <View style={styles.badge}>
-                <ThemedText
-                  type="subtitle"
-                  style={{ color: '#fff', fontSize: 12 }}
-                >
-                  {localItems.length}
-                </ThemedText>
-              </View>
-            )}
 
             <Pressable
               onPress={() => setModalVisible(true)}
@@ -402,27 +387,46 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.15)',
     overflow: 'hidden',
     ...(Platform.OS === 'android'
-      ? { backgroundColor: 'rgba(12, 28, 48, 0.9)' }
+      ? {
+          backgroundColor: 'rgba(12, 28, 48, 0.9)',
+        }
       : null),
     ...(Platform.OS === 'web' ? { backdropFilter: 'blur(10px)' } : {}),
   },
-  cardHeaderCompact: { gap: 6 },
+  cardHeaderCompact: {
+    gap: 6,
+  },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
   },
-  title: { flex: 1, fontWeight: 'bold', fontSize: 16, marginRight: 8 },
-  titleCompact: { fontSize: 14 },
+  title: {
+    flex: 1,
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginRight: 8,
+  },
+  titleCompact: {
+    fontSize: 14,
+  },
   iconBtn: {
     padding: 6,
     borderRadius: 12,
     overflow: Platform.select({ android: 'hidden', default: 'visible' }),
   },
-  notificationPreview: { marginTop: 8 },
-  notificationText: { fontSize: 14, marginBottom: 6 },
-  timeAgo: { fontSize: 12, color: GlobalColors.bomber },
+  notificationPreview: {
+    marginTop: 8,
+  },
+  notificationText: {
+    fontSize: 14,
+    marginBottom: 6,
+  },
+  timeAgo: {
+    fontSize: 12,
+    color: GlobalColors.bomber,
+  },
   modalContainer: {
     flex: 1,
     justifyContent: 'flex-end',
