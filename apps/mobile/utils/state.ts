@@ -59,6 +59,7 @@ export const getStateName = (nameOrAbbrev: string): string => {
       s.label.slice(0, 2).toUpperCase() === nameOrAbbrev.toUpperCase()
   );
   return match ? match.label : nameOrAbbrev;
+<<<<<<< HEAD
 };
 
 export const STATE_ABBR: Record<string, string> = {
@@ -120,4 +121,6 @@ export const toAbbr = (s?: string) => {
   const trimmed = s.trim();
   if (trimmed.length === 2) return trimmed.toUpperCase();
   return STATE_ABBR[trimmed] ?? trimmed.toUpperCase(); // fallback if unknown
+=======
+>>>>>>> events-tab
 };

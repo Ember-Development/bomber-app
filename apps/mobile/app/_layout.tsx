@@ -1,16 +1,29 @@
+<<<<<<< HEAD
 // app/_layout.tsx
+=======
+>>>>>>> events-tab
 import React, { useEffect } from 'react';
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider as NavigationThemeProvider,
 } from '@react-navigation/native';
+<<<<<<< HEAD
 import { Slot, usePathname, useRouter } from 'expo-router';
+=======
+import {
+  Slot,
+  usePathname,
+  useRootNavigationState,
+  useRouter,
+} from 'expo-router';
+>>>>>>> events-tab
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import 'react-native-reanimated';
 import { ThemeProvider, useColorScheme } from '@/hooks/useColorScheme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+<<<<<<< HEAD
 import {
   QueryClient,
   QueryClientProvider,
@@ -45,11 +58,21 @@ function PushQueryBridge() {
   return null;
 }
 
+=======
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { UserProvider, useUserContext } from '@/context/useUserContext';
+import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
+import { View, ActivityIndicator } from 'react-native';
+
+SplashScreen.preventAutoHideAsync();
+
+>>>>>>> events-tab
 function RootNavigator() {
   const { user, isLoading } = useUserContext();
   const router = useRouter();
   const pathname = usePathname();
 
+<<<<<<< HEAD
   // Register push token + tap listener once the user is signed in
   usePush({ userId: user?.id });
 
@@ -60,6 +83,11 @@ function RootNavigator() {
       require('../utils/backhandler-logger');
     }
 
+=======
+  useEffect(() => {
+    if (isLoading) return;
+
+>>>>>>> events-tab
     const inSignup = pathname.startsWith('/signup');
     const inOnboarding =
       pathname.startsWith('/onboarding') || pathname.startsWith('/welcome');
@@ -75,9 +103,21 @@ function RootNavigator() {
       if (!atAuth) safeReplace('/login');
       return;
     }
+<<<<<<< HEAD
     if (inSignup || inOnboarding) return;
     if (atRoot || atAuth) safeReplace('/(tabs)');
   }, [isLoading, user, pathname]);
+=======
+
+    if (inSignup || inOnboarding) {
+      return;
+    }
+
+    if (atRoot || atAuth) {
+      safeReplace('/(tabs)');
+    }
+  }, [isLoading, user]);
+>>>>>>> events-tab
 
   if (isLoading) {
     return (
@@ -125,7 +165,10 @@ export default function RootLayout() {
           <UserProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <View style={{ flex: 1 }}>
+<<<<<<< HEAD
                 <PushQueryBridge />
+=======
+>>>>>>> events-tab
                 <RootNavigator />
               </View>
             </GestureHandlerRootView>

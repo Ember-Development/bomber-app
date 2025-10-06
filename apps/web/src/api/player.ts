@@ -124,6 +124,7 @@ export const removePlayerFromTeam = async (id: string): Promise<boolean> => {
     return false;
   }
 };
+<<<<<<< HEAD
 
 // parent relationship
 export type AttachParentPayload =
@@ -146,3 +147,5 @@ export async function detachParentFromPlayer(
   const { data } = await api.delete(`/players/${playerId}/parents/${parentId}`);
   return data;
 }
+=======
+>>>>>>> events-tab

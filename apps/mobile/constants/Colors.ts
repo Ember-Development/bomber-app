@@ -3,6 +3,8 @@
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
 
+import { EventType } from '@bomber-app/database';
+
 const tintColorLight = '#000000';
 const tintColorDark = '#fff';
 
@@ -15,6 +17,14 @@ export const GlobalColors = {
   dark: '#282A29',
   gray: '#a1a1a1',
   bomber: '#57a4ff',
+  gold: '#e9973a', // complement of bomber blue desaturated by 20% and darkened by 10%
+};
+
+export const EventColors = {
+  // ive never seen [] used in this way but it's used here to turn the enum into a parseable string! weird!
+  [EventType.PRACTICE]: GlobalColors.purple,
+  [EventType.GLOBAL]: GlobalColors.gold,
+  [EventType.TOURNAMENT]: GlobalColors.bomber,
 };
 
 export const Colors = {

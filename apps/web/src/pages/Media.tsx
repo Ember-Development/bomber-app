@@ -187,7 +187,11 @@ export default function Media() {
   return (
     <div className="relative min-h-screen text-white">
       {/* Page container */}
+<<<<<<< HEAD
       <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 py-4">
+=======
+      <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8 py-4">
+>>>>>>> events-tab
         {/* Header */}
         <div className="sticky top-0 z-10 -mx-4 sm:mx-0 px-4 sm:px-0 py-2 sm:py-3 border-b border-white/10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 sm:gap-3">

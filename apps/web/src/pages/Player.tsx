@@ -16,8 +16,11 @@ import type {
   StirrupSize,
   Position,
   AgeGroup,
+<<<<<<< HEAD
   // NEW
   PublicUserFE,
+=======
+>>>>>>> events-tab
 } from '@bomber-app/database';
 import { useNavigate } from 'react-router-dom';
 import SideDialog from '@/components/SideDialog';
@@ -25,6 +28,7 @@ import {
   fetchPlayers,
   updatePlayer,
   UpdatePlayerPayload,
+<<<<<<< HEAD
   detachParentFromPlayer,
   attachParentToPlayer,
   removePlayerFromTeam,
@@ -52,6 +56,13 @@ type SortKey =
   | 'jerseyNum';
 type SortDir = 'asc' | 'desc';
 type SortRule = { key: SortKey; dir: SortDir };
+=======
+  removePlayerFromTeam,
+  fetchPlayerById,
+} from '@/api/player';
+import { POSITIONS, SHORTS_SIZES } from '@/utils/enum';
+import EditPlayerModal from '@/components/forms/Modals/edit-player';
+>>>>>>> events-tab
 
 type Player = {
   id: string;
@@ -79,6 +90,7 @@ type Player = {
   zip?: string;
 };
 
+<<<<<<< HEAD
 // ---------- Parent preview type + cache ----------
 type ParentPreview = {
   id: string | number;
@@ -88,6 +100,8 @@ type ParentPreview = {
   address?: string;
 };
 
+=======
+>>>>>>> events-tab
 const PAGE_SIZE = 15;
 
 // For age sorting (U18 -> U8)
@@ -170,10 +184,21 @@ export default function Players() {
   const [jerseySizeFilter, setJerseySizeFilter] = useState('all');
   const [pantSizeFilter, setPantSizeFilter] = useState('all');
 
+<<<<<<< HEAD
   // dialogs
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<'edit' | 'delete' | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+=======
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogType, setDialogType] = useState<'edit' | 'delete' | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+
+  // state for the external edit content
+  const [editPlayerFE, setEditPlayerFE] = useState<PlayerFE | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+>>>>>>> events-tab
 
   // external edit modal state
   const [editPlayerFE, setEditPlayerFE] = useState<PlayerFE | null>(null);
@@ -233,7 +258,11 @@ export default function Players() {
   useEffect(() => {
     setLoading(true);
     fetchPlayers()
+<<<<<<< HEAD
       .then((data: any[]) => {
+=======
+      .then((data) => {
+>>>>>>> events-tab
         setPlayers(
           data.map((p: any) => ({
             id: p.id,
@@ -252,7 +281,11 @@ export default function Players() {
             practiceShortSize: p.practiceShortSize,
             commitId: p.commitId,
             college: p.college,
+<<<<<<< HEAD
             isTrusted: !!p.isTrusted,
+=======
+            isTrusted: p.isTrusted,
+>>>>>>> events-tab
             addressID: p.addressID,
             address1: p.address1,
             address2: p.address2,
@@ -285,6 +318,7 @@ export default function Players() {
     [players]
   );
 
+<<<<<<< HEAD
   // ----- Filtering + Sorting -----
   const filteredSorted = useMemo(() => {
     const result = players.filter((p) => {
@@ -308,6 +342,33 @@ export default function Players() {
         if (
           !(
             p.name.toLowerCase().includes(q) || p.team.toLowerCase().includes(q)
+=======
+  const filtered = useMemo(
+    () =>
+      players.filter((p) => {
+        if (teamFilter !== 'all' && p.team !== teamFilter) return false;
+        if (ageGroupFilter !== 'all' && p.ageGroup !== ageGroupFilter)
+          return false;
+        if (posFilter !== 'all' && p.pos1 !== posFilter) return false;
+        if (trustedFilter === 'yes' && !p.isTrusted) return false;
+        if (trustedFilter === 'no' && p.isTrusted) return false;
+        if (collegeFilter === 'yes' && !p.college) return false;
+        if (collegeFilter === 'no' && p.college) return false;
+        if (stateFilter !== 'all' && p.state !== stateFilter) return false;
+        if (geradYearFilter !== 'all' && p.gradYear !== geradYearFilter)
+          return false;
+        if (jerseySizeFilter !== 'all' && p.jerseySize !== jerseySizeFilter)
+          return false;
+        if (pantSizeFilter !== 'all' && p.pantSize !== pantSizeFilter)
+          return false;
+        if (search) {
+          const q = search.toLowerCase();
+          if (
+            !(
+              p.name.toLowerCase().includes(q) ||
+              p.team.toLowerCase().includes(q)
+            )
+>>>>>>> events-tab
           )
         )
           return false;
@@ -388,6 +449,7 @@ export default function Players() {
     geradYearFilter,
   ]);
 
+<<<<<<< HEAD
   const totalPages = Math.max(1, Math.ceil(filteredSorted.length / PAGE_SIZE));
   const paginated = filteredSorted.slice(
     (page - 1) * PAGE_SIZE,
@@ -397,6 +459,10 @@ export default function Players() {
   // ----- Edit / Delete -----
   const mapFEToRow = (p: PlayerFE): Player => ({
     id: p.id as unknown as string,
+=======
+  const mapFEToRow = (p: PlayerFE): Player => ({
+    id: p.id,
+>>>>>>> events-tab
     name: p.user ? `${p.user.fname} ${p.user.lname}` : '(No Name)',
     email: p.user?.email || '',
     team: p.team?.name || '',
@@ -412,7 +478,11 @@ export default function Players() {
     practiceShortSize: p.practiceShortSize as any,
     college: p.college || '',
     isTrusted: !!p.isTrusted,
+<<<<<<< HEAD
     addressID: p.address?.id as any,
+=======
+    addressID: p.address?.id,
+>>>>>>> events-tab
     address1: p.address?.address1 || '',
     address2: p.address?.address2 || '',
     city: p.address?.city || '',
@@ -450,6 +520,7 @@ export default function Players() {
     setSelectedPlayer(null);
     setEditPlayerFE(null);
     setEditLoading(false);
+<<<<<<< HEAD
   };
 
   // ----- Export (CSV / XLSX) from the filtered list -----
@@ -628,6 +699,11 @@ export default function Players() {
   };
 
   // ---------------- UI ----------------
+=======
+    setSaveLoading(false);
+  };
+
+>>>>>>> events-tab
   return (
     <div className="flex flex-col gap-6 sm:gap-8">
       <div
@@ -645,6 +721,7 @@ export default function Players() {
             <div className="text-3xl lg:text-3xl font-bold text-white">
               Manage Players
             </div>
+<<<<<<< HEAD
           </div>
           <div className="relative">
             <button
@@ -689,6 +766,8 @@ export default function Players() {
                 </button>
               </div>
             )}
+=======
+>>>>>>> events-tab
           </div>
         </div>
 
@@ -815,6 +894,7 @@ export default function Players() {
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Data table */}
         <div className="bg-[rgba(255,255,255,0.05)] backdrop-blur-lg rounded-2xl overflow-hidden shadow-inner">
           {/* xl table */}
@@ -868,11 +948,29 @@ export default function Players() {
                       </div>
                     </th>
                   </tr>
+=======
+        {/* Data table on sm+, mobile card list on xs */}
+        <div className="bg-[rgba(255,255,255,0.05)] backdrop-blur-lg rounded-2xl overflow-hidden shadow-inner">
+          {/* sm+ table */}
+          <div className="hidden xl:block">
+            <div className="overflow-x-auto">
+              <table className="min-w-[900px] w-full table-auto text-white">
+                <thead className="sticky top-0 bg-[rgba(90,165,255,0.18)] border-b border-white/15">
+                  <tr>
+                    <th className="px-4 py-4 text-left">Name</th>
+                    <th className="px-4 py-4 text-left">Team</th>
+                    <th className="px-4 py-4 text-left">Age Group</th>
+                    <th className="px-4 py-4 text-left">Positions</th>
+                    <th className="px-4 py-4 text-left">College</th>
+                    <th className="px-4 py-4 text-right">Actions</th>
+                  </tr>
+>>>>>>> events-tab
                 </thead>
                 <tbody>
                   {loading ? (
                     <tr>
                       <td
+<<<<<<< HEAD
                         colSpan={9}
                         className="px-6 py-10 text-center text-white/60"
                       >
@@ -1412,6 +1510,262 @@ export default function Players() {
               ))
             )}
           </div>
+=======
+                        colSpan={6}
+                        className="px-6 py-10 text-center text-white/60"
+                      >
+                        Loading...
+                      </td>
+                    </tr>
+                  ) : paginated.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="px-6 py-10 text-center text-white/60"
+                      >
+                        No players found.
+                      </td>
+                    </tr>
+                  ) : (
+                    paginated.map((p) => (
+                      <React.Fragment key={p.id}>
+                        <tr
+                          onClick={() =>
+                            setExpanded(expanded === p.id ? null : p.id)
+                          }
+                          className="hover:bg-[rgba(255,255,255,0.07)] cursor-pointer"
+                        >
+                          <td className="px-4 py-3">{p.name}</td>
+                          <td className="px-4 py-3">{p.team}</td>
+                          <td className="px-4 py-3">{p.ageGroup}</td>
+                          <td className="px-4 py-3">
+                            {p.pos1} / {p.pos2}
+                          </td>
+                          <td className="px-4 py-3">{p.college}</td>
+                          <td className="px-4 py-3 text-right space-x-2">
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                await openEdit(p);
+                              }}
+                              className="p-2 bg-white/10 rounded-lg hover:bg-[#5AA5FF]"
+                            >
+                              <PencilSquareIcon className="w-5 h-5 text-white" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openDelete(p);
+                              }}
+                              className="p-2 bg-white/10 rounded-lg hover:bg-red-600"
+                            >
+                              <TrashIcon className="w-5 h-5 text-white" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpanded(expanded === p.id ? null : p.id);
+                              }}
+                              className={`p-2 rounded-lg transition ${expanded === p.id ? 'bg-[#5AA5FF] text-white' : 'bg-white/10 hover:bg-[#5AA5FF]/70 text-white'}`}
+                            >
+                              <EyeIcon className="w-5 h-5" />
+                            </button>
+                          </td>
+                        </tr>
+                        {expanded === p.id && (
+                          <tr>
+                            <td colSpan={6} className="p-0 bg-transparent">
+                              <div className="bg-[rgba(90,165,255,0.10)] rounded-b-xl m-2 p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-sm text-white">
+                                <div>
+                                  <div>
+                                    <span className="font-semibold">
+                                      Jersey #:
+                                    </span>{' '}
+                                    {p.jerseyNum}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold">
+                                      Jersey Size:
+                                    </span>{' '}
+                                    {p.jerseySize}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold">
+                                      Pant Size:
+                                    </span>{' '}
+                                    {p.pantSize}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold">
+                                      Stirrup Size:
+                                    </span>{' '}
+                                    {p.stirrupSize}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div>
+                                    <span className="font-semibold">
+                                      Shorts Size:
+                                    </span>{' '}
+                                    {typeof p.shortSize === 'object' &&
+                                    p.shortSize !== null
+                                      ? (p.shortSize.label ?? p.shortSize.value)
+                                      : p.shortSize}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold">
+                                      Practice Shorts:
+                                    </span>{' '}
+                                    {typeof p.practiceShortSize === 'object' &&
+                                    p.practiceShortSize !== null
+                                      ? (p.practiceShortSize.label ??
+                                        p.practiceShortSize.value)
+                                      : p.practiceShortSize}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold">
+                                      Graduation:
+                                    </span>{' '}
+                                    {p.gradYear}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold">
+                                      Address:
+                                    </span>{' '}
+                                    {p.address1}, {p.city}, {p.state} {p.zip}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div>
+                                    <span className="font-semibold">
+                                      Trusted:
+                                    </span>
+                                    <span
+                                      className={`ml-2 inline-block px-2 py-0.5 rounded-full text-xs ${p.isTrusted ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'}`}
+                                    >
+                                      {p.isTrusted ? 'YES' : 'NO'}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* xs mobile card list */}
+          <div className="xl:hidden divide-y divide-white/10">
+            {loading ? (
+              <div className="p-4 text-center text-white/60">Loading...</div>
+            ) : paginated.length === 0 ? (
+              <div className="p-4 text-center text-white/60">
+                No players found.
+              </div>
+            ) : (
+              paginated.map((p) => (
+                <div key={p.id} className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-white font-semibold truncate">
+                        {p.name}
+                      </div>
+                      <div className="text-white/80 text-sm truncate">
+                        {p.team}
+                      </div>
+                      <div className="text-white/70 text-xs mt-1">
+                        {p.ageGroup} • {p.pos1}/{p.pos2}
+                      </div>
+                      {p.college && (
+                        <div className="text-white/80 text-xs mt-1">
+                          College: {p.college}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-2 shrink-0">
+                      <button
+                        className="p-2 bg-white/10 rounded-lg hover:bg-[#5AA5FF]"
+                        onClick={async () => await openEdit(p)}
+                      >
+                        <PencilSquareIcon className="w-5 h-5 text-white" />
+                      </button>
+                      <button
+                        className="p-2 bg-white/10 rounded-lg hover:bg-red-600"
+                        onClick={() => openDelete(p)}
+                      >
+                        <TrashIcon className="w-5 h-5 text-white" />
+                      </button>
+                      <button
+                        className={`p-2 rounded-lg transition ${expanded === p.id ? 'bg-[#5AA5FF] text-white' : 'bg-white/10 hover:bg-[#5AA5FF]/70 text-white'}`}
+                        onClick={() =>
+                          setExpanded(expanded === p.id ? null : p.id)
+                        }
+                      >
+                        <EyeIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                  {expanded === p.id && (
+                    <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-white/90">
+                      <div>
+                        <span className="font-semibold">Jersey #:</span>{' '}
+                        {p.jerseyNum}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Grad:</span>{' '}
+                        {p.gradYear}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Jersey Size:</span>{' '}
+                        {p.jerseySize}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Pant Size:</span>{' '}
+                        {p.pantSize}
+                      </div>
+
+                      <div className="">
+                        <span className="font-semibold">Stirrup Size:</span>{' '}
+                        {p.stirrupSize}
+                      </div>
+                      <div className="">
+                        <span className="font-semibold">Shorts Size:</span>{' '}
+                        {typeof p.shortSize === 'object' && p.shortSize !== null
+                          ? (p.shortSize.label ?? p.shortSize.value)
+                          : p.shortSize}
+                      </div>
+                      <div className="">
+                        <span className="font-semibold">Practice Shorts:</span>{' '}
+                        {typeof p.practiceShortSize === 'object' &&
+                        p.practiceShortSize !== null
+                          ? (p.practiceShortSize.label ??
+                            p.practiceShortSize.value)
+                          : p.practiceShortSize}
+                      </div>
+                      <div className="col-span-2">
+                        <span className="font-semibold">Address:</span>{' '}
+                        {p.address1}, {p.city}, {p.state} {p.zip}
+                      </div>
+                      <div className="col-span-2">
+                        <span className="font-semibold">Trusted:</span>
+                        <span
+                          className={`ml-2 inline-block px-2 py-0.5 rounded-full ${p.isTrusted ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'}`}
+                        >
+                          {p.isTrusted ? 'YES' : 'NO'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+>>>>>>> events-tab
         </div>
 
         {/* Pagination */}
@@ -1451,15 +1805,28 @@ export default function Players() {
               <EditPlayerModal
                 player={editPlayerFE}
                 onSuccess={async () => {
+<<<<<<< HEAD
                   const fresh = await fetchPlayerById(editPlayerFE.id as any);
                   setPlayers((ps) =>
                     ps.map((row) =>
                       row.id === (fresh.id as any) ? mapFEToRow(fresh) : row
+=======
+                  // Re-fetch the freshly saved player and update the table row
+                  const fresh = await fetchPlayerById(editPlayerFE.id);
+                  setPlayers((ps) =>
+                    ps.map((row) =>
+                      row.id === fresh.id ? mapFEToRow(fresh) : row
+>>>>>>> events-tab
                     )
                   );
                   closeDialog();
                 }}
                 onCancel={closeDialog}
+<<<<<<< HEAD
+=======
+                // If you want to override the default PATCH:
+                // updatePlayerApi={async (playerId, payload) => updatePlayer(playerId, payload)}
+>>>>>>> events-tab
               />
             )}
           </>

@@ -152,12 +152,25 @@ export const userService = {
   },
 
   getUserEvents: async (userId: string) => {
-    return await prisma.eventAttendance.findMany({
-      where: { userID: userId },
+    return await prisma.event.findMany({
+      where: {
+        attendees: {
+          some: {
+            userID: userId,
+          },
+        },
+      },
       include: {
-        event: {
+        tournament: true,
+        attendees: {
           include: {
-            tournament: true,
+            user: {
+              select: {
+                fname: true,
+                lname: true,
+                primaryRole: true,
+              },
+            },
           },
         },
       },

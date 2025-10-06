@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { CoachFE, Prisma, RegCoachFE, TeamFE } from '@bomber-app/database';
+=======
+import { Prisma, TeamFE } from '@bomber-app/database';
+>>>>>>> events-tab
 import { api } from './api';
 
 type UpdateCoachInput = Prisma.CoachUpdateInput;
@@ -11,6 +15,7 @@ export type UpdateCoachPayload = Omit<UpdateCoachInput, 'address'> & {
   zip?: string;
 };
 
+<<<<<<< HEAD
 export const fetchCoaches = async (): Promise<CoachFE[]> => {
   const { data } = await api.get<CoachFE[]>('/coaches');
   return data;
@@ -27,6 +32,8 @@ export const fetchRegCoaches = async (): Promise<RegCoachFE[]> => {
   return data;
 };
 
+=======
+>>>>>>> events-tab
 export const updateCoach = async (id: string, payload: UpdateCoachPayload) => {
   const { data } = await api.put(`/coaches/${id}`, payload);
   return data;
