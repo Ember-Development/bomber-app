@@ -2,8 +2,8 @@ import { NextFunction, Request, Response } from 'express';
 import { CreateUserInput, userService } from '../services/user';
 import { hashPassword, verifyPassword } from '../utils/crypto';
 import { AuthenticatedRequest } from '../utils/express';
-import { Regions, UserRole } from '@bomber-app/database';
 import { regCoachService } from '../services/regCoach';
+import { UserRole } from '@bomber-app/database/generated/client';
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -233,5 +233,16 @@ export const demoteFromRegCoach = async (
   } catch (err: any) {
     console.error('demoteFromRegCoach error:', err);
     return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getLatestVersion = async (req: Request, res: Response) => {
+  try {
+    // Hardcoded latest version for now (update this manually or via config)
+    const latestVersion = '1.0.4'; // Example: Update to the latest version number
+    res.json({ version: latestVersion });
+  } catch (error) {
+    console.error('Error fetching latest version:', error);
+    res.status(500).json({ error: 'Failed to fetch latest version' });
   }
 };

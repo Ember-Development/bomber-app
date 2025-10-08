@@ -1,5 +1,6 @@
-import { Prisma, prisma } from '@bomber-app/database';
+import { Prisma } from '@bomber-app/database/generated/client';
 import { Role } from '../auth/permissions';
+import { prisma } from '../api';
 
 export interface UpdateCoachInput
   extends Omit<Prisma.CoachUpdateInput, 'address' | 'user'> {

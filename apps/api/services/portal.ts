@@ -1,4 +1,4 @@
-import { prisma, Prisma } from '@bomber-app/database';
+import { prisma } from '../api';
 
 type CreateLeadInput = {
   kind: 'PLAYER' | 'PARENT';

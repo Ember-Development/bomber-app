@@ -8,6 +8,7 @@ import {
   demoteFromRegCoach,
   ensureRoleAndSettable,
   getAllUsers,
+  getLatestVersion,
   getUserChats,
   getUserEvents,
   getUsersInGroup,
@@ -54,5 +55,7 @@ router.delete(
   authorize('edit-coach'),
   demoteFromRegCoach
 );
+
+router.get('/latest-version', auth, getLatestVersion);
 
 export default router;

@@ -1,4 +1,5 @@
-import { CommitDB, prisma } from '@bomber-app/database';
+import { CommitDB } from '@bomber-app/database';
+import { prisma } from '../api';
 
 type CommitCreateInput = Omit<CommitDB, 'id' | 'players'>;
 type CommitUpdateInput = Partial<CommitCreateInput>;

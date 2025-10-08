@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -42,12 +42,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user, isLoading, error, setUser } = useUserContext();
-  const [changePwVisible, setChangePwVisible] = useState(false);
-  const [pwCurrent, setPwCurrent] = useState('');
-  const [pwNew, setPwNew] = useState('');
-  const [pwConfirm, setPwConfirm] = useState('');
-  const [pwSubmitting, setPwSubmitting] = useState(false);
-  const [pwError, setPwError] = useState<string | null>(null);
+  const KEY_NOTIFS_DISABLED = 'notifications:disabled';
 
   const currentUser = useMemo(() => {
     const u = (user as UserFE | undefined) ?? ({} as any);
@@ -99,6 +94,19 @@ export default function SettingsScreen() {
   };
 
   const handleSave = () => {};
+
+  // local notifications
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(KEY_NOTIFS_DISABLED);
+        const disabled = raw === '1';
+        setNotificationsEnabled(!disabled);
+      } catch {}
+    })();
+  }, []);
 
   return (
     <BackgroundWrapper>
@@ -153,6 +161,27 @@ export default function SettingsScreen() {
                 <PressLink
                   text="Edit Profile"
                   onPress={() => setEditVisible(true)}
+                />
+              </Group>
+            </Section>
+
+            <Section title="Notifications">
+              <Group title="Push">
+                {/* <ToggleRow
+                  label="Enable Push Notifications"
+                  value={notificationsEnabled}
+                  onValueChange={onToggleNotifications}
+                /> */}
+                <PressLink
+                  text={
+                    Platform.OS === 'ios'
+                      ? 'Open iOS Notification Settings'
+                      : 'Open App Notification Settings'
+                  }
+                  onPress={() => {
+                    // Opens the OS settings page for your app (iOS 8+, Android supported)
+                    Linking.openSettings().catch(() => {});
+                  }}
                 />
               </Group>
             </Section>

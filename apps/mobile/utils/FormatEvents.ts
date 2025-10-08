@@ -1,37 +1,73 @@
-import { UserEvent } from '@/types';
+import dayjs from 'dayjs';
 
-export function formatEvents(rawEvents: UserEvent[]) {
-  return (
-    rawEvents?.flatMap((e) => {
-      if (!e.event?.start || !e.event?.end) return [];
+type TournamentMaybe = { title?: string | null } | null | undefined;
 
-      const start = new Date(e.event.start);
-      const end = new Date(e.event.end);
-      const time = `${start.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      })} - ${end.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      })}`;
+type FlatEvent = {
+  id: string;
+  eventType: string;
+  start: string | Date;
+  end: string | Date;
+  title?: string | null;
+  location?: string | null;
+  tournament?: TournamentMaybe;
+};
 
-      return [
-        {
-          date:
-            typeof e.event.start === 'string'
-              ? e.event.start
-              : e.event.start.toISOString(),
-          title: e.event.tournament
-            ? `Tournament – ${e.event.tournament.title}`
-            : e.event.eventType,
-          location: e.event.tournament?.title ?? 'Unknown Location',
-          time,
-        },
-      ];
-    }) ?? []
-  );
+type UserEventRow = { event?: FlatEvent } & Record<string, any>;
+
+export type SpotlightEvent = {
+  date: string; // MUST be ISO for EventCardContainer comparisons
+  title: string;
+  location: string;
+  time: string; // "h:mm A – h:mm A"
+};
+
+function toISO(d: string | Date): string | null {
+  const dt = new Date(d as any);
+  return isNaN(dt.getTime()) ? null : dt.toISOString();
 }
 
+export function formatEvents(
+  raw: UserEventRow[] | FlatEvent[]
+): SpotlightEvent[] {
+  if (!raw?.length) return [];
+
+  // 1) Flatten both shapes: [{ event: {...} }] OR [{...flat}]
+  const events: FlatEvent[] = (raw as any[]).map((row) =>
+    row?.event ? row.event : row
+  );
+
+  // 2) Validate + normalize times
+  const normalized = events
+    .map((e) => {
+      const startISO = toISO(e.start);
+      const endISO = toISO(e.end);
+      if (!startISO || !endISO) return null;
+
+      const start = new Date(startISO);
+      const end = new Date(endISO);
+
+      const title = e.title ?? e.tournament?.title ?? e.eventType ?? 'Event';
+      const location = e.location ?? e.tournament?.title ?? 'Unknown Location';
+      const time = `${dayjs(start).format('h:mm A')} – ${dayjs(end).format('h:mm A')}`;
+
+      return {
+        date: startISO, // always ISO; EventCardContainer relies on this!
+        title,
+        location,
+        time,
+      } as SpotlightEvent;
+    })
+    .filter(Boolean) as SpotlightEvent[];
+
+  // 3) Sort soonest first (EventCardContainer will split upcoming/past)
+  normalized.sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  return normalized;
+}
+
+// unchanged
 export function getCountdown(diff: number) {
   if (diff <= 0) return 'Event Started';
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));

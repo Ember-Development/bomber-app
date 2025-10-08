@@ -1,4 +1,5 @@
-import { prisma, Article as ArticleDB } from '@bomber-app/database';
+import { ArticleDB as ArticleDB } from '@bomber-app/database';
+import { prisma } from '../api';
 
 export interface ArticleCreateInput {
   title: string;

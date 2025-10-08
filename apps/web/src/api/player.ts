@@ -1,17 +1,17 @@
 // src/api/player.ts
 
+import { PlayerFE } from '@bomber-app/database';
+import { api } from './api';
 import {
   AgeGroup,
   JerseySize,
   PantsSize,
   Player,
-  PlayerFE,
   Position,
   Prisma,
   ShortsSize,
   StirrupSize,
-} from '@bomber-app/database';
-import { api } from './api';
+} from '@bomber-app/database/generated/client';
 
 type CreatePlayerInput = Prisma.PlayerCreateInput;
 type UpdatePlayerInput = Prisma.PlayerUpdateInput;
