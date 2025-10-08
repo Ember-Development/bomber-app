@@ -4,6 +4,8 @@
   "description": "",
   "main": "api.ts",
   "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/api.js",
     "dev": "tsx watch api.ts",
     "test": "jest --watchAll"
   },
@@ -13,7 +15,7 @@
   "dependencies": {
     "@bomber-app/database": "workspace:*",
     "@bomber-app/utils": "workspace:*",
-    "@prisma/client": "6.3.1",
+    "@prisma/client": "6.17.0",
     "@sendgrid/mail": "^8.1.5",
     "@socket.io/redis-adapter": "^8.3.0",
     "@types/express": "^4.17.21",
@@ -40,7 +42,7 @@
     "@types/morgan": "^1.9.10",
     "@types/node": "^22.13.4",
     "jest": "^29.2.1",
-    "prisma": "^6.3.1",
+    "prisma": "6.17.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
