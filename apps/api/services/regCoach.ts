@@ -1,4 +1,5 @@
-import { prisma, Regions } from '@bomber-app/database';
+import { Regions } from '@bomber-app/database/generated/client';
+import { prisma } from '../api';
 import { userService } from './user';
 
 export const regCoachService = {

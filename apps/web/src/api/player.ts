@@ -1,17 +1,17 @@
 // src/api/player.ts
 
+import { PlayerFE } from '@bomber-app/database';
+import { api } from './api';
 import {
   AgeGroup,
   JerseySize,
   PantsSize,
   Player,
-  PlayerFE,
   Position,
   Prisma,
   ShortsSize,
   StirrupSize,
-} from '@bomber-app/database';
-import { api } from './api';
+} from '@bomber-app/database/generated/client';
 
 type CreatePlayerInput = Prisma.PlayerCreateInput;
 type UpdatePlayerInput = Prisma.PlayerUpdateInput;
@@ -124,7 +124,6 @@ export const removePlayerFromTeam = async (id: string): Promise<boolean> => {
     return false;
   }
 };
-<<<<<<< HEAD
 
 // parent relationship
 export type AttachParentPayload =
@@ -147,5 +146,3 @@ export async function detachParentFromPlayer(
   const { data } = await api.delete(`/players/${playerId}/parents/${parentId}`);
   return data;
 }
-=======
->>>>>>> events-tab

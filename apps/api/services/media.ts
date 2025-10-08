@@ -1,4 +1,6 @@
-import { prisma, Media as MediaDB, MediaCategory } from '@bomber-app/database';
+import { MediaDB as MediaDB } from '@bomber-app/database';
+import { MediaCategory } from '@bomber-app/database/generated/client';
+import { prisma } from '../api';
 
 export interface MediaCreateInput {
   title: string;

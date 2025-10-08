@@ -1,4 +1,4 @@
-import { prisma } from '@bomber-app/database';
+import { prisma } from '../api';
 
 export const parentService = {
   getParentById: async (id: string) => {

@@ -1,7 +1,9 @@
-import { PlayerFE, prisma, UserRole } from '@bomber-app/database';
+import { PlayerFE } from '@bomber-app/database';
 import { signAccess, signRefresh, verifyRefresh } from '../utils/jwt';
 import { hashPassword, verifyPassword } from '../utils/crypto';
 import { issueTokenPair, rotateRefreshToken } from '../auth/token';
+import { prisma } from '../api';
+import { UserRole } from '@bomber-app/database/generated/client';
 
 export const authService = {
   getMockLogin: async () => {

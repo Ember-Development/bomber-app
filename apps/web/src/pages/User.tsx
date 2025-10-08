@@ -1,9 +1,5 @@
-<<<<<<< HEAD
 // apps/web/src/pages/Users.tsx
 import React, { useEffect, useMemo, useState } from 'react';
-=======
-import { useState, useEffect } from 'react';
->>>>>>> events-tab
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeftIcon,
@@ -14,10 +10,7 @@ import {
   ArrowDownTrayIcon,
   ChevronDownIcon,
 } from '@heroicons/react/24/outline';
-<<<<<<< HEAD
 
-=======
->>>>>>> events-tab
 import {
   fetchUsers,
   createUser,
@@ -25,15 +18,13 @@ import {
   deleteUser,
   CreateUserInput,
 } from '@/api/user';
-import type { PublicUserFE } from '@bomber-app/database/types/user';
-import SideDialog from '@/components/SideDialog';
-import { createOrUpdateRegCoach, deleteRegCoach } from '@/api/regCoach';
 
 import SideDialog from '@/components/SideDialog';
 import { createOrUpdateRegCoach, deleteRegCoach } from '@/api/regCoach';
 
 import { useToast } from '@/context/ToastProvider';
 import { exportCSV, exportXLS, type ColumnDef } from '@/utils/exporter';
+import { PublicUserFE } from '@bomber-app/database';
 
 const ALL_ROLES = [
   'ALL',
@@ -55,14 +46,11 @@ const REGIONS = [
   'TEXAS',
 ] as const;
 
-<<<<<<< HEAD
 // ---- Sorting (multi) ----
 type SortKey = 'name' | 'email' | 'role';
 type SortDir = 'asc' | 'desc';
 type SortRule = { key: SortKey; dir: SortDir };
 
-=======
->>>>>>> events-tab
 export default function Users() {
   const navigate = useNavigate();
   const { addToast } = useToast();
@@ -401,17 +389,13 @@ export default function Users() {
       primaryRole: user.primaryRole,
     });
 
-<<<<<<< HEAD
     // keep existing region (if any) for REGIONAL_COACH
-=======
->>>>>>> events-tab
     const [region, setRegion] = useState<string | null>(
       user.primaryRole === 'REGIONAL_COACH'
         ? ((user as any)?.regCoach?.region ?? null)
         : null
     );
 
-<<<<<<< HEAD
     // allow their current region even if globally taken
     const currentRegion = (user as any)?.regCoach?.region as string | undefined;
 
@@ -451,34 +435,7 @@ export default function Users() {
       closeDialog();
       addToast('User updated', 'success');
     };
-=======
-    const onSave = async () => {
-      const updated = await updateUser(user.id, form);
-      if (!updated) return;
->>>>>>> events-tab
 
-      if (form.primaryRole === 'REGIONAL_COACH') {
-        if (!region) {
-          alert('Please select a region for the Regional Coach.');
-          return;
-        }
-        try {
-          await createOrUpdateRegCoach(user.id, region);
-        } catch (e: any) {
-          alert(
-            e?.message || 'Could not assign region (it may already be taken).'
-          );
-          return;
-        }
-      } else if (user.primaryRole === 'REGIONAL_COACH') {
-        try {
-          await deleteRegCoach(user.id);
-        } catch {}
-      }
-
-      setUsers((u) => u.map((x) => (x.id === updated.id ? updated : x)));
-      closeDialog();
-    };
     return (
       <div className="space-y-4">
         <Field label="First Name">
@@ -530,7 +487,6 @@ export default function Users() {
               </option>
             ))}
           </select>
-<<<<<<< HEAD
         </Field>
 
         {form.primaryRole === 'REGIONAL_COACH' && (
@@ -539,23 +495,10 @@ export default function Users() {
               value={region ?? ''}
               onChange={(e) => setRegion(e.target.value)}
               className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
-=======
-        </div>
-        {form.primaryRole === 'REGIONAL_COACH' && (
-          <div>
-            <label className="block text-sm text-white font-semibold">
-              Region
-            </label>
-            <select
-              value={region ?? ''}
-              onChange={(e) => setRegion(e.target.value)}
-              className="w-full px-4 py-2 bg-[rgba(255,255,255,0.1)] text-white rounded-lg"
->>>>>>> events-tab
             >
               <option value="" className="text-black">
                 Select a region…
               </option>
-<<<<<<< HEAD
               {REGIONS.map((r) => {
                 const isTaken = takenRegions.has(r) && r !== currentRegion;
                 return (
@@ -569,40 +512,14 @@ export default function Users() {
                   </option>
                 );
               })}
-=======
-              {REGIONS.map((r) => (
-                <option key={r} value={r} className="text-black">
-                  {r}
-                </option>
-              ))}
->>>>>>> events-tab
             </select>
             <p className="mt-1 text-xs text-white/70">
               One Regional Coach per region.
             </p>
-<<<<<<< HEAD
           </Field>
         )}
 
         <FormActions onSave={onSave} onCancel={closeDialog} />
-=======
-          </div>
-        )}
-        <div className="flex flex-col sm:flex-row sm:space-x-4 mt-6">
-          <button
-            onClick={onSave}
-            className="flex-1 px-4 py-2 bg-[#5AA5FF] text-white rounded-lg hover:bg-[#3C8CE7] whitespace-nowrap"
-          >
-            Save
-          </button>
-          <button
-            onClick={closeDialog}
-            className="flex-1 mt-4 sm:mt-0 px-4 py-2 bg-[rgba(255,255,255,0.1)] text-white rounded-lg hover:bg-[#5AA5FF] whitespace-nowrap"
-          >
-            Cancel
-          </button>
-        </div>
->>>>>>> events-tab
       </div>
     );
   };
@@ -624,7 +541,6 @@ export default function Users() {
             <div className="text-3xl lg:text-3xl font-bold text-white">
               Manage Users
             </div>
-<<<<<<< HEAD
           </div>
 
           <div className="flex items-center gap-2">
@@ -681,40 +597,14 @@ export default function Users() {
               <span className="font-medium">Add New User</span>
             </button>
           </div>
-=======
-          </div>
-          <button
-            onClick={openCreate}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[rgba(255,255,255,0.15)] backdrop-blur-lg border border-white/30 rounded-full text-white hover:bg-[#5AA5FF] hover:border-[#5AA5FF] transition whitespace-nowrap"
-          >
-            <UserIcon className="w-5 h-5" />
-            <span className="font-medium">Add New User</span>
-          </button>
->>>>>>> events-tab
         </div>
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
-<<<<<<< HEAD
           <div className="flex md:flex-row flex-col items-center gap-2">
             <input
               type="text"
               value={search}
-=======
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => {
-              setPage(1);
-              setSearch(e.target.value);
-            }}
-            placeholder="Search users..."
-            className="w-full sm:w-64 px-4 py-2 bg-[rgba(255,255,255,0.05)] placeholder-white/70 text-white rounded-lg focus:outline-none"
-          />
-          <div className="flex sm:ml-auto items-center bg-[rgba(255,255,255,0.05)] backdrop-blur-lg border border-white/30 rounded-lg">
-            <select
-              value={roleFilter}
->>>>>>> events-tab
               onChange={(e) => {
                 setPage(1);
                 setSearch(e.target.value);
@@ -764,7 +654,6 @@ export default function Users() {
           </div>
         </div>
 
-<<<<<<< HEAD
         {/* Data */}
         <div className="bg-white/5 backdrop-blur-lg rounded-2xl overflow-hidden shadow-inner">
           {/* Desktop/Tablet */}
@@ -782,19 +671,6 @@ export default function Users() {
                     <th className="px-4 sm:px-6 py-3 text-left">
                       Role <SortButton col="role" />
                     </th>
-=======
-        {/* Data section: table on sm+, mobile cards on xs */}
-        <div className="bg-[rgba(255,255,255,0.05)] backdrop-blur-lg rounded-2xl overflow-hidden shadow-inner">
-          {/* Desktop/Tablet table */}
-          <div className="hidden sm:block">
-            <div className="overflow-x-auto">
-              <table className="min-w-[800px] w-full table-auto text-white">
-                <thead className="sticky top-0 bg-[rgba(255,255,255,0.1)] text-white">
-                  <tr>
-                    <th className="px-4 sm:px-6 py-3 text-left">Name</th>
-                    <th className="px-4 sm:px-6 py-3 text-left">Email</th>
-                    <th className="px-4 sm:px-6 py-3 text-left">Role</th>
->>>>>>> events-tab
                     <th className="px-4 sm:px-6 py-3 text-left">Team/Info</th>
                     <th className="px-4 sm:px-6 py-3 text-right">Actions</th>
                   </tr>
@@ -822,11 +698,7 @@ export default function Users() {
                     users.map((u) => (
                       <tr
                         key={u.id}
-<<<<<<< HEAD
                         className="hover:bg-white/10 transition-colors"
-=======
-                        className="hover:bg-[rgba(255,255,255,0.1)] transition-colors"
->>>>>>> events-tab
                       >
                         <td className="px-4 sm:px-6 py-3 align-middle">
                           {u.fname} {u.lname}
@@ -866,21 +738,13 @@ export default function Users() {
                         <td className="px-4 sm:px-6 py-3 text-right align-middle">
                           <div className="inline-flex justify-end gap-2">
                             <button
-<<<<<<< HEAD
                               className="p-2 bg-white/15 backdrop-blur-lg rounded-lg text-white hover:bg-[#5AA5FF] transition"
-=======
-                              className="p-2 bg-[rgba(255,255,255,0.15)] backdrop-blur-lg rounded-lg text-white hover:bg-[#5AA5FF] transition whitespace-nowrap"
->>>>>>> events-tab
                               onClick={() => openEdit(u)}
                             >
                               <PencilSquareIcon className="w-5 h-5" />
                             </button>
                             <button
-<<<<<<< HEAD
                               className="p-2 bg-red-600/80 rounded-lg text-white hover:bg-red-500 transition"
-=======
-                              className="p-2 bg-red-600 bg-opacity-80 rounded-lg text-white hover:bg-red-500 transition whitespace-nowrap"
->>>>>>> events-tab
                               onClick={() => openDelete(u)}
                             >
                               <TrashIcon className="w-5 h-5" />
@@ -944,21 +808,13 @@ export default function Users() {
                     </div>
                     <div className="flex flex-col gap-2 shrink-0">
                       <button
-<<<<<<< HEAD
                         className="p-2 bg-white/15 backdrop-blur-lg rounded-lg text-white hover:bg-[#5AA5FF] transition"
-=======
-                        className="p-2 bg-[rgba(255,255,255,0.15)] backdrop-blur-lg rounded-lg text-white hover:bg-[#5AA5FF] transition"
->>>>>>> events-tab
                         onClick={() => openEdit(u)}
                       >
                         <PencilSquareIcon className="w-5 h-5" />
                       </button>
                       <button
-<<<<<<< HEAD
                         className="p-2 bg-red-600/80 rounded-lg text-white hover:bg-red-500 transition"
-=======
-                        className="p-2 bg-red-600 bg-opacity-80 rounded-lg text-white hover:bg-red-500 transition"
->>>>>>> events-tab
                         onClick={() => openDelete(u)}
                       >
                         <TrashIcon className="w-5 h-5" />

@@ -1,4 +1,3 @@
-import { AgeGroup, Prisma, prisma, Regions, State } from '@bomber-app/database';
 import { getUniqueTeamCode } from '../utils/teamCode';
 import {
   ensureUserIsCoach,
@@ -9,6 +8,13 @@ import {
   ensurePlayerRecordFor,
 } from '../utils/createCoachRecord';
 import { Role } from '../auth/permissions';
+import {
+  AgeGroup,
+  Prisma,
+  Regions,
+  State,
+} from '@bomber-app/database/generated/client';
+import { prisma } from '../api';
 
 export interface CreateTeamInput {
   name: string;

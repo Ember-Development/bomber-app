@@ -1,4 +1,4 @@
-import { AgeGroup } from '@bomber-app/database';
+import { AgeGroup } from '@bomber-app/database/generated/client';
 import { PositionEnum } from './positions';
 
 export const POSITIONS = [
@@ -92,19 +92,12 @@ export const formatPantSize = (value?: string) => {
   return value.replace('SIZE_', '');
 };
 
-<<<<<<< HEAD
 export const STIRRUP_SIZES = ['ADULT', 'ADULT_LONG', 'XL', 'XL_WIDE'].map(
   (s) => ({
     label: s,
     value: s,
   })
 );
-=======
-export const STIRRUP_SIZES = ['SM', 'LG', 'XL'].map((s) => ({
-  label: s,
-  value: s,
-}));
->>>>>>> events-tab
 
 export const SHORTS_SIZES = ['YXL', 'ASM', 'AMD', 'ALG', 'AXL', 'A2XL'].map(
   (s) => ({ label: s, value: s })
