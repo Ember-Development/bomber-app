@@ -27,10 +27,12 @@ type Props = {
   setEditPlayerId: (id: string) => void;
   setRemovePlayerId: (id: string) => void;
   setEditCoachId: (id: string) => void;
-  setRemoveCoachId: (id: string) => void;
+  setRemoveCoachId: (x: { coachId: string; teamId: string }) => void;
   setEditTrophy: (x: any) => void;
   setRemoveTrophy: (x: any) => void;
   setSelectedProfile: (x: any) => void;
+
+  setAddTrophy: (teamId: string | null) => void;
 };
 
 export default function AdminProfile({
@@ -50,6 +52,7 @@ export default function AdminProfile({
   setEditTrophy,
   setRemoveTrophy,
   setSelectedProfile,
+  setAddTrophy,
 }: Props) {
   const router = useRouter();
 
@@ -127,6 +130,7 @@ export default function AdminProfile({
         setRemovePlayerId={setRemovePlayerId}
         setEditCoachId={setEditCoachId}
         setRemoveCoachId={setRemoveCoachId}
+        setAddTrophy={setAddTrophy}
         setEditTrophy={setEditTrophy}
         setRemoveTrophy={setRemoveTrophy}
         setSelectedProfile={setSelectedProfile}
@@ -160,7 +164,8 @@ export default function AdminProfile({
             value: 'Coach',
             fullWidth: true,
             onEdit: () => setEditCoachId(c.id),
-            onRemove: () => setRemoveCoachId(c.id),
+            onRemove: () =>
+              setRemoveCoachId({ coachId: c.id, teamId: team.id }),
           })) || [],
         trophies:
           team.trophyCase?.map((t: any) => ({
@@ -195,6 +200,15 @@ export default function AdminProfile({
               </TouchableOpacity>
             ))}
           </View>
+
+          {view === 'trophies' && (
+            <View style={{ marginBottom: 12 }}>
+              <CustomButton
+                title="+ Add Trophy"
+                onPress={() => setAddTrophy(team.id)}
+              />
+            </View>
+          )}
 
           <RenderCards
             data={teamData[view]}

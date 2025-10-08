@@ -6,6 +6,7 @@ import RemoveCoachModal from './remove-coach-modal';
 import EditTrophyModal from './edit-trophy-modal';
 import RemoveTrophyModal from './remove-trophy-modal';
 import EditPlayerModal from './update-player';
+import AddTrophyModal from './add-trophy';
 
 export default function ModalManager({
   // profile
@@ -31,6 +32,8 @@ export default function ModalManager({
   removeCoach,
 
   // trophies
+  addtrophy,
+  setAddTrophy,
   editTrophy,
   setEditTrophy,
   removeTrophy,
@@ -79,10 +82,15 @@ export default function ModalManager({
       )}
 
       {/* Remove coach modal */}
-      {removeCoachId && selectedCoachToRemove && (
+      {removeCoachId && (
         <RemoveCoachModal
           visible
-          coachName={`${selectedCoachToRemove.user?.fname} ${selectedCoachToRemove.user?.lname}`}
+          coachName={
+            selectedCoachToRemove
+              ? `${selectedCoachToRemove.user?.fname ?? ''} ${selectedCoachToRemove.user?.lname ?? ''}`.trim() ||
+                'this coach'
+              : 'this coach'
+          }
           onClose={() => setRemoveCoachId(null)}
           onConfirm={() => {
             removeCoach({
@@ -91,6 +99,15 @@ export default function ModalManager({
             });
             setRemoveCoachId(null);
           }}
+        />
+      )}
+
+      {/* add trophy modal */}
+      {addtrophy && (
+        <AddTrophyModal
+          isVisible={!!addtrophy}
+          teamId={addtrophy} // addtrophy is a string | null
+          onClose={() => setAddTrophy(null)}
         />
       )}
 

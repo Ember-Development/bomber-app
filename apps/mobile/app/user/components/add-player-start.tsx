@@ -21,12 +21,12 @@ import { api } from '@/api/api';
 import { usePlayers } from '@/hooks/teams/usePlayerById';
 import SearchableSelect from '@/components/ui/atoms/SearchableSelect';
 
-type Params = { parentUserId?: string };
+type Params = { parentId?: string };
 
 export default function AddPlayerStart() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { parentUserId } = useLocalSearchParams<Params>();
+  const { parentId } = useLocalSearchParams<Params>();
 
   const { data: players, isLoading } = usePlayers();
   const [mode, setMode] = useState<'claim' | 'create' | null>(null);
@@ -49,7 +49,7 @@ export default function AddPlayerStart() {
   }, [players]);
 
   const ensureParentId = async (): Promise<string> => {
-    if (parentUserId) return String(parentUserId);
+    if (parentId) return String(parentId);
 
     const { data } = await api.post('/api/parents/ensure');
     return String(data.id);
@@ -61,7 +61,7 @@ export default function AddPlayerStart() {
       const ensuredParentId = await ensureParentId();
       router.push({
         pathname: '/user/components/add-new-player',
-        params: { parentUserId: ensuredParentId },
+        params: { parentId: ensuredParentId },
       });
     } finally {
       setIsSubmitting(false);
@@ -81,8 +81,13 @@ export default function AddPlayerStart() {
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
+        queryClient.invalidateQueries({ queryKey: ['current-user'] }),
         queryClient.invalidateQueries({ queryKey: ['players'] }),
       ]);
+
+      const { data: me } = await api.get('/api/auth/me');
+      queryClient.setQueryData(['currentUser'], me);
+      queryClient.setQueryData(['current-user'], me);
 
       router.replace('/profile');
     } catch (e) {
@@ -176,10 +181,10 @@ export default function AddPlayerStart() {
                   fullWidth
                   disabled={!canClaim}
                 />
-                {!parentUserId && (
+                {!parentId && (
                   <Text style={styles.helperText}>
-                    Missing parentUserId — open this screen from your profile so
-                    we know which parent to attach.
+                    Missing parentId — open this screen from your profile so we
+                    know which parent to attach.
                   </Text>
                 )}
               </View>

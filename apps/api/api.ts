@@ -21,7 +21,7 @@ import { devicesRouter } from './routes/deviceRoutes';
 import { notificationsRouter } from './routes/notificationsRoutes';
 
 import helmet from 'helmet';
-import cors from 'cors';
+import cors, { CorsOptions } from 'cors';
 import morgan from 'morgan';
 import { PrismaClient } from '@bomber-app/database/generated/client';
 import initializeSocket from './websockets/websocket';
@@ -35,17 +35,26 @@ const prisma = new PrismaClient();
 app.get('/', (_: Request, res: Response) => {
   res.send('Ready 4 Biznes!');
 });
-app.use(express.json());
+
+const allowed = (process.env.CORS_ORIGINS ?? '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+const corsOptions: CorsOptions = {
+  origin(origin, cb) {
+    if (!origin) return cb(null, true); // server-to-server
+    if (allowed.includes(origin)) return cb(null, true);
+    return cb(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204,
+};
+
+app.options('*', (_req, res) => res.sendStatus(204));
 
 app.use(helmet());
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGINS?.split(',') || [],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  })
-);
-app.options('*', cors());
 app.use(express.json());
 app.use(morgan('dev'));
 

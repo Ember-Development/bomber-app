@@ -107,6 +107,19 @@ export default function LoginScreen() {
                 onChangeText={setPassword}
                 fullWidth
               />
+              <TouchableOpacity
+                style={{ alignSelf: 'flex-end', marginTop: 8, marginBottom: 8 }}
+                onPress={() => router.push('/signup/password/forgot-password')}
+              >
+                <Text
+                  style={{
+                    color: GlobalColors.bomber,
+                    textDecorationLine: 'underline',
+                  }}
+                >
+                  Forgot password?
+                </Text>
+              </TouchableOpacity>
 
               {error && <Text style={styles.errorText}>{error}</Text>}
 
