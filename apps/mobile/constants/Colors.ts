@@ -12,6 +12,7 @@ export const GlobalColors = {
   white: '#ffffff',
   black: '#000000',
   purple: '#202988',
+  green: '#028A0f',
   blue: '#5AA5FF',
   red: '#FF0505',
   dark: '#282A29',
@@ -22,7 +23,7 @@ export const GlobalColors = {
 
 export const EventColors = {
   // ive never seen [] used in this way but it's used here to turn the enum into a parseable string! weird!
-  [EventType.PRACTICE]: GlobalColors.purple,
+  [EventType.PRACTICE]: GlobalColors.green,
   [EventType.GLOBAL]: GlobalColors.gold,
   [EventType.TOURNAMENT]: GlobalColors.bomber,
 };

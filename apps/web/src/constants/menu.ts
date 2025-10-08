@@ -10,11 +10,8 @@ import {
   UserIcon,
   AcademicCapIcon,
   BellAlertIcon,
-<<<<<<< HEAD
   ClipboardDocumentIcon,
   CircleStackIcon,
-=======
->>>>>>> events-tab
 } from '@heroicons/react/24/outline';
 
 export interface MenuItem {
@@ -28,11 +25,8 @@ export const MENU: MenuItem[] = [
   { name: 'Teams', path: '/teams', Icon: UsersIcon },
   { name: 'Users', path: '/users', Icon: UserIcon },
   { name: 'Players', path: '/players', Icon: AcademicCapIcon },
-<<<<<<< HEAD
   { name: 'Coaches', path: '/coaches', Icon: ClipboardDocumentIcon },
   { name: 'Portal', path: '/portal', Icon: CircleStackIcon },
-=======
->>>>>>> events-tab
   { name: 'Events', path: '/events', Icon: CalendarIcon },
   { name: 'Media', path: '/media', Icon: PhotoIcon },
   // { name: 'Legacy', path: '/legacy', Icon: PhotoIcon },

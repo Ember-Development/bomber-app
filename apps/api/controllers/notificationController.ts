@@ -1,4 +1,3 @@
-import { prisma } from '@bomber-app/database';
 import { Request, Response } from 'express';
 import {
   validateCreateNotification,
@@ -6,6 +5,7 @@ import {
 } from '../modules/notifications/validators';
 import { sendNotificationRecord } from '../services/notifications';
 import { AuthenticatedRequest } from '../utils/express';
+import { prisma } from '../api';
 
 export async function createNotification(
   req: AuthenticatedRequest,

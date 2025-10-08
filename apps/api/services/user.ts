@@ -1,6 +1,12 @@
-import { Prisma, prisma, User, UserFE, UserRole } from '@bomber-app/database';
+import { UserFE } from '@bomber-app/database';
 import { updateUser } from '../controllers/userController';
 import { hashPassword, verifyPassword } from '../utils/crypto';
+import {
+  EventType,
+  Prisma,
+  UserRole,
+} from '@bomber-app/database/generated/client';
+import { prisma } from '../api';
 
 //FIXME: replace the any once we have full types
 const validateUser = (user: any) => {
@@ -154,11 +160,18 @@ export const userService = {
   getUserEvents: async (userId: string) => {
     return await prisma.event.findMany({
       where: {
-        attendees: {
-          some: {
-            userID: userId,
+        OR: [
+          {
+            attendees: {
+              some: {
+                userID: userId,
+              },
+            },
           },
-        },
+          {
+            eventType: EventType.GLOBAL,
+          },
+        ],
       },
       include: {
         tournament: true,

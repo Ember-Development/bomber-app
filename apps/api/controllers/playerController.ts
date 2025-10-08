@@ -5,8 +5,8 @@ import {
   UpdatePlayerInput,
 } from '../services/player';
 import { Role } from '../auth/permissions';
-import { prisma } from '@bomber-app/database';
 import { AuthenticatedRequest } from '../utils/express';
+import { prisma } from '../api';
 
 export const getPlayerById = async (req: Request, res: Response) => {
   try {
@@ -186,7 +186,6 @@ export async function createForPlayer(req: Request, res: Response) {
 }
 
 export async function attachParentToPlayer(req: Request, res: Response) {
-<<<<<<< HEAD
   const playerId = String(req.params.id);
   const rawParentId = (req.body?.parentId ?? '').toString().trim();
 
@@ -307,43 +306,6 @@ export async function attachParentToPlayer(req: Request, res: Response) {
 
       // --- Step 4: return hydrated PlayerFE
       const hydrated = await tx.player.findUnique({
-=======
-  try {
-    const playerId = String(req.params.id);
-    const { parentId } = req.body as { parentId: string | number };
-    if (!parentId)
-      return res.status(400).json({ message: 'parentId is required' });
-
-    const parentIdStr = String(parentId);
-
-    const result = await prisma.$transaction(async (tx) => {
-      // 1) Hard 404s to prevent P2025
-      const [player, parent] = await Promise.all([
-        tx.player.findUnique({ where: { id: playerId }, select: { id: true } }),
-        tx.parent.findUnique({
-          where: { id: parentIdStr },
-          select: { id: true },
-        }),
-      ]);
-      if (!player) return res.status(404).json({ message: 'Player not found' });
-      if (!parent) return res.status(404).json({ message: 'Parent not found' });
-
-      // 2) Idempotency: only connect if not already linked
-      const alreadyLinked = await tx.player.findFirst({
-        where: { id: playerId, parents: { some: { id: parentIdStr } } },
-        select: { id: true },
-      });
-
-      if (!alreadyLinked) {
-        await tx.player.update({
-          where: { id: playerId },
-          data: { parents: { connect: { id: parentIdStr } } },
-        });
-      }
-
-      // 3) Return hydrated PlayerFE (user, team, parents, address)
-      return tx.player.findUnique({
->>>>>>> events-tab
         where: { id: playerId },
         include: {
           user: true,
@@ -352,7 +314,6 @@ export async function attachParentToPlayer(req: Request, res: Response) {
           address: true,
         },
       });
-<<<<<<< HEAD
 
       console.log('[attachParentToPlayer] done', {
         playerId,
@@ -364,12 +325,6 @@ export async function attachParentToPlayer(req: Request, res: Response) {
     });
 
     if (!result || (result as any).statusCode) return; // early response already sent inside tx
-=======
-    });
-
-    if (!result || (result as any).statusCode) return;
-
->>>>>>> events-tab
     return res.status(200).json(result);
   } catch (e: any) {
     console.error('attachParentToPlayer error:', e);
@@ -378,7 +333,6 @@ export async function attachParentToPlayer(req: Request, res: Response) {
       .json({ message: e?.message ?? 'Failed to link parent to player' });
   }
 }
-<<<<<<< HEAD
 
 export async function detachParentFromPlayer(req: Request, res: Response) {
   const playerId = String(req.params.id);
@@ -476,5 +430,3 @@ export async function detachParentFromPlayer(req: Request, res: Response) {
       .json({ message: e?.message ?? 'Failed to unlink parent from player' });
   }
 }
-=======
->>>>>>> events-tab

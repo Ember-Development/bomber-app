@@ -1,5 +1,7 @@
-import { AgeGroup, CommitDB, Prisma, prisma } from '@bomber-app/database';
+import { CommitDB } from '@bomber-app/database';
 import { Role } from '../auth/permissions';
+import { AgeGroup, Prisma } from '@bomber-app/database/generated/client';
+import { prisma } from '../api';
 
 export interface CreatePlayerInput extends Prisma.PlayerCreateInput {}
 export interface UpdatePlayerInput extends Prisma.PlayerUpdateInput {}

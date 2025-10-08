@@ -1,6 +1,6 @@
-import { prisma } from '@bomber-app/database';
 import { validateGroupAccess } from '../utils/accessGroups';
 import { Role } from '../auth/permissions';
+import { prisma } from '../api';
 
 export const groupService = {
   getAllGroups: async (

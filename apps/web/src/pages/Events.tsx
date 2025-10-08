@@ -1,25 +1,23 @@
+// src/pages/event.tsx
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import {
-  ArrowLeftIcon,
-  CalendarIcon as CalendarOutlineIcon,
-  ChevronRightIcon,
-  PlusIcon,
-  PencilSquareIcon,
-  TrashIcon,
-} from '@heroicons/react/24/outline';
+import { ChevronRightIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import SideDialog from '@/components/SideDialog';
 import {
   fetchEvents,
+  fetchEventById,
+  fetchEventAttendees,
   createEvent,
   updateEvent,
   deleteEvent,
+  addEventAttendees,
+  removeEventAttendee,
 } from '@/api/event';
-import type { EventFE } from '@bomber-app/database';
+import { fetchUsers } from '@/api/user';
+import type { EventFE, UserFE } from '@bomber-app/database';
 
 type EventType = 'TOURNAMENT' | 'PRACTICE' | 'GLOBAL';
 type DateFilter = 'All' | 'Upcoming' | 'Past';
@@ -30,21 +28,58 @@ function toDisplayEvent(e: EventFE) {
     date: new Date(e.start),
     allDay: true,
     type: e.eventType as EventType,
-    title: e.tournament?.title || e.eventType,
-    location: e.tournament?.body || '',
-    image: e.tournament?.imageURL || '',
+    title: e.title || e.tournament?.title || e.eventType,
+    // show event.body (details) and location, like mobile
+    location: e.location || '',
+    details: e.body || '',
     attendees: e.attendees?.length ?? 0,
     attendeeNames:
       e.attendees
-        ?.map((a) => (a.user ? `${a.user.fname} ${a.user.lname}` : ''))
+        ?.map((a) =>
+          a.user ? `${a.user.fname ?? ''} ${a.user.lname ?? ''}`.trim() : ''
+        )
         .filter(Boolean)
         .join(', ') || '',
     raw: e,
   };
 }
 
+/** tiny helpers like mobile */
+const US_STATES: { label: string; value: string }[] = [
+  { label: 'Alabama', value: 'Alabama' },
+  { label: 'Alaska', value: 'Alaska' } /* ... fill yours ... */,
+];
+const toAbbr = (stateName?: string) => {
+  // you likely already have util; keep this inline or import from utils/state
+  const m: Record<string, string> = {
+    Alabama: 'AL',
+    Alaska: 'AK' /* ... */,
+  };
+  return stateName && m[stateName] ? m[stateName] : '';
+};
+const getStateName = (input: string) => {
+  // normalize from abbr to full; minimal logic (you can import your utils)
+  const pairs: Array<[string, string]> = [
+    ['AL', 'Alabama'],
+    ['AK', 'Alaska'] /* ... */,
+  ];
+  const byAbbr = new Map(pairs);
+  const byName = new Map(pairs.map(([a, n]) => [n.toLowerCase(), n]));
+  const t = input.trim();
+  if (byAbbr.has(t.toUpperCase())) return byAbbr.get(t.toUpperCase())!;
+  return byName.get(t.toLowerCase()) ?? input;
+};
+const splitLocation = (
+  loc?: string | null
+): { city: string; state: string } => {
+  if (!loc) return { city: '', state: '' };
+  const parts = loc.split(',').map((s) => s.trim());
+  if (parts.length === 2)
+    return { city: parts[0], state: getStateName(parts[1]) };
+  return { city: loc, state: '' };
+};
+
 export default function Events() {
-  const navigate = useNavigate();
   const calendarRef = useRef<FullCalendar>(null);
 
   const [events, setEvents] = useState<EventFE[]>([]);
@@ -54,13 +89,20 @@ export default function Events() {
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const [typeFilter, setTypeFilter] = useState<'All' | EventType>('All');
+
+  // dialog
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<
-    'create' | 'edit' | 'delete' | null
+    'create' | 'edit' | 'view' | 'delete' | null
   >(null);
   const [selectedEvent, setSelectedEvent] = useState<ReturnType<
     typeof toDisplayEvent
   > | null>(null);
+
+  // users for attendee pickers (mirrors mobile)
+  const [allUsers, setAllUsers] = useState<UserFE[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+
   const [showAllByMonth, setShowAllByMonth] = useState<Record<string, boolean>>(
     {}
   );
@@ -71,6 +113,18 @@ export default function Events() {
       .then(setEvents)
       .catch(() => setEvents([]))
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    setUsersLoading(true);
+    fetchUsers()
+      .then((list) =>
+        setAllUsers(
+          (list as unknown as UserFE[]).filter((u) => u.primaryRole !== 'FAN')
+        )
+      )
+      .catch(() => setAllUsers([]))
+      .finally(() => setUsersLoading(false));
   }, []);
 
   const displayEvents = useMemo(() => events.map(toDisplayEvent), [events]);
@@ -123,6 +177,14 @@ export default function Events() {
     setSelectedEvent(e);
     setDialogOpen(true);
   };
+  const openView = async (e: ReturnType<typeof toDisplayEvent>) => {
+    // load fresh for details/attendees; keep same look
+    const fresh = await fetchEventById(e.id);
+    const enriched = toDisplayEvent(fresh);
+    setSelectedEvent(enriched);
+    setDialogType('view');
+    setDialogOpen(true);
+  };
   const openDelete = (e: ReturnType<typeof toDisplayEvent>) => {
     setDialogType('delete');
     setSelectedEvent(e);
@@ -136,43 +198,178 @@ export default function Events() {
 
   function handleCalendarEventClick(arg: any) {
     const ev = filtered.find((e) => e.id === arg.event.id);
-    if (ev) openEdit(ev);
+    if (ev) openView(ev); // view first, can click "Edit" inside
   }
 
+  // --- Forms that mirror mobile ---
+
   function CreateForm() {
-    const [form, setForm] = useState<{
-      eventType: EventType;
-      start: string;
-      end: string;
-      tournamentID?: string;
-    }>({
-      eventType: 'GLOBAL',
-      start: '',
-      end: '',
-    });
-    const onSave = async () => {
-      const created = await createEvent(form);
-      setEvents((prev) => [created, ...prev]);
-      closeDialog();
+    const [eventType, setEventType] = useState<EventType>('PRACTICE');
+    const [title, setTitle] = useState('');
+    const [city, setCity] = useState('');
+    const [stateVal, setStateVal] = useState('');
+    const [body, setBody] = useState('');
+    const [startIso, setStartIso] = useState('');
+    const [endIso, setEndIso] = useState('');
+
+    // Attendees pick (simple: multi-select by checkbox)
+    const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(
+      new Set()
+    );
+
+    const location = useMemo(() => {
+      const c = city.trim();
+      const s = toAbbr(getStateName(stateVal || ''));
+      if (c && s) return `${c}, ${s}`;
+      if (c) return c;
+      if (s) return s;
+      return '';
+    }, [city, stateVal]);
+
+    const [userQuery, setUserQuery] = useState('');
+    const inviteableUsers = useMemo(
+      () =>
+        allUsers
+          .filter((u) => u.primaryRole !== 'FAN')
+          .filter((u) => {
+            const name =
+              `${u.fname ?? ''} ${u.lname ?? ''} ${u.email ?? ''}`.toLowerCase();
+            return name.includes(userQuery.toLowerCase());
+          }),
+      [allUsers, userQuery]
+    );
+
+    const toggle = (id: string) =>
+      setSelectedUserIds((prev) => {
+        const next = new Set(prev);
+        next.has(id) ? next.delete(id) : next.add(id);
+        return next;
+      });
+
+    const selectAll = () => {
+      setSelectedUserIds(new Set(inviteableUsers.map((u) => u.id)));
     };
+    const clearAll = () => setSelectedUserIds(new Set());
+
+    const onSave = async () => {
+      // Only include attendees for non-GLOBAL events
+      const attendees =
+        eventType !== 'GLOBAL'
+          ? Array.from(selectedUserIds).map((userID) => ({
+              userID,
+              status: 'PENDING' as const,
+            }))
+          : [];
+
+      const payload = {
+        event: {
+          eventType,
+          start: new Date(startIso).toISOString(),
+          end: new Date(endIso).toISOString(),
+          title:
+            title.trim() ||
+            (eventType === 'PRACTICE' ? 'Practice' : 'Tournament'),
+          body: body.trim() || null,
+          location: location || null,
+        },
+        attendees,
+        tournamentID: null,
+      };
+
+      try {
+        const created = await createEvent(payload);
+        // Refresh list
+        const fresh = await fetchEvents();
+        setEvents(fresh);
+        closeDialog();
+      } catch (error) {
+        console.error('Failed to create event:', error);
+        // Optionally show user feedback (e.g., toast notification)
+        alert(
+          'Failed to create event: ' +
+            (error instanceof Error ? error.message : String(error))
+        );
+      }
+    };
+
     return (
       <div className="space-y-4">
+        {/* Type */}
         <div>
           <label className="block text-sm text-white font-semibold">Type</label>
-          <select
-            value={form.eventType}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, eventType: e.target.value as EventType }))
-            }
-            className="w-full px-4 py-2 bg-[rgba(255,255,255,0.1)] text-white rounded-lg"
-          >
-            {(['GLOBAL', 'TOURNAMENT', 'PRACTICE'] as EventType[]).map((t) => (
-              <option key={t} value={t} className="text-black">
+          <div className="flex gap-2 mt-1">
+            {(['PRACTICE', 'TOURNAMENT', 'GLOBAL'] as EventType[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => setEventType(t)}
+                className={`px-3 py-1 rounded-lg text-sm ${
+                  eventType === t
+                    ? 'bg-[#5AA5FF] text-white'
+                    : 'bg-white/10 text-white/80'
+                }`}
+              >
                 {t}
-              </option>
+              </button>
             ))}
-          </select>
+          </div>
         </div>
+
+        {/* Title */}
+        <div>
+          <label className="block text-sm text-white font-semibold">
+            Title
+          </label>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Event title"
+            className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
+          />
+        </div>
+
+        {/* Location: City/State */}
+        <div>
+          <label className="block text-sm text-white font-semibold">
+            Location
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="City (e.g., College Station)"
+              className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
+            />
+            <select
+              value={stateVal}
+              onChange={(e) => setStateVal(e.target.value)}
+              className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
+            >
+              <option value="" className="text-black">
+                Select State
+              </option>
+              {US_STATES.map((s) => (
+                <option key={s.value} value={s.value} className="text-black">
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Details (body) */}
+        <div>
+          <label className="block text-sm text-white font-semibold">
+            Details (facility/address/notes)
+          </label>
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder="e.g. Veterans Park & Athletic Complex, Field 3"
+            className="w-full min-h-[90px] px-4 py-2 bg-white/10 text-white rounded-lg"
+          />
+        </div>
+
+        {/* Start/End */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm text-white font-semibold">
@@ -180,11 +377,9 @@ export default function Events() {
             </label>
             <input
               type="datetime-local"
-              value={form.start}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, start: e.target.value }))
-              }
-              className="w-full px-4 py-2 bg-[rgba(255,255,255,0.1)] text-white rounded-lg"
+              value={startIso}
+              onChange={(e) => setStartIso(e.target.value)}
+              className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
             />
           </div>
           <div>
@@ -193,27 +388,95 @@ export default function Events() {
             </label>
             <input
               type="datetime-local"
-              value={form.end}
-              onChange={(e) => setForm((f) => ({ ...f, end: e.target.value }))}
-              className="w-full px-4 py-2 bg-[rgba(255,255,255,0.1)] text-white rounded-lg"
+              value={endIso}
+              onChange={(e) => setEndIso(e.target.value)}
+              className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
             />
           </div>
         </div>
-        {form.eventType === 'TOURNAMENT' && (
+
+        {/* Invitees (hidden for GLOBAL events) */}
+        {eventType !== 'GLOBAL' && (
           <div>
-            <label className="block text-sm text-white font-semibold">
-              Tournament ID
-            </label>
-            <input
-              type="text"
-              value={form.tournamentID || ''}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, tournamentID: e.target.value }))
-              }
-              className="w-full px-4 py-2 bg-[rgba(255,255,255,0.1)] text-white rounded-lg"
-            />
+            <div className="flex items-center justify-between gap-4">
+              <label className="text-sm text-white font-semibold whitespace-nowrap">
+                Invitees
+              </label>
+              <div className="flex items-center gap-2 w-full max-w-md">
+                <input
+                  type="text"
+                  value={userQuery}
+                  onChange={(e) => setUserQuery(e.target.value)}
+                  placeholder="Search name or email"
+                  className="px-2 py-1 bg-white/10 text-white rounded-md text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#5AA5FF]/50"
+                />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={selectAll}
+                    className="px-2 py-1 bg-[#5AA5FF] text-white rounded-md text-sm hover:bg-[#4A95EF] transition-colors"
+                  >
+                    Select all
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearAll}
+                    className="px-2 py-1 bg-white/20 text-white rounded-md text-sm hover:bg-white/30 transition-colors"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+            </div>
+            <span className="text-white/60 text-xs">
+              {selectedUserIds.size} selected
+            </span>
+            <div className="max-h-48 overflow-auto mt-2 rounded-lg border border-white/10">
+              {usersLoading && (
+                <div className="p-3 text-white/70">Loading users…</div>
+              )}
+              {!usersLoading && inviteableUsers.length === 0 && (
+                <div className="p-3 text-white/70">No users</div>
+              )}
+              {!usersLoading && inviteableUsers.length > 0 && (
+                <ul className="divide-y divide-white/10">
+                  {inviteableUsers.map((u) => {
+                    const id = u.id;
+                    const name =
+                      `${u.fname ?? ''} ${u.lname ?? ''}`.trim() ||
+                      u.email ||
+                      id;
+                    const on = selectedUserIds.has(id);
+                    return (
+                      <li
+                        key={id}
+                        className="flex items-center justify-between p-2 hover:bg-white/5"
+                      >
+                        <span className="text-white">{name}</span>
+                        <label className="text-white/80 text-sm flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={on}
+                            onChange={() => toggle(id)}
+                          />
+                          Invite
+                        </label>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
           </div>
         )}
+        {eventType === 'GLOBAL' && (
+          <div className="text-white/70 text-sm">
+            Global events are visible to all users and do not require specific
+            invitees.
+          </div>
+        )}
+
+        {/* Actions */}
         <div className="flex flex-col sm:flex-row sm:space-x-4 mt-6">
           <button
             onClick={onSave}
@@ -223,7 +486,7 @@ export default function Events() {
           </button>
           <button
             onClick={closeDialog}
-            className="flex-1 mt-4 sm:mt-0 px-4 py-2 bg-[rgba(255,255,255,0.14)] text-white rounded-lg hover:bg-[#5AA5FF] whitespace-nowrap"
+            className="flex-1 mt-4 sm:mt-0 px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-[#5AA5FF] whitespace-nowrap"
           >
             Cancel
           </button>
@@ -233,35 +496,188 @@ export default function Events() {
   }
 
   function EditForm({ event }: { event: ReturnType<typeof toDisplayEvent> }) {
-    const [form, setForm] = useState({
-      eventType: event.type,
-      start: event.date.toISOString().slice(0, 16),
-      end: event.date.toISOString().slice(0, 16),
-      tournamentID: event.raw.tournamentID || '',
-    });
+    const { city: initCity, state: initState } = splitLocation(event.location);
+    const [eventType, setEventType] = useState<EventType>(event.type);
+    const [title, setTitle] = useState(event.title ?? '');
+    const [city, setCity] = useState(initCity);
+    const [stateVal, setStateVal] = useState(initState);
+    const [body, setBody] = useState(event.details ?? '');
+    const [startIso, setStartIso] = useState(
+      new Date(event.raw.start).toISOString().slice(0, 16)
+    );
+    const [endIso, setEndIso] = useState(
+      new Date(event.raw.end).toISOString().slice(0, 16)
+    );
+
+    const [attendees, setAttendees] = useState<
+      Array<{ userId: string; name: string }>
+    >([]);
+    const [addIds, setAddIds] = useState<Set<string>>(new Set()); // to add
+    const [removeIds, setRemoveIds] = useState<Set<string>>(new Set()); // to remove
+    const [addQuery, setAddQuery] = useState('');
+
+    useEffect(() => {
+      // load attendees list
+      fetchEventAttendees(event.id).then((rows) => {
+        const mapped = rows
+          .map((r) => ({
+            userId: r.user?.id,
+            name: `${r.user?.fname ?? ''} ${r.user?.lname ?? ''}`.trim(),
+          }))
+          .filter((x) => x.userId) as Array<{ userId: string; name: string }>;
+        setAttendees(mapped);
+        setAddIds(new Set());
+        setRemoveIds(new Set());
+      });
+    }, [event.id]);
+
+    const location = useMemo(() => {
+      const c = city.trim();
+      const s = toAbbr(getStateName(stateVal || ''));
+      if (c && s) return `${c}, ${s}`;
+      if (c) return c;
+      if (s) return s;
+      return '';
+    }, [city, stateVal]);
+
+    const addList = useMemo(
+      () =>
+        allUsers
+          .filter((u) => u.primaryRole !== 'FAN')
+          // optional: exclude already-attending users from "add" list:
+          .filter((u) => !attendees.some((a) => a.userId === u.id))
+          .filter((u) => {
+            const hay =
+              `${u.fname ?? ''} ${u.lname ?? ''} ${u.email ?? ''}`.toLowerCase();
+            return hay.includes(addQuery.toLowerCase());
+          }),
+      [allUsers, attendees, addQuery]
+    );
+
+    const addSelectAll = () => setAddIds(new Set(addList.map((u) => u.id)));
+    const addClearAll = () => setAddIds(new Set());
+
+    const toggleAdd = (id: string) =>
+      setAddIds((prev) => {
+        const next = new Set(prev);
+        next.has(id) ? next.delete(id) : next.add(id);
+        return next;
+      });
+    const toggleRemove = (id: string) =>
+      setRemoveIds((prev) => {
+        const next = new Set(prev);
+        next.has(id) ? next.delete(id) : next.add(id);
+        return next;
+      });
+
     const onSave = async () => {
-      const updated = await updateEvent(event.id, form);
-      setEvents((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
+      // 1) update event core fields (like mobile)
+      await updateEvent(event.id, {
+        eventType,
+        start: new Date(startIso).toISOString(),
+        end: new Date(endIso).toISOString(),
+        title: title.trim() || null,
+        body: body.trim() || null,
+        location: location || null,
+      });
+
+      // 2) apply attendee diffs
+      if (addIds.size > 0) {
+        await addEventAttendees(event.id, Array.from(addIds), 'PENDING');
+      }
+      for (const rid of Array.from(removeIds)) {
+        await removeEventAttendee(event.id, rid);
+      }
+
+      // refresh page data
+      const fresh = await fetchEvents();
+      setEvents(fresh);
+
+      // if we are on "view", also refresh selected
+      const freshDetail = await fetchEventById(event.id);
+      setSelectedEvent(toDisplayEvent(freshDetail));
+
       closeDialog();
     };
+
     return (
       <div className="space-y-4">
+        {/* Type */}
         <div>
           <label className="block text-sm text-white font-semibold">Type</label>
-          <select
-            value={form.eventType}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, eventType: e.target.value as EventType }))
-            }
-            className="w-full px-4 py-2 bg-[rgba(255,255,255,0.1)] text-white rounded-lg"
-          >
-            {(['GLOBAL', 'TOURNAMENT', 'PRACTICE'] as EventType[]).map((t) => (
-              <option key={t} value={t} className="text-black">
+          <div className="flex gap-2 mt-1">
+            {(['PRACTICE', 'TOURNAMENT', 'GLOBAL'] as EventType[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => setEventType(t)}
+                className={`px-3 py-1 rounded-lg text-sm ${
+                  eventType === t
+                    ? 'bg-[#5AA5FF] text-white'
+                    : 'bg-white/10 text-white/80'
+                }`}
+              >
                 {t}
-              </option>
+              </button>
             ))}
-          </select>
+          </div>
         </div>
+
+        {/* Title */}
+        <div>
+          <label className="block text-sm text-white font-semibold">
+            Title
+          </label>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Event title"
+            className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
+          />
+        </div>
+
+        {/* Location: City/State */}
+        <div>
+          <label className="block text-sm text-white font-semibold">
+            Location
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="City"
+              className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
+            />
+            <select
+              value={stateVal}
+              onChange={(e) => setStateVal(e.target.value)}
+              className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
+            >
+              <option value="" className="text-black">
+                Select State
+              </option>
+              {US_STATES.map((s) => (
+                <option key={s.value} value={s.value} className="text-black">
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Details (body) */}
+        <div>
+          <label className="block text-sm text-white font-semibold">
+            Details
+          </label>
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder="Facility / address / notes"
+            className="w-full min-h-[90px] px-4 py-2 bg-white/10 text-white rounded-lg"
+          />
+        </div>
+
+        {/* Start/End */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm text-white font-semibold">
@@ -269,11 +685,9 @@ export default function Events() {
             </label>
             <input
               type="datetime-local"
-              value={form.start}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, start: e.target.value }))
-              }
-              className="w-full px-4 py-2 bg-[rgba(255,255,255,0.1)] text-white rounded-lg"
+              value={startIso}
+              onChange={(e) => setStartIso(e.target.value)}
+              className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
             />
           </div>
           <div>
@@ -282,27 +696,108 @@ export default function Events() {
             </label>
             <input
               type="datetime-local"
-              value={form.end}
-              onChange={(e) => setForm((f) => ({ ...f, end: e.target.value }))}
-              className="w-full px-4 py-2 bg-[rgba(255,255,255,0.1)] text-white rounded-lg"
+              value={endIso}
+              onChange={(e) => setEndIso(e.target.value)}
+              className="w-full px-4 py-2 bg-white/10 text-white rounded-lg"
             />
           </div>
         </div>
-        {form.eventType === 'TOURNAMENT' && (
-          <div>
+
+        {/* Attendees – add */}
+        <div>
+          <div className="flex items-center justify-between">
             <label className="block text-sm text-white font-semibold">
-              Tournament ID
+              Add People
             </label>
-            <input
-              type="text"
-              value={form.tournamentID}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, tournamentID: e.target.value }))
-              }
-              className="w-full px-4 py-2 bg-[rgba(255,255,255,0.1)] text-white rounded-lg"
-            />
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={addQuery}
+                onChange={(e) => setAddQuery(e.target.value)}
+                placeholder="Search name or email"
+                className="px-2 py-1 bg-white/10 text-white rounded"
+              />
+              <button
+                type="button"
+                onClick={addSelectAll}
+                className="px-2 py-1 bg-[#5AA5FF] text-white rounded"
+              >
+                Select all
+              </button>
+              <button
+                type="button"
+                onClick={addClearAll}
+                className="px-2 py-1 bg-white/20 text-white rounded"
+              >
+                Clear
+              </button>
+              <span className="text-white/60 text-xs ml-2">
+                {addIds.size} to add
+              </span>
+            </div>
           </div>
-        )}
+
+          <div className="max-h-40 overflow-auto mt-2 rounded-lg border border-white/10">
+            <ul className="divide-y divide-white/10">
+              {addList.map((u) => {
+                const id = u.id;
+                const name =
+                  `${u.fname ?? ''} ${u.lname ?? ''}`.trim() || u.email || id;
+                const on = addIds.has(id);
+                return (
+                  <li
+                    key={id}
+                    className="flex items-center justify-between p-2 hover:bg-white/5"
+                  >
+                    <span className="text-white">{name}</span>
+                    <label className="text-white/80 text-sm flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={on}
+                        onChange={() => toggleAdd(id)}
+                      />
+                      Add
+                    </label>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+        {/* Attendees – existing removable */}
+        <div>
+          <div className="flex items-center justify-between">
+            <label className="block text-sm text-white font-semibold">
+              Current Attendees
+            </label>
+            <span className="text-white/60 text-xs">{attendees.length}</span>
+          </div>
+          <div className="max-h-40 overflow-auto mt-2 rounded-lg border border-white/10">
+            <ul className="divide-y divide-white/10">
+              {attendees.map((a) => {
+                const on = removeIds.has(a.userId);
+                return (
+                  <li
+                    key={a.userId}
+                    className="flex items-center justify-between p-2 hover:bg-white/5"
+                  >
+                    <span className="text-white">{a.name || a.userId}</span>
+                    <label className="text-white/80 text-sm flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={on}
+                        onChange={() => toggleRemove(a.userId)}
+                      />
+                      Remove
+                    </label>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+
+        {/* Actions */}
         <div className="flex flex-col sm:flex-row sm:space-x-4 mt-6">
           <button
             onClick={onSave}
@@ -312,9 +807,107 @@ export default function Events() {
           </button>
           <button
             onClick={closeDialog}
-            className="flex-1 mt-4 sm:mt-0 px-4 py-2 bg-[rgba(255,255,255,0.14)] text-white rounded-lg hover:bg-[#5AA5FF] whitespace-nowrap"
+            className="flex-1 mt-4 sm:mt-0 px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-[#5AA5FF] whitespace-nowrap"
           >
             Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  function ViewPanel({ event }: { event: ReturnType<typeof toDisplayEvent> }) {
+    const [attRows, setAttRows] = useState<
+      Array<{
+        status: string;
+        user: { id: string; fname?: string | null; lname?: string | null };
+      }>
+    >([]);
+
+    useEffect(() => {
+      fetchEventAttendees(event.id)
+        .then(setAttRows)
+        .catch(() => setAttRows([]));
+    }, [event.id]);
+
+    const when = useMemo(() => {
+      const start = new Date(event.raw.start);
+      const end = new Date(event.raw.end);
+      const sameDay = start.toDateString() === end.toDateString();
+      const dateStr = sameDay
+        ? start.toLocaleDateString(undefined, {
+            weekday: 'long',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })
+        : `${start.toLocaleDateString()} – ${end.toLocaleDateString()}`;
+      const timeStr = `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      return `${dateStr}\n${timeStr}`;
+    }, [event]);
+
+    return (
+      <div className="space-y-4">
+        <div className="text-xl font-semibold text-white">{event.title}</div>
+        <div className="flex gap-2">
+          <span className="inline-block bg-[#5AA5FF] px-2 py-0.5 rounded-full text-xs text-white">
+            {event.type}
+          </span>
+        </div>
+        <div className="h-px bg-white/10 my-2" />
+        <div className="text-white/80 whitespace-pre-line">
+          <div className="mb-2">
+            <b className="text-white">When</b>
+            <br />
+            {when}
+          </div>
+          <div className="mb-2">
+            <b className="text-white">Where</b>
+            <br />
+            {event.location || '—'}
+          </div>
+          {event.details && (
+            <div className="mb-2">
+              <b className="text-white">Details</b>
+              <br />
+              {event.details}
+            </div>
+          )}
+        </div>
+
+        <div className="h-px bg-white/10 my-2" />
+        <div>
+          <div className="text-white font-semibold mb-2">Attendees</div>
+          {attRows.length === 0 && (
+            <div className="text-white/60">No attendees</div>
+          )}
+          {attRows.length > 0 && (
+            <ul className="space-y-1">
+              {attRows.slice(0, 12).map((a, idx) => (
+                <li key={idx} className="text-white/90 flex justify-between">
+                  <span>
+                    {`${a.user.fname ?? ''} ${a.user.lname ?? ''}`.trim() ||
+                      a.user.id}
+                  </span>
+                  <span className="text-white/50 text-xs">{a.status}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="flex gap-2 mt-4">
+          <button
+            onClick={() => setDialogType('edit')}
+            className="px-4 py-2 bg-[#5AA5FF] rounded-lg text-white"
+          >
+            Edit Event
+          </button>
+          <button
+            onClick={() => setDialogType('delete')}
+            className="px-4 py-2 bg-red-600 rounded-lg text-white"
+          >
+            Delete
           </button>
         </div>
       </div>
@@ -374,7 +967,6 @@ export default function Events() {
                   onChange={(e) => setStart(e.target.value)}
                   className="w-full px-2 py-2 bg-transparent text-white focus:outline-none"
                 />
-                <CalendarOutlineIcon className="w-5 h-5 text-white/60 ml-2" />
               </div>
             </div>
             <div>
@@ -388,7 +980,6 @@ export default function Events() {
                   onChange={(e) => setEnd(e.target.value)}
                   className="w-full px-2 py-2 bg-transparent text-white focus:outline-none"
                 />
-                <CalendarOutlineIcon className="w-5 h-5 text-white/60 ml-2" />
               </div>
             </div>
             <div>
@@ -451,7 +1042,7 @@ export default function Events() {
           </div>
         )}
 
-        {/* Cards vs Calendar */}
+        {/* Cards vs Calendar – SAME LOOK */}
         {!loading && viewMode === 'cards' ? (
           <ScrollArea className="space-y-8">
             {grouped.map(([month, evs]) => {
@@ -470,7 +1061,7 @@ export default function Events() {
                       return (
                         <div
                           key={e.id}
-                          onClick={() => openEdit(e)}
+                          onClick={() => openView(e)}
                           className="flex flex-col sm:flex-row items-start sm:items-center p-4 sm:p-6 bg-[rgba(255,255,255,0.1)] backdrop-blur-lg rounded-xl hover:bg-[rgba(255,255,255,0.2)] transition cursor-pointer"
                         >
                           <div className="w-full sm:w-20 text-white flex flex-row sm:flex-col items-center sm:items-center mb-4 sm:mb-0">
@@ -481,14 +1072,7 @@ export default function Events() {
                           </div>
                           <div className="flex-1 ml-0 sm:ml-6 flex flex-col sm:flex-row justify-between text-white w-full">
                             <div className="mb-4 sm:mb-0">
-                              <div>
-                                {e.allDay
-                                  ? 'All Day'
-                                  : e.date.toLocaleTimeString([], {
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                    })}
-                              </div>
+                              <div>All Day</div>
                               <div className="inline-block bg-[#5AA5FF] px-2 py-0.5 rounded-full text-xs mt-1">
                                 {e.type}
                               </div>
@@ -575,13 +1159,14 @@ export default function Events() {
                 headerToolbar={{ left: '', center: 'title', right: '' }}
                 height="auto"
                 eventClassNames={() => 'rounded-full px-2 py-1 text-xs'}
-                eventClick={handleCalendarEventClick}
+                eventClick={(arg) => handleCalendarEventClick(arg)}
               />
             </div>
           )
         )}
       </div>
 
+      {/* Right Side Dialog (same look, mobile behavior) */}
       <SideDialog
         open={dialogOpen}
         onClose={closeDialog}
@@ -590,13 +1175,21 @@ export default function Events() {
             ? 'Create Event'
             : dialogType === 'edit'
               ? 'Edit Event'
-              : 'Delete Event'
+              : dialogType === 'view'
+                ? 'Event'
+                : 'Delete Event'
         }
       >
         {dialogType === 'create' && <CreateForm />}
+
+        {dialogType === 'view' && selectedEvent && (
+          <ViewPanel event={selectedEvent} />
+        )}
+
         {dialogType === 'edit' && selectedEvent && (
           <EditForm event={selectedEvent} />
         )}
+
         {dialogType === 'delete' && selectedEvent && (
           <div className="space-y-4">
             <p className="text-white">

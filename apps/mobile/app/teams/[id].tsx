@@ -104,11 +104,11 @@ export default function TeamPage() {
             <View style={styles.infoCard}>
               <Text style={styles.infoTitle}>Team Overview</Text>
               <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Coach</Text>
+                <Text style={styles.infoLabel}>Head Coach</Text>
                 <Text style={styles.infoValue}>{coachName}</Text>
               </View>
               <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Region</Text>
+                <Text style={styles.infoLabel}>Team Region</Text>
                 <Text style={styles.infoValue}>{regionLabel}</Text>
               </View>
               <View style={styles.infoRow}>
@@ -205,9 +205,7 @@ export default function TeamPage() {
                       {coach.user?.fname} {coach.user?.lname}
                     </Text>
                     <Text style={styles.playerDetails}>
-                      {coach.id === team.headCoachID
-                        ? 'Head Coach'
-                        : 'Assistant Coach'}
+                      {coach.id === team.headCoachID ? 'Head Coach' : 'Coach'}
                     </Text>
                   </View>
                 </View>

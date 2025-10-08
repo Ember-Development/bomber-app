@@ -1,4 +1,4 @@
-import { prisma } from '@bomber-app/database';
+import { prisma } from '../api';
 import { sendToDevice } from '../lib/push';
 
 export async function resolveAudience(audience: any): Promise<string[]> {

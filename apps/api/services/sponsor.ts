@@ -1,5 +1,6 @@
 // services/sponsor.ts
-import { prisma, SponsorDB } from '@bomber-app/database';
+import { SponsorDB } from '@bomber-app/database';
+import { prisma } from '../api';
 
 interface SponsorCreateInput {
   title: string;

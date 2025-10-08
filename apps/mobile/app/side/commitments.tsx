@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import React, { useRef, useState, useEffect, useMemo } from 'react';
-=======
-import React, { useRef, useState, useEffect } from 'react';
->>>>>>> events-tab
 import {
   SafeAreaView,
   View,
@@ -10,10 +6,6 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
-<<<<<<< HEAD
-=======
-  StatusBar,
->>>>>>> events-tab
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
@@ -25,18 +17,13 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCommits } from '@/hooks/useCommit';
 import CustomSelect from '@/components/ui/atoms/dropdown';
-<<<<<<< HEAD
 import { CommitFE, PlayerFE } from '@bomber-app/database';
-=======
-import { CommitFE } from '@bomber-app/database';
->>>>>>> events-tab
 import { useRouter } from 'expo-router';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { formatPosition } from '@/utils/enumOptions';
 
 const ROW_HORIZONTAL_PADDING = 16;
 
-<<<<<<< HEAD
 const getFirstPlayer = (c: CommitFE) => c.players?.[0];
 
 const hasKnownPlayerName = (c: CommitFE) => {
@@ -54,8 +41,6 @@ const getPlayerGradYear = (c: CommitFE): number | null => {
   return Number.isFinite(y) ? y : null;
 };
 
-=======
->>>>>>> events-tab
 export default function CommitmentsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -65,7 +50,6 @@ export default function CommitmentsScreen() {
 
   const { data: commits, isLoading } = useCommits();
 
-<<<<<<< HEAD
   // “Living doc” rule:
   // - Today is 2025-08-27 -> lowest grad year we show is currentYear + 1 = 2026
   //   (2025s are now alumni and excluded here)
@@ -97,33 +81,13 @@ export default function CommitmentsScreen() {
 
   const [selectedYear, setSelectedYear] = useState<string>(
     allYears[0] ?? String(minGradYear)
-=======
-  const allYears = [
-    ...new Set(
-      (commits ?? [])
-        .map((c) =>
-          c.committedDate
-            ? new Date(c.committedDate).getFullYear().toString()
-            : null
-        )
-        .filter((y): y is string => y !== null)
-    ),
-  ].sort((a, b) => b.localeCompare(a));
-
-  const [selectedYear, setSelectedYear] = useState<string>(
-    allYears[0] ?? new Date().getFullYear().toString()
->>>>>>> events-tab
   );
 
   useEffect(() => {
     if (allYears.length > 0 && !allYears.includes(selectedYear)) {
       setSelectedYear(allYears[0]);
     }
-<<<<<<< HEAD
   }, [allYears, selectedYear]);
-=======
-  }, [commits]);
->>>>>>> events-tab
 
   const scrollToTop = () => {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -141,7 +105,6 @@ export default function CommitmentsScreen() {
       day: 'numeric',
     });
 
-<<<<<<< HEAD
   // Filter by selected grad year and sort:
   // 1) Grad year DESC (redundant within a year filter but safe if no filter)
   // 2) Committed date DESC (newest first)
@@ -163,21 +126,6 @@ export default function CommitmentsScreen() {
 
   const renderRow = ({ item }: { item: CommitFE }) => {
     if (!hasKnownPlayerName(item)) return null;
-=======
-  const filteredCommits: CommitFE[] = (commits ?? [])
-    .filter(
-      (c) =>
-        c.committedDate &&
-        new Date(c.committedDate).getFullYear().toString() === selectedYear
-    )
-    .sort(
-      (a, b) =>
-        new Date(b.committedDate).getTime() -
-        new Date(a.committedDate).getTime()
-    );
-
-  const renderRow = ({ item }: { item: CommitFE }) => {
->>>>>>> events-tab
     const player = item.players?.[0];
     const user = player?.user;
     const playerName =
@@ -189,10 +137,7 @@ export default function CommitmentsScreen() {
     const formattedDate = item.committedDate
       ? formatDate(item.committedDate)
       : '—';
-<<<<<<< HEAD
     const gradYear = player?.gradYear ?? '—';
-=======
->>>>>>> events-tab
 
     return (
       <View style={styles.rowWrapper}>
@@ -212,7 +157,6 @@ export default function CommitmentsScreen() {
                 type="default"
                 style={[styles.detailText, { color: textColor }]}
               >
-<<<<<<< HEAD
                 {position} • {hometown}
               </ThemedText>
 
@@ -221,9 +165,6 @@ export default function CommitmentsScreen() {
                 style={[styles.detailText, { color: textColor }]}
               >
                 Grad {gradYear} • Committed {formattedDate}
-=======
-                {position} • {hometown} • Committed {formattedDate}
->>>>>>> events-tab
               </ThemedText>
             </View>
           </View>
@@ -235,11 +176,7 @@ export default function CommitmentsScreen() {
   return (
     <BackgroundWrapper>
       <SafeAreaView style={styles.container}>
-<<<<<<< HEAD
         {/* Header */}
-=======
-        {/* Header with Back button */}
->>>>>>> events-tab
         <View style={styles.headerName}>
           <TouchableOpacity
             style={styles.backButton}
@@ -256,11 +193,7 @@ export default function CommitmentsScreen() {
 
         <View style={styles.dropdownWrapper}>
           <CustomSelect
-<<<<<<< HEAD
             label="Grad Year"
-=======
-            label="Year"
->>>>>>> events-tab
             options={allYears.map((y) => ({ label: y, value: y }))}
             defaultValue={selectedYear}
             onSelect={(value) => setSelectedYear(value)}
@@ -352,11 +285,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: ROW_HORIZONTAL_PADDING,
     paddingVertical: 12,
   },
-<<<<<<< HEAD
 
   // Removed fixed height; use padding & minHeight so text can wrap on small screens
-=======
->>>>>>> events-tab
   rowWrapper: {
     marginBottom: 16,
     borderRadius: 16,
@@ -378,17 +308,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     gap: 12,
   },
-<<<<<<< HEAD
 
   // Slightly smaller, consistent logo to prevent layout squeeze
   logo: {
     width: 56,
     height: 56,
-=======
-  logo: {
-    width: ROW_HEIGHT * 0.6,
-    height: ROW_HEIGHT * 0.6,
->>>>>>> events-tab
     resizeMode: 'contain',
     borderRadius: 8,
     backgroundColor: 'rgba(255,255,255,0.1)',

@@ -58,19 +58,16 @@ jobs:
           # Database
           echo "DB_URI=postgresql://postgres:Bomber0505!@10.0.0.99:5432/bombers" > .env
 
-
           #FIXME: this is probably wrong
           echo "REDIS_HOST=localhost" >> .env
           echo "REDIS_PORT=6379" >> .env
 
-
           # Serve
           echo "PORT=3000" >> .env
 
-          # JWT secrets
-          # FIXME: bad pass, will get got by dictionary attacks
-          echo "JWT_ACCESS_SECRET=your_random_access_secret_here" >> .env
-          echo "JWT_REFRESH_SECRET=your_random_refresh_secret_here" >> .env
+          # JWT secrets (using GitHub Secrets)
+          echo "JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}" >> .env
+          echo "JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}" >> .env
 
           # Token lifetimes
           echo "ACCESS_EXPIRES_IN=1d" >> .env
@@ -78,6 +75,21 @@ jobs:
 
           # Password hashing
           echo "BCRYPT_SALT_ROUNDS=12" >> .env
+
+          # Other existing environment variables (add as needed)
+          echo "PUSH_ENABLED=true" >> .env
+          echo "APNS_TEAM_ID=56SR3FVFLU" >> .env
+          echo "APNS_KEY_ID=AZF7PHNSP3" >> .env
+          echo "APNS_BUNDLE_ID=com.bomberfastpitch.bomberapp" >> .env
+          echo "APNS_P8_BASE64=LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JR1RBZ0VBTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEJIa3dkd0lCQVFRZ0VXTzlBUVZveFZxbkdxSDUKTmpGL2JJVU5vaUk1WVZIVUJSeHBxNjJ6Wnk2Z0NnWUlLb1pJemowREFRZWhSQU5DQUFRaDRqajg0bm9OSzJOMQpta3gwcTRrT2t1UUlDd1ZXK3pjNjQ4cldheGd2Zko0amorWWswSkNvN2dmRnBTd25UanNvcEhWSkIwWTZHQVlJCmI4UjB4SWxsCi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0=" >> .env
+          echo "APNS_SANDBOX=false" >> .env
+          echo "FIREBASE_PROJECT_ID=bomber-app-5880d" >> .env
+          echo "FIREBASE_CLIENT_EMAIL=firebase-adminsdk-fbsvc@bomber-app-5880d.iam.gserviceaccount.com" >> .env
+          echo "FIREBASE_PRIVATE_KEY_BASE64=LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2Z0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktnd2dnU2tBZ0VBQW9JQkFRQ1MzZkpLQ2JmYkd2WDkKMXcvMnZEZUdTTmx4dklwSjdZWXVKblBpUVRzT0xrZzhrSDg5ZHZRbHZOT3VpNUtqODczVDg5UzFOZ1RtMmxlVgpaVUYvN01QNVZzdTcxRVdmYUtBVVVaZUJCNjBuYTBNOTZka1ZzTTJTNXVuS1MyOC83WHloc0Jwbjh2ZksrR1FZClVReEVKU1djVVlzVlQrc0xCc000anFpT0RIcmRJNGs1NFJyTUJRWitXTGtPekgxVjIzREFKQ1NUYmVTcFcyZzkKdkxjZGg2NDNpK1d4SlVRcUc0emV6MHRJdFVabUFkdzRobjM2cCtPQSthbVhDMjVBY2ZNaFo5RjZZcy9hd2hpTgo3b25mU3Y2SzRHbHB3QmR5NzlWVVpkSTE0MUZtMFZFSDVLODBPTzRuR2FobWRJQWhlbE8rVDNLVmFac202SzUKaXFkNFp0d1RBZ01CQUFFQ2dnRUFSRnt6K0ZOWUdKWlM0N2ZmV3FIdEc5QlAvRnJrWmc5YXVhcVowemRGaVVWaAoxR25kc0svVEZETXV0enVxenZBYllpQ0=" >> .env
+          echo "RESEND_API_KEY=re_SeEYdcp4_H5FGFQfBfiYVnX4M3Hih5GjC" >> .env
+          echo "EMAIL_FROM=\"Bomber Fastpitch <no-reply@bomberadmin.net>\"" >> .env
+          echo "RESET_LINK_BASE_WEB=https://bomberadmin.net/reset-password" >> .env
+          echo "RESET_LINK_SCHEME=myapp://signup/password/reset-password" >> .env
 
           pm2 restart all
 
