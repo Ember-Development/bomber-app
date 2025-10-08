@@ -4,9 +4,8 @@
   "description": "",
   "main": "api.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "start": "node dist/api.js",
     "dev": "tsx watch api.ts",
+    "start": "tsx api.ts",
     "test": "jest --watchAll"
   },
   "keywords": [],
