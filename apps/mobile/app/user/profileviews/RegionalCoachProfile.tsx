@@ -23,7 +23,8 @@ type Props = {
   setEditPlayerId: (id: string) => void;
   setRemovePlayerId: (id: string) => void;
   setEditCoachId: (id: string) => void;
-  setRemoveCoachId: (id: string) => void;
+  setRemoveCoachId: (x: { coachId: string; teamId: string }) => void;
+  setAddTrophy: (teamId: string | null) => void;
   setEditTrophy: (x: any) => void;
   setRemoveTrophy: (x: any) => void;
   setSelectedProfile: (x: any) => void;
@@ -43,6 +44,7 @@ export default function RegionalCoachProfile({
   setRemovePlayerId,
   setEditCoachId,
   setRemoveCoachId,
+  setAddTrophy,
   setEditTrophy,
   setRemoveTrophy,
   setSelectedProfile,
@@ -123,6 +125,7 @@ export default function RegionalCoachProfile({
         setRemovePlayerId={setRemovePlayerId}
         setEditCoachId={setEditCoachId}
         setRemoveCoachId={setRemoveCoachId}
+        setAddTrophy={setAddTrophy}
         setEditTrophy={setEditTrophy}
         setRemoveTrophy={setRemoveTrophy}
         setSelectedProfile={setSelectedProfile}
@@ -156,7 +159,8 @@ export default function RegionalCoachProfile({
             value: 'Coach',
             fullWidth: true,
             onEdit: () => setEditCoachId(c.id),
-            onRemove: () => setRemoveCoachId(c.id),
+            onRemove: () =>
+              setRemoveCoachId({ coachId: c.id, teamId: team.id }),
           })) || [],
         trophies:
           team.trophyCase?.map((t: any) => ({
@@ -191,6 +195,15 @@ export default function RegionalCoachProfile({
               </TouchableOpacity>
             ))}
           </View>
+
+          {view === 'trophies' && (
+            <View style={{ marginBottom: 12 }}>
+              <CustomButton
+                title="+ Add Trophy"
+                onPress={() => setAddTrophy(team.id)}
+              />
+            </View>
+          )}
 
           <RenderCards
             data={teamData[view]}

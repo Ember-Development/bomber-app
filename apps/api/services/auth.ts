@@ -277,4 +277,76 @@ export const authService = {
     const { access, refresh } = await rotateRefreshToken(token);
     return { access, refresh };
   },
+
+  async requestPasswordReset(emailUnknown: unknown) {
+    if (!isEmail(emailUnknown)) {
+      console.warn('[forgot] invalid email format', {
+        email: maskEmail(String(emailUnknown)),
+      });
+      return;
+    }
+
+    const email = String(emailUnknown).trim().toLowerCase();
+    console.log('[forgot] normalized', {
+      emailMasked: maskEmail(email),
+      emailHash: hashEmail(email),
+    });
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !user.email || !user.pass) {
+      console.log('[forgot] no user found', { emailHash: hashEmail(email) });
+      return; // uniform 200
+    }
+    console.log('[forgot] user found', { userId: user.id });
+
+    const token = signResetToken(user.id, user.email, user.pass, '15m');
+    console.log('[forgot] token minted', { len: token.length });
+
+    try {
+      const id = await sendPasswordResetEmail({
+        to: user.email,
+        email: user.email,
+        token,
+      });
+      console.log('[forgot] email handed to Resend', { messageId: id });
+    } catch (e: any) {
+      console.error('[forgot] send failed', {
+        name: e?.name,
+        message: e?.message,
+        statusCode: e?.statusCode,
+        cause: e?.cause,
+      });
+    }
+  },
+
+  async resetPassword(body: any) {
+    const email = body?.email;
+    const token = body?.token;
+    const password = body?.password;
+
+    if (!isEmail(email)) throw { status: 400, message: 'Invalid email.' };
+    if (!nonEmptyString(token, 16))
+      throw { status: 400, message: 'Invalid token.' };
+    if (!nonEmptyString(password, 8))
+      throw { status: 400, message: 'Password too short.' };
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !user.pass)
+      throw { status: 400, message: 'Invalid token or email.' };
+
+    try {
+      const p = verifyResetToken(token, user.pass);
+      if (p.sub !== String(user.id)) throw new Error('User mismatch');
+    } catch {
+      throw { status: 400, message: 'Invalid or expired token.' };
+    }
+
+    const newHash = await hashPassword(password); // ← use your project’s hashing
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { pass: newHash },
+    });
+
+    // TODO (optional): revoke refresh tokens/sessions for user.id
+  },
 };

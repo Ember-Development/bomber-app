@@ -15,7 +15,7 @@
     "ios": {
       "bundleIdentifier": "com.bomberfastpitch.bomberapp",
       "supportsTablet": true,
-      "buildNumber": "1",
+      "buildNumber": "11",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
