@@ -28,3 +28,15 @@ export const updateUser = async (userId: string, userData: Partial<UserFE>) => {
   const { data } = await api.put(`/api/users/${userId}`, userData);
   return data;
 };
+
+export const fetchLatestVersion = async () => {
+  const t = await AsyncStorage.getItem('accessToken');
+  console.log(
+    '[CALLSITE fetchLatestVersion] willSendAuth?',
+    !!t,
+    'url',
+    '/api/latest-version'
+  );
+  const { data } = await api.get('/api/latest-version');
+  return data.version; // Expecting { version: "1.0.3" } from the backend
+};

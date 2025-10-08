@@ -85,7 +85,7 @@ export default function TabLayout() {
       )} */}
 
       {/* Events: only non-Fans */}
-      {/* {!isFan && (
+      {!isFan && (
         <Tabs.Screen
           name="events"
           options={{
@@ -99,7 +99,7 @@ export default function TabLayout() {
             ),
           }}
         />
-      )} */}
+      )}
 
       {/* Media: only Fans */}
       <Tabs.Screen

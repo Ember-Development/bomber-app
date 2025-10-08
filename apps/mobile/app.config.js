@@ -9,7 +9,7 @@ module.exports = {
     version: '1.0.4',
     orientation: 'portrait',
     icon: './assets/images/bombericonios.png',
-    scheme: 'myapp',
+    scheme: 'bomber',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
 
@@ -26,10 +26,13 @@ module.exports = {
     android: {
       package: 'com.emberdevco.bomberapp',
       targetSdkVersion: 35,
+      versionCode: 8,
       adaptiveIcon: {
         foregroundImage: './assets/images/bombericonios.png',
         backgroundColor: '#ffffff',
       },
+      googleServicesFile: './android/app/google-services.json',
+      useNextNotificationsApi: true,
     },
 
     web: {
@@ -48,6 +51,24 @@ module.exports = {
           imageWidth: 200,
           resizeMode: 'contain',
           backgroundColor: '#ffffff',
+        },
+      ],
+      [
+        'expo-build-properties',
+        {
+          android: {
+            compileSdkVersion: 35,
+            targetSdkVersion: 35,
+            buildToolsVersion: '35.0.0',
+          },
+        },
+      ],
+      [
+        'expo-notifications',
+        {
+          // optional: provide a monochrome small icon for Android status bar
+          // icon: './assets/notification-icon.png',
+          color: '#FF231F7C',
         },
       ],
     ],

@@ -11,11 +11,6 @@ import {
 } from '@heroicons/react/24/outline';
 import type {
   PlayerFE,
-  JerseySize,
-  PantsSize,
-  StirrupSize,
-  Position,
-  AgeGroup,
   // NEW
   PublicUserFE,
 } from '@bomber-app/database';
@@ -38,6 +33,13 @@ import { ColumnDef, exportCSV, exportXLS } from '@/utils/exporter';
 
 // NEW: bring in a users fetcher (rename if your module differs)
 import { fetchUsers } from '@/api/user';
+import {
+  AgeGroup,
+  JerseySize,
+  PantsSize,
+  Position,
+  StirrupSize,
+} from '@bomber-app/database/generated/client';
 
 // ---- Sorting types (same pattern as Teams) ----
 type SortKey =

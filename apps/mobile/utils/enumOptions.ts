@@ -1,4 +1,4 @@
-import { AgeGroup } from '@bomber-app/database';
+import { AgeGroup } from '@bomber-app/database/generated/client';
 import { PositionEnum } from './positions';
 
 export const POSITIONS = [

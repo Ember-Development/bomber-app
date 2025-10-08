@@ -20,56 +20,56 @@ datasource db {
 }
 
 enum State {
-  AL
-  AK
-  AZ
-  AR
-  CA
-  CO
-  CT
-  DE
-  FL
-  GA
-  HI
-  ID
-  IL
-  IN
-  IA
-  KS
-  KY
-  LA
-  ME
-  MD
-  MA
-  MI
-  MN
-  MS
-  MO
-  MT
-  NE
-  NV
-  NH
-  NJ
-  NM
-  NY
-  NC
-  ND
-  OH
-  OK
-  OR
-  PA
-  RI
-  SC
-  SD
-  TN
-  TX
-  UT
-  VT
-  VA
-  WA
-  WV
-  WI
-  WY
+    AL
+    AK
+    AZ
+    AR
+    CA
+    CO
+    CT
+    DE
+    FL
+    GA
+    HI
+    ID
+    IL
+    IN
+    IA
+    KS
+    KY
+    LA
+    ME
+    MD
+    MA
+    MI
+    MN
+    MS
+    MO
+    MT
+    NE
+    NV
+    NH
+    NJ
+    NM
+    NY
+    NC
+    ND
+    OH
+    OK
+    OR
+    PA
+    RI
+    SC
+    SD
+    TN
+    TX
+    UT
+    VT
+    VA
+    WA
+    WV
+    WI
+    WY
 }
 
 enum AttendanceStatus {
@@ -207,6 +207,9 @@ model User {
     notifications UserNotification[]
     refreshTokens  RefreshToken[]
 
+    devices Device[]
+    pushReceipts PushReceipt[]
+
     isDeleted Boolean @default(false)
 }
 
@@ -299,10 +302,10 @@ model Team {
     id String @id @default(uuid()) @db.Uuid
 
     name     String
-    teamCode String? @unique
+    teamCode String?  @unique
     ageGroup AgeGroup
     region   Regions
-    state State @default(TX)
+    state    State    @default(TX)
 
     trophyCase Trophy[]
 
@@ -353,8 +356,8 @@ model Address {
 model Chat {
     id String @id @default(uuid()) @db.Uuid
 
-    title     String
-    createdAt DateTime
+    title         String
+    createdAt     DateTime
     lastMessageAt DateTime @default(now())
 
     users    UserChat[]
@@ -377,16 +380,30 @@ model UserChat {
 model Message {
     id String @id @default(uuid()) @db.Uuid
 
-    text      String
-    createdAt DateTime
-    retryCount Int @default(0)
-    failedToSend Boolean @default(false)
+    text         String
+    createdAt    DateTime
+    retryCount   Int      @default(0)
+    failedToSend Boolean  @default(false)
 
     sender User   @relation(fields: [userID], references: [id])
     userID String @db.Uuid
 
     chat   Chat   @relation(fields: [chatID], references: [id])
     chatID String @db.Uuid
+}
+
+model Device {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  platform   String   // 'ios' | 'android'
+  token      String   @unique
+  appVersion String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  receipts PushReceipt[]
 }
 
 model Notification {
@@ -397,6 +414,36 @@ model Notification {
     title     String
     body      String
     createdAt DateTime
+
+    imageUrl    String?
+    deepLink    String?
+    platform    String?   // 'both' | 'ios' | 'android'
+    status      String?   // 'draft' | 'queued' | 'sent' | 'failed'
+    scheduledAt DateTime?
+    sentAt      DateTime?
+    data        Json?
+    audience    Json?
+
+    pushReceipts PushReceipt[]
+}
+
+model PushReceipt {
+  id             String   @id @default(uuid()) @db.Uuid
+  notificationId String   @db.Uuid
+  userId         String   @db.Uuid
+  deviceId       String   @db.Uuid
+
+  deliveredAt   DateTime?
+  openedAt      DateTime?
+  failureReason String?
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device       Device       @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@unique([deviceId, notificationId], name: "deviceId_notificationId")
+  @@index([userId])
+  @@index([notificationId])
 }
 
 model UserNotification {
@@ -421,6 +468,10 @@ model Event {
     start DateTime
     end   DateTime
 
+    title    String
+    body     String?
+    location String?
+
     attendees EventAttendance[] // constraint: DO NOT fill this for global events
 }
 
@@ -440,8 +491,12 @@ model EventAttendance {
 model Tournament {
     id String @id @default(uuid()) @db.Uuid
 
-    title String
-    body  String
+    start DateTime
+    end   DateTime
+
+    title    String
+    body     String
+    location String
 
     imageURL String
 
@@ -449,23 +504,23 @@ model Tournament {
 }
 
 model Sponsor {
-  id        String   @id @default(uuid()) @db.Uuid
-  title     String
-  url       String
-  logoUrl   String   // store path or full URL
+    id      String @id @default(uuid()) @db.Uuid
+    title   String
+    url     String
+    logoUrl String // store path or full URL
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 model Banner {
-  id        String   @id @default(uuid()) @db.Uuid
-  imageUrl  String
-  // duration in hours, e.g. 6, 12, 24
-  duration  Int
-  expiresAt DateTime @default(now())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    id        String   @id @default(uuid()) @db.Uuid
+    imageUrl  String
+    // duration in hours, e.g. 6, 12, 24
+    duration  Int
+    expiresAt DateTime @default(now())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 model Media {
@@ -478,14 +533,14 @@ model Media {
 }
 
 model Article {
-  id          String   @id @default(uuid()) @db.Uuid
-  title       String
-  body        String
-  link        String?  // optional external link
-  imageUrl    String?  // optional header image
+    id       String  @id @default(uuid()) @db.Uuid
+    title    String
+    body     String
+    link     String? // optional external link
+    imageUrl String? // optional header image
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 model PortalLead {

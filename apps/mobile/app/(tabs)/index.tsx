@@ -162,6 +162,9 @@ export default function HomeScreen() {
   const handleSeeAllMedia = () => {
     router.push('/side/videos');
   };
+  const handleSeeAllEvents = () => {
+    router.push('/events');
+  };
 
   return (
     <BackgroundWrapper>
@@ -227,7 +230,7 @@ export default function HomeScreen() {
                 <CustomButton
                   title="See All"
                   variant="text"
-                  onPress={() => {}}
+                  onPress={handleSeeAllEvents}
                   fullWidth={false}
                 />
               </View>

@@ -1,5 +1,6 @@
 // services/bannerService.ts
-import { BannerDB, prisma } from '@bomber-app/database';
+import { BannerDB } from '@bomber-app/database';
+import { prisma } from '../api';
 
 interface BannerCreateInput {
   imageUrl: string;

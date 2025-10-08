@@ -5,8 +5,8 @@ import {
   UpdatePlayerInput,
 } from '../services/player';
 import { Role } from '../auth/permissions';
-import { prisma } from '@bomber-app/database';
 import { AuthenticatedRequest } from '../utils/express';
+import { prisma } from '../api';
 
 export const getPlayerById = async (req: Request, res: Response) => {
   try {

@@ -312,10 +312,18 @@ const createMockUserNotification = (userID: string, notificationID: string) => {
 
 //EVENTS
 const createMockTournament = () => {
+  const start = faker.date.soon();
+  const eventDays = faker.number.int({ min: 1, max: 2 });
+  const end = new Date(start.getTime());
+  end.setDate(start.getDate() + eventDays);
+
   return {
     title: faker.lorem.words({ min: 1, max: 5 }),
     body: faker.lorem.sentences({ min: 1, max: 5 }),
     imageURL: faker.image.url(),
+    start,
+    end,
+    location: `${faker.location.city()}, ${faker.location.state({ abbreviated: true })}`,
   };
 };
 const createMockTournamentEvent = (
@@ -325,9 +333,8 @@ const createMockTournamentEvent = (
   const start =
     faker.number.float() < 0.5 ? faker.date.soon() : faker.date.recent();
 
-  const MAX_EVENT_DAYS = 14;
-  const eventDays = faker.number.int({ min: 1, max: MAX_EVENT_DAYS });
-  const end = new Date();
+  const eventDays = faker.number.int({ min: 1, max: 2 });
+  const end = new Date(start.getTime());
   end.setDate(start.getDate() + eventDays);
 
   return {
@@ -335,36 +342,55 @@ const createMockTournamentEvent = (
     eventType,
     start,
     end,
+    title: faker.helpers.arrayElement([
+      'Pool Game',
+      'Bracket Game',
+      'Championship',
+      'Opening Ceremony',
+    ]),
+    body: faker.lorem.sentence(),
+    location: `Field ${faker.number.int({ min: 1, max: 6 })}`,
   };
 };
 const createMockPracticeEvent = (eventType = EventType.PRACTICE) => {
   const start =
     faker.number.float() < 0.5 ? faker.date.soon() : faker.date.recent();
 
-  const MAX_EVENT_HOURS = 8;
-  const eventHours = faker.number.int({ min: 1, max: MAX_EVENT_HOURS });
+  const eventHours = faker.number.int({ min: 1, max: 3 });
   const end = new Date(start.getTime() + eventHours * 60 * 60 * 1000);
 
   return {
-    tournamentID: undefined,
     eventType,
     start,
     end,
+    title: faker.helpers.arrayElement([
+      'Team Practice',
+      'Hitting Practice',
+      'Bullpen Session',
+    ]),
+    body: faker.lorem.sentence(),
+    location: `Aux Field ${faker.number.int({ min: 1, max: 3 })}`,
   };
 };
 const createMockGlobalEvent = (eventType = EventType.GLOBAL) => {
   const start =
     faker.number.float() < 0.5 ? faker.date.soon() : faker.date.recent();
 
-  const MAX_EVENT_HOURS = 8;
-  const eventHours = faker.number.int({ min: 1, max: MAX_EVENT_HOURS });
+  const eventHours = faker.number.int({ min: 1, max: 4 });
   const end = new Date(start.getTime() + eventHours * 60 * 60 * 1000);
 
   return {
-    tournamentID: undefined,
     eventType,
     start,
     end,
+    title: faker.helpers.arrayElement([
+      'Organization Meeting',
+      'Tryouts',
+      'Town Hall',
+      'Uniform Pickup',
+    ]),
+    body: faker.lorem.sentence(),
+    location: `${faker.location.city()}, ${faker.location.state({ abbreviated: true })}`,
   };
 };
 
@@ -699,13 +725,18 @@ const mockDatabase = async (
         max: maxTournaments,
       });
       for (let j = 0; j < numTournaments; j++) {
+        const mockTournament = createMockTournament();
+        const tournament = await prisma.tournament.create({
+          data: mockTournament,
+        });
+
         const numTournamentEvents = faker.number.int({
           min: minTournamentEvents,
           max: maxTournamentEvents,
         });
-        const mockTournament = createMockTournament();
-        const tournament = await prisma.tournament.create({
-          data: mockTournament,
+        const mockTournamentEvent = createMockTournamentEvent(tournament.id);
+        const tournamentEvent = await prisma.event.create({
+          data: mockTournamentEvent,
         });
 
         for (let k = 0; k < numTournamentEvents; k++) {

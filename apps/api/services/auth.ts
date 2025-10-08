@@ -1,17 +1,9 @@
-import { PlayerFE, prisma, UserRole } from '@bomber-app/database';
+import { PlayerFE } from '@bomber-app/database';
 import { signAccess, signRefresh, verifyRefresh } from '../utils/jwt';
 import { hashPassword, verifyPassword } from '../utils/crypto';
 import { issueTokenPair, rotateRefreshToken } from '../auth/token';
-import { signResetToken, verifyResetToken } from '../utils/passwordReset';
-import { sendPasswordResetEmail } from '../utils/email';
-import { hashEmail, maskEmail } from '../utils/log';
-
-function isEmail(x: unknown): x is string {
-  return typeof x === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x);
-}
-function nonEmptyString(x: unknown, min = 1): x is string {
-  return typeof x === 'string' && x.trim().length >= min;
-}
+import { prisma } from '../api';
+import { UserRole } from '@bomber-app/database/generated/client';
 
 export const authService = {
   getMockLogin: async () => {

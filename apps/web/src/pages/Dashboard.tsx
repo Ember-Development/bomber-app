@@ -19,7 +19,7 @@ import Modal from '@/components/Modal';
 import { fetchUsers } from '@/api/user';
 import { createTeam } from '@/api/team';
 import type { CreateTeamDTO } from '@/api/team';
-import { PublicUserFE, Regions } from '@bomber-app/database';
+import { PublicUserFE } from '@bomber-app/database';
 import { US_STATES } from '@/utils/state';
 import { useToast } from '@/context/ToastProvider';
 import { useAuth } from '@/context/AuthContext';
@@ -32,6 +32,7 @@ import CreateNotificationForm from '@/components/forms/Notification/createNotifi
 
 // NEW: createArticle for the Article SideDialog
 import { createArticle } from '@/api/article';
+import { Regions } from '@bomber-app/database/generated/client';
 
 /* ---------- Constants (match Teams.tsx) ---------- */
 const REGION_OPTIONS: { value: Regions; label: string }[] = [

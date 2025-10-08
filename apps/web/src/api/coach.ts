@@ -1,5 +1,6 @@
-import { CoachFE, Prisma, RegCoachFE, TeamFE } from '@bomber-app/database';
+import { CoachFE, RegCoachFE, TeamFE } from '@bomber-app/database';
 import { api } from './api';
+import { Prisma } from '@bomber-app/database/generated/client';
 
 type UpdateCoachInput = Prisma.CoachUpdateInput;
 

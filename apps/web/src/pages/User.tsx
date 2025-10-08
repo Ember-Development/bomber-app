@@ -18,13 +18,13 @@ import {
   deleteUser,
   CreateUserInput,
 } from '@/api/user';
-import type { PublicUserFE } from '@bomber-app/database/types/user';
 
 import SideDialog from '@/components/SideDialog';
 import { createOrUpdateRegCoach, deleteRegCoach } from '@/api/regCoach';
 
 import { useToast } from '@/context/ToastProvider';
 import { exportCSV, exportXLS, type ColumnDef } from '@/utils/exporter';
+import { PublicUserFE } from '@bomber-app/database';
 
 const ALL_ROLES = [
   'ALL',

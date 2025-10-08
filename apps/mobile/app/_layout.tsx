@@ -1,31 +1,58 @@
+// app/_layout.tsx
 import React, { useEffect } from 'react';
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider as NavigationThemeProvider,
 } from '@react-navigation/native';
-import {
-  Slot,
-  usePathname,
-  useRootNavigationState,
-  useRouter,
-} from 'expo-router';
+import { Slot, usePathname, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import 'react-native-reanimated';
 import { ThemeProvider, useColorScheme } from '@/hooks/useColorScheme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { UserProvider, useUserContext } from '@/context/useUserContext';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { View, ActivityIndicator } from 'react-native';
 
+// ✅ Foreground handler + Android channel
+import * as Notifications from 'expo-notifications';
+import '../features/notifications/foreground';
+import { ensureAndroidChannel } from '../features/notifications/foreground';
+import { usePush } from '../features/notifications/usePush';
+import UpdatePrompt from '@/components/ui/molecules/UpdatePrompt';
+
 SplashScreen.preventAutoHideAsync();
+
+function PushQueryBridge() {
+  const qc = useQueryClient();
+  useEffect(() => {
+    const sub1 = Notifications.addNotificationReceivedListener(() => {
+      qc.invalidateQueries({ queryKey: ['notifications', 'feed'] });
+    });
+    const sub2 = Notifications.addNotificationResponseReceivedListener(() => {
+      qc.invalidateQueries({ queryKey: ['notifications', 'feed'] });
+    });
+    return () => {
+      Notifications.removeNotificationSubscription(sub1);
+      Notifications.removeNotificationSubscription(sub2);
+    };
+  }, [qc]);
+  return null;
+}
 
 function RootNavigator() {
   const { user, isLoading } = useUserContext();
   const router = useRouter();
   const pathname = usePathname();
+
+  // Register push token + tap listener once the user is signed in
+  usePush({ userId: user?.id });
 
   useEffect(() => {
     if (isLoading) return;
@@ -49,15 +76,9 @@ function RootNavigator() {
       if (!atAuth) safeReplace('/login');
       return;
     }
-
-    if (inSignup || inOnboarding) {
-      return;
-    }
-
-    if (atRoot || atAuth) {
-      safeReplace('/(tabs)');
-    }
-  }, [isLoading, user]);
+    if (inSignup || inOnboarding) return;
+    if (atRoot || atAuth) safeReplace('/(tabs)');
+  }, [isLoading, user, pathname]);
 
   if (isLoading) {
     return (
@@ -88,10 +109,13 @@ export default function RootLayout() {
   };
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
+    if (loaded) SplashScreen.hideAsync();
   }, [loaded]);
+
+  // Android channel once at boot (safe no-op elsewhere)
+  useEffect(() => {
+    ensureAndroidChannel();
+  }, []);
 
   if (!loaded) return null;
 
@@ -102,7 +126,9 @@ export default function RootLayout() {
           <UserProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <View style={{ flex: 1 }}>
+                <PushQueryBridge />
                 <RootNavigator />
+                <UpdatePrompt />
               </View>
             </GestureHandlerRootView>
           </UserProvider>
