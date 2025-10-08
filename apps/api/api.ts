@@ -1,6 +1,14 @@
+import { config } from 'dotenv';
+config(); // Load .env file at the top
+
 import { NextFunction, Request, Response } from 'express';
 import express from 'express';
 import http from 'http';
+import cors, { CorsOptions } from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import { PrismaClient } from '@bomber-app/database/generated/client';
+import initializeSocket from './websockets/websocket';
 import groupRoutes from './routes/groupRoutes';
 import messageRoutes from './routes/messageRoutes';
 import userRoutes from './routes/userRoutes';
@@ -20,45 +28,52 @@ import regCoachRoutes from './routes/regCoachRoutes';
 import { devicesRouter } from './routes/deviceRoutes';
 import { notificationsRouter } from './routes/notificationsRoutes';
 
-import helmet from 'helmet';
-import cors, { CorsOptions } from 'cors';
-import morgan from 'morgan';
-import { PrismaClient } from '@bomber-app/database/generated/client';
-import initializeSocket from './websockets/websocket';
-
-type Err = any;
 const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 const prisma = new PrismaClient();
 
-app.get('/', (_: Request, res: Response) => {
-  res.send('Ready 4 Biznes!');
-});
-
+// Log allowed CORS origins for debugging
 const allowed = (process.env.CORS_ORIGINS ?? '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
+console.log('Allowed CORS origins:', allowed);
 
+// CORS configuration
 const corsOptions: CorsOptions = {
   origin(origin, cb) {
-    if (!origin) return cb(null, true); // server-to-server
-    if (allowed.includes(origin)) return cb(null, true);
-    return cb(new Error('Not allowed by CORS'));
+    console.log('CORS origin check:', origin); // Debug origin
+    if (!origin || allowed.includes(origin)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Not allowed by CORS'));
+    }
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   optionsSuccessStatus: 204,
 };
 
-app.options('*', (_req, res) => res.sendStatus(204));
+// Apply CORS globally before other middleware
+app.use(cors(corsOptions));
 
+// Handle OPTIONS requests globally
+app.options('*', (req, res) => {
+  console.log('[OPTIONS REQUEST]', {
+    origin: req.headers.origin,
+    method: req.method,
+    path: req.path,
+  });
+  res.sendStatus(204);
+});
+
+// Other middleware
 app.use(helmet());
 app.use(express.json());
 app.use(morgan('dev'));
 
-// for debug remove after
+// Debug middleware for specific routes
 app.use((req, _res, next) => {
   if (req.method === 'PUT' && req.path.startsWith('/api/users/')) {
     console.log('[HEADERS BEFORE AUTH]', {
@@ -74,6 +89,11 @@ app.use((req, _res, next) => {
     });
   }
   next();
+});
+
+// Routes
+app.get('/', (_: Request, res: Response) => {
+  res.send('Ready 4 Biznes!');
 });
 
 app.use('/api/groups', groupRoutes);
@@ -95,14 +115,8 @@ app.use('/api/regCoaches', regCoachRoutes);
 app.use('/api/devices', devicesRouter);
 app.use('/api/notifications', notificationsRouter);
 
-app.use((err: Err, _req: Request, res: Response, _next: NextFunction) => {
-  console.error(err);
-  res
-    .status(err.status || 500)
-    .json({ error: err.message || 'Internal Server Error' });
-});
-
-app.use((err: Err, _req: Request, res: Response, _next: NextFunction) => {
+// Error handling middleware (single instance)
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);
   res
     .status(err.status || 500)
