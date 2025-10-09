@@ -59,14 +59,7 @@ const corsOptions: CorsOptions = {
 app.use(cors(corsOptions));
 
 // Handle OPTIONS requests globally
-app.options('*', (req, res) => {
-  console.log('[OPTIONS REQUEST]', {
-    origin: req.headers.origin,
-    method: req.method,
-    path: req.path,
-  });
-  res.sendStatus(204);
-});
+app.options('*', cors(corsOptions));
 
 // Other middleware
 app.use(helmet());
