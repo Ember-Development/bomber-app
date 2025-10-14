@@ -1,3 +1,4 @@
+// apns.ts (drop-in improvements)
 import http2 from 'http2';
 import jwt from 'jsonwebtoken';
 
@@ -13,10 +14,10 @@ function buildApnsJwt() {
   if (!APNS_TEAM_ID || !APNS_KEY_ID || !APNS_P8_BASE64) {
     throw new Error('APNs env not configured');
   }
-  const key = Buffer.from(APNS_P8_BASE64, 'base64').toString('utf8');
+  const keyPem = Buffer.from(APNS_P8_BASE64, 'base64').toString('utf8'); // includes BEGIN/END lines
   return jwt.sign(
     { iss: APNS_TEAM_ID, iat: Math.floor(Date.now() / 1000) },
-    key,
+    keyPem,
     { algorithm: 'ES256', header: { alg: 'ES256', kid: APNS_KEY_ID } }
   );
 }
@@ -32,10 +33,8 @@ export async function sendAPNs({
   body: string;
   data?: Record<string, string>;
 }) {
-  const host =
-    APNS_SANDBOX === 'true'
-      ? 'api.sandbox.push.apple.com'
-      : 'api.push.apple.com';
+  const production = APNS_SANDBOX !== 'true';
+  const host = production ? 'api.push.apple.com' : 'api.sandbox.push.apple.com';
   const client = http2.connect(`https://${host}`);
   const token = buildApnsJwt();
 
@@ -43,8 +42,8 @@ export async function sendAPNs({
     ':method': 'POST',
     ':path': `/3/device/${deviceToken}`,
     authorization: `bearer ${token}`,
-    'apns-topic': APNS_BUNDLE_ID!,
-    'apns-push-type': 'alert',
+    'apns-topic': APNS_BUNDLE_ID!, // must match exactly your bundle id
+    'apns-push-type': 'alert', // required since iOS 13
     'apns-priority': '10',
   };
 
@@ -53,22 +52,37 @@ export async function sendAPNs({
     ...(data ?? {}),
   });
 
-  return await new Promise<void>((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     const req = client.request(headers);
     let resp = '';
+    let status: number | undefined;
+
+    req.on('response', (h) => {
+      status = Number(h[':status']);
+    });
+
     req.setEncoding('utf8');
     req.on('data', (c) => (resp += c));
     req.on('end', () => {
       client.close();
-      if (resp) {
+      if (status && status >= 400) {
+        let reason = resp;
         try {
           const j = JSON.parse(resp);
-          if (j.reason) return reject(new Error(`APNs: ${j.reason}`));
+          if (j.reason) reason = j.reason;
         } catch {}
+        return reject(
+          new Error(
+            `APNs ${production ? 'prod' : 'sandbox'} ${status}: ${reason}`
+          )
+        );
       }
       resolve();
     });
-    req.on('error', reject);
+    req.on('error', (e) => {
+      client.close();
+      reject(e);
+    });
     req.write(payload);
     req.end();
   });

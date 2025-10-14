@@ -22,6 +22,7 @@ const router = express.Router();
 
 // ALL OF THESE NEED AUTH GUARDS
 router.get('/', auth, getAllUsers);
+router.get('/web', getAllUsers);
 router.post('/', auth, createUser);
 router.post(
   '/:userId/ensure-role',
