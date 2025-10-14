@@ -21,9 +21,6 @@ module.exports = {
         ITSAppUsesNonExemptEncryption: false,
       },
       supportsTablet: true,
-      entitlements: {
-        'aps-environment': 'production',
-      },
     },
 
     android: {
@@ -81,8 +78,8 @@ module.exports = {
     updates: {
       url: 'https://u.expo.dev/5716a622-1434-422d-a9af-fb8aab33b8c3',
       // optional but recommended:
-      enabled: true,
-      checkAutomatically: 'ON_LOAD',
+      enabled: false,
+      checkAutomatically: 'NEVER',
       fallbackToCacheTimeout: 0,
     },
 

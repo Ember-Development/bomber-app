@@ -239,7 +239,7 @@ export const demoteFromRegCoach = async (
 export const getLatestVersion = async (req: Request, res: Response) => {
   try {
     // Hardcoded latest version for now (update this manually or via config)
-    const latestVersion = '1.0.4'; // Example: Update to the latest version number
+    const latestVersion = '1.0.5'; // Example: Update to the latest version number
     res.json({ version: latestVersion });
   } catch (error) {
     console.error('Error fetching latest version:', error);

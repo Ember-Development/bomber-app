@@ -8,58 +8,87 @@ import {
   Platform,
   Linking,
 } from 'react-native';
+import * as Application from 'expo-application';
 import * as Updates from 'expo-updates';
 import { useRouter } from 'expo-router';
 import { fetchLatestVersion } from '@/api/user';
 
-// Use the version from app.config.js
-const APP_VERSION = '1.0.4'; // Match this with your app.config.js version
+// read from the native app (no hardcoding)
+const APP_VERSION = Application.nativeApplicationVersion ?? '0.0.0';
+
+// tiny semver-ish compare: returns true if a > b
+function semverGt(a: string, b: string) {
+  const pa = a.split('.').map((n) => parseInt(n || '0', 10));
+  const pb = b.split('.').map((n) => parseInt(n || '0', 10));
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const A = pa[i] || 0;
+    const B = pb[i] || 0;
+    if (A > B) return true;
+    if (A < B) return false;
+  }
+  return false;
+}
 
 const UpdatePrompt = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
+  const [hasOtaReady, setHasOtaReady] = useState(false);
+  const [storeUrl, setStoreUrl] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    checkForUpdates();
+    (async () => {
+      try {
+        // ===== OTA (only when OTA is enabled again later) =====
+        // keep this block but it's inert while updates.enabled=false
+        try {
+          const res = await Updates.checkForUpdateAsync();
+          if (res.isAvailable) {
+            await Updates.fetchUpdateAsync();
+            // do NOT reload automatically — let user choose
+            setHasOtaReady(true);
+          }
+        } catch (e) {
+          // ignore — OTA infra may be off during transfer
+          console.log('OTA check failed:', e);
+        }
+
+        // ===== Store version check (public endpoint) =====
+        const latest = await fetchLatestVersion(); // { version: 'x.y.z' }
+        const latestVersion =
+          typeof latest === 'string' ? latest : latest?.version;
+
+        if (latestVersion && semverGt(latestVersion, APP_VERSION)) {
+          setStoreUrl(
+            Platform.OS === 'ios'
+              ? 'https://apps.apple.com/app/id6744776521'
+              : 'https://play.google.com/store/apps/details?id=com.emberdevco.bomberapp'
+          );
+          setIsVisible(true);
+        } else if (hasOtaReady) {
+          // optional: if an OTA is ready but store version isn't newer, you can still prompt
+          setIsVisible(true);
+        }
+      } catch (err) {
+        console.log('Error checking for updates:', err);
+      }
+    })();
   }, []);
 
-  const checkForUpdates = async () => {
-    try {
-      // Check for Expo OTA updates
-      const update = await Updates.checkForUpdateAsync();
-      if (update.isAvailable) {
-        await Updates.fetchUpdateAsync();
-        await Updates.reloadAsync(); // Apply OTA update
-        return; // Exit if OTA update applied
-      }
-
-      // Check store version via backend API
-      const currentVersion = APP_VERSION; // Use app.config.js version
-      const latestVersion = await fetchLatestVersion();
-      if (latestVersion > currentVersion) {
-        setIsUpdateAvailable(true);
-        setIsVisible(true);
-      }
-    } catch (error) {
-      console.log('Error checking for updates:', error);
-    }
-  };
-
   const handleUpdateNow = async () => {
-    if (Platform.OS === 'ios') {
-      Linking.openURL('https://apps.apple.com/app/id6744776521'); // Verify this ID
-    } else if (Platform.OS === 'android') {
-      Linking.openURL(
-        'https://play.google.com/store/apps/details?id=com.emberdevco.bomberapp'
-      );
+    if (hasOtaReady) {
+      // apply the OTA that we fetched earlier
+      try {
+        await Updates.reloadAsync();
+        return;
+      } catch (e) {
+        console.log('OTA reload failed, falling back to store link', e);
+      }
     }
+    if (storeUrl) Linking.openURL(storeUrl);
     setIsVisible(false);
   };
 
-  const handleNotNow = () => {
-    setIsVisible(false);
-  };
+  const handleNotNow = () => setIsVisible(false);
 
   return (
     <Modal
@@ -71,19 +100,21 @@ const UpdatePrompt = () => {
       <View style={styles.modalBackground}>
         <View style={styles.modalContainer}>
           <View style={styles.circle} />
-          <Text style={styles.title}>New Update Available</Text>
+          <Text style={styles.title}>
+            {hasOtaReady ? 'Update Ready' : 'New Update Available'}
+          </Text>
           <Text style={styles.message}>
-            A newer version of Bomber Fastpitch is available. Please navigate to
-            the store to install it.
+            {hasOtaReady
+              ? 'A downloaded update is ready to apply.'
+              : 'A newer version of Bomber Fastpitch is available.'}
           </Text>
           <TouchableOpacity
             style={styles.updateButton}
             onPress={handleUpdateNow}
           >
-            <Text style={styles.buttonText}>Update Now</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.notNowButton} onPress={handleNotNow}>
-            <Text style={styles.buttonText}>Not Now</Text>
+            <Text style={styles.buttonText}>
+              {hasOtaReady ? 'Apply Update' : 'Update from Store'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

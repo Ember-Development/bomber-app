@@ -57,6 +57,6 @@ router.delete(
   demoteFromRegCoach
 );
 
-router.get('/latest-version', auth, getLatestVersion);
+router.get('/latest-version', getLatestVersion);
 
 export default router;

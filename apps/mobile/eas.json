@@ -33,10 +33,13 @@
   },
   "submit": {
     "preview": {
-      "ios": {}
-    },
-    "production": {
-      "ios": {}
+      "ios": {
+        "ascAppId": "6744776521",
+        "appleTeamId": "F3JZALQ53S",
+        "ascApiKeyId": "6DBML7C9N8",
+        "ascApiKeyIssuerId": "14a44a7e-7b0f-43b2-bf72-6a22c1741126",
+        "ascApiKeyPath": "./auth/Bomber-API-Key.p8"
+      }
     }
   }
 }
