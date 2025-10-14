@@ -1,2 +1,4 @@
 **/node_modules/
 apps/bomber-web/public/videos/*.mp4
+*.mp4
+apps/bomber-web/public/videos/
