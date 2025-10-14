@@ -15,7 +15,7 @@ export default function Hero() {
       }`}
     >
       <video
-        src="/videos/bomberhero.mp4"
+        src="/videos/hero.mp4"
         className="absolute inset-0 h-full w-full object-cover"
         autoPlay
         loop
