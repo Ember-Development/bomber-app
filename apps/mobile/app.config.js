@@ -6,7 +6,7 @@ module.exports = {
     name: 'bomber-app',
     slug: 'bomber-app',
     owner: 'emberdevco',
-    version: '1.0.5',
+    version: '1.0.10',
     orientation: 'portrait',
     icon: './assets/images/bomberappcover.png',
     scheme: 'bomber',
@@ -21,6 +21,9 @@ module.exports = {
         ITSAppUsesNonExemptEncryption: false,
       },
       supportsTablet: true,
+      entitlements: {
+        'aps-environment': 'production',
+      },
     },
 
     android: {
@@ -44,6 +47,7 @@ module.exports = {
     plugins: [
       'expo-router',
       'expo-secure-store',
+      ['expo-updates', { enabled: false }],
       [
         'expo-splash-screen',
         {
@@ -74,14 +78,6 @@ module.exports = {
     ],
 
     experiments: { typedRoutes: true },
-
-    updates: {
-      url: 'https://u.expo.dev/5716a622-1434-422d-a9af-fb8aab33b8c3',
-      // optional but recommended:
-      enabled: false,
-      checkAutomatically: 'NEVER',
-      fallbackToCacheTimeout: 0,
-    },
 
     runtimeVersion: {
       policy: 'appVersion',

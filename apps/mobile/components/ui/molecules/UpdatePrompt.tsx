@@ -1,3 +1,4 @@
+// components/ui/molecules/UpdatePrompt.tsx
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -10,13 +11,13 @@ import {
 } from 'react-native';
 import * as Application from 'expo-application';
 import * as Updates from 'expo-updates';
-import { useRouter } from 'expo-router';
 import { fetchLatestVersion } from '@/api/user';
 
-// read from the native app (no hardcoding)
 const APP_VERSION = Application.nativeApplicationVersion ?? '0.0.0';
 
-// tiny semver-ish compare: returns true if a > b
+// flip to true only after you re-enable expo-updates later
+const OTA_ENABLED = false;
+
 function semverGt(a: string, b: string) {
   const pa = a.split('.').map((n) => parseInt(n || '0', 10));
   const pb = b.split('.').map((n) => parseInt(n || '0', 10));
@@ -33,29 +34,27 @@ const UpdatePrompt = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [hasOtaReady, setHasOtaReady] = useState(false);
   const [storeUrl, setStoreUrl] = useState<string | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     (async () => {
-      try {
-        // ===== OTA (only when OTA is enabled again later) =====
-        // keep this block but it's inert while updates.enabled=false
+      // OTA — inert while OTA_ENABLED=false
+      if (OTA_ENABLED) {
         try {
           const res = await Updates.checkForUpdateAsync();
           if (res.isAvailable) {
             await Updates.fetchUpdateAsync();
-            // do NOT reload automatically — let user choose
             setHasOtaReady(true);
           }
         } catch (e) {
-          // ignore — OTA infra may be off during transfer
           console.log('OTA check failed:', e);
         }
+      }
 
-        // ===== Store version check (public endpoint) =====
-        const latest = await fetchLatestVersion(); // { version: 'x.y.z' }
+      // Store version check (expects { version: 'x.y.z' })
+      try {
+        const result = await fetchLatestVersion();
         const latestVersion =
-          typeof latest === 'string' ? latest : latest?.version;
+          typeof result === 'string' ? result : result?.version;
 
         if (latestVersion && semverGt(latestVersion, APP_VERSION)) {
           setStoreUrl(
@@ -65,18 +64,16 @@ const UpdatePrompt = () => {
           );
           setIsVisible(true);
         } else if (hasOtaReady) {
-          // optional: if an OTA is ready but store version isn't newer, you can still prompt
           setIsVisible(true);
         }
       } catch (err) {
-        console.log('Error checking for updates:', err);
+        console.log('Error checking store version:', err);
       }
     })();
-  }, []);
+  }, [hasOtaReady]);
 
   const handleUpdateNow = async () => {
-    if (hasOtaReady) {
-      // apply the OTA that we fetched earlier
+    if (hasOtaReady && OTA_ENABLED) {
       try {
         await Updates.reloadAsync();
         return;
@@ -84,18 +81,21 @@ const UpdatePrompt = () => {
         console.log('OTA reload failed, falling back to store link', e);
       }
     }
-    if (storeUrl) Linking.openURL(storeUrl);
+    if (storeUrl) {
+      const can = await Linking.canOpenURL(storeUrl);
+      if (can) await Linking.openURL(storeUrl);
+    }
     setIsVisible(false);
   };
 
-  const handleNotNow = () => setIsVisible(false);
+  if (!isVisible) return null;
 
   return (
     <Modal
       transparent
-      visible={isVisible}
+      visible
       animationType="fade"
-      onRequestClose={handleNotNow}
+      onRequestClose={() => setIsVisible(false)}
     >
       <View style={styles.modalBackground}>
         <View style={styles.modalContainer}>
@@ -115,6 +115,12 @@ const UpdatePrompt = () => {
             <Text style={styles.buttonText}>
               {hasOtaReady ? 'Apply Update' : 'Update from Store'}
             </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.notNowButton}
+            onPress={() => setIsVisible(false)}
+          >
+            <Text style={styles.buttonText}>Not Now</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -175,11 +181,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
-  buttonText: {
-    fontSize: 16,
-    color: '#6B46C1',
-    fontWeight: 'bold',
-  },
+  buttonText: { fontSize: 16, color: '#6B46C1', fontWeight: 'bold' },
 });
 
 export default UpdatePrompt;

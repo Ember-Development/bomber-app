@@ -7,7 +7,7 @@ export async function resolveAudience(audience: any): Promise<string[]> {
       select: { id: true },
       where: { isDeleted: false },
     });
-    return users.map((u) => u.id);
+    return users.map((u: { id: any }) => u.id);
   }
   return audience?.userIds ?? [];
 }
@@ -46,7 +46,7 @@ export async function sendNotificationRecord(id: string) {
       )
     );
   } else {
-    const userIds = [...new Set(devices.map((d) => d.userId))];
+    const userIds = [...new Set(devices.map((d: { userId: any }) => d.userId))];
     await Promise.all(
       userIds.map((userId) =>
         prisma.userNotification.upsert({

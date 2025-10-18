@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Platform } from 'react-native';
+import { Platform, InteractionManager } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import * as Linking from 'expo-linking';
@@ -17,27 +17,38 @@ export function usePush(opts: { userId?: string | null }) {
   useEffect(() => {
     let mounted = true;
 
-    (async () => {
+    // ⏳ Defer until React Native finishes initial rendering (fixes TurboModule crash)
+    const task = InteractionManager.runAfterInteractions(async () => {
       if (!Device.isDevice) return;
 
-      // ❗ Only attempt native token on standalone/dev builds, not Expo Go or web
       const isNativeRuntime =
         Platform.OS !== 'web' && Constants.appOwnership !== 'expo';
 
-      // permissions first (safe on all)
-      const { status: existingStatus } =
-        await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
+      // 🔐 Ask notification permissions safely
+      let finalStatus: Notifications.PermissionStatus =
+        Notifications.PermissionStatus.UNDETERMINED;
+      try {
+        const { status: existingStatus } =
+          await Notifications.getPermissionsAsync();
+        finalStatus = existingStatus;
+        if (existingStatus !== 'granted') {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+        }
+      } catch (e) {
+        console.warn('push permissions failed:', e);
+        finalStatus = 'denied' as Notifications.PermissionStatus;
       }
       if (finalStatus !== 'granted') return;
 
+      // 📱 Android channel safety (guarded)
       if (Platform.OS === 'android') {
-        await ensureAndroidChannel();
+        try {
+          await ensureAndroidChannel();
+        } catch {}
       }
 
+      // 🎯 Get native push token
       let token: string | null = null;
       if (isNativeRuntime) {
         try {
@@ -46,14 +57,12 @@ export function usePush(opts: { userId?: string | null }) {
         } catch (e: any) {
           console.warn('getDevicePushTokenAsync failed:', e?.message ?? e);
         }
-      } else {
-        // Skip in Expo Go / web to avoid "ExpoPushTokenManager" error
-        token = null;
       }
 
       if (!mounted) return;
       setDeviceToken(token);
 
+      // 💾 Register token with backend
       if (userId && token) {
         const platform: PlatformType =
           Platform.OS === 'ios' ? 'ios' : 'android';
@@ -62,36 +71,43 @@ export function usePush(opts: { userId?: string | null }) {
             userId,
             platform,
             token,
-            appVersion: '1.0.0',
+            appVersion: Constants.nativeAppVersion ?? '1.0.0',
           });
         } catch {
-          /* noop */
+          /* silent fail */
         }
       }
-    })();
+    });
 
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener(
-        async (response) => {
-          try {
-            const payload = response.notification.request.content.data as any;
-            const deepLink: string | undefined = payload?.deepLink;
-            const notificationId: string | undefined = payload?.notificationId;
+    // 🤙 Only add response listener if needed (PushQueryBridge already listens)
+    try {
+      responseListener.current =
+        Notifications.addNotificationResponseReceivedListener(
+          async (response) => {
+            try {
+              const payload = response.notification.request.content.data as any;
+              const deepLink: string | undefined = payload?.deepLink;
+              const notificationId: string | undefined =
+                payload?.notificationId;
 
-            if (deepLink) {
-              Linking.openURL(deepLink).catch(() => {});
-            }
-            if (notificationId) {
-              await api
-                .post('/api/notifications/receipt/open', { notificationId })
-                .catch(() => {});
-            }
-          } catch {}
-        }
-      );
+              if (deepLink) {
+                Linking.openURL(deepLink).catch(() => {});
+              }
+              if (notificationId) {
+                await api
+                  .post('/api/notifications/receipt/open', { notificationId })
+                  .catch(() => {});
+              }
+            } catch {}
+          }
+        );
+    } catch (e) {
+      console.warn('response listener failed:', e);
+    }
 
     return () => {
       mounted = false;
+      task?.cancel?.();
       if (responseListener.current) {
         Notifications.removeNotificationSubscription(responseListener.current);
         responseListener.current = null;
