@@ -1,4 +1,10 @@
-import React, { useMemo, useRef, useState, useEffect } from 'react';
+import React, {
+  useMemo,
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
 import {
   View,
   StyleSheet,
@@ -19,6 +25,10 @@ import * as Linking from 'expo-linking';
 import { api } from '@/api/api';
 import { timeAgo } from '@/utils/timeAgo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUserContext } from '@/context/useUserContext';
+import { useNotificationsFeed } from '@/hooks/notifications/useNotifications';
+import FullScreenModal from '@/components/ui/organisms/FullSheetModal';
+import ViewEvent from '@/app/events/modals/ViewEvent';
 
 type FeedItem = {
   id: string;
@@ -62,16 +72,14 @@ async function clearDismissedIds() {
 /* ---------------------------------------------------------------------- */
 
 export default function NotificationCard() {
+  const { user } = useUserContext();
   const [modalVisible, setModalVisible] = useState(false);
-  const [localItems, setLocalItems] = useState<FeedItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [errorText, setErrorText] = useState<string | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | undefined>();
 
   // dismissal state (hydrated from AsyncStorage)
   const [clearedUntil, setClearedUntilState] = useState<number>(0);
   const [dismissedIds, setDismissedIds] = useState<Record<string, true>>({});
 
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cardScale = useRef(new Animated.Value(1)).current;
   const { width } = useWindowDimensions();
   const compact = width < 340;
@@ -79,6 +87,14 @@ export default function NotificationCard() {
   const textColor = useThemeColor({}, 'text');
   const iconColor = useThemeColor({}, 'component');
   const borderColor = useThemeColor({}, 'border');
+
+  // Use React Query hook for notifications - only fetch if user is logged in
+  const {
+    data: notifications = [],
+    isLoading,
+    error,
+    refetch,
+  } = useNotificationsFeed(true, !!user);
 
   // hydrate local dismissal state on mount
   useEffect(() => {
@@ -89,75 +105,28 @@ export default function NotificationCard() {
     })();
   }, []);
 
-  const applyDismissals = (items: FeedItem[]) => {
-    return items.filter((n) => {
+  // Apply dismissals to notifications
+  const filteredNotifications = useMemo(() => {
+    return notifications.filter((n) => {
       const sentAtMs = new Date(n.sentAt).getTime();
       if (clearedUntil && sentAtMs <= clearedUntil) return false;
       if (dismissedIds[n.id]) return false;
       return true;
     });
-  };
+  }, [notifications, clearedUntil, dismissedIds]);
 
-  // --- Fetch feed (unread only)
-  const fetchFeed = async (unreadOnly = true) => {
-    try {
-      setLoading(true);
-      setErrorText(null);
+  // Don't show notifications if user is not logged in
+  if (!user) {
+    return null;
+  }
 
-      const { data } = await api.get<{ items: FeedItem[] }>(
-        `/api/notifications/feed?unreadOnly=${unreadOnly ? 'true' : 'false'}`
-      );
-
-      const sorted = (data.items ?? []).sort(
-        (a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
-      );
-      setLocalItems(applyDismissals(sorted));
-    } catch (e: any) {
-      console.error('Failed to fetch notifications', e);
-      setErrorText('Unable to load notifications');
-      stopPolling();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Start/stop polling gated by modal visibility
-  const startPolling = () => {
-    if (pollRef.current) return;
-    pollRef.current = setInterval(() => fetchFeed(true), 15000);
-  };
-  const stopPolling = () => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  };
-
-  // Initial fetch once on mount (no polling)
-  useEffect(() => {
-    fetchFeed(true);
-    return () => stopPolling();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // When modal opens, fetch immediately + start polling
-  useEffect(() => {
-    if (modalVisible) {
-      fetchFeed(true);
-      startPolling();
-    } else {
-      stopPolling();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modalVisible]);
-
-  const top = localItems[0];
+  const top = filteredNotifications[0];
   const topPreview = useMemo(() => {
-    if (loading) return { line1: 'Loading…', time: '' };
-    if (errorText) return { line1: errorText, time: '' };
+    if (isLoading) return { line1: 'Loading…', time: '' };
+    if (error) return { line1: 'Unable to load notifications', time: '' };
     if (!top) return { line1: 'No notifications yet', time: '' };
     return { line1: top.title || top.body, time: timeAgo(top.sentAt) };
-  }, [top, loading, errorText]);
+  }, [top, isLoading, error]);
 
   const handlePressIn = () => {
     Animated.spring(cardScale, {
@@ -169,41 +138,63 @@ export default function NotificationCard() {
     Animated.spring(cardScale, { toValue: 1, useNativeDriver: true }).start();
   };
 
-  // --- Mark single item as opened (persist locally so it stays hidden)
-  const onTapItem = async (id: string, deepLink?: string | null) => {
-    if (deepLink) Linking.openURL(deepLink).catch(() => {});
-    try {
-      // best-effort server call (ok if public/no-op)
-      await api
-        .post('/api/notifications/receipt/open', { notificationId: id })
-        .catch(() => {});
-      // persist dismissal
-      await addDismissedId(id);
-      setDismissedIds((prev) => ({ ...prev, [id]: true }));
-      setLocalItems((prev) => prev.filter((n) => n.id !== id));
-    } catch (e) {
-      console.error('Failed to mark opened', e);
-      setErrorText('Unable to update notification');
-    }
-    setModalVisible(false);
+  // Helper to extract event ID from deep links
+  const extractEventId = (deepLink: string): string | null => {
+    // Handle formats like: bomber://event/123, bomber://events/123, /events/123
+    const eventMatch = deepLink.match(/(?:event|events)\/([a-zA-Z0-9-]+)/);
+    return eventMatch ? eventMatch[1] : null;
   };
 
+  // --- Mark single item as opened (persist locally so it stays hidden)
+  const onTapItem = useCallback(
+    async (id: string, deepLink?: string | null) => {
+      try {
+        // Check if it's an event link
+        if (deepLink) {
+          const eventId = extractEventId(deepLink);
+          if (eventId) {
+            // Open event modal
+            setSelectedEventId(eventId);
+            setModalVisible(false);
+          } else {
+            // Open other deep links normally
+            Linking.openURL(deepLink).catch(() => {});
+            setModalVisible(false);
+          }
+        } else {
+          setModalVisible(false);
+        }
+
+        // best-effort server call (ok if public/no-op)
+        await api
+          .post('/api/notifications/receipt/open', { notificationId: id })
+          .catch(() => {});
+        // persist dismissal
+        await addDismissedId(id);
+        setDismissedIds((prev) => ({ ...prev, [id]: true }));
+      } catch (e) {
+        console.error('Failed to mark opened', e);
+      }
+    },
+    []
+  );
+
   // --- Mark all as read (persist cutoff so older items never show again)
-  const clearAll = async () => {
+  const clearAll = useCallback(async () => {
     try {
-      // best-effort server call (ok if it’s a no-op)
+      // best-effort server call (ok if it's a no-op)
       await api.post('/api/notifications/readAll', {}).catch(() => {});
       const now = Date.now();
       await setClearedUntil(now);
       await clearDismissedIds();
       setClearedUntilState(now);
       setDismissedIds({});
-      setLocalItems([]);
+      // Refetch to get updated data
+      refetch();
     } catch (e) {
       console.error('Failed to clear all notifications', e);
-      setErrorText('Unable to clear notifications');
     }
-  };
+  }, [refetch]);
 
   return (
     <View>
@@ -275,12 +266,12 @@ export default function NotificationCard() {
                 Notifications
               </ThemedText>
               <View style={{ flexDirection: 'row', gap: 12 }}>
-                {localItems.length > 0 && (
+                {filteredNotifications.length > 0 && (
                   <Pressable onPress={clearAll}>
                     <Ionicons name="trash-outline" size={22} color="red" />
                   </Pressable>
                 )}
-                <Pressable onPress={() => fetchFeed(true)}>
+                <Pressable onPress={() => refetch()}>
                   <Ionicons name="refresh" size={22} color={iconColor} />
                 </Pressable>
                 <Pressable onPress={() => setModalVisible(false)}>
@@ -291,11 +282,11 @@ export default function NotificationCard() {
 
             <Separator />
 
-            {loading ? (
+            {isLoading ? (
               <View style={styles.emptyNotifications}>
                 <ThemedText type="subtitle">Loading…</ThemedText>
               </View>
-            ) : errorText ? (
+            ) : error ? (
               <View style={styles.emptyNotifications}>
                 <Ionicons
                   name="alert-circle-outline"
@@ -304,12 +295,12 @@ export default function NotificationCard() {
                   style={{ marginBottom: 12 }}
                 />
                 <ThemedText type="subtitle" style={{ textAlign: 'center' }}>
-                  {errorText}
+                  Unable to load notifications
                 </ThemedText>
               </View>
-            ) : localItems.length > 0 ? (
+            ) : filteredNotifications.length > 0 ? (
               <FlatList
-                data={localItems}
+                data={filteredNotifications}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                   <Pressable onPress={() => onTapItem(item.id, item.deepLink)}>
@@ -368,6 +359,15 @@ export default function NotificationCard() {
           </View>
         </View>
       </Modal>
+
+      {/* Event Modal */}
+      <FullScreenModal
+        isVisible={Boolean(selectedEventId)}
+        onClose={() => setSelectedEventId(undefined)}
+        title="Event"
+      >
+        <ViewEvent eventId={selectedEventId} />
+      </FullScreenModal>
     </View>
   );
 }

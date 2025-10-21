@@ -16,8 +16,7 @@ notificationsRouter.post('/', createNotification);
 notificationsRouter.post('/:id/send', sendNow);
 notificationsRouter.put('/:id', updateNotification);
 
-notificationsRouter.get('/feed', feed);
-
 notificationsRouter.use(auth);
+notificationsRouter.get('/feed', feed);
 notificationsRouter.post('/receipt/open', markOpened);
 notificationsRouter.post('/readAll', readAll);

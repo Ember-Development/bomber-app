@@ -27,6 +27,7 @@ import DangerConfirmModal from '@/features/teams/dangerconfirm';
 import TeamRosterModal from '@/features/teams/TeamRosterModal';
 import CustomInput from '@/components/ui/atoms/Inputs';
 import CustomButton from '@/components/ui/atoms/Button';
+import NotificationSettings from '@/components/ui/molecules/NotificationSettings';
 import { Alert } from 'react-native';
 
 type UserRole =
@@ -79,9 +80,17 @@ export default function SettingsScreen() {
   const [editVisible, setEditVisible] = useState(false);
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [teamsVisible, setTeamsVisible] = useState(false);
+  const [changePwVisible, setChangePwVisible] = useState(false);
 
   const [warnAgeMedia, setWarnAgeMedia] = useState(true);
   const [hideAgeMedia, setHideAgeMedia] = useState(false);
+
+  // Password change state
+  const [pwCurrent, setPwCurrent] = useState('');
+  const [pwNew, setPwNew] = useState('');
+  const [pwConfirm, setPwConfirm] = useState('');
+  const [pwError, setPwError] = useState('');
+  const [pwSubmitting, setPwSubmitting] = useState(false);
 
   const handleDeleteAccount = async () => {
     await api.delete('/api/users/me');
@@ -234,10 +243,11 @@ export default function SettingsScreen() {
                     setPwCurrent('');
                     setPwNew('');
                     setPwConfirm('');
-                    setPwError(null);
+                    setPwError('');
                     setChangePwVisible(true);
                   }}
                 />
+                <NotificationSettings />
                 <PressLink
                   text="Delete My Account"
                   onPress={() => setDeleteVisible(true)}
@@ -372,7 +382,7 @@ export default function SettingsScreen() {
             <CustomButton
               title={pwSubmitting ? 'Saving…' : 'Save New Password'}
               onPress={async () => {
-                setPwError(null);
+                setPwError('');
                 if (!pwCurrent || !pwNew || !pwConfirm) {
                   setPwError('Please fill out all fields.');
                   return;

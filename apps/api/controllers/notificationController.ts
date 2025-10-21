@@ -54,7 +54,7 @@ export async function sendNow(req: Request, res: Response) {
 // }
 
 export async function feed(req: Request, res: Response) {
-  // Default unreadOnly=true, but allow ?unreadOnly=false for “all”
+  // Default unreadOnly=true, but allow ?unreadOnly=false for "all"
   const unreadOnly =
     req.query.unreadOnly === undefined ? true : req.query.unreadOnly === 'true';
 

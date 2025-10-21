@@ -35,6 +35,15 @@ export async function sendAPNs({
 }) {
   const production = APNS_SANDBOX !== 'true';
   const host = production ? 'api.push.apple.com' : 'api.sandbox.push.apple.com';
+
+  console.log(`[APNs] Sending notification:`, {
+    deviceToken: deviceToken.substring(0, 10) + '...',
+    title,
+    production,
+    host,
+    bundleId: APNS_BUNDLE_ID,
+  });
+
   const client = http2.connect(`https://${host}`);
   const token = buildApnsJwt();
 
@@ -71,12 +80,21 @@ export async function sendAPNs({
           const j = JSON.parse(resp);
           if (j.reason) reason = j.reason;
         } catch {}
+        console.error(`[APNs] ❌ Failed to send notification:`, {
+          status,
+          reason,
+          production,
+          deviceToken: deviceToken.substring(0, 10) + '...',
+        });
         return reject(
           new Error(
             `APNs ${production ? 'prod' : 'sandbox'} ${status}: ${reason}`
           )
         );
       }
+      console.log(
+        `[APNs] ✅ Successfully sent notification to ${deviceToken.substring(0, 10)}...`
+      );
       resolve();
     });
     req.on('error', (e) => {

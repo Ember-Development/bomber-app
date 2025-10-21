@@ -690,6 +690,62 @@ export function AddEventModal({
               }}
             />
 
+            {/* Select All button */}
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 8,
+              }}
+            >
+              <Text style={{ color: '#fff', fontWeight: '600' }}>
+                {selected.size} selected
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  const allVisibleIds = new Set(
+                    selectableUsers.map((u) => u.id)
+                  );
+                  const allSelected = selectableUsers.every((u) =>
+                    selected.has(u.id)
+                  );
+
+                  if (allSelected) {
+                    // Deselect all visible users
+                    setSelected((prev) => {
+                      const next = new Set(prev);
+                      allVisibleIds.forEach((id) => next.delete(id));
+                      return next;
+                    });
+                  } else {
+                    // Select all visible users
+                    setSelected((prev) => {
+                      const next = new Set(prev);
+                      allVisibleIds.forEach((id) => next.add(id));
+                      return next;
+                    });
+                  }
+                }}
+                style={{
+                  paddingVertical: 6,
+                  paddingHorizontal: 12,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: 'rgba(255,255,255,0.3)',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                }}
+              >
+                <Text
+                  style={{ color: '#fff', fontWeight: '600', fontSize: 12 }}
+                >
+                  {selectableUsers.every((u) => selected.has(u.id))
+                    ? 'Deselect All'
+                    : 'Select All'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             {/* User list */}
             <View
               style={{ maxHeight: 240, borderRadius: 12, overflow: 'hidden' }}

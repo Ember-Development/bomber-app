@@ -362,6 +362,7 @@ export function fakeSponsorComplete() {
 export function fakeBanner() {
   return {
     imageUrl: faker.lorem.words(5),
+    link: undefined,
     duration: faker.number.int(),
     updatedAt: faker.date.anytime(),
   };
@@ -370,6 +371,7 @@ export function fakeBannerComplete() {
   return {
     id: faker.string.uuid(),
     imageUrl: faker.lorem.words(5),
+    link: undefined,
     duration: faker.number.int(),
     expiresAt: new Date(),
     createdAt: new Date(),

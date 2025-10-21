@@ -4,9 +4,12 @@ import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { GlobalColors } from '@/constants/Colors';
 import { getCountdown } from '@/utils/FormatEvents';
+import FullScreenModal from '@/components/ui/organisms/FullSheetModal';
+import ViewEvent from '@/app/events/modals/ViewEvent';
 
 interface EventCardProps {
   events: {
+    id: string;
     date: string;
     title: string;
     location: string;
@@ -20,6 +23,7 @@ export default function EventCardContainer({ events }: EventCardProps) {
   );
   const animatedValue = useRef(new Animated.Value(0)).current;
   const [countdown, setCountdown] = useState('');
+  const [selectedEventId, setSelectedEventId] = useState<string | undefined>();
 
   // formatting events
   const now = new Date();
@@ -120,7 +124,11 @@ export default function EventCardContainer({ events }: EventCardProps) {
           )}
         </View>
       )}
-      <View style={styles.detailContainer}>
+      <Pressable
+        style={styles.detailContainer}
+        onPress={() => activeEvent && setSelectedEventId(activeEvent.id)}
+        disabled={!activeEvent}
+      >
         {activeEvent ? (
           <>
             <ThemedText type="title" style={[styles.eventTitle]}>
@@ -138,7 +146,16 @@ export default function EventCardContainer({ events }: EventCardProps) {
             No {selectedTab.toLowerCase()} events available
           </ThemedText>
         )}
-      </View>
+      </Pressable>
+
+      {/* Event Modal */}
+      <FullScreenModal
+        isVisible={Boolean(selectedEventId)}
+        onClose={() => setSelectedEventId(undefined)}
+        title="Event"
+      >
+        <ViewEvent eventId={selectedEventId} />
+      </FullScreenModal>
     </View>
   );
 }

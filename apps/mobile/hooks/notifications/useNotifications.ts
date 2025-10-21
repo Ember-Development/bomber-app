@@ -10,7 +10,7 @@ export interface NotificationItem {
   sentAt: string; // ISO
 }
 
-export function useNotificationsFeed(unreadOnly = true) {
+export function useNotificationsFeed(unreadOnly = true, enabled = true) {
   return useQuery({
     queryKey: ['notifications', 'feed', { unreadOnly }],
     queryFn: async () => {
@@ -21,9 +21,10 @@ export function useNotificationsFeed(unreadOnly = true) {
         (a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
       );
     },
+    enabled,
     staleTime: 30_000,
     refetchOnWindowFocus: true,
-    refetchInterval: 15000,
-    refetchIntervalInBackground: true,
+    refetchInterval: enabled ? 15000 : false,
+    refetchIntervalInBackground: enabled,
   });
 }

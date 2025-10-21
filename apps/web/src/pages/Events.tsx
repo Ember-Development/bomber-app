@@ -18,6 +18,7 @@ import {
 } from '@/api/event';
 import { fetchUsers } from '@/api/user';
 import type { EventFE, UserFE } from '@bomber-app/database';
+import { US_STATES, getStateName } from '@/utils/state';
 
 type EventType = 'TOURNAMENT' | 'PRACTICE' | 'GLOBAL';
 type DateFilter = 'All' | 'Upcoming' | 'Past';
@@ -45,37 +46,12 @@ function toDisplayEvent(e: EventFE) {
 }
 
 /** tiny helpers like mobile */
-const US_STATES: { label: string; value: string }[] = [
-  { label: 'Alabama', value: 'Alabama' },
-  { label: 'Alaska', value: 'Alaska' } /* ... fill yours ... */,
-];
-const toAbbr = (stateName?: string) => {
-  // you likely already have util; keep this inline or import from utils/state
-  const m: Record<string, string> = {
-    Alabama: 'AL',
-    Alaska: 'AK' /* ... */,
-  };
-  return stateName && m[stateName] ? m[stateName] : '';
-};
-const getStateName = (input: string) => {
-  // normalize from abbr to full; minimal logic (you can import your utils)
-  const pairs: Array<[string, string]> = [
-    ['AL', 'Alabama'],
-    ['AK', 'Alaska'] /* ... */,
-  ];
-  const byAbbr = new Map(pairs);
-  const byName = new Map(pairs.map(([a, n]) => [n.toLowerCase(), n]));
-  const t = input.trim();
-  if (byAbbr.has(t.toUpperCase())) return byAbbr.get(t.toUpperCase())!;
-  return byName.get(t.toLowerCase()) ?? input;
-};
 const splitLocation = (
   loc?: string | null
 ): { city: string; state: string } => {
   if (!loc) return { city: '', state: '' };
   const parts = loc.split(',').map((s) => s.trim());
-  if (parts.length === 2)
-    return { city: parts[0], state: getStateName(parts[1]) };
+  if (parts.length === 2) return { city: parts[0], state: parts[1] };
   return { city: loc, state: '' };
 };
 
@@ -219,7 +195,7 @@ export default function Events() {
 
     const location = useMemo(() => {
       const c = city.trim();
-      const s = toAbbr(getStateName(stateVal || ''));
+      const s = stateVal.trim();
       if (c && s) return `${c}, ${s}`;
       if (c) return c;
       if (s) return s;
@@ -533,7 +509,7 @@ export default function Events() {
 
     const location = useMemo(() => {
       const c = city.trim();
-      const s = toAbbr(getStateName(stateVal || ''));
+      const s = stateVal.trim();
       if (c && s) return `${c}, ${s}`;
       if (c) return c;
       if (s) return s;

@@ -8,11 +8,20 @@ import TabBarBackground from '@/components/ui/TabBarBackground';
 import { useUserContext } from '@/context/useUserContext';
 
 export default function TabLayout() {
-  const { user } = useUserContext();
+  const { user, isLoading } = useUserContext();
   const primaryRole = Array.isArray(user?.primaryRole)
     ? user.primaryRole[0]
     : (user?.primaryRole ?? '');
   const isFan = primaryRole.toUpperCase() === 'FAN';
+
+  // Debug logging
+  console.log('TabLayout Debug:', {
+    isLoading,
+    primaryRole,
+    isFan,
+    userId: user?.id,
+    shouldShowEvents: !isLoading && !isFan,
+  });
 
   return (
     <Tabs
@@ -85,21 +94,20 @@ export default function TabLayout() {
       )} */}
 
       {/* Events: only non-Fans */}
-      {!isFan && (
-        <Tabs.Screen
-          name="events"
-          options={{
-            title: 'Events',
-            tabBarIcon: ({ color, focused }) => (
-              <AnimatedIcon
-                name="calendar-outline"
-                color={color}
-                focused={focused}
-              />
-            ),
-          }}
-        />
-      )}
+      <Tabs.Screen
+        name="events"
+        options={{
+          title: 'Events',
+          href: !isLoading && !isFan ? undefined : null,
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedIcon
+              name="calendar-outline"
+              color={color}
+              focused={focused}
+            />
+          ),
+        }}
+      />
 
       {/* Media: only Fans */}
       <Tabs.Screen

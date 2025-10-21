@@ -27,6 +27,7 @@ import parentRoutes from './routes/parentRoutes';
 import regCoachRoutes from './routes/regCoachRoutes';
 import { devicesRouter } from './routes/deviceRoutes';
 import { notificationsRouter } from './routes/notificationsRoutes';
+import analyticsRoutes from './routes/analyticsRoutes';
 
 const app = express();
 const server = http.createServer(app);
@@ -107,6 +108,7 @@ app.use('/api/parents', parentRoutes);
 app.use('/api/regCoaches', regCoachRoutes);
 app.use('/api/devices', devicesRouter);
 app.use('/api/notifications', notificationsRouter);
+app.use('/api/analytics', analyticsRoutes);
 
 // Error handling middleware (single instance)
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

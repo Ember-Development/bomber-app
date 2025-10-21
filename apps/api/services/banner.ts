@@ -4,6 +4,7 @@ import { prisma } from '../api';
 
 interface BannerCreateInput {
   imageUrl: string;
+  link?: string;
   duration: number;
   expiresAt: Date;
 }

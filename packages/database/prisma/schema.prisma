@@ -516,6 +516,7 @@ model Sponsor {
 model Banner {
     id        String   @id @default(uuid()) @db.Uuid
     imageUrl  String
+    link      String?  // optional deep link or URL
     // duration in hours, e.g. 6, 12, 24
     duration  Int
     expiresAt DateTime @default(now())

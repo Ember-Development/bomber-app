@@ -25,11 +25,17 @@ export const getBannerById = async (req: Request, res: Response) => {
 
 export const createBanner = async (req: Request, res: Response) => {
   try {
-    const { imageUrl, duration } = req.body;
+    const { imageUrl, link, duration, expiresAt } = req.body;
+
+    if (!imageUrl) {
+      return res.status(400).json({ message: 'imageUrl is required' });
+    }
+
     const newBanner = await bannerService.createBanner({
       imageUrl,
-      duration,
-      expiresAt: new Date(Date.now() + duration * 1000),
+      link: link || undefined,
+      duration: parseInt(duration),
+      expiresAt: new Date(expiresAt),
     });
     res.status(201).json(newBanner);
   } catch (e) {

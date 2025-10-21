@@ -15,6 +15,7 @@ type FlatEvent = {
 type UserEventRow = { event?: FlatEvent } & Record<string, any>;
 
 export type SpotlightEvent = {
+  id: string;
   date: string; // MUST be ISO for EventCardContainer comparisons
   title: string;
   location: string;
@@ -51,6 +52,7 @@ export function formatEvents(
       const time = `${dayjs(start).format('h:mm A')} – ${dayjs(end).format('h:mm A')}`;
 
       return {
+        id: e.id,
         date: startISO, // always ISO; EventCardContainer relies on this!
         title,
         location,

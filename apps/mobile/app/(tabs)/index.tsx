@@ -7,6 +7,7 @@ import {
   Image,
   StyleSheet,
   Pressable,
+  RefreshControl,
 } from 'react-native';
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useRouter } from 'expo-router';
@@ -77,14 +78,29 @@ export default function HomeScreen() {
   );
 
   // Data fetching
-  const { data: rawEvents, isLoading: isEventsLoading } = useUserEvents(
+  const {
+    data: rawEvents,
+    isLoading: isEventsLoading,
+    refetch: refetchEvents,
+  } = useUserEvents(user?.id);
+  const { isLoading: isChatsLoading, refetch: refetchChats } = useUserChats(
     user?.id
   );
-  const { isLoading: isChatsLoading } = useUserChats(user?.id);
-  const { data: banners, isLoading: bannersLoading } = useBanners();
-  const { data: videos, isLoading: isMediaLoading } = useAllMedia();
-  const { data: articles = [], isLoading: isArticlesLoading } =
-    useAllArticles();
+  const {
+    data: banners,
+    isLoading: bannersLoading,
+    refetch: refetchBanners,
+  } = useBanners();
+  const {
+    data: videos,
+    isLoading: isMediaLoading,
+    refetch: refetchMedia,
+  } = useAllMedia();
+  const {
+    data: articles = [],
+    isLoading: isArticlesLoading,
+    refetch: refetchArticles,
+  } = useAllArticles();
 
   const sortedArticles = useMemo(() => {
     return [...articles].sort(
@@ -95,28 +111,54 @@ export default function HomeScreen() {
   const topThree = sortedArticles.slice(0, 3);
   const formattedEvents = formatEvents(rawEvents ?? []);
 
+  // Pull to refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([
+      refetchEvents(),
+      refetchChats(),
+      refetchBanners(),
+      refetchMedia(),
+      refetchArticles(),
+    ]);
+    setRefreshing(false);
+  };
+
   // Banner logic
-  const [showBanner, setShowBanner] = useState(true);
+  const [showBanner, setShowBanner] = useState(false);
   const [currentBanner, setCurrentBanner] = useState<BannerData | null>(null);
+
+  // Session tracking for cold start only
+  const [bannerCheckedThisSession, setBannerCheckedThisSession] =
+    useState(false);
   useEffect(() => {
     (async () => {
-      if (bannersLoading || !banners) return;
+      if (bannersLoading || !banners || bannerCheckedThisSession) return;
+
       const now = new Date();
       const active = banners.find((b) => new Date(b.expiresAt) > now);
-      if (!active) return;
+      if (!active) {
+        setBannerCheckedThisSession(true);
+        return;
+      }
+
       const seenJson = await AsyncStorage.getItem('seenBanners');
       const seen: string[] = seenJson ? JSON.parse(seenJson) : [];
       if (!seen.includes(active.id)) {
         setCurrentBanner({
           id: active.id,
           imageUrl: active.imageUrl,
+          link: active.link,
           duration: active.duration,
           expiresAt: new Date(active.expiresAt),
         });
         setShowBanner(true);
       }
+
+      setBannerCheckedThisSession(true);
     })();
-  }, [banners, bannersLoading]);
+  }, [banners, bannersLoading, bannerCheckedThisSession]);
   const handleCloseBanner = async () => {
     if (!currentBanner) return;
     const seenJson = await AsyncStorage.getItem('seenBanners');
@@ -186,7 +228,14 @@ export default function HomeScreen() {
           )}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
-          bounces={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={GlobalColors.bomber}
+              colors={[GlobalColors.bomber]}
+            />
+          }
         >
           {/* Header */}
           <RNAnimated.View

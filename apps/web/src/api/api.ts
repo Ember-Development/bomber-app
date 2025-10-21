@@ -23,7 +23,7 @@ const refreshClient = axios.create({
 let refreshing = false;
 let waiters: Array<() => void> = [];
 
-function setAccess(token: string | null) {
+export function setAccess(token: string | null) {
   accessToken = token;
   if (token) {
     localStorage.setItem('access', token);

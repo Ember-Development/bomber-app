@@ -1,5 +1,5 @@
 // src/pages/Notifications.tsx
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeftIcon,
@@ -104,9 +104,10 @@ export default function Notifications() {
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [loadingFeed, setLoadingFeed] = useState(false);
 
-  // --- Banners (unchanged API) ---
+  // --- Banners ---
   const [banners, setBanners] = useState<BannerFE[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [newLink, setNewLink] = useState('');
   const [newDuration, setNewDuration] = useState(1);
   const [newExpiresAt, setNewExpiresAt] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -343,23 +344,43 @@ export default function Notifications() {
 
   /* --------------------------- banners (unchanged) -------------------------- */
 
+  const formatLocalDateTime = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const handleDurationChange = (hrs: number) => {
     setNewDuration(hrs);
     const now = new Date();
     now.setHours(now.getHours() + hrs);
-    setNewExpiresAt(now.toISOString().slice(0, 16));
+    setNewExpiresAt(formatLocalDateTime(now));
+  };
+
+  const handleEditDurationChange = (hrs: number) => {
+    setEditDuration(hrs);
+    const now = new Date();
+    now.setHours(now.getHours() + hrs);
+    setEditExpiresAt(formatLocalDateTime(now));
   };
 
   const addBannerClick = async () => {
     if (!newImageUrl || !newExpiresAt) return;
+
     const created = await createBanner({
       imageUrl: newImageUrl,
+      link: newLink || undefined,
       duration: newDuration,
-      expiresAt: new Date(newExpiresAt).toISOString(),
+      expiresAt: newExpiresAt,
     });
+
     if (created) {
       setBanners((b) => [created, ...b]);
       setNewImageUrl('');
+      setNewLink('');
       setNewDuration(1);
       setNewExpiresAt('');
       addToast('Banner created', 'success');
@@ -405,11 +426,6 @@ export default function Notifications() {
       addToast('Banner deleted', 'success');
     }
     closeDialog();
-  };
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setNewImageUrl(URL.createObjectURL(e.target.files[0]));
-    }
   };
 
   /* ---------------------------------- UI ---------------------------------- */
@@ -849,14 +865,34 @@ export default function Notifications() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-xs sm:text-sm font-medium text-white/70 mb-1">
-                        Banner Image
+                        Banner Image URL
                       </label>
                       <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:bg-[#5AA5FF] file:text-white file:text-sm file:border-0 file:cursor-pointer text-sm"
+                        type="url"
+                        placeholder="https://cdn.example.com/banner.jpg"
+                        value={newImageUrl}
+                        onChange={(e) => setNewImageUrl(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg bg-white/10 text-white placeholder-white/70 focus:outline-none text-sm sm:text-base"
                       />
+                      <p className="text-xs text-white/50 mt-1">
+                        Upload your image to a CDN and paste the URL here
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-white/70 mb-1">
+                        Link (Optional)
+                      </label>
+                      <input
+                        type="url"
+                        placeholder="https://example.com or bomber://team/123"
+                        value={newLink}
+                        onChange={(e) => setNewLink(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg bg-white/10 text-white placeholder-white/70 focus:outline-none text-sm sm:text-base"
+                      />
+                      <p className="text-xs text-white/50 mt-1">
+                        If provided, banner becomes clickable (deep link or URL)
+                      </p>
                     </div>
 
                     {newImageUrl && (
@@ -1024,14 +1060,24 @@ export default function Notifications() {
             />
 
             <label className="block text-sm text-white font-semibold">
-              Duration (hrs)
+              Duration
             </label>
-            <input
-              type="number"
-              value={editDuration}
-              onChange={(e) => setEditDuration(Number(e.target.value))}
-              className="w-full px-3 py-2 rounded-lg bg-white/10 text-white"
-            />
+            <div className="flex flex-wrap gap-2">
+              {[1, 6, 12, 24].map((hrs) => (
+                <button
+                  key={hrs}
+                  onClick={() => handleEditDurationChange(hrs)}
+                  className={`px-3 py-1.5 text-sm rounded-full font-semibold transition
+                    ${
+                      editDuration === hrs
+                        ? 'bg-[#5AA5FF] text-white shadow'
+                        : 'bg-white/10 text-white/75 hover:bg-[#5AA5FF]/30'
+                    }`}
+                >
+                  {hrs} hr
+                </button>
+              ))}
+            </div>
 
             <label className="block text-sm text-white font-semibold">
               Expires At

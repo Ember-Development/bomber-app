@@ -18,6 +18,14 @@ export async function sendNotificationRecord(id: string) {
 
   const targetUserIds = await resolveAudience(n.audience as any);
 
+  console.log(`[Send Notification] Notification ${id}:`, {
+    title: n.title,
+    audience: n.audience,
+    targetUserIds: targetUserIds.length,
+    platform: n.platform,
+    status: n.status,
+  });
+
   const deviceWhere =
     n.platform === 'ios'
       ? { platform: 'ios' }
@@ -32,6 +40,10 @@ export async function sendNotificationRecord(id: string) {
     },
     select: { id: true, token: true, platform: true, userId: true },
   });
+
+  console.log(
+    `[Send Notification] Found ${devices.length} devices for ${targetUserIds.length} users`
+  );
 
   if (targetUserIds.length) {
     await Promise.all(
@@ -61,6 +73,9 @@ export async function sendNotificationRecord(id: string) {
   }
 
   for (const d of devices) {
+    console.log(
+      `[Send Notification] Sending to device ${d.id} (${d.platform}) for user ${d.userId}`
+    );
     try {
       await sendToDevice({
         platform: d.platform as 'ios' | 'android',
@@ -84,27 +99,40 @@ export async function sendNotificationRecord(id: string) {
           deliveredAt: new Date(),
         },
       });
+      console.log(`[Send Notification] ✅ Successfully sent to device ${d.id}`);
     } catch (e: any) {
       const msg = String(e?.message ?? e);
+      console.error(
+        `[Send Notification] ❌ Failed to send to device ${d.id}:`,
+        msg
+      );
+      let deviceDeleted = false;
+
       if (
         msg.includes('BadDeviceToken') ||
         msg.includes('not-registered') ||
         msg.includes('Unregistered')
       ) {
         await prisma.device.delete({ where: { id: d.id } }).catch(() => {});
+        deviceDeleted = true;
+        console.log(`[Send Notification] 🗑️ Deleted invalid device ${d.id}`);
       }
-      await prisma.pushReceipt.upsert({
-        where: {
-          deviceId_notificationId: { deviceId: d.id, notificationId: n.id },
-        },
-        update: { failureReason: msg },
-        create: {
-          deviceId: d.id,
-          userId: d.userId,
-          notificationId: n.id,
-          failureReason: msg,
-        },
-      });
+
+      // Only create PushReceipt if device wasn't deleted
+      if (!deviceDeleted) {
+        await prisma.pushReceipt.upsert({
+          where: {
+            deviceId_notificationId: { deviceId: d.id, notificationId: n.id },
+          },
+          update: { failureReason: msg },
+          create: {
+            deviceId: d.id,
+            userId: d.userId,
+            notificationId: n.id,
+            failureReason: msg,
+          },
+        });
+      }
     }
   }
 

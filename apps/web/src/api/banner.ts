@@ -3,6 +3,7 @@ import { api } from './api';
 export interface BannerFE {
   id: string;
   imageUrl: string;
+  link?: string; // optional deep link or URL
   duration: number; // hours
   expiresAt: string; // ISO string
   createdAt: string; // ISO string
@@ -11,6 +12,7 @@ export interface BannerFE {
 
 export interface CreateBannerDTO {
   imageUrl: string;
+  link?: string;
   duration: number;
   expiresAt: string; // ISO string
 }

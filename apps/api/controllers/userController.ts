@@ -4,6 +4,7 @@ import { hashPassword, verifyPassword } from '../utils/crypto';
 import { AuthenticatedRequest } from '../utils/express';
 import { regCoachService } from '../services/regCoach';
 import { UserRole } from '@bomber-app/database/generated/client';
+import { getLatestVersionInfo } from '../utils/versionManager';
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -238,9 +239,8 @@ export const demoteFromRegCoach = async (
 
 export const getLatestVersion = async (req: Request, res: Response) => {
   try {
-    // Hardcoded latest version for now (update this manually or via config)
-    const latestVersion = '1.0.6'; // Example: Update to the latest version number
-    res.json({ version: latestVersion });
+    const versionInfo = getLatestVersionInfo();
+    res.json(versionInfo);
   } catch (error) {
     console.error('Error fetching latest version:', error);
     res.status(500).json({ error: 'Failed to fetch latest version' });

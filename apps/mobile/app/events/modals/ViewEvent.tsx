@@ -332,7 +332,7 @@ export default function ViewEvent({ eventId }: ViewEventProps) {
     acc[a.status] = (acc[a.status] ?? 0) + 1;
     return acc;
   }, {});
-  const topAttendees = data.attendees.slice(0, 6);
+  const allAttendees = data.attendees;
 
   return (
     <>
@@ -469,7 +469,7 @@ export default function ViewEvent({ eventId }: ViewEventProps) {
         </View>
 
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-          {topAttendees.map((a) => (
+          {allAttendees.map((a) => (
             <View key={a.user.id} style={styles.attendee}>
               <InitialsAvatar
                 fname={a.user.fname}

@@ -35,8 +35,8 @@ export const fetchLatestVersion = async () => {
     '[CALLSITE fetchLatestVersion] willSendAuth?',
     !!t,
     'url',
-    '/api/latest-version'
+    '/api/users/latest-version'
   );
-  const { data } = await api.get('/api/latest-version');
-  return data.version; // Expecting { version: "1.0.3" } from the backend
+  const { data } = await api.get('/api/users/latest-version');
+  return data; // Now returns { version: "1.0.12", features: [...] }
 };
