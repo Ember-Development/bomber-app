@@ -2,7 +2,7 @@
   "expo": {
     "name": "bomber-app",
     "slug": "bomber-app",
-    "version": "1.0.4",
+    "version": "1.0.12",
     "orientation": "portrait",
     "owner": "emberdevco",
     "icon": "./assets/images/bomberappcover.png",

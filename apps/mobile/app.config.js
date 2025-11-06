@@ -6,7 +6,7 @@ module.exports = {
     name: 'bomber-app',
     slug: 'bomber-app',
     owner: 'emberdevco',
-    version: '1.0.11',
+    version: '1.0.12',
     orientation: 'portrait',
     icon: './assets/images/bomberappcover.png',
     scheme: 'bomber',

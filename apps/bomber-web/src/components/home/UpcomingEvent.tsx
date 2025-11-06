@@ -1,8 +1,45 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getUpcomingEvent } from '@/api/event';
 
-// Mock countdown hook for demo
-function useCountdown(target: Date) {
-  return { days: 7, hours: 14, minutes: 32, seconds: 45 };
+// Countdown hook
+function useCountdown(target: Date | null) {
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
+  useEffect(() => {
+    if (!target) return;
+
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const targetTime = new Date(target).getTime();
+      const difference = targetTime - now;
+
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor(
+            (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+          ),
+          minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((difference % (1000 * 60)) / 1000),
+        });
+      } else {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      }
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(interval);
+  }, [target]);
+
+  return timeLeft;
 }
 
 function TimeCell({ label, value }: { label: string; value: number }) {
@@ -54,11 +91,41 @@ function CountdownPill({
 }
 
 export default function UpcomingEvent() {
-  const target = useMemo(() => new Date(Date.now() + 7 * 24 * 3600 * 1000), []);
-  const diff = useCountdown(target);
+  const { data: upcomingEvent, isLoading } = useQuery({
+    queryKey: ['upcoming-event'],
+    queryFn: getUpcomingEvent,
+  });
+
+  // Default event data if none found
+  const defaultEvent = useMemo(
+    () => ({
+      title: upcomingEvent?.title || 'No Upcoming Events',
+      start: upcomingEvent?.start || null,
+    }),
+    [upcomingEvent]
+  );
+
+  const target = useMemo(() => {
+    if (!defaultEvent.start) return null;
+    return new Date(defaultEvent.start);
+  }, [defaultEvent.start]);
+
+  const timeLeft = useCountdown(target);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <section className="relative overflow-hidden rounded-3xl shadow-2xl mx-4 md:mx-8">
+        <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-black to-neutral-900" />
+        <div className="relative p-10 text-white text-center">
+          Loading upcoming events...
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="relative overflow-hidden rounded-3xl shadow-2xl mx-8">
+    <section className="relative overflow-hidden rounded-3xl shadow-2xl mx-4 md:mx-8">
       {/* Animated background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-black to-neutral-900" />
 
@@ -87,18 +154,14 @@ export default function UpcomingEvent() {
           <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#57a4ff]/20 to-[#3b8aff]/20 px-4 py-1.5 backdrop-blur-sm border border-[#57a4ff]/30">
             <div className="h-1.5 w-1.5 rounded-full bg-[#57a4ff] animate-pulse" />
             <span className="text-xs font-black tracking-widest text-[#57a4ff] uppercase">
-              Upcoming Event
+              {upcomingEvent ? 'Upcoming Event' : 'Stay Tuned'}
             </span>
           </div>
 
           {/* Title with gradient */}
           <h3 className="text-3xl md:text-4xl lg:text-5xl font-black leading-tight">
             <span className="bg-gradient-to-br from-white via-neutral-200 to-neutral-400 bg-clip-text text-transparent drop-shadow-2xl">
-              2024 BOMBERS
-            </span>
-            <br />
-            <span className="bg-gradient-to-r from-[#57a4ff] via-[#6bb0ff] to-[#57a4ff] bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(87,164,255,0.5)]">
-              NATIONAL COACHES CONVENTION
+              {defaultEvent.title}
             </span>
           </h3>
 
@@ -148,7 +211,7 @@ export default function UpcomingEvent() {
 
         {/* Countdown */}
         <div className="justify-self-end">
-          <CountdownPill {...diff} />
+          <CountdownPill {...timeLeft} />
         </div>
       </div>
 

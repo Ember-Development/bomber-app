@@ -11,12 +11,12 @@ import AppPromoAndSocial from '@/components/home/AppPromoAndSocial';
 
 export default function Home() {
   return (
-    <div className="relative bg-neutral-950">
+    <div className="relative bg-neutral-950 overflow-x-hidden">
       <MainNav />
       <SocialSidebar />
       <Hero />
-      {/* IMPORTANT: Remove bg-neutral-100 from main, it should be transparent */}
-      <main className="relative z-20">
+      {/* Keep content above Hero but below MainNav */}
+      <main className="relative z-[40] overflow-x-hidden">
         <NewsRail />
         <UpcomingEvent />
         <ChampionshipHistory />

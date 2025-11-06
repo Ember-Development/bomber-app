@@ -15,7 +15,7 @@ import { auth } from '../auth/auth';
 
 const router = express.Router();
 
-router.get('/', auth, getAllEvents);
+router.get('/', getAllEvents);
 router.get('/:id', auth, getEventById);
 router.post('/', auth, createEvent);
 router.put('/:id', auth, updateEvent);

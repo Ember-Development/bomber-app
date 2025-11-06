@@ -247,6 +247,7 @@ export function fakeNotification() {
     sentAt: undefined,
     data: undefined,
     audience: undefined,
+    badge: undefined,
   };
 }
 export function fakeNotificationComplete() {
@@ -263,6 +264,7 @@ export function fakeNotificationComplete() {
     sentAt: undefined,
     data: undefined,
     audience: undefined,
+    badge: undefined,
   };
 }
 export function fakePushReceipt() {

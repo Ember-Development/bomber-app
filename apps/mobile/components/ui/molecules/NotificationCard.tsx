@@ -43,15 +43,18 @@ type FeedItem = {
 
 const KEY_CLEARED_UNTIL = 'notifications:clearedUntil';
 const KEY_DISMISSED_IDS = 'notifications:dismissedIds';
+const KEY_READ_IDS = 'notifications:readIds';
 
 async function getDismissals() {
-  const [untilRaw, idsRaw] = await Promise.all([
+  const [untilRaw, idsRaw, readRaw] = await Promise.all([
     AsyncStorage.getItem(KEY_CLEARED_UNTIL),
     AsyncStorage.getItem(KEY_DISMISSED_IDS),
+    AsyncStorage.getItem(KEY_READ_IDS),
   ]);
   const clearedUntil = untilRaw ? Number(untilRaw) : 0;
   const dismissedIds: Record<string, true> = idsRaw ? JSON.parse(idsRaw) : {};
-  return { clearedUntil, dismissedIds };
+  const readIds: Record<string, true> = readRaw ? JSON.parse(readRaw) : {};
+  return { clearedUntil, dismissedIds, readIds };
 }
 
 async function setClearedUntil(ms: number) {
@@ -69,6 +72,17 @@ async function clearDismissedIds() {
   await AsyncStorage.setItem(KEY_DISMISSED_IDS, '{}');
 }
 
+async function addReadId(id: string) {
+  const idsRaw = (await AsyncStorage.getItem(KEY_READ_IDS)) || '{}';
+  const ids = JSON.parse(idsRaw) as Record<string, true>;
+  ids[id] = true;
+  await AsyncStorage.setItem(KEY_READ_IDS, JSON.stringify(ids));
+}
+
+async function clearReadIds() {
+  await AsyncStorage.setItem(KEY_READ_IDS, '{}');
+}
+
 /* ---------------------------------------------------------------------- */
 
 export default function NotificationCard() {
@@ -79,6 +93,7 @@ export default function NotificationCard() {
   // dismissal state (hydrated from AsyncStorage)
   const [clearedUntil, setClearedUntilState] = useState<number>(0);
   const [dismissedIds, setDismissedIds] = useState<Record<string, true>>({});
+  const [readIds, setReadIds] = useState<Record<string, true>>({});
 
   const cardScale = useRef(new Animated.Value(1)).current;
   const { width } = useWindowDimensions();
@@ -99,9 +114,10 @@ export default function NotificationCard() {
   // hydrate local dismissal state on mount
   useEffect(() => {
     (async () => {
-      const { clearedUntil, dismissedIds } = await getDismissals();
+      const { clearedUntil, dismissedIds, readIds } = await getDismissals();
       setClearedUntilState(clearedUntil);
       setDismissedIds(dismissedIds);
+      setReadIds(readIds);
     })();
   }, []);
 
@@ -115,6 +131,11 @@ export default function NotificationCard() {
     });
   }, [notifications, clearedUntil, dismissedIds]);
 
+  // Calculate unread count
+  const unreadCount = useMemo(() => {
+    return filteredNotifications.filter((n) => !readIds[n.id]).length;
+  }, [filteredNotifications, readIds]);
+
   // Don't show notifications if user is not logged in
   if (!user) {
     return null;
@@ -122,10 +143,20 @@ export default function NotificationCard() {
 
   const top = filteredNotifications[0];
   const topPreview = useMemo(() => {
-    if (isLoading) return { line1: 'Loading…', time: '' };
-    if (error) return { line1: 'Unable to load notifications', time: '' };
-    if (!top) return { line1: 'No notifications yet', time: '' };
-    return { line1: top.title || top.body, time: timeAgo(top.sentAt) };
+    if (isLoading) return { line1: 'Loading…', time: '', hasDeepLink: false };
+    if (error)
+      return {
+        line1: 'Unable to load notifications',
+        time: '',
+        hasDeepLink: false,
+      };
+    if (!top)
+      return { line1: 'No notifications yet', time: '', hasDeepLink: false };
+    return {
+      line1: top.title || top.body,
+      time: timeAgo(top.sentAt),
+      hasDeepLink: !!top.deepLink,
+    };
   }, [top, isLoading, error]);
 
   const handlePressIn = () => {
@@ -172,6 +203,9 @@ export default function NotificationCard() {
         // persist dismissal
         await addDismissedId(id);
         setDismissedIds((prev) => ({ ...prev, [id]: true }));
+        // Mark as read
+        await addReadId(id);
+        setReadIds((prev) => ({ ...prev, [id]: true }));
       } catch (e) {
         console.error('Failed to mark opened', e);
       }
@@ -187,8 +221,10 @@ export default function NotificationCard() {
       const now = Date.now();
       await setClearedUntil(now);
       await clearDismissedIds();
+      await clearReadIds();
       setClearedUntilState(now);
       setDismissedIds({});
+      setReadIds({});
       // Refetch to get updated data
       refetch();
     } catch (e) {
@@ -198,64 +234,93 @@ export default function NotificationCard() {
 
   return (
     <View>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="View Notifications"
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        onPress={() => setModalVisible(true)}
-        android_ripple={{ color: 'rgba(255,255,255,0.08)', borderless: false }}
-        style={{ borderRadius: 18, overflow: 'hidden' }}
-      >
-        <Animated.View
-          style={[styles.card, { transform: [{ scale: cardScale }] }]}
+      <View style={{ position: 'relative' }}>
+        {unreadCount > 0 && (
+          <View style={styles.badge}>
+            <ThemedText style={styles.badgeText}>
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </ThemedText>
+          </View>
+        )}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="View Notifications"
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          onPress={() => setModalVisible(true)}
+          android_ripple={{
+            color: 'rgba(255,255,255,0.08)',
+            borderless: false,
+          }}
+          style={{ borderRadius: 18, overflow: 'hidden' }}
         >
-          <View
-            style={[styles.cardHeader, compact && styles.cardHeaderCompact]}
+          <Animated.View
+            style={[styles.card, { transform: [{ scale: cardScale }] }]}
           >
-            <ThemedText
-              type="subtitle"
-              numberOfLines={1}
-              ellipsizeMode="tail"
-              style={[
-                styles.title,
-                compact && styles.titleCompact,
-                { color: textColor },
-              ]}
+            <View
+              style={[styles.cardHeader, compact && styles.cardHeaderCompact]}
             >
-              Notifications
-            </ThemedText>
+              <ThemedText
+                type="subtitle"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={[
+                  styles.title,
+                  compact && styles.titleCompact,
+                  { color: textColor },
+                ]}
+              >
+                Notifications
+              </ThemedText>
 
-            <Pressable
-              onPress={() => setModalVisible(true)}
-              hitSlop={10}
-              android_ripple={{
-                color: 'rgba(255,255,255,0.08)',
-                borderless: true,
-              }}
-              style={styles.iconBtn}
-              accessibilityRole="button"
-              accessibilityLabel="Expand notifications"
-            >
-              <Ionicons name="expand-outline" size={20} color={iconColor} />
-            </Pressable>
-          </View>
+              <Pressable
+                onPress={() => setModalVisible(true)}
+                hitSlop={10}
+                android_ripple={{
+                  color: 'rgba(255,255,255,0.08)',
+                  borderless: true,
+                }}
+                style={styles.iconBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Expand notifications"
+              >
+                <Ionicons name="expand-outline" size={20} color={iconColor} />
+              </Pressable>
+            </View>
 
-          <Separator />
+            <Separator />
 
-          <View style={styles.notificationPreview}>
-            <ThemedText
-              numberOfLines={2}
-              style={[styles.notificationText, { color: textColor }]}
-            >
-              {topPreview.line1}
-            </ThemedText>
-            {!!topPreview.time && (
-              <ThemedText style={styles.timeAgo}>{topPreview.time}</ThemedText>
-            )}
-          </View>
-        </Animated.View>
-      </Pressable>
+            <View style={styles.notificationPreview}>
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+              >
+                <ThemedText
+                  numberOfLines={2}
+                  style={[
+                    styles.notificationText,
+                    { color: textColor, flex: 1 },
+                  ]}
+                >
+                  {topPreview.line1}
+                </ThemedText>
+                {topPreview.hasDeepLink && (
+                  <Ionicons
+                    name="arrow-forward-circle"
+                    size={18}
+                    color={iconColor}
+                    style={{ opacity: 0.7, marginLeft: 4 }}
+                  />
+                )}
+              </View>
+              {!!topPreview.time && (
+                <ThemedText style={styles.timeAgo}>
+                  {topPreview.time}
+                </ThemedText>
+              )}
+            </View>
+          </Animated.View>
+        </Pressable>
+      </View>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalContainer}>
@@ -312,11 +377,31 @@ export default function NotificationCard() {
                     >
                       <View style={styles.notificationRow}>
                         <View style={{ flex: 1, gap: 6 }}>
-                          <ThemedText
-                            style={{ color: textColor, fontWeight: '600' }}
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              gap: 6,
+                            }}
                           >
-                            {item.title}
-                          </ThemedText>
+                            <ThemedText
+                              style={{
+                                color: textColor,
+                                fontWeight: '600',
+                                flex: 1,
+                              }}
+                            >
+                              {item.title}
+                            </ThemedText>
+                            {!!item.deepLink && (
+                              <Ionicons
+                                name="arrow-forward-circle"
+                                size={20}
+                                color={iconColor}
+                                opacity={0.7}
+                              />
+                            )}
+                          </View>
                           <ThemedText
                             style={{ color: textColor, opacity: 0.9 }}
                           >
@@ -451,14 +536,31 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   badge: {
-    minWidth: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: GlobalColors.bomber,
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    minWidth: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#57a4ff',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
     paddingHorizontal: 6,
+    borderWidth: 1,
+    borderColor: '#fff',
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+    textAlign: 'center',
+    lineHeight: 14,
   },
   dragHandle: {
     alignSelf: 'center',

@@ -4,6 +4,10 @@ import { hashPassword, verifyPassword } from '../utils/crypto';
 import { issueTokenPair, rotateRefreshToken } from '../auth/token';
 import { prisma } from '../api';
 import { UserRole } from '@bomber-app/database/generated/client';
+import { isEmail, nonEmptyString } from '../utils/validators.js';
+import { maskEmail, hashEmail } from '../utils/log';
+import { sendPasswordResetEmail } from '../utils/email';
+import { signResetToken, verifyResetToken } from '../utils/passwordReset';
 
 export const authService = {
   getMockLogin: async () => {
@@ -320,32 +324,81 @@ export const authService = {
   },
 
   async resetPassword(body: any) {
+    console.log('[reset] service start');
+
     const email = body?.email;
     const token = body?.token;
     const password = body?.password;
 
-    if (!isEmail(email)) throw { status: 400, message: 'Invalid email.' };
-    if (!nonEmptyString(token, 16))
+    console.log('[reset] extracted values', {
+      emailMasked: maskEmail(email),
+      hasToken: Boolean(token),
+      tokenLength: token?.length,
+      hasPassword: Boolean(password),
+    });
+
+    console.log('[reset] checking isEmail function', {
+      isEmailDefined: typeof isEmail !== 'undefined',
+      isEmailType: typeof isEmail,
+    });
+
+    if (!isEmail(email)) {
+      console.log('[reset] email validation failed', {
+        emailMasked: maskEmail(email),
+      });
+      throw { status: 400, message: 'Invalid email.' };
+    }
+    console.log('[reset] email validation passed');
+
+    if (!nonEmptyString(token, 16)) {
+      console.log('[reset] token validation failed', {
+        tokenLength: token?.length,
+      });
       throw { status: 400, message: 'Invalid token.' };
-    if (!nonEmptyString(password, 8))
+    }
+    console.log('[reset] token validation passed');
+
+    if (!nonEmptyString(password, 8)) {
+      console.log('[reset] password validation failed', {
+        passwordLength: password?.length,
+      });
       throw { status: 400, message: 'Password too short.' };
+    }
+    console.log('[reset] password validation passed');
 
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user || !user.pass)
+    if (!user || !user.pass) {
+      console.log('[reset] user not found or no password', {
+        userFound: Boolean(user),
+        hasPass: user?.pass ? true : false,
+      });
       throw { status: 400, message: 'Invalid token or email.' };
+    }
+    console.log('[reset] user found', { userId: user.id });
 
     try {
       const p = verifyResetToken(token, user.pass);
+      console.log('[reset] token verified', {
+        tokenUserId: p.sub,
+        dbUserId: user.id,
+      });
       if (p.sub !== String(user.id)) throw new Error('User mismatch');
-    } catch {
+    } catch (err) {
+      console.error('[reset] token verification failed', {
+        error: err,
+        errorMessage: (err as any)?.message,
+      });
       throw { status: 400, message: 'Invalid or expired token.' };
     }
 
-    const newHash = await hashPassword(password); // ← use your project’s hashing
+    const newHash = await hashPassword(password);
+    console.log('[reset] password hashed');
+
     await prisma.user.update({
       where: { id: user.id },
       data: { pass: newHash },
     });
+    console.log('[reset] password updated in database');
 
     // TODO (optional): revoke refresh tokens/sessions for user.id
   },

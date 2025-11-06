@@ -1,4 +1,11 @@
-import { Prisma, Team, Trophy, Player, Coach, User } from '../generated/client';
+import type {
+  Prisma,
+  Team,
+  Trophy,
+  Player,
+  Coach,
+  User,
+} from '../generated/client';
 
 type Relations = {
   trophyCase: { trophyCase: true };

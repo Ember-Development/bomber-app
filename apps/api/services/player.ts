@@ -172,9 +172,10 @@ export const playerService = {
         team: true,
         parents: true,
         address: true,
+        commit: { select: { imageUrl: true, name: true } },
       },
       orderBy: {
-        gradYear: 'desc',
+        gradYear: 'asc',
       },
     });
   },

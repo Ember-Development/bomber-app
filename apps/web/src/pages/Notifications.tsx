@@ -21,6 +21,9 @@ import {
   createNotification,
   sendNotificationNow,
   fetchNotificationFeed,
+  updateNotification,
+  fetchDrafts,
+  deleteNotification,
   type Audience,
   type FeedItem,
   type NotificationFE,
@@ -119,9 +122,12 @@ export default function Notifications() {
   const [editDuration, setEditDuration] = useState(1);
   const [editExpiresAt, setEditExpiresAt] = useState('');
 
+  // --- Edit Mode (reuses main form) ---
+  const [editingNotifId, setEditingNotifId] = useState<string | null>(null);
+
   /* ----------------------------- bootstrap ---------------------------- */
 
-  // load banners + feed (unchanged)
+  // load banners + feed + drafts
   useEffect(() => {
     fetchBanners()
       .then(setBanners)
@@ -129,6 +135,14 @@ export default function Notifications() {
         console.error(e);
         addToast('Failed to load banners', 'error');
       });
+
+    fetchDrafts()
+      .then(setDrafts)
+      .catch((e) => {
+        console.error(e);
+        addToast('Failed to load drafts', 'error');
+      });
+
     loadFeed();
 
     // load people/teams for audience filtering
@@ -303,18 +317,37 @@ export default function Notifications() {
       : { userIds: selectedUserIds };
 
     try {
-      const created = await createNotification({
-        title: title.trim(),
-        body: body.trim(),
-        imageUrl: imageUrl.trim() || undefined,
-        deepLink: deepLink.trim() || undefined,
-        platform,
-        audience,
-      });
+      if (editingNotifId) {
+        // Update existing draft
+        const updated = await updateNotification(editingNotifId, {
+          title: title.trim(),
+          body: body.trim(),
+          imageUrl: imageUrl.trim() || undefined,
+          deepLink: deepLink.trim() || undefined,
+          platform,
+          audience,
+        });
 
-      if (created) {
-        setDrafts((d) => [created, ...d]);
-        addToast('Draft created', 'success');
+        if (updated) {
+          setDrafts((d) => d.map((x) => (x.id === updated.id ? updated : x)));
+          addToast('Draft updated', 'success');
+        }
+        setEditingNotifId(null);
+      } else {
+        // Create new draft
+        const created = await createNotification({
+          title: title.trim(),
+          body: body.trim(),
+          imageUrl: imageUrl.trim() || undefined,
+          deepLink: deepLink.trim() || undefined,
+          platform,
+          audience,
+        });
+
+        if (created) {
+          setDrafts((d) => [created, ...d]);
+          addToast('Draft created', 'success');
+        }
       }
 
       // Reset form (leave filters as-is so you can keep building)
@@ -326,7 +359,12 @@ export default function Notifications() {
       // keep audAll and selections to continue composing if desired
     } catch (e: any) {
       console.error(e);
-      addToast('Failed to create notification', 'error');
+      addToast(
+        editingNotifId
+          ? 'Failed to update notification'
+          : 'Failed to create notification',
+        'error'
+      );
     }
   }
 
@@ -340,6 +378,74 @@ export default function Notifications() {
       console.error(e);
       addToast('Failed to send notification', 'error');
     }
+  }
+
+  function openEditNotification(notif: NotificationFE) {
+    setEditingNotifId(notif.id);
+    setTitle(notif.title);
+    setBody(notif.body);
+    setImageUrl(notif.imageUrl || '');
+    setDeepLink(notif.deepLink || '');
+    setPlatform(notif.platform);
+    setAudAll(!!notif.audience.all);
+    setSelectedUserIds(notif.audience.userIds || []);
+    // Scroll to top so user sees the form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function cancelEdit() {
+    setEditingNotifId(null);
+    setTitle('');
+    setBody('');
+    setImageUrl('');
+    setDeepLink('');
+    setPlatform('both');
+    setAudAll(true);
+    setSelectedUserIds([]);
+  }
+
+  async function onDeleteDraft(id: string) {
+    if (!confirm('Are you sure you want to delete this draft?')) return;
+
+    try {
+      const success = await deleteNotification(id);
+      if (success) {
+        setDrafts((d) => d.filter((x) => x.id !== id));
+        addToast('Draft deleted', 'success');
+
+        // If we're editing the deleted draft, clear the form
+        if (editingNotifId === id) {
+          cancelEdit();
+        }
+      }
+    } catch (e: any) {
+      console.error(e);
+      addToast('Failed to delete draft', 'error');
+    }
+  }
+
+  function onResendNotification(feedItem: FeedItem) {
+    // Clear any editing state
+    setEditingNotifId(null);
+
+    // Populate form with the sent notification's content
+    setTitle(feedItem.title);
+    setBody(feedItem.body);
+    setImageUrl(feedItem.imageUrl || '');
+    setDeepLink(feedItem.deepLink || '');
+
+    // Reset to defaults for audience/platform (user can reconfigure)
+    setPlatform('both');
+    setAudAll(true);
+    setSelectedUserIds([]);
+
+    // Scroll to top so user sees the form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    addToast(
+      'Notification content loaded - configure audience and send',
+      'success'
+    );
   }
 
   /* --------------------------- banners (unchanged) -------------------------- */
@@ -499,6 +605,12 @@ export default function Notifications() {
               <>
                 {/* Create Notification */}
                 <div className="space-y-4 mb-8">
+                  {editingNotifId && (
+                    <div className="bg-blue-500/20 border border-blue-500/50 rounded-lg px-4 py-2 text-sm">
+                      <span className="font-semibold">Editing draft</span> -
+                      Make your changes below and click "Update draft" to save.
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                     {/* Left: Message */}
                     <div className="space-y-3">
@@ -553,15 +665,23 @@ export default function Notifications() {
                         )}
                       </div>
 
-                      <div className="pt-2">
+                      <div className="pt-2 flex items-center gap-3">
                         <button
                           onClick={onCreate}
                           disabled={!canCreate}
                           className="inline-flex items-center gap-2 px-4 py-2 bg-[#5AA5FF] disabled:opacity-60 rounded-lg font-semibold hover:bg-[#3C8CE7] transition"
                         >
                           <PaperAirplaneIcon className="w-4 h-4" />
-                          Create draft
+                          {editingNotifId ? 'Update draft' : 'Create draft'}
                         </button>
+                        {editingNotifId && (
+                          <button
+                            onClick={cancelEdit}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg font-semibold transition"
+                          >
+                            Cancel
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -802,7 +922,21 @@ export default function Notifications() {
                               </div>
                             )}
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              onClick={() => openEditNotification(d)}
+                              className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-semibold"
+                            >
+                              <PencilSquareIcon className="w-4 h-4" />
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => onDeleteDraft(d.id)}
+                              className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-500/90 hover:bg-red-500 rounded-lg text-sm font-semibold"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                              Delete
+                            </button>
                             <button
                               onClick={() => onSendNow(d.id)}
                               className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/90 hover:bg-emerald-500 rounded-lg text-sm font-semibold"
@@ -842,17 +976,29 @@ export default function Notifications() {
                         key={n.id}
                         className="rounded-xl border border-white/10 bg-white/5 p-4"
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                          <div className="min-w-0 flex-1">
                             <div className="text-base font-semibold truncate">
                               {n.title}
                             </div>
                             <div className="text-xs text-white/60">
                               {new Date(n.sentAt).toLocaleString()}
                             </div>
+                            <p className="mt-2 text-sm text-white/85">
+                              {n.body}
+                            </p>
+                          </div>
+                          <div className="flex gap-2 self-end sm:self-start">
+                            <button
+                              onClick={() => onResendNotification(n)}
+                              className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#5AA5FF] hover:bg-[#3C8CE7] rounded-lg text-sm font-semibold transition"
+                              title="Resend this notification"
+                            >
+                              <ArrowPathIcon className="w-4 h-4" />
+                              Resend
+                            </button>
                           </div>
                         </div>
-                        <p className="mt-2 text-sm text-white/85">{n.body}</p>
                       </div>
                     ))
                   )}

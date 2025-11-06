@@ -1,4 +1,5 @@
-import { Prisma, Event } from '../generated/client';
+import type { Prisma, Event } from '../generated/client';
+export { EventType } from '../enums';
 
 type Relations = {
   tournament: { tournament: true };
@@ -21,9 +22,6 @@ export type EventFE = Omit<
 export type EventBE = Omit<Event, 'id'>;
 
 export type NewEvent = Omit<Event, 'id' | 'tournamentID'>;
-
-// weird that we need this now... again... everything was working with types last I used it...
-export { EventType } from '../generated/client';
 
 // FIXME: for some reason this doesnt work... boo
 // export type EventFE = EventDynamic<['attendees']>;

@@ -1,12 +1,58 @@
+import { useQuery } from '@tanstack/react-query';
+import { fetchMedia } from '@/api/media';
 import { PlayIcon } from '@/components/ui/icons';
 import FadeIn from '../animation/FadeIn';
+import { useNavigate } from 'react-router-dom';
+
+// Helper function to extract thumbnail from video URL
+function getVideoThumbnail(videoUrl: string): string {
+  try {
+    // YouTube thumbnails
+    if (
+      videoUrl.includes('youtube.com/watch') ||
+      videoUrl.includes('youtu.be/')
+    ) {
+      const videoId = videoUrl.match(
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/
+      )?.[1];
+      if (videoId) {
+        return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+      }
+    }
+
+    // Vimeo thumbnails (requires API call, so we'll use a placeholder)
+    if (videoUrl.includes('vimeo.com/')) {
+      const videoId = videoUrl.match(/vimeo\.com\/(\d+)/)?.[1];
+      if (videoId) {
+        return `https://vumbnail.com/${videoId}.jpg`;
+      }
+    }
+
+    // Default placeholder
+    return '/news/image3.jpg';
+  } catch {
+    return '/news/image3.jpg';
+  }
+}
 
 export default function MediaRail() {
-  const items = new Array(6).fill(null).map((_, i) => ({
-    id: i,
-    img: '/news/image3.jpg', // Replace with actual media thumbnails
-    title: `Bombers All Access EP${i + 1}`,
-  }));
+  const navigate = useNavigate();
+  const { data: media = [], isLoading } = useQuery({
+    queryKey: ['media'],
+    queryFn: fetchMedia,
+  });
+
+  if (isLoading) {
+    return (
+      <section className="mt-[3rem] p-6 md:p-10 ml-8 rounded-bl-3xl rounded-tl-3xl bg-neutral-900/90 shadow-2xl overflow-hidden relative">
+        <div className="text-white text-center">Loading media...</div>
+      </section>
+    );
+  }
+
+  if (media.length === 0) {
+    return null; // Don't render if no media
+  }
 
   return (
     <section className="mt-[3rem] p-6 md:p-10 ml-8 rounded-bl-3xl rounded-tl-3xl bg-neutral-900/90 shadow-2xl overflow-hidden relative">
@@ -16,7 +62,7 @@ export default function MediaRail() {
       {/* Image overlay */}
       <div className="absolute inset-0">
         <img
-          src="/news/image.png" // Different sports image
+          src="/news/image.png"
           alt=""
           className="h-full w-full object-cover object-center opacity-15"
         />
@@ -60,22 +106,47 @@ export default function MediaRail() {
 
         {/* Media Cards */}
         <div className="no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4">
-          {items.map((m) => (
+          {media.map((m) => (
             <FadeIn key={m.id}>
-              <article className="snap-start shrink-0 w-[260px] sm:w-[300px] rounded-xl overflow-hidden bg-neutral-950/80 text-white shadow-md border border-white/10 group hover:border-[#57a4ff]/50 transition-all duration-300">
+              <article
+                className="snap-start shrink-0 w-[260px] sm:w-[300px] rounded-xl overflow-hidden bg-neutral-950/80 text-white shadow-md border border-white/10 group hover:border-[#57a4ff]/50 transition-all duration-300 cursor-pointer"
+                role="button"
+                tabIndex={0}
+                onClick={() => navigate(`/videos/${m.id}`)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(`/videos/${m.id}`);
+                  }
+                }}
+              >
                 <div className="relative aspect-[16/11]">
-                  {/* Thumbnail */}
+                  {/* Video thumbnail */}
                   <img
-                    src={m.img}
+                    src={getVideoThumbnail(m.videoUrl)}
                     alt={m.title}
                     className="absolute inset-0 h-full w-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-300"
+                    onError={(e) => {
+                      // Fallback to gradient if image fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const fallback = target.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'block';
+                    }}
                   />
+                  <div className="absolute inset-0 bg-gradient-to-br from-neutral-800 to-neutral-900 opacity-70 group-hover:opacity-90 transition-opacity duration-300 hidden" />
                   {/* Play Button */}
                   <div className="absolute inset-0 grid place-items-center">
-                    <div className="relative h-12 w-12 rounded-full bg-gradient-to-br from-[#57a4ff]/30 to-[#3b8aff]/20 backdrop-blur-sm flex items-center justify-center border border-[#57a4ff]/30 group-hover:scale-110 group-hover:border-[#57a4ff]/70 transition-all duration-300">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/videos/${m.id}`);
+                      }}
+                      className="relative h-12 w-12 rounded-full bg-gradient-to-br from-[#57a4ff]/30 to-[#3b8aff]/20 backdrop-blur-sm flex items-center justify-center border border-[#57a4ff]/30 group-hover:scale-110 group-hover:border-[#57a4ff]/70 transition-all duration-300"
+                    >
                       <div className="absolute inset-0 bg-[#57a4ff]/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <PlayIcon className="h-6 w-6 text-white group-hover:text-[#6bb0ff] transition-colors duration-300" />
-                    </div>
+                    </button>
                   </div>
                   {/* Shine effect on hover */}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">

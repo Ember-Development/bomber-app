@@ -1,5 +1,3 @@
-import { PrismaClient, Sponsor } from '../generated/client';
-
-const prisma = new PrismaClient();
+import type { Sponsor } from '../generated/client';
 
 export type SponsorDB = Sponsor;

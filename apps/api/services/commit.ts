@@ -7,7 +7,7 @@ type CommitUpdateInput = Partial<CommitCreateInput>;
 export const commitService = {
   getAll: async () => {
     return prisma.commit.findMany({
-      orderBy: { committedDate: 'desc' },
+      orderBy: { committedDate: 'asc' },
       include: {
         players: {
           include: {

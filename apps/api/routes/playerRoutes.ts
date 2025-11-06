@@ -19,7 +19,7 @@ import { auth } from '../auth/auth';
 const router = express.Router();
 
 router.get('/', auth, getAllPlayers);
-router.get('/alumni', auth, getAlumniPlayers);
+router.get('/alumni', getAlumniPlayers);
 router.get('/unassigned', auth, getUnassignedPlayers);
 router.get('/:id', auth, getPlayerById);
 router.post('/', auth, createPlayer);

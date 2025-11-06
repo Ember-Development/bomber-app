@@ -1,5 +1,15 @@
-import { AgeGroup } from '@bomber-app/database/generated/client';
 import { PositionEnum } from './positions';
+
+export const AGE_GROUP_VALUES = [
+  'U8',
+  'U10',
+  'U12',
+  'U14',
+  'U16',
+  'U18',
+  'ALUMNI',
+] as const;
+export type AgeGroup = (typeof AGE_GROUP_VALUES)[number];
 
 export const POSITIONS = [
   'PITCHER',

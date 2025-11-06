@@ -23,12 +23,10 @@ import {
 } from 'react-native-big-calendar';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors, EventColors } from '@/constants/Colors';
-import { EventType } from '@bomber-app/database';
+import { EventType, type EventFE } from '@bomber-app/database';
 import FullScreenModal from '@/components/ui/organisms/FullSheetModal';
 import CustomButton from '@/components/ui/atoms/Button';
 import { useUserEvents } from '@/hooks/useUser';
-// If you have shared types:
-import type { EventFE } from '@bomber-app/database/types/event'; // adjust import path to your monorepo
 import { useUserContext } from '@/context/useUserContext';
 import { api } from '@/api/api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';

@@ -1,4 +1,5 @@
-import { Prisma, UserRole } from '../generated/client';
+import type { Prisma } from '../generated/client';
+import { UserRole } from '../enums';
 
 type Relations = {
   sender: { sender: true };

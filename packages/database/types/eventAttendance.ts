@@ -1,4 +1,4 @@
-import { Prisma, EventAttendance } from '../generated/client';
+import type { Prisma, EventAttendance } from '../generated/client';
 
 type Relations = {
   users: { user: true };

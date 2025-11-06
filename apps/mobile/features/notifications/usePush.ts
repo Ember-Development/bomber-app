@@ -4,12 +4,14 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import * as Linking from 'expo-linking';
 import Constants from 'expo-constants';
+import { useRouter } from 'expo-router';
 import { api } from '@/api/api';
 import { ensureAndroidChannel } from './foreground';
 
 type PlatformType = 'ios' | 'android';
 
 export function usePush(opts: { userId?: string | null }) {
+  const router = useRouter();
   const { userId } = opts;
   const [deviceToken, setDeviceToken] = useState<string | null>(null);
   const responseListener = useRef<Notifications.Subscription | null>(null);
@@ -142,7 +144,18 @@ export function usePush(opts: { userId?: string | null }) {
                 payload?.notificationId;
 
               if (deepLink) {
-                Linking.openURL(deepLink).catch(() => {});
+                // For bomber:// links, use the router to navigate
+                if (deepLink.startsWith('bomber://')) {
+                  // Extract the path from bomber://
+                  const path = deepLink.replace('bomber://', '');
+                  if (path) {
+                    // Use Expo Router to navigate
+                    router.push(path as any);
+                  }
+                } else {
+                  // For other deep links, try to open them
+                  Linking.openURL(deepLink).catch(() => {});
+                }
               }
               if (notificationId) {
                 await api

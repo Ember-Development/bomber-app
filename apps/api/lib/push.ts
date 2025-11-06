@@ -11,6 +11,7 @@ export async function sendToDevice(params: {
   deepLink?: string;
   imageUrl?: string;
   notificationId: string;
+  badge?: number;
 }) {
   if (!PUSH_ENABLED) return; // no-op if disabled
 
@@ -25,6 +26,8 @@ export async function sendToDevice(params: {
       deviceToken: params.token,
       title: params.title,
       body: params.body,
+      imageUrl: params.imageUrl,
+      badge: params.badge,
       data,
     });
   } else {

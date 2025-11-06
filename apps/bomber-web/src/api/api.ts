@@ -3,9 +3,11 @@ import axios from 'axios';
 
 export const api = axios.create({
   baseURL: `${import.meta.env.VITE_API_URL}/api`,
-  // no withCredentials, no default headers, no interceptors
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
-// (one-time cleanup while you develop)
+// Remove auth tokens since this is a public site
 localStorage.removeItem('access');
 localStorage.removeItem('refresh');

@@ -1,6 +1,23 @@
-function InfoCard({ title, icon }: { title: string; icon: string }) {
+import { Link } from 'react-router-dom';
+import { History, Star, GraduationCap } from 'lucide-react';
+import type { ComponentType } from 'react';
+
+type IconType = ComponentType<{ className?: string }>;
+
+function InfoCard({
+  title,
+  icon: Icon,
+  to,
+}: {
+  title: string;
+  icon: IconType;
+  to: string;
+}) {
   return (
-    <div className="group relative flex flex-col rounded-2xl overflow-hidden min-h-[300px]">
+    <Link
+      to={to}
+      className="group relative flex flex-col rounded-2xl overflow-hidden min-h-[300px]"
+    >
       {/* Animated gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#57a4ff]/30 via-[#3b8aff]/20 to-black/40 opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
 
@@ -14,10 +31,8 @@ function InfoCard({ title, icon }: { title: string; icon: string }) {
       <div className="relative flex flex-col h-full p-6 backdrop-blur-sm">
         {/* Icon and title */}
         <div className="flex items-center gap-4 mb-auto">
-          <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-[#57a4ff]/30 to-[#3b8aff]/20 backdrop-blur-md flex items-center justify-center flex-shrink-0 border border-white/10 group-hover:scale-110 group-hover:border-[#57a4ff]/50 transition-all duration-300">
-            {/* Glow behind icon */}
-            <div className="absolute inset-0 bg-[#57a4ff]/30 rounded-2xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <span className="relative text-3xl">{icon}</span>
+          <div className="relative h-16 w-16 rounded-2xl bg-neutral-800/60 backdrop-blur-md flex items-center justify-center flex-shrink-0 border border-white/10 group-hover:scale-105 group-hover:border-white/30 transition-all duration-300">
+            <Icon className="w-7 h-7 text-neutral-200 group-hover:text-white transition-colors duration-300" />
           </div>
           <h4 className="text-2xl font-black bg-gradient-to-br from-white to-neutral-300 bg-clip-text text-transparent group-hover:from-white group-hover:to-[#57a4ff] transition-all duration-300">
             {title}
@@ -55,13 +70,13 @@ function InfoCard({ title, icon }: { title: string; icon: string }) {
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
       </div>
-    </div>
+    </Link>
   );
 }
 
 export default function ChampionshipHistory() {
   return (
-    <section className="overflow-hidden rounded-br-3xl rounded-tr-3xl mr-8 mt-[3rem] relative shadow-2xl">
+    <section className="overflow-hidden rounded-br-3xl rounded-tr-3xl mr-4 md:mr-8 mt-[3rem] relative shadow-2xl">
       {/* Main background */}
       <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-black to-neutral-900" />
 
@@ -77,9 +92,9 @@ export default function ChampionshipHistory() {
       </div>
 
       {/* Animated glow orbs */}
-      <div className="absolute top-10 left-20 w-96 h-96 bg-[#57a4ff]/20 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute top-10 left-4 md:left-20 w-64 md:w-96 h-64 md:h-96 bg-[#57a4ff]/20 rounded-full blur-3xl animate-pulse" />
       <div
-        className="absolute bottom-10 right-20 w-96 h-96 bg-[#3b8aff]/10 rounded-full blur-3xl animate-pulse"
+        className="absolute bottom-10 right-4 md:right-20 w-64 md:w-96 h-64 md:h-96 bg-[#3b8aff]/10 rounded-full blur-3xl animate-pulse"
         style={{ animationDelay: '1s' }}
       />
 
@@ -114,9 +129,9 @@ export default function ChampionshipHistory() {
         </div>
 
         {/* Info cards */}
-        <InfoCard title="Bomber Teams" icon="🏆" />
-        <InfoCard title="Recent Commitments" icon="⭐" />
-        <InfoCard title="Bombers Alumni" icon="🎓" />
+        <InfoCard title="Bomber History" icon={History} to="/history" />
+        <InfoCard title="Recent Commitments" icon={Star} to="/commitments" />
+        <InfoCard title="Bombers Alumni" icon={GraduationCap} to="/alumnis" />
       </div>
 
       {/* Bottom accent line */}

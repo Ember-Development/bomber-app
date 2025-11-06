@@ -9,9 +9,6 @@
 }
 html {
   font-family: var(--font-sans);
-}
-
-.html {
   scroll-behavior: smooth;
 }
 .no-scrollbar::-webkit-scrollbar {

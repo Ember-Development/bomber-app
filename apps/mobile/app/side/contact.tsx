@@ -10,6 +10,10 @@ import {
   StatusBar,
   Dimensions,
   Linking,
+  Alert,
+  KeyboardAvoidingView,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +22,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import CustomButton from '@/components/ui/atoms/Button';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { useRouter } from 'expo-router';
+import { submitContact } from '@/api/contact/contact';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 20;
@@ -30,8 +35,63 @@ export default function ContactScreen() {
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    // Validate required fields
+    if (!name.trim() || !email.trim() || !subject.trim() || !message.trim()) {
+      Alert.alert('Error', 'Please fill in all required fields.');
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      Alert.alert('Error', 'Please enter a valid email address.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await submitContact({
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim() || undefined,
+        subject: subject.trim(),
+        message: message.trim(),
+      });
+
+      Alert.alert(
+        'Success!',
+        'Thank you for contacting us! We will get back to you as soon as possible. A confirmation email has been sent to your email address.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Reset form
+              setName('');
+              setEmail('');
+              setPhone('');
+              setSubject('');
+              setMessage('');
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      Alert.alert(
+        'Error',
+        'There was an error sending your message. Please try again or contact us directly at bo@bombersfastpitch.net'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <BackgroundWrapper>
@@ -59,147 +119,210 @@ export default function ContactScreen() {
           </ThemedText>
         </View>
 
-        <ScrollView
-          contentContainerStyle={styles.contentContainer}
-          showsVerticalScrollIndicator={false}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         >
-          <BlurView intensity={40} tint="light" style={styles.glassPanel}>
-            <View style={styles.panelInner}>
-              <ThemedText style={[styles.sectionTitle, { color: textColor }]}>
-                OFFICE ADDRESS
-              </ThemedText>
-              <ThemedText style={[styles.addressText, { color: textColor }]}>
-                218 Trade Center Dr{'\n'}
-                New Braunfels, TX 78130
-              </ThemedText>
-
-              <View
-                style={[
-                  styles.divider,
-                  { backgroundColor: componentColor + '33' },
-                ]}
-              />
-
-              {[
-                {
-                  icon: 'logo-instagram',
-                  label: 'BOMBERSFASTPITCH',
-                  tag: 'INSTAGRAM',
-                  url: 'https://www.instagram.com/bombersfastpitch',
-                },
-                {
-                  icon: 'logo-facebook',
-                  label: 'BOMBERSINC',
-                  tag: 'FACEBOOK',
-                  url: 'https://www.facebook.com/bombersinc',
-                },
-                {
-                  icon: 'logo-twitter',
-                  label: 'BOMBERCACATAW',
-                  tag: 'X',
-                  url: 'https://twitter.com/bombers_fp',
-                },
-                {
-                  icon: 'mail-outline',
-                  label: 'INFO@BOMBERSFASTPITCH.COM',
-                  tag: 'EMAIL',
-                  url: 'mailto:info@bombersfastpitch.com',
-                },
-                {
-                  icon: 'logo-youtube',
-                  label: 'BOMBERSFASTPITCH',
-                  tag: 'YOUTUBE',
-                  url: 'https://www.youtube.com/@bombersfastpitch',
-                },
-              ].map((s) => (
-                <TouchableOpacity
-                  key={s.tag}
-                  style={styles.socialItem}
-                  onPress={() =>
-                    Linking.openURL(s.url).catch((err) =>
-                      console.error('Error opening link:', err)
-                    )
-                  }
-                >
-                  <Ionicons
-                    name={s.icon as any}
-                    size={20}
-                    color={componentColor}
-                  />
-                  <ThemedText style={[styles.socialText, { color: textColor }]}>
-                    {s.label}
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <ScrollView
+              contentContainerStyle={styles.contentContainer}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              <BlurView intensity={40} tint="light" style={styles.glassPanel}>
+                <View style={styles.panelInner}>
+                  <ThemedText
+                    style={[styles.sectionTitle, { color: textColor }]}
+                  >
+                    OFFICE ADDRESS
                   </ThemedText>
                   <ThemedText
-                    style={[styles.socialLabel, { color: componentColor }]}
+                    style={[styles.addressText, { color: textColor }]}
                   >
-                    {s.tag}
+                    218 Trade Center Dr{'\n'}
+                    New Braunfels, TX 78130
                   </ThemedText>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </BlurView>
 
-          {/* <BlurView intensity={40} tint="light" style={styles.glassPanel}>
-            <View style={styles.panelInner}>
-              <ThemedText style={[styles.fieldLabel, { color: textColor }]}>
-                Your Name
-              </ThemedText>
-              <TextInput
-                value={name}
-                onChangeText={setName}
-                placeholder="Enter your name"
-                placeholderTextColor="#999"
-                style={[styles.input, { borderColor: componentColor + '55' }]}
-              />
+                  <View
+                    style={[
+                      styles.divider,
+                      { backgroundColor: componentColor + '33' },
+                    ]}
+                  />
 
-              <ThemedText style={[styles.fieldLabel, { color: textColor }]}>
-                Your Email
-              </ThemedText>
-              <TextInput
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Enter your email"
-                placeholderTextColor="#999"
-                keyboardType="email-address"
-                style={[styles.input, { borderColor: componentColor + '55' }]}
-              />
+                  {[
+                    {
+                      icon: 'logo-instagram',
+                      label: 'BOMBERSFASTPITCH',
+                      tag: 'INSTAGRAM',
+                      url: 'https://www.instagram.com/bombersfastpitch',
+                    },
+                    {
+                      icon: 'logo-facebook',
+                      label: 'BOMBERSINC',
+                      tag: 'FACEBOOK',
+                      url: 'https://www.facebook.com/bombersinc',
+                    },
+                    {
+                      icon: 'logo-twitter',
+                      label: 'BOMBERCACATAW',
+                      tag: 'X',
+                      url: 'https://twitter.com/bombers_fp',
+                    },
+                    {
+                      icon: 'mail-outline',
+                      label: 'BO@BOMBERSFASTPITCH.NET',
+                      tag: 'EMAIL',
+                      url: 'mailto:bo@bombersfastpitch.net',
+                    },
+                    {
+                      icon: 'logo-youtube',
+                      label: 'BOMBERSFASTPITCH',
+                      tag: 'YOUTUBE',
+                      url: 'https://www.youtube.com/@bombersfastpitch',
+                    },
+                  ].map((s) => (
+                    <TouchableOpacity
+                      key={s.tag}
+                      style={styles.socialItem}
+                      onPress={() =>
+                        Linking.openURL(s.url).catch((err) =>
+                          console.error('Error opening link:', err)
+                        )
+                      }
+                    >
+                      <Ionicons
+                        name={s.icon as any}
+                        size={20}
+                        color={componentColor}
+                      />
+                      <ThemedText
+                        style={[styles.socialText, { color: textColor }]}
+                      >
+                        {s.label}
+                      </ThemedText>
+                      <ThemedText
+                        style={[styles.socialLabel, { color: componentColor }]}
+                      >
+                        {s.tag}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </BlurView>
 
-              <ThemedText style={[styles.fieldLabel, { color: textColor }]}>
-                Subject
-              </ThemedText>
-              <TextInput
-                value={subject}
-                onChangeText={setSubject}
-                placeholder="Subject"
-                placeholderTextColor="#999"
-                style={[styles.input, { borderColor: componentColor + '55' }]}
-              />
+              <BlurView intensity={40} tint="light" style={styles.glassPanel}>
+                <View style={styles.panelInner}>
+                  <ThemedText
+                    style={[styles.sectionTitle, { color: textColor }]}
+                  >
+                    SEND US A MESSAGE
+                  </ThemedText>
 
-              <ThemedText style={[styles.fieldLabel, { color: textColor }]}>
-                Your Message
-              </ThemedText>
-              <TextInput
-                value={message}
-                onChangeText={setMessage}
-                placeholder="Your message..."
-                placeholderTextColor="#999"
-                multiline
-                numberOfLines={4}
-                style={[
-                  styles.textArea,
-                  { borderColor: componentColor + '55' },
-                ]}
-              />
+                  <ThemedText style={[styles.fieldLabel, { color: textColor }]}>
+                    Your Name *
+                  </ThemedText>
+                  <TextInput
+                    value={name}
+                    onChangeText={setName}
+                    placeholder="Enter your name"
+                    placeholderTextColor="#999"
+                    style={[
+                      styles.input,
+                      { borderColor: componentColor + '55' },
+                    ]}
+                    editable={!isSubmitting}
+                    returnKeyType="next"
+                    blurOnSubmit={false}
+                  />
 
-              <CustomButton
-                title="SEND YOUR MESSAGE"
-                onPress={() => {}}
-                variant="primary"
-                fullWidth
-              />
-            </View>
-          </BlurView> */}
-        </ScrollView>
+                  <ThemedText style={[styles.fieldLabel, { color: textColor }]}>
+                    Your Email *
+                  </ThemedText>
+                  <TextInput
+                    value={email}
+                    onChangeText={setEmail}
+                    placeholder="Enter your email"
+                    placeholderTextColor="#999"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    style={[
+                      styles.input,
+                      { borderColor: componentColor + '55' },
+                    ]}
+                    editable={!isSubmitting}
+                    returnKeyType="next"
+                    blurOnSubmit={false}
+                  />
+
+                  <ThemedText style={[styles.fieldLabel, { color: textColor }]}>
+                    Phone (Optional)
+                  </ThemedText>
+                  <TextInput
+                    value={phone}
+                    onChangeText={setPhone}
+                    placeholder="Enter your phone number"
+                    placeholderTextColor="#999"
+                    keyboardType="phone-pad"
+                    style={[
+                      styles.input,
+                      { borderColor: componentColor + '55' },
+                    ]}
+                    editable={!isSubmitting}
+                    returnKeyType="next"
+                    blurOnSubmit={false}
+                  />
+
+                  <ThemedText style={[styles.fieldLabel, { color: textColor }]}>
+                    Subject *
+                  </ThemedText>
+                  <TextInput
+                    value={subject}
+                    onChangeText={setSubject}
+                    placeholder="Subject"
+                    placeholderTextColor="#999"
+                    style={[
+                      styles.input,
+                      { borderColor: componentColor + '55' },
+                    ]}
+                    editable={!isSubmitting}
+                    returnKeyType="next"
+                    blurOnSubmit={false}
+                  />
+
+                  <ThemedText style={[styles.fieldLabel, { color: textColor }]}>
+                    Your Message *
+                  </ThemedText>
+                  <TextInput
+                    value={message}
+                    onChangeText={setMessage}
+                    placeholder="Your message..."
+                    placeholderTextColor="#999"
+                    multiline
+                    numberOfLines={6}
+                    style={[
+                      styles.textArea,
+                      { borderColor: componentColor + '55' },
+                    ]}
+                    editable={!isSubmitting}
+                    textAlignVertical="top"
+                    returnKeyType="default"
+                    blurOnSubmit={false}
+                  />
+
+                  <CustomButton
+                    title={isSubmitting ? 'SENDING...' : 'SEND YOUR MESSAGE'}
+                    onPress={handleSubmit}
+                    variant="primary"
+                    fullWidth
+                    disabled={isSubmitting}
+                  />
+                </View>
+              </BlurView>
+            </ScrollView>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </BackgroundWrapper>
   );
@@ -207,6 +330,10 @@ export default function ContactScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+
+  keyboardView: {
     flex: 1,
   },
 
@@ -310,7 +437,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#FFF',
     backgroundColor: 'rgba(255,255,255,0.08)',
-    minHeight: 100,
+    minHeight: 140,
+    maxHeight: 200,
     textAlignVertical: 'top',
   },
 });

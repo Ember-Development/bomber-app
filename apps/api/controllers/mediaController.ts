@@ -1,10 +1,16 @@
 // controllers/mediaController.ts
 import { Request, Response } from 'express';
 import { mediaService } from '../services/media';
-import { MediaCategory } from '@bomber-app/database';
+import { MediaCategory } from '@bomber-app/database/generated/client';
 
-const isValidCategory = (cat: string): cat is MediaCategory =>
-  Object.values(MediaCategory).includes(cat as MediaCategory);
+const isValidCategory = (cat: string): cat is MediaCategory => {
+  // Defensive check: if MediaCategory is not loaded, return false
+  if (!MediaCategory || typeof MediaCategory !== 'object') {
+    console.error('MediaCategory enum not loaded from Prisma client');
+    return false;
+  }
+  return Object.values(MediaCategory).includes(cat as MediaCategory);
+};
 
 export const getAllMedia = async (_req: Request, res: Response) => {
   try {

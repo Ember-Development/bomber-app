@@ -20,8 +20,8 @@ import { auth } from '../auth/auth';
 
 const router = express.Router();
 
-router.get('/', auth, getAllTeams);
-router.get('/:id', auth, getTeamById);
+router.get('/', getAllTeams);
+router.get('/:id', getTeamById);
 router.get('/code/:code', getTeamByCode);
 router.get('/my-team', auth, authorize('view-my-team'), getMyTeams);
 router.patch('/my-team/:id', auth, authorize('edit-my-team'), updateMyTeam);

@@ -18,7 +18,8 @@ import {
 } from '@tanstack/react-query';
 import { UserProvider, useUserContext } from '@/context/useUserContext';
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, AppState } from 'react-native';
+import { ToastProvider, useToast } from '@/context/ToastContext';
 
 // ✅ Foreground handler + Android channel
 import * as Notifications from 'expo-notifications';
@@ -31,18 +32,37 @@ SplashScreen.preventAutoHideAsync();
 
 function PushQueryBridge() {
   const qc = useQueryClient();
+  const { showToast } = useToast();
+
   useEffect(() => {
-    const sub1 = Notifications.addNotificationReceivedListener(() => {
-      qc.invalidateQueries({ queryKey: ['notifications', 'feed'] });
-    });
+    const sub1 = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        // Invalidate queries as before
+        qc.invalidateQueries({ queryKey: ['notifications', 'feed'] });
+
+        // Show in-app toast if app is in foreground
+        if (AppState.currentState === 'active') {
+          const data = notification.request.content;
+          showToast({
+            title: data.title || '',
+            body: data.body || '',
+            imageUrl: data.data?.imageUrl,
+            deepLink: data.data?.deepLink,
+          });
+        }
+      }
+    );
+
     const sub2 = Notifications.addNotificationResponseReceivedListener(() => {
       qc.invalidateQueries({ queryKey: ['notifications', 'feed'] });
     });
+
     return () => {
       Notifications.removeNotificationSubscription(sub1);
       Notifications.removeNotificationSubscription(sub2);
     };
-  }, [qc]);
+  }, [qc, showToast]);
+
   return null;
 }
 
@@ -69,7 +89,7 @@ function RootNavigator() {
     const atRoot = pathname === '/' || pathname === '';
 
     const safeReplace = (path: string) => {
-      if (pathname !== path) router.replace(path);
+      if (pathname !== path) router.replace(path as '/login');
     };
 
     if (!user) {
@@ -124,13 +144,15 @@ export default function RootLayout() {
       <NavigationThemeProvider value={TransparentTheme}>
         <QueryClientProvider client={queryClient}>
           <UserProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <View style={{ flex: 1 }}>
-                <PushQueryBridge />
-                <RootNavigator />
-                <UpdatePrompt />
-              </View>
-            </GestureHandlerRootView>
+            <ToastProvider>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <View style={{ flex: 1 }}>
+                  <PushQueryBridge />
+                  <RootNavigator />
+                  <UpdatePrompt />
+                </View>
+              </GestureHandlerRootView>
+            </ToastProvider>
           </UserProvider>
         </QueryClientProvider>
       </NavigationThemeProvider>

@@ -5,7 +5,8 @@
   "main": "api.ts",
   "scripts": {
     "dev": "tsx watch api.ts",
-    "start": "tsx api.ts",
+    "build": "cd ../../packages/database && pnpm db:generate",
+    "start": "pnpm build && tsx api.ts",
     "test": "jest --watchAll"
   },
   "keywords": [],

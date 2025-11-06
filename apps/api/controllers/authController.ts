@@ -210,10 +210,25 @@ export async function forgotPasswordController(req: Request, res: Response) {
 }
 
 export async function resetPasswordController(req: Request, res: Response) {
+  console.log('[reset] controller hit', {
+    hasEmail: Boolean(req.body?.email),
+    emailMasked: maskEmail(req.body?.email),
+    hasToken: Boolean(req.body?.token),
+    tokenLength: req.body?.token?.length,
+    hasPassword: Boolean(req.body?.password),
+  });
+
   try {
     await authService.resetPassword(req.body);
+    console.log('[reset] success');
     return res.json({ ok: true });
   } catch (e: any) {
+    console.error('[reset] controller error', {
+      message: e?.message,
+      status: e?.status,
+      name: e?.name,
+      stack: e?.stack,
+    });
     const msg = typeof e?.message === 'string' ? e.message : 'Reset failed';
     return res.status(400).json({ message: msg });
   }

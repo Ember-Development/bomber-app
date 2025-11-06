@@ -28,6 +28,9 @@ import regCoachRoutes from './routes/regCoachRoutes';
 import { devicesRouter } from './routes/deviceRoutes';
 import { notificationsRouter } from './routes/notificationsRoutes';
 import analyticsRoutes from './routes/analyticsRoutes';
+import schoolRoutes from './routes/schoolRoutes';
+import recruitmentRoutes from './routes/recruitmentRoutes';
+import contactRoutes from './routes/contactRoutes';
 
 const app = express();
 const server = http.createServer(app);
@@ -51,6 +54,7 @@ const corsOptions: CorsOptions = {
       cb(new Error('Not allowed by CORS'));
     }
   },
+  credentials: true, // Allow credentials (cookies, authorization headers, etc.)
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   optionsSuccessStatus: 204,
@@ -109,6 +113,9 @@ app.use('/api/regCoaches', regCoachRoutes);
 app.use('/api/devices', devicesRouter);
 app.use('/api/notifications', notificationsRouter);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/schools', schoolRoutes);
+app.use('/api/recruitment', recruitmentRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Error handling middleware (single instance)
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

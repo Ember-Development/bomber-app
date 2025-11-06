@@ -2,7 +2,9 @@
 import { Router } from 'express';
 import {
   createNotification,
+  deleteNotification,
   feed,
+  getDrafts,
   markOpened,
   readAll,
   sendNow,
@@ -15,6 +17,8 @@ export const notificationsRouter = Router();
 notificationsRouter.post('/', createNotification);
 notificationsRouter.post('/:id/send', sendNow);
 notificationsRouter.put('/:id', updateNotification);
+notificationsRouter.delete('/:id', deleteNotification);
+notificationsRouter.get('/drafts', getDrafts);
 
 notificationsRouter.use(auth);
 notificationsRouter.get('/feed', feed);

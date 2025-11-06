@@ -26,12 +26,16 @@ export async function sendAPNs({
   deviceToken,
   title,
   body,
+  imageUrl,
   data,
+  badge,
 }: {
   deviceToken: string;
   title: string;
   body: string;
+  imageUrl?: string;
   data?: Record<string, string>;
+  badge?: number;
 }) {
   const production = APNS_SANDBOX !== 'true';
   const host = production ? 'api.push.apple.com' : 'api.sandbox.push.apple.com';
@@ -57,7 +61,12 @@ export async function sendAPNs({
   };
 
   const payload = JSON.stringify({
-    aps: { alert: { title, body }, sound: 'default' },
+    aps: {
+      alert: { title, body },
+      sound: 'default',
+      'mutable-content': imageUrl ? 1 : undefined, // Enable notification attachments (for images)
+      badge: typeof badge === 'number' ? badge : undefined,
+    },
     ...(data ?? {}),
   });
 

@@ -176,3 +176,21 @@ export async function updateNotification(req: Request, res: Response) {
 
   res.json(updated);
 }
+
+export async function getDrafts(req: Request, res: Response) {
+  const drafts = await prisma.notification.findMany({
+    where: { status: 'draft' },
+    orderBy: { createdAt: 'desc' },
+  });
+  res.json({ drafts });
+}
+
+export async function deleteNotification(req: Request, res: Response) {
+  const { id } = req.params;
+
+  await prisma.notification.delete({
+    where: { id },
+  });
+
+  res.json({ ok: true });
+}

@@ -1,230 +1,280 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback } from 'react';
 import {
   SafeAreaView,
   View,
   Text,
-  ActivityIndicator,
   TouchableOpacity,
-  ScrollView,
+  ActivityIndicator,
+  StyleSheet,
+  Modal,
+  Dimensions,
+  Platform,
+  StatusBar,
+  Image,
+  Animated,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import * as Linking from 'expo-linking';
+
 import BackgroundWrapper from '@/components/ui/organisms/backgroundWrapper';
 import { useArticleById } from '@/hooks/media/useArticle';
-import {
-  createArticleScreenStyles,
-  IMAGE_HEIGHT,
-  SHEET_HEIGHT,
-} from '@/styles/articlescreenStyle';
-import Separator from '@/components/ui/atoms/Seperator';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  useAnimatedScrollHandler,
-  useAnimatedGestureHandler,
-  withTiming,
-  withRepeat,
-  Easing,
-  runOnJS,
-} from 'react-native-reanimated';
-import { PanGestureHandler } from 'react-native-gesture-handler';
-import { LinearGradient } from 'expo-linear-gradient';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function ArticleDetailScreen() {
-  const styles = createArticleScreenStyles();
   const router = useRouter();
-  const { id } = useLocalSearchParams<'id'>();
+  const params = useLocalSearchParams();
+  const id = (params.id as string) || '';
   const { data: article, isLoading, error } = useArticleById(id || '');
 
-  // Refs (optional for future simultaneous handlers)
-  const panRef = useRef(null);
-  const innerScrollRef = useRef<ScrollView>(null);
+  // Defer heavy modal open until after scroll/touch settles to avoid jank
+  const handleClose = useCallback(() => {
+    router.back();
+  }, [router]);
 
-  // Bottom sheet state & animations
-  const sheetTranslate = useSharedValue(IMAGE_HEIGHT);
-  const [sheetOpened, setSheetOpened] = useState(false);
-  const bounce = useSharedValue(0);
-
-  useEffect(() => {
-    // bounce arrow gently
-    bounce.value = withRepeat(
-      withTiming(-10, { duration: 1000, easing: Easing.inOut(Easing.quad) }),
-      -1,
-      true
-    );
-  }, []);
-
-  const bounceStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: bounce.value }],
-  }));
-
-  // Parallax image offset
-  const imageOffsetStyle = useAnimatedStyle(() => {
-    const delta = IMAGE_HEIGHT - sheetTranslate.value;
-    const extra = delta - SHEET_HEIGHT;
-    return { transform: [{ translateY: extra > 0 ? -extra : 0 }] };
-  });
-
-  const openSheet = () => {
-    sheetTranslate.value = withTiming(IMAGE_HEIGHT - SHEET_HEIGHT, {
-      duration: 500,
-    });
-    setSheetOpened(true);
-  };
-  const closeSheet = () => {
-    sheetTranslate.value = withTiming(IMAGE_HEIGHT, { duration: 300 });
-    setSheetOpened(false);
-  };
-
-  // Open the sheet the first time user scrolls (helps Android)
-  const scrollHandler = useAnimatedScrollHandler((evt) => {
-    if (!sheetOpened && evt.contentOffset.y > 50) {
-      runOnJS(openSheet)();
-    }
-  });
-
-  // Drag the sheet — only from the small handle area
-  const panHandler = useAnimatedGestureHandler({
-    onStart: (_, ctx: any) => {
-      ctx.startY = sheetTranslate.value;
-    },
-    onActive: (evt, ctx: any) => {
-      const next = ctx.startY + evt.translationY;
-      sheetTranslate.value = Math.max(
-        IMAGE_HEIGHT - SHEET_HEIGHT,
-        Math.min(IMAGE_HEIGHT, next)
-      );
-    },
-    onEnd: (evt) => {
-      if (evt.translationY > SHEET_HEIGHT * 0.25) runOnJS(closeSheet)();
-      else {
-        sheetTranslate.value = withTiming(IMAGE_HEIGHT - SHEET_HEIGHT, {
-          duration: 300,
-        });
-      }
-    },
-  });
-
-  const sheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: sheetTranslate.value }],
-  }));
-
+  // Loading state
   if (isLoading) {
     return (
       <BackgroundWrapper>
-        <SafeAreaView style={styles.emptyContainer}>
-          <ActivityIndicator color="#fff" />
+        <StatusBar barStyle="light-content" />
+        <SafeAreaView style={styles.safeContainer}>
+          <View style={styles.emptyContainer}>
+            <ActivityIndicator color="#8EB7FF" size="large" />
+          </View>
         </SafeAreaView>
       </BackgroundWrapper>
     );
   }
+
+  // Error state
   if (error || !article) {
     return (
       <BackgroundWrapper>
-        <SafeAreaView style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>Unable to load article.</Text>
+        <StatusBar barStyle="light-content" />
+        <SafeAreaView style={styles.safeContainer}>
+          <View style={styles.emptyContainer}>
+            <Ionicons name="alert-circle-outline" size={56} color="#ff6b6b" />
+            <Text style={styles.errorTitle}>Unable to load article</Text>
+            <Text style={styles.errorText}>Please try again later.</Text>
+          </View>
         </SafeAreaView>
       </BackgroundWrapper>
     );
   }
 
   return (
-    <View style={styles.detailContainer}>
-      {/* Parallax header image */}
-      <View style={styles.imageWrapper}>
-        <Animated.Image
-          source={{ uri: article.imageUrl! }}
-          style={[styles.detailImage, imageOffsetStyle]}
-        />
+    <BackgroundWrapper>
+      <StatusBar barStyle="light-content" />
+      <View style={styles.modalRoot}>
+        {/* Hero */}
+        <View style={styles.hero}>
+          {Boolean(article.imageUrl) && (
+            <>
+              <Image
+                source={{ uri: article.imageUrl! }}
+                style={StyleSheet.absoluteFill}
+                resizeMode="cover"
+              />
+              <LinearGradient
+                colors={[
+                  'rgba(0,0,0,0.0)',
+                  'rgba(0,0,0,0.6)',
+                  'rgba(0,0,0,0.95)',
+                ]}
+                style={StyleSheet.absoluteFill}
+              />
+            </>
+          )}
 
-        {/* Back button */}
-        <TouchableOpacity
-          style={styles.detailBack}
-          onPress={() => router.back()}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
+          <TouchableOpacity onPress={handleClose} style={styles.modalTopBar}>
+            <Ionicons name="close" size={22} color="#fff" />
+          </TouchableOpacity>
 
-        {/* Header gradient + title/preview */}
-        <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.9)']}
-          start={{ x: 0.65, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-          style={styles.detailHeaderOverlay}
-        >
-          <Text style={styles.detailTitle}>{article.title}</Text>
-          <Text style={styles.detailMeta}>
-            {new Date(article.createdAt).toLocaleDateString()}
-          </Text>
-          <Text style={styles.detailPreview}>
-            {(() => {
-              const idx = article.body.indexOf('.');
-              return idx > 0 ? article.body.slice(0, idx + 1) : article.body;
-            })()}
-          </Text>
-        </LinearGradient>
-
-        {/* Outer scroll (just to detect first pull; sheet does the real scroll) */}
-        <Animated.ScrollView
-          onScroll={scrollHandler}
-          onScrollBeginDrag={() => {
-            if (!sheetOpened) openSheet();
-          }}
-          scrollEventThrottle={16}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingTop: IMAGE_HEIGHT }}
-          nestedScrollEnabled
-        >
-          <Animated.View style={[styles.detailBodyContainer, sheetStyle]}>
-            {/* Drag handle area only captures the pan */}
-            <PanGestureHandler ref={panRef} onGestureEvent={panHandler}>
-              <View
-                style={{
-                  height: 28,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <View style={styles.dragHandle} />
-              </View>
-            </PanGestureHandler>
-
-            {/* Inner scrollable article content */}
-            <ScrollView
-              ref={innerScrollRef}
-              contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
-              nestedScrollEnabled
-              showsVerticalScrollIndicator={true}
-              bounces={false}
-              overScrollMode="never"
-            >
-              <View style={styles.sheetHeaderRow}>
-                <Text style={styles.sheetTitle}>{article.title}</Text>
-                <Text style={styles.sheetMeta}>
-                  {new Date(article.createdAt).toLocaleDateString()}
+          <View style={styles.titleChip}>
+            <Text style={styles.detailTitle}>{article.title}</Text>
+            <View style={styles.detailMetaRow}>
+              <View style={styles.metaPill}>
+                <Ionicons name="calendar-outline" size={14} color="#8EB7FF" />
+                <Text style={styles.metaPillText}>
+                  {new Date(article.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
                 </Text>
               </View>
-              <Separator marginVertical={12} color="#000" />
-              <Text style={styles.detailBody}>{article.body}</Text>
-            </ScrollView>
-          </Animated.View>
-        </Animated.ScrollView>
+              <View style={styles.metaPill}>
+                <Ionicons name="time-outline" size={14} color="#8EB7FF" />
+                <Text style={styles.metaPillText}>
+                  {Math.max(
+                    1,
+                    Math.ceil(article.body.split(/\s+/).length / 220)
+                  )}{' '}
+                  min read
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
 
-        {/* Tap-to-open helper */}
-        {!sheetOpened && (
-          <Animated.View style={[styles.swipeUpContainer, bounceStyle]}>
-            <TouchableOpacity
-              onPress={openSheet}
-              activeOpacity={0.7}
-              style={{ alignItems: 'center' }}
-            >
-              <Ionicons name="chevron-up" size={32} color="#fff" />
-              <Text style={styles.swipeText}>Scroll to Continue Reading</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        )}
+        {/* Body */}
+        <Animated.ScrollView
+          style={{ flex: 1, backgroundColor: '#0a0a0a' }}
+          contentContainerStyle={{ paddingBottom: 48 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.bodyCard}>
+            <Text style={styles.bodyText}>{article.body}</Text>
+          </View>
+
+          {article.link && (
+            <BlurView intensity={60} tint="dark" style={styles.linkCard}>
+              <TouchableOpacity
+                style={styles.linkBtn}
+                onPress={() => Linking.openURL(article.link!)}
+              >
+                <View style={styles.linkLeft}>
+                  <View style={styles.linkIconWrap}>
+                    <Ionicons name="open-outline" size={20} color="#8EB7FF" />
+                  </View>
+                  <View>
+                    <Text style={styles.linkTitle}>Continue Reading</Text>
+                    <Text style={styles.linkSub}>Open in browser</Text>
+                  </View>
+                </View>
+                <Ionicons name="arrow-forward" size={18} color="#8EB7FF" />
+              </TouchableOpacity>
+            </BlurView>
+          )}
+        </Animated.ScrollView>
       </View>
-    </View>
+    </BackgroundWrapper>
   );
 }
+
+const styles = StyleSheet.create({
+  safeContainer: { flex: 1 },
+  // Empty/Error
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  errorIcon: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(255,107,107,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255,107,107,0.25)',
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#fff',
+    marginBottom: 6,
+  },
+  errorText: { fontSize: 14, color: '#a3a3a3', textAlign: 'center' },
+
+  // Modal / Detail
+  modalRoot: { flex: 1, backgroundColor: '#0a0a0a' },
+  hero: {
+    height: SCREEN_HEIGHT * 0.45,
+    width: '100%',
+    backgroundColor: '#0f0f12',
+  },
+  modalTopBar: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 20,
+    right: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  titleChip: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 12,
+    padding: 14,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.42)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+  },
+  detailTitle: {
+    fontSize: 24,
+    lineHeight: 30,
+    fontWeight: '800',
+    color: '#fff',
+    marginBottom: 10,
+  },
+  detailMetaRow: { flexDirection: 'row', gap: 10 },
+  metaPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(142,183,255,0.12)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(142,183,255,0.25)',
+  },
+  metaPillText: { fontSize: 12, color: '#8EB7FF', fontWeight: '600' },
+  bodyCard: {
+    marginTop: 12,
+    marginHorizontal: 16,
+    padding: 18,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  bodyText: {
+    fontSize: 16,
+    lineHeight: 26,
+    color: '#E8E8E8',
+    letterSpacing: 0.2,
+  },
+
+  linkCard: {
+    marginTop: 14,
+    marginHorizontal: 16,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(142,183,255,0.25)',
+  },
+  linkBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  linkLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  linkIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: 'rgba(142,183,255,0.18)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(142,183,255,0.25)',
+  },
+  linkTitle: { fontSize: 16, color: '#fff', fontWeight: '700' },
+  linkSub: { fontSize: 12, color: '#8EB7FF' },
+});

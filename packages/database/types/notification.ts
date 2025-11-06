@@ -1,4 +1,4 @@
-import { Prisma } from '../generated/client';
+import type { Prisma } from '../generated/client';
 
 type Relations = {
   users: { users: true };

@@ -3,8 +3,10 @@ import rawSchools from '@/assets/data/schools.json'; // adjust if needed
 import { XMarkIcon, BuildingLibraryIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import { FlatSchool, flattenSchools } from '@/utils/school';
+import { useSchools } from '@/hooks/useSchools';
 
-const allSchools: FlatSchool[] = flattenSchools(rawSchools);
+// Fallback schools in case API is unavailable
+const fallbackSchools: FlatSchool[] = flattenSchools(rawSchools);
 
 type Props = {
   label: string;
@@ -41,6 +43,10 @@ export default function SchoolInputWeb({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
+  // Fetch schools from API, with fallback to bundled data
+  const { schools } = useSchools();
+  const allSchools = schools.length > 0 ? schools : fallbackSchools;
+
   // keep input in sync if parent changes value
   useEffect(() => {
     setQuery(value?.name ?? '');
@@ -56,7 +62,7 @@ export default function SchoolInputWeb({
     const key = term.trim().toLowerCase();
     if (!key) return allSchools;
     return allSchools.filter((s) => s.searchKey.includes(key));
-  }, [term]);
+  }, [term, allSchools]);
 
   // click outside to close
   useEffect(() => {

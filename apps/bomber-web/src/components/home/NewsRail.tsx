@@ -1,24 +1,45 @@
+import { useQuery } from '@tanstack/react-query';
+import { fetchArticles } from '@/api/article';
 import FadeIn from '../animation/FadeIn';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function NewsRail() {
-  const articles = [
-    { id: 1, title: 'Medical Update | Player Name', img: '/news/image.png' },
-    { id: 2, title: 'International Recap', img: '/news/image2.jpg' },
-    { id: 3, title: 'Press Room | Comments', img: '/news/image3.jpg' },
-    { id: 4, title: 'Match Result | Headline', img: '/news/image2.jpg' },
-    { id: 5, title: 'Stories of Strength', img: '/news/image.png' },
-  ];
+  const navigate = useNavigate();
+  const { data: articles = [], isLoading } = useQuery({
+    queryKey: ['articles'],
+    queryFn: fetchArticles,
+  });
+
+  if (isLoading) {
+    return (
+      <section className="relative z-[60] pt-20 md:-mt-[32vh] lg:-mt-[34vh] pb-12">
+        <div className="mx-auto max-w-8xl px-4">
+          <div className="text-white text-center">Loading articles...</div>
+        </div>
+      </section>
+    );
+  }
+
+  if (articles.length === 0) {
+    return (
+      <section className="relative z-[60] pt-20 md:-mt-[32vh] lg:-mt-[34vh] pb-12">
+        <div className="mx-auto max-w-8xl px-4">
+          <div className="text-white text-center">No articles available</div>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="relative z-[60] -mt-[20vh] sm:-mt-[22vh] md:-mt-[24vh] lg:-mt-[26vh] pb-12">
+    <section className="relative z-[60] pt-20 md:-mt-[10vh] lg:-mt-[10vh] pb-12">
       {/* Main background */}
 
       {/* Image overlay */}
 
       {/* Animated glow orb (single, restrained) */}
-      <div className="absolute top-8 left-12 w-64 h-64 bg-[#57a4ff]/15 rounded-full blur-2xl animate-pulse" />
+      <div className="absolute top-8 left-4 md:left-12 w-48 md:w-64 h-48 md:h-64 bg-[#57a4ff]/15 rounded-full blur-2xl animate-pulse" />
 
-      <div className="mx-auto max-w-8xl px-4 relative">
+      <div className="mx-auto max-w-8xl px-4 relative mt-12">
         {/* Edge fade (mask) */}
         <div
           className="relative"
@@ -35,32 +56,42 @@ export default function NewsRail() {
                 <article
                   className="
                     snap-start shrink-0
-                    w-[78vw] sm:w-[54vw] md:w-[38vw] lg:w-[28vw] 2xl:w-[24vw]
+                    w-[60vw] sm:w-[38vw] md:w-[28vw] lg:w-[22vw] 2xl:w-[18vw]
                     overflow-hidden rounded-[22px]
                     shadow-[0_18px_52px_rgba(0,0,0,0.4)] border border-white/10
                     transition-all duration-300 will-change-transform hover:-translate-y-2 hover:border-[#57a4ff]/50
-                    bg-neutral-950/80 group
+                    bg-neutral-950/80 group cursor-pointer
                   "
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate(`/articles/${a.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(`/articles/${a.id}`);
+                    }
+                  }}
                 >
                   <div className="relative aspect-[2/3]">
                     <img
-                      src={a.img}
+                      src={a.imageUrl || '/news/image.png'}
                       alt={a.title}
                       className="h-full w-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
                       loading="lazy"
                     />
                     {/* Title gradient tray */}
-                    <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-                      <h3 className="text-xl font-extrabold uppercase leading-tight drop-shadow-[0_0_8px_rgba(87,164,255,0.5)]">
+                    <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                      <h3 className="text-lg font-extrabold uppercase leading-tight drop-shadow-[0_0_8px_rgba(87,164,255,0.5)]">
                         {a.title}
                       </h3>
-                      <a
-                        href="#"
-                        className="mt-3 inline-block rounded bg-gradient-to-r from-[#57a4ff] to-[#3b8aff] px-4 py-2 text-xs font-black uppercase tracking-widest text-white hover:bg-[#6bb0ff] transition-colors duration-300"
+                      <Link
+                        to={`/articles/${a.id}`}
+                        className="mt-2 inline-block rounded bg-gradient-to-r from-[#57a4ff] to-[#3b8aff] px-3 py-1.5 text-xs font-black uppercase tracking-widest text-white hover:bg-[#6bb0ff] transition-colors duration-300"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         Read Article
-                      </a>
+                      </Link>
                     </div>
                     {/* Shine effect */}
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
@@ -106,8 +137,8 @@ export default function NewsRail() {
           h3 {
             font-size: 1.5rem;
           }
-          .w-[78vw] {
-            width: 70vw;
+          .w-[70vw] {
+            width: 65vw;
           }
         }
       `}</style>

@@ -10,7 +10,7 @@ import { auth } from '../auth/auth';
 
 const router = express.Router();
 
-router.get('/', auth, getAllSponsors);
+router.get('/', getAllSponsors);
 router.get('/:id', auth, getSponsorById);
 router.post('/', auth, createSponsor);
 router.put('/:id', auth, updateSponsor);

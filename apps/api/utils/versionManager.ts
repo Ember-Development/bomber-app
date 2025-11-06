@@ -19,8 +19,8 @@ export const versionFeatures: Record<string, string[]> = {
     'Bug fixes and stability improvements',
   ],
   '1.0.12': [
-    'New team management features',
-    'Enhanced chat functionality',
+    'Fixed push notification issues and improved delivery',
+    'Updated notification on admin site for better usability',
     'Improved performance',
     'Bug fixes and stability improvements',
   ],

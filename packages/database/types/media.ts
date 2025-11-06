@@ -1,3 +1,2 @@
-import { PrismaClient, Media } from '../generated/client';
-const prisma = new PrismaClient();
+import type { Media } from '../generated/client';
 export type MediaDB = Media;

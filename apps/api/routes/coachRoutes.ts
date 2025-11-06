@@ -11,7 +11,7 @@ import { auth } from '../auth/auth';
 
 const router = express.Router();
 
-router.get('/', auth, getAllCoaches);
+router.get('/', getAllCoaches);
 router.get('/:id', auth, getCoachById);
 router.put('/:id', auth, authorize('edit-coach'), updateCoach);
 router.post(

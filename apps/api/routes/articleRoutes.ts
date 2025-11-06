@@ -10,8 +10,8 @@ import { auth } from '../auth/auth';
 
 const router = express.Router();
 
-router.get('/', auth, getAllArticles);
-router.get('/:id', auth, getArticleById);
+router.get('/', getAllArticles);
+router.get('/:id', getArticleById);
 router.post('/', auth, createArticle);
 router.put('/:id', auth, updateArticle);
 router.delete('/:id', auth, deleteArticle);

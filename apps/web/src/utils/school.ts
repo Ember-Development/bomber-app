@@ -27,6 +27,7 @@ type OtherBlock = {
 };
 
 export function flattenSchools(data: unknown): FlatSchool[] {
+  // Handle both { divisions: [...] } and direct array formats
   const arr: (Div1Block | OtherBlock)[] = Array.isArray(
     (data as any)?.divisions
   )
@@ -40,24 +41,43 @@ export function flattenSchools(data: unknown): FlatSchool[] {
   for (const block of arr) {
     if (!block || !block.division) continue;
 
-    if (block.division === 'NCAA Division I') {
-      const div1Block = block as Div1Block;
-      for (const conf of div1Block.conferences ?? []) {
-        for (const s of conf?.schools ?? []) {
+    if ((block as any).conferences) {
+      // Handle divisions with conferences (Division I, Junior College, etc.)
+      const confBlock = block as Div1Block;
+      for (const conf of confBlock.conferences ?? []) {
+        // Conference could be an object with 'schools' or an array of schools
+        if (conf?.schools) {
+          // Standard conference structure
+          for (const s of conf.schools) {
+            const base = {
+              name: s?.name ?? '',
+              state: s?.state,
+              city: s?.city,
+              imageUrl: s?.imageUrl,
+              division: block.division,
+              conference: (conf as any)?.conference,
+            };
+            if (!base.name) continue;
+            out.push({ ...base, searchKey: makeSearchKey(base) });
+          }
+        } else {
+          // Some conferences have schools directly (like Junior College)
           const base = {
-            name: s?.name ?? '',
-            state: s?.state,
-            city: s?.city,
-            imageUrl: s?.imageUrl,
-            division: div1Block.division,
-            conference: conf?.conference,
+            name: (conf as any)?.name ?? '',
+            state: (conf as any)?.state,
+            city: (conf as any)?.city,
+            imageUrl: (conf as any)?.imageUrl,
+            division: block.division,
+            conference: (conf as any)?.conference,
           };
           if (!base.name) continue;
           out.push({ ...base, searchKey: makeSearchKey(base) });
         }
       }
     } else {
-      for (const s of (block as OtherBlock).schools ?? []) {
+      // For divisions without conferences (Division II, III, etc.)
+      const schools = (block as any).schools ?? [];
+      for (const s of schools) {
         const base = {
           name: s?.name ?? '',
           state: s?.state,

@@ -423,6 +423,7 @@ model Notification {
     sentAt      DateTime?
     data        Json?
     audience    Json?
+    badge       Int?
 
     pushReceipts PushReceipt[]
 }

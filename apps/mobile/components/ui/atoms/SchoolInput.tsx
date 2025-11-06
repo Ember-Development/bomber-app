@@ -1,9 +1,8 @@
 // components/SchoolInput.tsx
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   TextInput,
-  FlatList,
   TouchableOpacity,
   Text,
   StyleSheet,
@@ -12,9 +11,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { flattenSchools, FlatSchool } from '@/utils/SchoolUtil';
+import { useSchools } from '@/hooks/schools/useSchools';
 import rawSchools from '../../../assets/data/schools.json';
 
-const allSchools: FlatSchool[] = flattenSchools(rawSchools);
+// Fallback schools in case API is unavailable
+const fallbackSchools: FlatSchool[] = flattenSchools(rawSchools);
 
 // Match CustomInput's glass tokens
 const GLASS_COLORS = {
@@ -49,16 +50,89 @@ export default function SchoolInput({
   const [searchTerm, setSearchTerm] = useState(query);
   const [open, setOpen] = useState(false);
 
+  // Fetch schools from API, with fallback to bundled data
+  const { schools, isLoading, isError } = useSchools();
+  const allSchools = schools.length > 0 ? schools : fallbackSchools;
+
+  // Debug: check fallback schools
+  useEffect(() => {
+    if (fallbackSchools.length > 0) {
+      console.log(
+        '[SchoolInput] Fallback schools total:',
+        fallbackSchools.length
+      );
+      const ancillaInFallback = fallbackSchools.find((s) =>
+        s.name.toLowerCase().includes('ancilla')
+      );
+      if (ancillaInFallback) {
+        console.log(
+          '[SchoolInput] ✅ Ancilla found in fallback:',
+          ancillaInFallback
+        );
+      } else {
+        console.log('[SchoolInput] ❌ Ancilla NOT in fallback');
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const handler = setTimeout(() => setSearchTerm(query), debounceMs);
     return () => clearTimeout(handler);
   }, [query, debounceMs]);
 
   const filteredSchools = useMemo(() => {
-    if (!searchTerm.trim()) return allSchools;
-    const lower = searchTerm.toLowerCase();
-    return allSchools.filter((s) => s.searchKey.includes(lower));
-  }, [searchTerm]);
+    if (!searchTerm.trim()) return allSchools.slice(0, 50); // Limit initial results
+
+    const terms = searchTerm.toLowerCase().trim().split(/\s+/).filter(Boolean);
+
+    if (terms.length === 0) return allSchools.slice(0, 50);
+
+    // Multi-term search: all terms must match
+    const results = allSchools.filter((s) => {
+      const searchKey = s.searchKey.toLowerCase();
+      return terms.every((term) => searchKey.includes(term));
+    });
+
+    // Debug: log results for "ancilla"
+    if (searchTerm.toLowerCase().includes('ancilla')) {
+      console.log('[SchoolInput] Searching for:', searchTerm);
+      console.log('[SchoolInput] Total schools:', allSchools.length);
+      console.log('[SchoolInput] Results found:', results.length);
+      console.log(
+        '[SchoolInput] Sample results:',
+        results.slice(0, 3).map((s) => s.name)
+      );
+
+      // Try to find Ancilla College
+      const ancilla = allSchools.find((s) =>
+        s.name.toLowerCase().includes('ancilla')
+      );
+      if (ancilla) {
+        console.log('[SchoolInput] Found Ancilla:', ancilla);
+        console.log('[SchoolInput] SearchKey:', ancilla.searchKey);
+      } else {
+        console.log('[SchoolInput] ❌ Ancilla College NOT in allSchools array');
+        // Check if it's in raw data
+        const inRaw = fallbackSchools.find((s) =>
+          s.name.toLowerCase().includes('ancilla')
+        );
+        if (inRaw) {
+          console.log('[SchoolInput] Found in fallbackSchools:', inRaw);
+        } else {
+          console.log('[SchoolInput] ❌ Not in fallbackSchools either');
+        }
+
+        // Check first 10 schools to see structure
+        console.log(
+          '[SchoolInput] First 10 schools:',
+          allSchools.slice(0, 10).map((s) => s.name)
+        );
+      }
+    }
+
+    // Return top 50 results for performance
+    return results.slice(0, 50);
+  }, [searchTerm, allSchools]);
 
   const handleSelect = (school: FlatSchool) => {
     onChange(school);
@@ -129,36 +203,37 @@ export default function SchoolInput({
           <ScrollView
             keyboardShouldPersistTaps="handled"
             style={{ maxHeight: 220 }}
-            nestedScrollEnabled
+            nestedScrollEnabled={true}
+            showsVerticalScrollIndicator={false}
           >
-            {filteredSchools.slice(0, 100).map((item, idx) => (
-              <TouchableOpacity
-                key={`${item.name}-${idx}`}
-                style={styles.item}
-                onPress={() => handleSelect(item)}
-              >
-                <Text style={[styles.itemText, { color: GLASS_COLORS.text }]}>
-                  {item.name}
-                </Text>
-                {(item.city || item.state) && (
-                  <Text
-                    style={[
-                      styles.subText,
-                      { color: GLASS_COLORS.placeholder },
-                    ]}
-                  >
-                    {[item.city, item.state].filter(Boolean).join(', ')}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            ))}
-
-            {filteredSchools.length === 0 && (
+            {filteredSchools.length === 0 ? (
               <View style={styles.empty}>
                 <Text style={{ color: GLASS_COLORS.placeholder }}>
                   No matches
                 </Text>
               </View>
+            ) : (
+              filteredSchools.map((item, idx) => (
+                <TouchableOpacity
+                  key={`${item.name}-${item.state}-${idx}`}
+                  style={styles.item}
+                  onPress={() => handleSelect(item)}
+                >
+                  <Text style={[styles.itemText, { color: GLASS_COLORS.text }]}>
+                    {item.name}
+                  </Text>
+                  {(item.city || item.state) && (
+                    <Text
+                      style={[
+                        styles.subText,
+                        { color: GLASS_COLORS.placeholder },
+                      ]}
+                    >
+                      {[item.city, item.state].filter(Boolean).join(', ')}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              ))
             )}
           </ScrollView>
         </View>

@@ -161,8 +161,22 @@ export default function TeamDetails() {
   useEffect(() => {
     fetchUsers().then((users) => {
       setAllPlayers(users.filter((u) => u.primaryRole === 'PLAYER'));
-      setAllCoaches(users.filter((u) => u.primaryRole === 'COACH'));
-      setEditHeadCoachOptions(users.filter((u) => u.primaryRole === 'COACH'));
+      setAllCoaches(
+        users.filter(
+          (u) =>
+            u.primaryRole === 'COACH' ||
+            u.primaryRole === 'REGIONAL_COACH' ||
+            u.primaryRole === 'ADMIN'
+        )
+      );
+      setEditHeadCoachOptions(
+        users.filter(
+          (u) =>
+            u.primaryRole === 'COACH' ||
+            u.primaryRole === 'REGIONAL_COACH' ||
+            u.primaryRole === 'ADMIN'
+        )
+      );
     });
   }, []);
 

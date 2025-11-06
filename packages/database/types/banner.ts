@@ -1,4 +1,3 @@
 // src/types/banner.ts
-import { PrismaClient, Banner } from '../generated/client';
-const prisma = new PrismaClient();
+import type { Banner } from '../generated/client';
 export type BannerDB = Banner;

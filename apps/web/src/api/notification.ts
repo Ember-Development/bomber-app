@@ -68,6 +68,44 @@ export const sendNotificationNow = async (id: string): Promise<boolean> => {
   }
 };
 
+export const updateNotification = async (
+  id: string,
+  payload: Partial<CreateNotificationDTO>
+): Promise<NotificationFE | null> => {
+  try {
+    const { data } = await api.put<NotificationFE>(
+      `/notifications/${id}`,
+      payload
+    );
+    return data;
+  } catch (err) {
+    console.error(`Failed to update notification ${id}:`, err);
+    return null;
+  }
+};
+
+export const fetchDrafts = async (): Promise<NotificationFE[]> => {
+  try {
+    const { data } = await api.get<{ drafts: NotificationFE[] }>(
+      '/notifications/drafts'
+    );
+    return data?.drafts ?? [];
+  } catch (err) {
+    console.error('Failed to fetch drafts:', err);
+    return [];
+  }
+};
+
+export const deleteNotification = async (id: string): Promise<boolean> => {
+  try {
+    await api.delete(`/notifications/${id}`);
+    return true;
+  } catch (err) {
+    console.error(`Failed to delete notification ${id}:`, err);
+    return false;
+  }
+};
+
 export const fetchNotificationFeed = async (): Promise<FeedItem[]> => {
   try {
     const { data } = await api.get<{ items: FeedItem[] }>(
