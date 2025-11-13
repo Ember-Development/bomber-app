@@ -37,7 +37,7 @@ const ADMINISTRATION_TEAM = [
     role: 'Assistant Program Director/Vice President',
     image:
       'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/David-McCorkle-scaled-landscape-5c5db9ae467f5c088d903022b57fd88f-5f90a34246c8e.jpg',
-    bio: 'David brings strategic leadership to program development while coaching the elite 16U Platinum squad. As Assistant Program Director and Vice President, he specializes in defensive systems and team tactics. His innovative approach to defensive training and game strategy has helped countless players earn Division I scholarships and develop into complete athletes.',
+    bio: 'David brings strategic leadership to program development. As Assistant Program Director and Vice President, he specializes in defensive systems and team tactics. His innovative approach to defensive training and game strategy has helped countless players earn Division I scholarships and develop into complete athletes.',
   },
   {
     id: 'kevin',

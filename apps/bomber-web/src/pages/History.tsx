@@ -1,12 +1,6 @@
 import MainNav from '@/components/layout/MainNav';
 import SocialSidebar from '@/components/layout/SocialSidebar';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Calendar,
-  TrendingUp,
-  Award,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const TIMELINE_EVENTS = [
