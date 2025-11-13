@@ -3,6 +3,7 @@ import { fetchMedia } from '@/api/media';
 import { PlayIcon } from '@/components/ui/icons';
 import FadeIn from '../animation/FadeIn';
 import { useNavigate } from 'react-router-dom';
+import { useRef, useState, useEffect } from 'react';
 
 // Helper function to extract thumbnail from video URL
 function getVideoThumbnail(videoUrl: string): string {
@@ -37,10 +38,52 @@ function getVideoThumbnail(videoUrl: string): string {
 
 export default function MediaRail() {
   const navigate = useNavigate();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
   const { data: media = [], isLoading } = useQuery({
     queryKey: ['media'],
     queryFn: fetchMedia,
   });
+
+  // Limit to 6 most recent media items
+  const limitedMedia = media.slice(0, 6);
+
+  // Check scroll position
+  const checkScroll = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    setCanScrollLeft(container.scrollLeft > 0);
+    setCanScrollRight(
+      container.scrollLeft < container.scrollWidth - container.clientWidth - 10
+    );
+  };
+
+  useEffect(() => {
+    checkScroll();
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScroll);
+      window.addEventListener('resize', checkScroll);
+      return () => {
+        container.removeEventListener('scroll', checkScroll);
+        window.removeEventListener('resize', checkScroll);
+      };
+    }
+  }, [limitedMedia]);
+
+  const scroll = (direction: 'left' | 'right') => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const scrollAmount = 320; // Width of card + gap
+    container.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth',
+    });
+  };
 
   if (isLoading) {
     return (
@@ -101,67 +144,143 @@ export default function MediaRail() {
 
             {/* Decorative line */}
             <div className="mt-4 h-1 w-16 bg-gradient-to-r from-[#57a4ff] to-transparent rounded-full" />
+
+            {/* See All Button */}
+            {media.length > 6 && (
+              <button
+                onClick={() => navigate('/media')}
+                className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#57a4ff] hover:text-[#6bb0ff] transition-colors duration-300 group"
+              >
+                <span>See All Media</span>
+                <svg
+                  className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </button>
+            )}
           </FadeIn>
         </div>
 
-        {/* Media Cards */}
-        <div className="no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4">
-          {media.map((m) => (
-            <FadeIn key={m.id}>
-              <article
-                className="snap-start shrink-0 w-[260px] sm:w-[300px] rounded-xl overflow-hidden bg-neutral-950/80 text-white shadow-md border border-white/10 group hover:border-[#57a4ff]/50 transition-all duration-300 cursor-pointer"
-                role="button"
-                tabIndex={0}
-                onClick={() => navigate(`/videos/${m.id}`)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    navigate(`/videos/${m.id}`);
-                  }
-                }}
+        {/* Media Cards with Scroll Controls */}
+        <div className="relative">
+          {/* Left Arrow */}
+          {canScrollLeft && (
+            <button
+              onClick={() => scroll('left')}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-[#57a4ff]/90 hover:bg-[#57a4ff] backdrop-blur-sm flex items-center justify-center border border-[#57a4ff]/30 shadow-lg transition-all duration-300 hover:scale-110"
+              aria-label="Scroll left"
+            >
+              <svg
+                className="h-5 w-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <div className="relative aspect-[16/11]">
-                  {/* Video thumbnail */}
-                  <img
-                    src={getVideoThumbnail(m.videoUrl)}
-                    alt={m.title}
-                    className="absolute inset-0 h-full w-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-300"
-                    onError={(e) => {
-                      // Fallback to gradient if image fails to load
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const fallback = target.nextElementSibling as HTMLElement;
-                      if (fallback) fallback.style.display = 'block';
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-br from-neutral-800 to-neutral-900 opacity-70 group-hover:opacity-90 transition-opacity duration-300 hidden" />
-                  {/* Play Button */}
-                  <div className="absolute inset-0 grid place-items-center">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/videos/${m.id}`);
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+          )}
+
+          {/* Scrollable Container */}
+          <div
+            ref={scrollContainerRef}
+            className="no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4"
+          >
+            {limitedMedia.map((m) => (
+              <FadeIn key={m.id}>
+                <article
+                  className="snap-start shrink-0 w-[260px] sm:w-[300px] rounded-xl overflow-hidden bg-neutral-950/80 text-white shadow-md border border-white/10 group hover:border-[#57a4ff]/50 transition-all duration-300 cursor-pointer"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate(`/videos/${m.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(`/videos/${m.id}`);
+                    }
+                  }}
+                >
+                  <div className="relative aspect-[16/11]">
+                    {/* Video thumbnail */}
+                    <img
+                      src={getVideoThumbnail(m.videoUrl)}
+                      alt={m.title}
+                      className="absolute inset-0 h-full w-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-300"
+                      onError={(e) => {
+                        // Fallback to gradient if image fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const fallback =
+                          target.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'block';
                       }}
-                      className="relative h-12 w-12 rounded-full bg-gradient-to-br from-[#57a4ff]/30 to-[#3b8aff]/20 backdrop-blur-sm flex items-center justify-center border border-[#57a4ff]/30 group-hover:scale-110 group-hover:border-[#57a4ff]/70 transition-all duration-300"
-                    >
-                      <div className="absolute inset-0 bg-[#57a4ff]/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <PlayIcon className="h-6 w-6 text-white group-hover:text-[#6bb0ff] transition-colors duration-300" />
-                    </button>
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-br from-neutral-800 to-neutral-900 opacity-70 group-hover:opacity-90 transition-opacity duration-300 hidden" />
+                    {/* Play Button */}
+                    <div className="absolute inset-0 grid place-items-center">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/videos/${m.id}`);
+                        }}
+                        className="relative h-12 w-12 rounded-full bg-gradient-to-br from-[#57a4ff]/30 to-[#3b8aff]/20 backdrop-blur-sm flex items-center justify-center border border-[#57a4ff]/30 group-hover:scale-110 group-hover:border-[#57a4ff]/70 transition-all duration-300"
+                      >
+                        <div className="absolute inset-0 bg-[#57a4ff]/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <PlayIcon className="h-6 w-6 text-white group-hover:text-[#6bb0ff] transition-colors duration-300" />
+                      </button>
+                    </div>
+                    {/* Shine effect on hover */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                    </div>
                   </div>
-                  {/* Shine effect on hover */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                  {/* Title */}
+                  <div className="p-4">
+                    <h4 className="text-sm font-semibold text-white group-hover:text-[#6bb0ff] transition-colors duration-300">
+                      {m.title}
+                    </h4>
                   </div>
-                </div>
-                {/* Title */}
-                <div className="p-4">
-                  <h4 className="text-sm font-semibold text-white group-hover:text-[#6bb0ff] transition-colors duration-300">
-                    {m.title}
-                  </h4>
-                </div>
-              </article>
-            </FadeIn>
-          ))}
+                </article>
+              </FadeIn>
+            ))}
+          </div>
+
+          {/* Right Arrow */}
+          {canScrollRight && (
+            <button
+              onClick={() => scroll('right')}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-[#57a4ff]/90 hover:bg-[#57a4ff] backdrop-blur-sm flex items-center justify-center border border-[#57a4ff]/30 shadow-lg transition-all duration-300 hover:scale-110"
+              aria-label="Scroll right"
+            >
+              <svg
+                className="h-5 w-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
