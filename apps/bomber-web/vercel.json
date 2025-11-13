@@ -3,5 +3,6 @@
   "installCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && corepack pnpm --version && corepack pnpm install --frozen-lockfile",
   "buildCommand": "cd ../.. && corepack pnpm --filter bomber-web build",
   "framework": "vite",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
 }
