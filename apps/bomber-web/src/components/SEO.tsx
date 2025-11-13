@@ -11,7 +11,7 @@ interface SEOProps {
 export function SEO({
   title = 'Bomber Fastpitch | Elite Fastpitch Softball Training & Teams',
   description = 'Premier fastpitch softball organization offering elite training, competitive teams, and college recruiting.',
-  image = '/bomber-icon.png',
+  image = 'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068366/bomber-black-removebg-preview_tkvf3d.png',
   url = 'https://bomberfastpitch.net',
   type = 'website',
 }: SEOProps) {

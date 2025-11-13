@@ -10,7 +10,10 @@ function PlayerCard({ p }: { p: AlumniPlayer }) {
     <div className="rounded-2xl border border-white/10 bg-neutral-900/60 p-4 hover:border-[#57a4ff]/50 transition-colors">
       <div className="flex items-center gap-4">
         <img
-          src={p.commit?.imageUrl || '/bomber-icon.png'}
+          src={
+            p.commit?.imageUrl ||
+            'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068366/bomber-black-removebg-preview_tkvf3d.png'
+          }
           alt={fullName}
           className="w-16 h-16 rounded-xl object-cover border border-white/10"
         />
