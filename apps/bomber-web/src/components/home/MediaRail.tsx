@@ -148,7 +148,7 @@ export default function MediaRail() {
             {/* See All Button */}
             {media.length > 6 && (
               <button
-                onClick={() => navigate('/media')}
+                onClick={() => navigate('/videos')}
                 className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#57a4ff] hover:text-[#6bb0ff] transition-colors duration-300 group"
               >
                 <span>See All Media</span>
