@@ -204,7 +204,7 @@ export default function TeamDetail() {
                     <div className="p-4 md:p-6 text-center">
                       <div className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto mb-3 md:mb-4 flex items-center justify-center overflow-hidden">
                         <img
-                          src="/src/assets/bomber-icon-blue.png"
+                          src="https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png"
                           alt="Bombers"
                           className="w-full h-full object-contain"
                         />
