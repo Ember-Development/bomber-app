@@ -134,7 +134,7 @@ export default function TeamDetail() {
                         <img
                           src={
                             player.commit?.imageUrl ||
-                            '/src/assets/bomber-icon-blue.png'
+                            'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068366/bomber-black-removebg-preview_tkvf3d.png'
                           }
                           alt={player.commit?.name || 'Bombers'}
                           className="w-32 h-32 md:w-40 md:h-40 object-contain"

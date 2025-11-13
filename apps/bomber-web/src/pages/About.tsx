@@ -43,14 +43,16 @@ const ADMINISTRATION_TEAM = [
     id: 'kevin',
     name: 'Kevin Mills',
     role: 'Chief Financial Officer',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'Kevin ensures financial stability and sustainable growth across the Bombers organization. As CFO, he manages budgets, oversees facility investments, and creates financial strategies that allow us to expand our reach while maintaining exceptional program quality. His fiscal stewardship enables us to invest in cutting-edge training equipment and top-tier coaching talent.',
   },
   {
     id: 'noe',
     name: 'Noe Saucedo',
     role: 'Chief Legal Officer',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'Noe protects the organization and our families through comprehensive legal oversight. As Chief Legal Officer, he handles contracts, compliance, risk management, and ensures all operations meet regulatory standards. His expertise in sports law and youth athletics provides peace of mind to our families and creates a secure environment for our athletes to thrive.',
   },
   {
@@ -65,21 +67,24 @@ const ADMINISTRATION_TEAM = [
     id: 'allison',
     name: 'Allison Honkofsky',
     role: 'Director of Recruiting',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: "Allison is the driving force behind our players' college dreams. As Director of Recruiting, she cultivates relationships with college coaches nationwide, coordinates showcase events, and guides families through the recruiting process. Her extensive network and deep knowledge of college softball have helped hundreds of Bombers earn scholarships at every collegiate level.",
   },
   {
     id: 'brian',
     name: 'Brian Repole',
     role: 'Assistant Director of Recruiting',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'Brian supports our recruiting mission by connecting athletes with college opportunities. As Assistant Director of Recruiting, he manages player profiles, coordinates college coach communications, and helps families navigate the complex recruiting landscape. His dedication to matching players with the right programs has made college dreams a reality for countless Bombers.',
   },
   {
     id: 'christy',
     name: 'Christy Connor',
     role: 'Director of Brand Development',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: "Christy shapes the Bombers brand and tells our athletes' stories to the world. As Director of Brand Development, she leads marketing strategy, creates compelling content, and builds partnerships that elevate our program's visibility. Her creative vision and strategic marketing initiatives have established Bombers as one of the most recognized brands in fastpitch softball.",
   },
   {
@@ -94,21 +99,24 @@ const ADMINISTRATION_TEAM = [
     id: 'kristi',
     name: 'Kristi Malpass',
     role: 'Training Coordinator',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'Kristi designs and implements our comprehensive training programs. As Training Coordinator, she schedules camps, coordinates clinics, manages facility usage, and ensures our athletes have access to elite-level instruction year-round. Her meticulous planning and passion for player development create optimal training environments where Bombers can reach their full potential.',
   },
   {
     id: 'cat',
     name: 'Cat Osterman',
     role: 'Pitching Performance Coordinator',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'A USA Softball Olympic legend and one of the greatest pitchers in softball history, Cat brings world-class expertise to our pitching program. As Pitching Performance Coordinator, she develops cutting-edge pitching curriculum, mentors our pitching coaches, and works directly with elite pitchers. Her unparalleled knowledge elevates every pitcher in the Bombers organization.',
   },
   {
     id: 'frank',
     name: 'Frank Lopez',
     role: 'Youth Coordinator',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'Frank builds the foundation for future Bombers through our youth programs. As Youth Coordinator, he oversees development for our youngest athletes, coordinates youth camps and clinics, and ensures age-appropriate training that instills fundamentals and love for the game. His focus on youth development creates a pipeline of skilled, passionate players ready for elite competition.',
   },
 ];
@@ -118,84 +126,96 @@ const DIRECTORS_TEAM = [
     id: 'tony',
     name: 'Tony Knight',
     role: 'Southeast Regional Director',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'Tony oversees the Southeast region of the program.',
   },
   {
     id: 'nate',
     name: 'Nate Rodriguez',
     role: 'Central and South Texas Area Director',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'Nate oversees the central and south Texas area of the program.',
   },
   {
     id: 'chuck',
     name: 'Chuck Peters',
     role: 'North Houston Area Director',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'Chuck oversees the north Houston area of the program.',
   },
   {
     id: 'mandi',
     name: 'Mandi Corbin',
     role: 'Southeast Houston Area Director',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'Mandi oversees the southeast Houston area of the program.',
   },
   {
     id: 'kelly',
     name: 'Kelly Jacoby',
     role: 'Southwest Houston Area Director',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'Kelly oversees the southwest Houston area of the program.',
   },
   {
     id: 'thad',
     name: 'Thad Bryant',
     role: 'West Texas Area Director',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'Thad oversees the west Texas area of the program.',
   },
   {
     id: 'slade',
     name: 'Slade Maloney',
     role: 'North Texas/Oklahoma Area Director',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'Slade oversees the north Texas / Oklahoma area of the program.',
   },
   {
     id: 'jeff',
     name: 'Jeff Dunning',
     role: 'Colorado State Director',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'Jeff oversees the Colorado area of the program.',
   },
   {
     id: 'bill',
     name: 'Bill Roth',
     role: 'Missouri State Director',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'Bill oversees the Missouri area of the program.',
   },
   {
     id: 'bobby',
     name: 'Bobby Lehman',
     role: 'Mississippi State Director',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'Bobby oversees the Mississippi area of the program.',
   },
   {
     id: 'john',
     name: 'John Skyes',
     role: 'Tennessee State Director',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'John oversees the Tennessee area of the program.',
   },
   {
     id: 'steve',
     name: 'Steve Conyers',
     role: 'Virginia State Director',
-    image: '/src/assets/bomber-icon-blue.png',
+    image:
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
     bio: 'Steve oversees the Virginia area of the program.',
   },
 ];
@@ -206,9 +226,8 @@ const FACILITIES = [
     name: 'Bomber Facility',
     description:
       'State-of-the-art Pitching and Batting Training, batting cages, and weight rooms, all under one roof.',
-    imageUrl:
-      'https://bombersfastpitch.net/wp-content/uploads/2022/03/Facility_MainComplex.jpg',
-    address: '5615 Bicentennial St San Antonio, TX 78219',
+    imageUrl: 'https://www.youcanwake.com/wp-content/uploads/2016/04/tsr_1.jpg',
+    address: '6700 I-35, New Braunfels, TX 78130',
   },
 ];
 
