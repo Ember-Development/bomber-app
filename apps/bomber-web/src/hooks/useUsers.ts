@@ -1,4 +1,4 @@
-import { api } from '@/api/api';
+import { api } from '@/api/Client';
 import { useQuery } from '@tanstack/react-query';
 
 export type PublicUserFE = {
