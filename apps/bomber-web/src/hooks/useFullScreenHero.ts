@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 
 /** Controls the hero fullscreen mode with smooth scroll-based toggling. */
-export function useFullscreenHero() {
+export function useFullscreenHero(): { fullscreen: boolean; toggleFullscreen: () => void } {
   const [fullscreen, setFullscreen] = useState(false);
   const lastScrollY = useRef(0);
   const wheelAccumulator = useRef(0);

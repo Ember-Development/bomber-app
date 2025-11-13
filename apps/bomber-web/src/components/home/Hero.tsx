@@ -16,7 +16,7 @@ export default function Hero() {
     >
       {/* background video */}
       <video
-        src="/videos/bomberhero.mp4"
+        src="https://res.cloudinary.com/duwgrvngn/video/upload/v1763009174/DD_Hype_Video_1_1_1_y846h0.mp4"
         className="absolute inset-0 h-full w-full object-cover"
         autoPlay
         loop

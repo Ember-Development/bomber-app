@@ -21,7 +21,7 @@ const ADMINISTRATION_TEAM = [
     role: 'CEO / President / Head Coach - 18U Gold',
     image:
       'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Scott-Smith-scaled-landscape-e56529274e6452b73edfc3d53bbaea3e-5f90a34246c8e.jpg',
-    bio: 'Scott oversees the entire program. As our head coach, he has guided multiple teams to national championships.',
+    bio: 'With over two decades of experience in elite fastpitch softball, Scott has built Bombers into a nationally recognized powerhouse. As CEO and President, he oversees strategic vision while coaching our premier 18U Gold team. His leadership has produced 1000+ college commitments and multiple national championships, embodying the Bomber commitment to excellence both on and off the field.',
   },
   {
     id: 'bo',
@@ -29,7 +29,7 @@ const ADMINISTRATION_TEAM = [
     role: 'Chief Operating Officer/Executive Vice President',
     image:
       'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Bo-Vinton-scaled-landscape-3aa2faa3a59fec1219804926fbd3a33f-5f90a34246c8e.jpg',
-    bio: 'Bo heads up our player development curriculum and mentors each coach on the staff.',
+    bio: 'Bo drives operational excellence across all Bombers programs nationwide. As COO and Executive Vice President, he architects our comprehensive player development curriculum and mentors our 400+ coaching staff. His systematic approach to skill development and data-driven training methodologies have become the gold standard in youth fastpitch, ensuring every Bomber receives world-class instruction.',
   },
   {
     id: 'david',
@@ -37,22 +37,21 @@ const ADMINISTRATION_TEAM = [
     role: 'Assistant Program Director/Vice President',
     image:
       'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/David-McCorkle-scaled-landscape-5c5db9ae467f5c088d903022b57fd88f-5f90a34246c8e.jpg',
-    bio: 'David leads the 16U Platinum squad and specializes in defensive strategy.',
+    bio: 'David brings strategic leadership to program development while coaching the elite 16U Platinum squad. As Assistant Program Director and Vice President, he specializes in defensive systems and team tactics. His innovative approach to defensive training and game strategy has helped countless players earn Division I scholarships and develop into complete athletes.',
   },
   {
-    id: 'Kevin',
+    id: 'kevin',
     name: 'Kevin Mills',
     role: 'Chief Financial Officer',
     image: '/src/assets/bomber-icon-blue.png',
-
-    bio: 'Jennifer focuses on infield development and works closely with our middle‐school camps.',
+    bio: 'Kevin ensures financial stability and sustainable growth across the Bombers organization. As CFO, he manages budgets, oversees facility investments, and creates financial strategies that allow us to expand our reach while maintaining exceptional program quality. His fiscal stewardship enables us to invest in cutting-edge training equipment and top-tier coaching talent.',
   },
   {
     id: 'noe',
     name: 'Noe Saucedo',
     role: 'Chief Legal Officer',
     image: '/src/assets/bomber-icon-blue.png',
-    bio: 'Christy leads our marketing and brand initiatives, creating compelling content.',
+    bio: 'Noe protects the organization and our families through comprehensive legal oversight. As Chief Legal Officer, he handles contracts, compliance, risk management, and ensures all operations meet regulatory standards. His expertise in sports law and youth athletics provides peace of mind to our families and creates a secure environment for our athletes to thrive.',
   },
   {
     id: 'jennifer',
@@ -60,30 +59,28 @@ const ADMINISTRATION_TEAM = [
     role: 'Director of Operations',
     image:
       'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Jennifer-Vinton-scaled-landscape-078f9bfeb75e201aab6137dde8943af5-5f90a34246c8e.jpg',
-    bio: 'Jennifer focuses on infield development and works closely with our middle‐school camps.',
+    bio: "Jennifer orchestrates the day-to-day operations that keep Bombers running seamlessly. As Director of Operations, she coordinates tournament schedules, manages facilities, oversees logistics for 235 teams across 28 states, and ensures every detail supports our athletes' success. Her organizational excellence and attention to detail create the foundation for championship-level performance.",
   },
   {
     id: 'allison',
     name: 'Allison Honkofsky',
-    role: 'Director of Recuriting',
+    role: 'Director of Recruiting',
     image: '/src/assets/bomber-icon-blue.png',
-
-    bio: 'Jade oversees all digital media and content creation.',
+    bio: "Allison is the driving force behind our players' college dreams. As Director of Recruiting, she cultivates relationships with college coaches nationwide, coordinates showcase events, and guides families through the recruiting process. Her extensive network and deep knowledge of college softball have helped hundreds of Bombers earn scholarships at every collegiate level.",
   },
   {
-    id: 'Brian',
-    name: 'Brain Repole',
-    role: 'Assistant Director of Recuriting',
+    id: 'brian',
+    name: 'Brian Repole',
+    role: 'Assistant Director of Recruiting',
     image: '/src/assets/bomber-icon-blue.png',
-
-    bio: 'Jennifer focuses on infield development and works closely with our middle‐school camps.',
+    bio: 'Brian supports our recruiting mission by connecting athletes with college opportunities. As Assistant Director of Recruiting, he manages player profiles, coordinates college coach communications, and helps families navigate the complex recruiting landscape. His dedication to matching players with the right programs has made college dreams a reality for countless Bombers.',
   },
   {
     id: 'christy',
     name: 'Christy Connor',
     role: 'Director of Brand Development',
     image: '/src/assets/bomber-icon-blue.png',
-    bio: 'Christy leads our marketing and brand initiatives, creating compelling content.',
+    bio: "Christy shapes the Bombers brand and tells our athletes' stories to the world. As Director of Brand Development, she leads marketing strategy, creates compelling content, and builds partnerships that elevate our program's visibility. Her creative vision and strategic marketing initiatives have established Bombers as one of the most recognized brands in fastpitch softball.",
   },
   {
     id: 'jade',
@@ -91,30 +88,28 @@ const ADMINISTRATION_TEAM = [
     role: 'Media Director',
     image:
       'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Jade-Nottebrok-scaled-landscape-6d6f7a877b9ffb01e55b7fb63dd7d2d9-5f90a34246c8e.jpg',
-    bio: 'Jade oversees all digital media and content creation.',
+    bio: "Jade captures and shares the Bomber experience through powerful visual storytelling. As Media Director, she oversees all digital content creation, manages social media platforms, and produces highlight videos that showcase our athletes' achievements. Her creative eye and technical expertise bring the excitement of Bombers softball to families and fans worldwide.",
   },
   {
-    id: 'Kristi',
+    id: 'kristi',
     name: 'Kristi Malpass',
     role: 'Training Coordinator',
     image: '/src/assets/bomber-icon-blue.png',
-    bio: 'Christy leads our marketing and brand initiatives, creating compelling content.',
+    bio: 'Kristi designs and implements our comprehensive training programs. As Training Coordinator, she schedules camps, coordinates clinics, manages facility usage, and ensures our athletes have access to elite-level instruction year-round. Her meticulous planning and passion for player development create optimal training environments where Bombers can reach their full potential.',
   },
   {
-    id: 'Cat',
+    id: 'cat',
     name: 'Cat Osterman',
     role: 'Pitching Performance Coordinator',
     image: '/src/assets/bomber-icon-blue.png',
-
-    bio: 'Jade oversees all digital media and content creation.',
+    bio: 'A USA Softball Olympic legend and one of the greatest pitchers in softball history, Cat brings world-class expertise to our pitching program. As Pitching Performance Coordinator, she develops cutting-edge pitching curriculum, mentors our pitching coaches, and works directly with elite pitchers. Her unparalleled knowledge elevates every pitcher in the Bombers organization.',
   },
   {
-    id: 'Frank',
+    id: 'frank',
     name: 'Frank Lopez',
     role: 'Youth Coordinator',
     image: '/src/assets/bomber-icon-blue.png',
-
-    bio: 'Jade oversees all digital media and content creation.',
+    bio: 'Frank builds the foundation for future Bombers through our youth programs. As Youth Coordinator, he oversees development for our youngest athletes, coordinates youth camps and clinics, and ensures age-appropriate training that instills fundamentals and love for the game. His focus on youth development creates a pipeline of skilled, passionate players ready for elite competition.',
   },
 ];
 
