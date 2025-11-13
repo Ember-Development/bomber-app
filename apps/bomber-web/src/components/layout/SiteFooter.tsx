@@ -34,7 +34,7 @@ export default function SiteFooter() {
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <img
-                src="/bomber-icon.png"
+                src="https://res.cloudinary.com/duwgrvngn/image/upload/v1763068366/bomber-black-removebg-preview_tkvf3d.png"
                 alt="Bombers Logo"
                 className="h-14 w-14 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]"
               />

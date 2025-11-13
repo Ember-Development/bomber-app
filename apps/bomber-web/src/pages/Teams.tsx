@@ -227,7 +227,10 @@ export default function Teams() {
                     <div className="flex-shrink-0">
                       <div className="w-16 h-16 rounded-full bg-gradient-to-br from-neutral-800 to-neutral-900 flex items-center justify-center border border-white/20">
                         <img
-                          src={team.logoUrl || '/src/assets/bomber-icon.png'}
+                          src={
+                            team.logoUrl ||
+                            'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068366/bomber-black-removebg-preview_tkvf3d.png'
+                          }
                           alt={team.name}
                           className="w-full h-full rounded-full object-contain"
                         />

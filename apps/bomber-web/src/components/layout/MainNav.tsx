@@ -308,7 +308,7 @@ function MinimalSideBar() {
         <div className="relative group/logo">
           <div className="absolute inset-0 bg-[#57a4ff]/20 rounded-full blur-md opacity-0 group-hover/logo:opacity-100 transition-opacity duration-300" />
           <img
-            src="/bomber-icon.png"
+            src="https://res.cloudinary.com/duwgrvngn/image/upload/v1763068366/bomber-black-removebg-preview_tkvf3d.png"
             alt="Bombers"
             className="h-10 w-auto group-hover/logo:scale-110 group-hover/logo:drop-shadow-[0_0_12px_rgba(87,164,255,0.6)] transition-all duration-300"
           />
@@ -397,7 +397,7 @@ function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
           <Link to="/" className="relative group/logo">
             <div className="absolute inset-0 bg-[#57a4ff]/20 rounded-full blur-md opacity-0 group-hover/logo:opacity-100 transition-opacity duration-300 -inset-2" />
             <img
-              src="/bomber-icon.png"
+              src="https://res.cloudinary.com/duwgrvngn/image/upload/v1763068366/bomber-black-removebg-preview_tkvf3d.png"
               className="h-8 w-8 object-contain group-hover/logo:scale-110 group-hover/logo:drop-shadow-[0_0_10px_rgba(87,164,255,0.5)] transition-all duration-300"
               alt="Bombers"
             />
@@ -502,7 +502,7 @@ function FullSideBar({ onClose }: { onClose: () => void }) {
             <div className="relative group/logo">
               <div className="absolute inset-0 bg-[#57a4ff]/20 rounded-full blur-md opacity-0 group-hover/logo:opacity-100 transition-opacity duration-300" />
               <img
-                src="/bomber-icon.png"
+                src="https://res.cloudinary.com/duwgrvngn/image/upload/v1763068366/bomber-black-removebg-preview_tkvf3d.png"
                 alt="Bombers"
                 className="h-8 w-auto group-hover/logo:scale-110 group-hover/logo:drop-shadow-[0_0_12px_rgba(87,164,255,0.6)] transition-all duration-300"
               />
