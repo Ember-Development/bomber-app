@@ -29,6 +29,7 @@ import { useUserContext } from '@/context/useUserContext';
 import { useNotificationsFeed } from '@/hooks/notifications/useNotifications';
 import FullScreenModal from '@/components/ui/organisms/FullSheetModal';
 import ViewEvent from '@/app/events/modals/ViewEvent';
+import * as Notifications from 'expo-notifications';
 
 type FeedItem = {
   id: string;
@@ -136,6 +137,11 @@ export default function NotificationCard() {
     return filteredNotifications.filter((n) => !readIds[n.id]).length;
   }, [filteredNotifications, readIds]);
 
+  // Keep the app icon badge in sync with unread count (iOS)
+  useEffect(() => {
+    Notifications.setBadgeCountAsync(unreadCount || 0).catch(() => {});
+  }, [unreadCount]);
+
   // Don't show notifications if user is not logged in
   if (!user) {
     return null;
@@ -206,11 +212,16 @@ export default function NotificationCard() {
         // Mark as read
         await addReadId(id);
         setReadIds((prev) => ({ ...prev, [id]: true }));
+        // Best-effort clear badge if nothing remains unread
+        const nextUnread = unreadCount - 1;
+        if (nextUnread <= 0) {
+          Notifications.setBadgeCountAsync(0).catch(() => {});
+        }
       } catch (e) {
         console.error('Failed to mark opened', e);
       }
     },
-    []
+    [unreadCount]
   );
 
   // --- Mark all as read (persist cutoff so older items never show again)
@@ -225,6 +236,8 @@ export default function NotificationCard() {
       setClearedUntilState(now);
       setDismissedIds({});
       setReadIds({});
+      // Clear app icon badge
+      Notifications.setBadgeCountAsync(0).catch(() => {});
       // Refetch to get updated data
       refetch();
     } catch (e) {
