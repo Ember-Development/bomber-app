@@ -25,9 +25,8 @@ export const versionFeatures: Record<string, string[]> = {
     'Bug fixes and stability improvements',
   ],
   '1.0.13': [
-    'Dark mode improvements',
-    'New notification types',
-    'Enhanced user profiles',
+    'Fixed Bug that didnt allow notifications to disappear',
+    'New Update Prompt',
   ],
 };
 
@@ -63,6 +62,6 @@ export function getAllVersions(): string[] {
 }
 
 export function getLatestVersionInfo(): VersionInfo {
-  const latestVersion = process.env.LATEST_APP_VERSION || '1.0.10';
+  const latestVersion = process.env.LATEST_APP_VERSION || '1.0.13';
   return getVersionInfo(latestVersion);
 }
