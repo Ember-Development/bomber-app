@@ -5,12 +5,15 @@ import MainNav from '@/components/layout/MainNav';
 import { fetchTeams } from '@/api/team';
 import { formatAgeGroup } from '@/utils/formatAgeGroup';
 
+const TEAMS_PER_PAGE = 12;
+
 export default function Teams() {
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<string | null>(null);
   const [showAcademyOnly, setShowAcademyOnly] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Check for academy filter in URL params on mount
   useEffect(() => {
@@ -70,6 +73,17 @@ export default function Teams() {
     const matchesAcademy = !showAcademyOnly || team.region === 'ACADEMY';
     return matchesSearch && matchesRegion && matchesAgeGroup && matchesAcademy;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredTeams.length / TEAMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * TEAMS_PER_PAGE;
+  const endIndex = startIndex + TEAMS_PER_PAGE;
+  const paginatedTeams = filteredTeams.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedRegion, selectedAgeGroup, showAcademyOnly]);
 
   return (
     <div className="relative bg-neutral-950 min-h-screen">
@@ -263,10 +277,17 @@ export default function Teams() {
         {/* Results Section */}
         <section>
           <div className="mx-auto max-w-8xl px-4 md:px-6">
-            <div className="flex items-center gap-4 mb-6">
-              <h3 className="text-3xl font-black text-white uppercase">
-                RESULTS
-              </h3>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+              <div className="flex items-center gap-4">
+                <h3 className="text-3xl font-black text-white uppercase">
+                  RESULTS
+                </h3>
+                {filteredTeams.length > 0 && (
+                  <span className="text-sm text-neutral-400">
+                    {filteredTeams.length} {filteredTeams.length === 1 ? 'team' : 'teams'}
+                  </span>
+                )}
+              </div>
               {showAcademyOnly && (
                 <Link
                   to="/academy"
@@ -299,8 +320,9 @@ export default function Teams() {
                 No teams found matching your search
               </div>
             ) : (
-              <div className="space-y-3">
-                {filteredTeams.map((team) => (
+              <>
+                <div className="space-y-3">
+                  {paginatedTeams.map((team) => (
                   <div
                     key={team.id}
                     className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 md:gap-6 p-4 sm:p-5 md:p-6 rounded-xl bg-neutral-900/50 backdrop-blur-sm border border-white/10 hover:border-[#57a4ff]/50 transition-all duration-300 group"
@@ -359,8 +381,77 @@ export default function Teams() {
                       </Link>
                     </div>
                   </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="text-sm text-neutral-400">
+                      Showing {startIndex + 1}-
+                      {Math.min(endIndex, filteredTeams.length)} of{' '}
+                      {filteredTeams.length} teams
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 rounded-lg bg-neutral-900/50 border border-white/10 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#57a4ff]/50 transition-all duration-300 font-bold text-sm uppercase tracking-wider"
+                        aria-label="Previous page"
+                      >
+                        Previous
+                      </button>
+
+                      {/* Page Numbers */}
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1)
+                          .filter((page) => {
+                            // Show first page, last page, current page, and pages around current
+                            if (totalPages <= 7) return true;
+                            if (page === 1 || page === totalPages) return true;
+                            if (Math.abs(page - currentPage) <= 1) return true;
+                            return false;
+                          })
+                          .map((page, index, array) => {
+                            // Add ellipsis if there's a gap
+                            const showEllipsisBefore =
+                              index > 0 && array[index - 1] !== page - 1;
+                            return (
+                              <div key={page} className="flex items-center gap-1">
+                                {showEllipsisBefore && (
+                                  <span className="text-neutral-500 px-2">...</span>
+                                )}
+                                <button
+                                  onClick={() => setCurrentPage(page)}
+                                  className={`min-w-[40px] px-3 py-2 rounded-lg font-bold text-sm uppercase tracking-wider transition-all duration-300 ${
+                                    currentPage === page
+                                      ? 'bg-[#57a4ff] text-white'
+                                      : 'bg-neutral-900/50 border border-white/10 text-white hover:border-[#57a4ff]/50'
+                                  }`}
+                                  aria-label={`Go to page ${page}`}
+                                  aria-current={currentPage === page ? 'page' : undefined}
+                                >
+                                  {page}
+                                </button>
+                              </div>
+                            );
+                          })}
+                      </div>
+
+                      <button
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                        }
+                        disabled={currentPage === totalPages}
+                        className="px-4 py-2 rounded-lg bg-neutral-900/50 border border-white/10 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#57a4ff]/50 transition-all duration-300 font-bold text-sm uppercase tracking-wider"
+                        aria-label="Next page"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>

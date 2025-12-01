@@ -2,13 +2,92 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchArticles } from '@/api/article';
 import FadeIn from '../animation/FadeIn';
 import { Link, useNavigate } from 'react-router-dom';
+import { useRef, useEffect, useState } from 'react';
 
 export default function NewsRail() {
   const navigate = useNavigate();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
   const { data: articles = [], isLoading } = useQuery({
     queryKey: ['articles'],
     queryFn: fetchArticles,
   });
+
+  const updateScrollButtons = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 1);
+  };
+
+  const scrollLeft = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const scrollAmount = container.clientWidth * 0.8;
+    container.scrollBy({
+      left: -scrollAmount,
+      behavior: 'smooth',
+    });
+    // Update button states after a short delay to account for smooth scrolling
+    setTimeout(updateScrollButtons, 300);
+  };
+
+  const scrollRight = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const scrollAmount = container.clientWidth * 0.8;
+    container.scrollBy({
+      left: scrollAmount,
+      behavior: 'smooth',
+    });
+    // Update button states after a short delay to account for smooth scrolling
+    setTimeout(updateScrollButtons, 300);
+  };
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      // Only handle horizontal scrolling
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) {
+        return; // Allow vertical scrolling to pass through
+      }
+
+      const { scrollLeft, scrollWidth, clientWidth } = container;
+      const isAtStart = scrollLeft <= 1;
+      const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 1;
+
+      // If at boundaries, don't prevent default - allow page scroll
+      if ((isAtStart && e.deltaX < 0) || (isAtEnd && e.deltaX > 0)) {
+        return; // Let the event bubble for page-level scrolling
+      }
+
+      // Not at boundary, scroll the rail
+      e.preventDefault();
+      container.scrollLeft += e.deltaX;
+    };
+
+    const handleScroll = () => {
+      updateScrollButtons();
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    container.addEventListener('scroll', handleScroll);
+
+    // Initial check
+    updateScrollButtons();
+
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+      container.removeEventListener('scroll', handleScroll);
+    };
+  }, [articles.length]);
 
   if (isLoading) {
     return (
@@ -50,7 +129,11 @@ export default function NewsRail() {
               'linear-gradient(to right, transparent 0, black 28px, black calc(100% - 28px), transparent 100%)',
           }}
         >
-          <div className="no-scrollbar flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4">
+          <div
+            ref={scrollContainerRef}
+            className="no-scrollbar flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4"
+            style={{ touchAction: 'pan-x pan-y' }}
+          >
             {articles.map((a) => (
               <FadeIn key={a.id}>
                 <article
@@ -106,10 +189,20 @@ export default function NewsRail() {
 
         {/* Rail controls */}
         <div className="mt-6 flex gap-4 pl-1">
-          <button className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-[#57a4ff]/20 to-[#3b8aff]/20 backdrop-blur-sm border border-[#57a4ff]/30 text-white hover:border-[#57a4ff]/60 transition-all duration-300">
+          <button
+            onClick={scrollLeft}
+            disabled={!canScrollLeft}
+            className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-[#57a4ff]/20 to-[#3b8aff]/20 backdrop-blur-sm border border-[#57a4ff]/30 text-white hover:border-[#57a4ff]/60 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[#57a4ff]/30"
+            aria-label="Scroll left"
+          >
             ←
           </button>
-          <button className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-[#57a4ff]/20 to-[#3b8aff]/20 backdrop-blur-sm border border-[#57a4ff]/30 text-white hover:border-[#57a4ff]/60 transition-all duration-300">
+          <button
+            onClick={scrollRight}
+            disabled={!canScrollRight}
+            className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-[#57a4ff]/20 to-[#3b8aff]/20 backdrop-blur-sm border border-[#57a4ff]/30 text-white hover:border-[#57a4ff]/60 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[#57a4ff]/30"
+            aria-label="Scroll right"
+          >
             →
           </button>
         </div>
@@ -122,6 +215,8 @@ export default function NewsRail() {
         /* Smooth scroll behavior */
         .no-scrollbar {
           scrollbar-width: none; /* Firefox */
+          touch-action: pan-x pan-y;
+          overscroll-behavior-x: none;
         }
         .no-scrollbar::-webkit-scrollbar {
           display: none; /* Chrome, Safari */
@@ -134,9 +229,6 @@ export default function NewsRail() {
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
-          h3 {
-            font-size: 1.5rem;
-          }
           .w-[70vw] {
             width: 65vw;
           }

@@ -232,7 +232,7 @@ const navItems = [
   {
     title: 'Payments',
     Icon: PaymentIcon,
-    link: 'https://ryzer.com',
+    link: 'https://www.bomberpayments.net/',
     external: true,
   },
   { title: 'About Us', Icon: InfoIcon, link: '/about' },
@@ -377,7 +377,11 @@ function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
                 link: 'https://www.bomberswebstore.com',
                 external: true,
               },
-              { text: 'Payments', link: 'https://ryzer.com', external: true },
+              {
+                text: 'Payments',
+                link: 'https://www.bomberpayments.net/',
+                external: true,
+              },
             ].map((item) => (
               <a
                 key={item.text}

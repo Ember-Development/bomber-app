@@ -251,6 +251,8 @@ const CULTURE_METRICS = [
   { id: 'metric6', number: '25', label: 'Years of Excellence', icon: Award },
 ];
 
+const COACHES_PER_PAGE = 15;
+
 export default function About() {
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
@@ -261,6 +263,7 @@ export default function About() {
     Record<string, boolean>
   >({});
   const [activeTab, setActiveTab] = useState<'admin' | 'directors'>('admin');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { data: coaches = [] } = useQuery({
     queryKey: ['coaches'],
@@ -329,6 +332,17 @@ export default function About() {
 
     return matchesSearch && matchesState && matchesAcademy;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredCoaches.length / COACHES_PER_PAGE);
+  const startIndex = (currentPage - 1) * COACHES_PER_PAGE;
+  const endIndex = startIndex + COACHES_PER_PAGE;
+  const paginatedCoaches = filteredCoaches.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedState, showAcademyOnly]);
 
   // Get unique states
   const states = [
@@ -781,12 +795,19 @@ export default function About() {
             </div>
 
             {/* Results count */}
-            <div className="mb-6 text-neutral-400 text-sm">
-              Showing{' '}
-              <span className="text-[#57a4ff] font-bold">
-                {filteredCoaches.length}
-              </span>{' '}
-              coaches
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-neutral-400 text-sm">
+                Showing{' '}
+                <span className="text-[#57a4ff] font-bold">
+                  {filteredCoaches.length}
+                </span>{' '}
+                {filteredCoaches.length === 1 ? 'coach' : 'coaches'}
+                {totalPages > 1 && (
+                  <span className="ml-2">
+                    (Page {currentPage} of {totalPages})
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Table */}
@@ -811,7 +832,7 @@ export default function About() {
                   </thead>
                   <tbody>
                     {filteredCoaches.length > 0 ? (
-                      filteredCoaches.map((coach, index) => (
+                      paginatedCoaches.map((coach, index) => (
                         <tr
                           key={coach.id || index}
                           className="border-b border-white/5 hover:bg-neutral-800/30 transition-all duration-200 group"
@@ -866,6 +887,78 @@ export default function About() {
                 </table>
               </div>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-sm text-neutral-400">
+                  Showing {startIndex + 1}-
+                  {Math.min(endIndex, filteredCoaches.length)} of{' '}
+                  {filteredCoaches.length} coaches
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(1, prev - 1))
+                    }
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 rounded-lg bg-neutral-900/50 border border-white/10 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#57a4ff]/50 transition-all duration-300 font-bold text-sm uppercase tracking-wider"
+                    aria-label="Previous page"
+                  >
+                    Previous
+                  </button>
+
+                  {/* Page Numbers */}
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter((page) => {
+                        // Show first page, last page, current page, and pages around current
+                        if (totalPages <= 7) return true;
+                        if (page === 1 || page === totalPages) return true;
+                        if (Math.abs(page - currentPage) <= 1) return true;
+                        return false;
+                      })
+                      .map((page, index, array) => {
+                        // Add ellipsis if there's a gap
+                        const showEllipsisBefore =
+                          index > 0 && array[index - 1] !== page - 1;
+                        return (
+                          <div key={page} className="flex items-center gap-1">
+                            {showEllipsisBefore && (
+                              <span className="text-neutral-500 px-2">...</span>
+                            )}
+                            <button
+                              onClick={() => setCurrentPage(page)}
+                              className={`min-w-[40px] px-3 py-2 rounded-lg font-bold text-sm uppercase tracking-wider transition-all duration-300 ${
+                                currentPage === page
+                                  ? 'bg-[#57a4ff] text-white'
+                                  : 'bg-neutral-900/50 border border-white/10 text-white hover:border-[#57a4ff]/50'
+                              }`}
+                              aria-label={`Go to page ${page}`}
+                              aria-current={
+                                currentPage === page ? 'page' : undefined
+                              }
+                            >
+                              {page}
+                            </button>
+                          </div>
+                        );
+                      })}
+                  </div>
+
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 rounded-lg bg-neutral-900/50 border border-white/10 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#57a4ff]/50 transition-all duration-300 font-bold text-sm uppercase tracking-wider"
+                    aria-label="Next page"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </section>
       </main>

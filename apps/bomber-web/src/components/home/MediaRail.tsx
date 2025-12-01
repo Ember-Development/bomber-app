@@ -232,6 +232,7 @@ export default function MediaRail() {
           <div
             ref={scrollContainerRef}
             className="no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4"
+            style={{ touchAction: 'pan-x pan-y' }}
           >
             {limitedMedia.map((m) => (
               <FadeIn key={m.id}>
@@ -324,6 +325,9 @@ export default function MediaRail() {
         /* Smooth scroll behavior */
         .no-scrollbar {
           scrollbar-width: none; /* Firefox */
+          touch-action: pan-x pan-y;
+          overscroll-behavior-x: none;
+          -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
         }
         .no-scrollbar::-webkit-scrollbar {
           display: none; /* Chrome, Safari */
