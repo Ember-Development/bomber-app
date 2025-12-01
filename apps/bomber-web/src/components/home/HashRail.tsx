@@ -27,7 +27,9 @@ export default function NewsRail() {
                 />
               </div>
               <div className="p-4">
-                <h3 className="text-lg font-semibold">{a.title}</h3>
+                <h3 className="text-sm md:text-base lg:text-lg font-semibold">
+                  {a.title}
+                </h3>
                 <a
                   href="#"
                   className="mt-2 inline-block text-sm text-blue-700 hover:underline"

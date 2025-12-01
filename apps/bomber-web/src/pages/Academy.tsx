@@ -60,7 +60,7 @@ export default function Academy() {
               </p>
 
               <Link
-                to="/teams"
+                to="/teams?academy=true"
                 className="inline-block px-8 py-4 bg-gradient-to-r from-[#57a4ff] via-[#6bb0ff] to-[#57a4ff] text-white font-black uppercase tracking-widest rounded-lg hover:shadow-[0_0_30px_rgba(87,164,255,0.6)] transition-all duration-300"
               >
                 View Academy Teams
@@ -136,7 +136,7 @@ export default function Academy() {
                   icon: '🏆',
                   title: 'Elite Competition',
                   description:
-                    'Compete at the highest level tournaments including PGF, TCS, and Triple Crown events nationwide.',
+                    'Compete at the highest level tournaments and showcases, including Alliance, PGF, TCS, and TCS and other top events nationwide.',
                 },
                 {
                   icon: '📚',
@@ -265,13 +265,13 @@ export default function Academy() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link
-                    to="/teams"
+                    to="/teams?academy=true"
                     className="px-8 py-4 bg-white text-[#57a4ff] font-black uppercase tracking-widest rounded-lg hover:bg-neutral-100 transition-all duration-300 inline-block"
                   >
                     View Teams
                   </Link>
                   <Link
-                    to="/about"
+                    to="/about?academy=true#coaches"
                     className="px-8 py-4 bg-black/30 text-white font-black uppercase tracking-widest rounded-lg hover:bg-black/50 transition-all duration-300 inline-block backdrop-blur-sm border border-white/20"
                   >
                     Contact Coaches

@@ -82,7 +82,7 @@ export default function NewsRail() {
                     {/* Title gradient tray */}
                     <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
                     <div className="absolute inset-x-0 bottom-0 p-3 text-white">
-                      <h3 className="text-lg font-extrabold uppercase leading-tight drop-shadow-[0_0_8px_rgba(87,164,255,0.5)]">
+                      <h3 className="text-sm md:text-base lg:text-lg font-extrabold uppercase leading-tight drop-shadow-[0_0_8px_rgba(87,164,255,0.5)]">
                         {a.title}
                       </h3>
                       <Link

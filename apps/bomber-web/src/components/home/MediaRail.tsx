@@ -41,6 +41,7 @@ export default function MediaRail() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [needsScroll, setNeedsScroll] = useState(false);
 
   const { data: media = [], isLoading } = useQuery({
     queryKey: ['media'],
@@ -50,28 +51,60 @@ export default function MediaRail() {
   // Limit to 6 most recent media items
   const limitedMedia = media.slice(0, 6);
 
-  // Check scroll position
+  // Check scroll position and if scrolling is needed
   const checkScroll = () => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    setCanScrollLeft(container.scrollLeft > 0);
-    setCanScrollRight(
-      container.scrollLeft < container.scrollWidth - container.clientWidth - 10
-    );
+    // Check if content overflows
+    const hasOverflow = container.scrollWidth > container.clientWidth;
+    setNeedsScroll(hasOverflow);
+
+    if (hasOverflow) {
+      setCanScrollLeft(container.scrollLeft > 0);
+      setCanScrollRight(
+        container.scrollLeft <
+          container.scrollWidth - container.clientWidth - 10
+      );
+    } else {
+      setCanScrollLeft(false);
+      setCanScrollRight(false);
+    }
   };
 
   useEffect(() => {
-    checkScroll();
     const container = scrollContainerRef.current;
-    if (container) {
-      container.addEventListener('scroll', checkScroll);
-      window.addEventListener('resize', checkScroll);
-      return () => {
-        container.removeEventListener('scroll', checkScroll);
-        window.removeEventListener('resize', checkScroll);
-      };
-    }
+    if (!container) return;
+
+    // Check immediately
+    checkScroll();
+
+    // Check after a short delay to account for image loading
+    const timeoutId1 = setTimeout(() => {
+      checkScroll();
+    }, 100);
+
+    // Check after images load
+    const timeoutId2 = setTimeout(() => {
+      checkScroll();
+    }, 500);
+
+    // Use ResizeObserver to detect when container size changes
+    const resizeObserver = new ResizeObserver(() => {
+      checkScroll();
+    });
+    resizeObserver.observe(container);
+
+    container.addEventListener('scroll', checkScroll);
+    window.addEventListener('resize', checkScroll);
+
+    return () => {
+      clearTimeout(timeoutId1);
+      clearTimeout(timeoutId2);
+      resizeObserver.disconnect();
+      container.removeEventListener('scroll', checkScroll);
+      window.removeEventListener('resize', checkScroll);
+    };
   }, [limitedMedia]);
 
   const scroll = (direction: 'left' | 'right') => {
@@ -173,7 +206,7 @@ export default function MediaRail() {
         {/* Media Cards with Scroll Controls */}
         <div className="relative">
           {/* Left Arrow */}
-          {canScrollLeft && (
+          {needsScroll && canScrollLeft && (
             <button
               onClick={() => scroll('left')}
               className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-[#57a4ff]/90 hover:bg-[#57a4ff] backdrop-blur-sm flex items-center justify-center border border-[#57a4ff]/30 shadow-lg transition-all duration-300 hover:scale-110"
@@ -260,7 +293,7 @@ export default function MediaRail() {
           </div>
 
           {/* Right Arrow */}
-          {canScrollRight && (
+          {needsScroll && canScrollRight && (
             <button
               onClick={() => scroll('right')}
               className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-[#57a4ff]/90 hover:bg-[#57a4ff] backdrop-blur-sm flex items-center justify-center border border-[#57a4ff]/30 shadow-lg transition-all duration-300 hover:scale-110"

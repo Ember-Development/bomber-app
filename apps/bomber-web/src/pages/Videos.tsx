@@ -185,41 +185,43 @@ export default function Videos() {
                     <h2 className="text-3xl font-black text-white mb-6 uppercase tracking-tight">
                       {category}
                     </h2>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {categoryVideos.map((video) => (
-                        <Link
-                          key={video.id}
-                          to={`/videos/${video.id}`}
-                          className="group relative bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:border-[#57a4ff] transition-all duration-500 transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-[#57a4ff]/20"
-                        >
-                          <div className="relative aspect-video overflow-hidden">
-                            <img
-                              src={getYouTubeThumbnail(video.videoUrl)}
-                              alt={video.title}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="w-16 h-16 bg-[#57a4ff]/80 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <Play
-                                  className="w-8 h-8 text-white ml-1"
-                                  fill="white"
-                                />
+                    <div className="overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-thin scrollbar-thumb-[#57a4ff]/50 scrollbar-track-neutral-900/50">
+                      <div className="flex gap-6 min-w-min">
+                        {categoryVideos.map((video) => (
+                          <Link
+                            key={video.id}
+                            to={`/videos/${video.id}`}
+                            className="group relative bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:border-[#57a4ff] transition-all duration-500 transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-[#57a4ff]/20 flex-shrink-0 w-[320px] sm:w-[360px] md:w-[400px]"
+                          >
+                            <div className="relative aspect-video overflow-hidden">
+                              <img
+                                src={getYouTubeThumbnail(video.videoUrl)}
+                                alt={video.title}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-16 h-16 bg-[#57a4ff]/80 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                  <Play
+                                    className="w-8 h-8 text-white ml-1"
+                                    fill="white"
+                                  />
+                                </div>
                               </div>
                             </div>
-                          </div>
-                          <div className="p-6">
-                            <h3 className="text-xl font-black text-white mb-2 group-hover:text-[#57a4ff] transition-colors">
-                              {video.title}
-                            </h3>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-neutral-500 uppercase tracking-wider">
-                                {video.category}
-                              </span>
+                            <div className="p-6">
+                              <h3 className="text-xl font-black text-white mb-2 group-hover:text-[#57a4ff] transition-colors line-clamp-2">
+                                {video.title}
+                              </h3>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-neutral-500 uppercase tracking-wider">
+                                  {video.category}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        </Link>
-                      ))}
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   </section>
                 )

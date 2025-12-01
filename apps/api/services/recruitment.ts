@@ -254,7 +254,7 @@ Submitted on ${new Date().toLocaleString('en-US', {
 
   // Send email to Bo
   await sendEmail({
-    to: 'gunnarsmith3@gmail.com',
+    to: 'bo@bombersfastpitch.net',
     subject: `🎯 New Recruitment: ${data.name} - ${isTeam ? 'Team' : 'Individual'} (${ageGroupValue || 'N/A'})`,
     html,
     text,

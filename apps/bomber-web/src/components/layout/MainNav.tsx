@@ -238,7 +238,6 @@ const navItems = [
   { title: 'About Us', Icon: InfoIcon, link: '/about' },
   { title: 'Teams', Icon: TeamsIcon, link: '/teams' },
   { title: 'Academy Teams', Icon: AcademyIcon, link: '/academy' },
-  { title: 'Recruit', Icon: RecruitIcon, link: '/become-bomber' },
   {
     title: 'Legacy',
     Icon: TrophyIcon,
@@ -373,7 +372,11 @@ function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
               { text: 'About Us', link: '/about' },
               { text: 'Teams', link: '/teams' },
               { text: 'Academy Teams', link: '/academy' },
-              { text: 'Recruit', link: '/become-bomber', external: false },
+              {
+                text: 'Store',
+                link: 'https://www.bomberswebstore.com',
+                external: true,
+              },
               { text: 'Payments', link: 'https://ryzer.com', external: true },
             ].map((item) => (
               <a
@@ -405,8 +408,7 @@ function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
         </div>
 
         {/* Right Side */}
-        <div className="flex items-center gap-4">
-          {/* Desktop Sponsors */}
+        {/* <div className="flex items-center gap-4">
           <div className="hidden md:flex items-center gap-3">
             <a
               href="https://www.newbalanceteam.com/login?startURL=%2F%3FteamStore%3Da4iVy000003XkDdIAK%26action%3Dadd%26display%3Dstore"
@@ -423,7 +425,6 @@ function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
             </a>
           </div>
 
-          {/* Mobile Sponsors Toggle */}
           <button
             onClick={() => setShowSponsors(!showSponsors)}
             aria-label="Sponsors"
@@ -446,7 +447,7 @@ function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
               </svg>
             </div>
           </button>
-        </div>
+        </div> */}
 
         {/* Mobile Sponsors Dropdown */}
         {showSponsors && (

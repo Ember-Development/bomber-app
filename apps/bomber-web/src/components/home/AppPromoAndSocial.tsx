@@ -20,10 +20,10 @@ export default function AppPromoAndSocial() {
           url: post.permalink,
         }))
       : [
-          { id: 1, img: '/news/image.png', platform: 'Instagram', url: '#' },
-          { id: 2, img: '/news/image2.jpg', platform: 'Facebook', url: '#' },
-          { id: 3, img: '/news/image3.jpg', platform: 'Instagram', url: '#' },
-          { id: 4, img: '/news/image2.jpg', platform: 'Twitter', url: '#' },
+          { id: 1, img: '/news/image.png', platform: '', url: '#' },
+          { id: 2, img: '/news/image2.jpg', platform: '', url: '#' },
+          { id: 3, img: '/news/image3.jpg', platform: '', url: '#' },
+          { id: 4, img: '/news/image4.jpeg', platform: '', url: '#' },
         ];
 
   return (

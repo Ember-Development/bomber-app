@@ -1,13 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import MainNav from '@/components/layout/MainNav';
 import { fetchTeams } from '@/api/team';
+import { formatAgeGroup } from '@/utils/formatAgeGroup';
 
 export default function Teams() {
+  const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState<string | null>(null);
   const [showAcademyOnly, setShowAcademyOnly] = useState(false);
+
+  // Check for academy filter in URL params on mount
+  useEffect(() => {
+    const academyParam = searchParams.get('academy');
+    if (academyParam === 'true') {
+      setShowAcademyOnly(true);
+    }
+  }, [searchParams]);
 
   const { data: teams = [], isLoading } = useQuery({
     queryKey: ['teams'],
@@ -19,17 +30,45 @@ export default function Teams() {
     new Set(teams.map((t) => t.state).filter(Boolean) as string[])
   );
 
+  // Extract unique age groups from teams and sort them
+  const ageGroups = Array.from(
+    new Set(teams.map((t) => t.ageGroup).filter(Boolean) as string[])
+  ).sort((a, b) => {
+    // Normalize both to compare numbers (handle U8 vs 8U format)
+    const normalize = (ag: string) => {
+      const match = ag.match(/(\d+)/);
+      return match ? parseInt(match[1], 10) : 0;
+    };
+    return normalize(a) - normalize(b);
+  });
+
   // Count academy teams
   const academyCount = teams.filter((t) => t.region === 'ACADEMY').length;
 
-  // Filter teams based on search, region, and academy
+  // Helper function to normalize age groups for comparison
+  const normalizeAgeGroup = (ageGroup: string | null | undefined): string => {
+    if (!ageGroup) return '';
+    // Convert to uppercase and handle both U8 and 8U formats
+    const trimmed = ageGroup.trim().toUpperCase();
+    const match = trimmed.match(/(\d+)U|U(\d+)/i);
+    if (match) {
+      const num = match[1] || match[2];
+      return `${num}U`;
+    }
+    return trimmed;
+  };
+
+  // Filter teams based on search, region, age group, and academy
   const filteredTeams = teams.filter((team) => {
     const matchesSearch = team.name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
     const matchesRegion = !selectedRegion || team.state === selectedRegion;
+    const matchesAgeGroup =
+      !selectedAgeGroup ||
+      normalizeAgeGroup(team.ageGroup) === normalizeAgeGroup(selectedAgeGroup);
     const matchesAcademy = !showAcademyOnly || team.region === 'ACADEMY';
-    return matchesSearch && matchesRegion && matchesAcademy;
+    return matchesSearch && matchesRegion && matchesAgeGroup && matchesAcademy;
   });
 
   return (
@@ -45,7 +84,7 @@ export default function Teams() {
           {/* Image overlay */}
           <div className="absolute inset-0">
             <img
-              src="https://bombersfastpitch.net/wp-content/uploads/2022/03/IMG_5804.jpg"
+              src="https://res.cloudinary.com/duwgrvngn/image/upload/v1764604173/Bombers-3-1-e1755562625610_q5dj4i.jpg"
               alt=""
               className="h-full w-full object-cover object-top opacity-20"
             />
@@ -144,31 +183,74 @@ export default function Teams() {
               </div>
 
               {/* Region Filter Buttons - Horizontal Scroll on Mobile */}
-              <div className="mb-4">
-                <div className="overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
-                  <div className="flex gap-2 min-w-min md:flex-wrap">
-                    {states.map((state) => (
-                      <button
-                        key={state}
-                        onClick={() =>
-                          setSelectedRegion(
-                            selectedRegion === state ? null : state
-                          )
-                        }
-                        className={`px-3 md:px-4 py-1.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all duration-300 whitespace-nowrap ${
-                          selectedRegion === state
-                            ? 'bg-[#57a4ff] text-white'
-                            : 'bg-[#57a4ff]/20 text-[#57a4ff] hover:bg-[#57a4ff]/30'
-                        }`}
-                      >
-                        {state} ({teams.filter((t) => t.state === state).length}
-                        )
-                      </button>
-                    ))}
+              {states.length > 0 && (
+                <div className="mb-4">
+                  <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
+                    Region
+                  </div>
+                  <div className="overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
+                    <div className="flex gap-2 min-w-min md:flex-wrap">
+                      {states.map((state) => (
+                        <button
+                          key={state}
+                          onClick={() =>
+                            setSelectedRegion(
+                              selectedRegion === state ? null : state
+                            )
+                          }
+                          className={`px-3 md:px-4 py-1.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all duration-300 whitespace-nowrap ${
+                            selectedRegion === state
+                              ? 'bg-[#57a4ff] text-white'
+                              : 'bg-[#57a4ff]/20 text-[#57a4ff] hover:bg-[#57a4ff]/30'
+                          }`}
+                        >
+                          {state} (
+                          {teams.filter((t) => t.state === state).length})
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
+              {/* Age Group Filter Buttons - Horizontal Scroll on Mobile */}
+              {ageGroups.length > 0 && (
+                <div className="mb-4">
+                  <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
+                    Age Group
+                  </div>
+                  <div className="overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
+                    <div className="flex gap-2 min-w-min md:flex-wrap">
+                      {ageGroups.map((ageGroup) => (
+                        <button
+                          key={ageGroup}
+                          onClick={() =>
+                            setSelectedAgeGroup(
+                              selectedAgeGroup === ageGroup ? null : ageGroup
+                            )
+                          }
+                          className={`px-3 md:px-4 py-1.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all duration-300 whitespace-nowrap ${
+                            normalizeAgeGroup(selectedAgeGroup) ===
+                            normalizeAgeGroup(ageGroup)
+                              ? 'bg-[#57a4ff] text-white'
+                              : 'bg-[#57a4ff]/20 text-[#57a4ff] hover:bg-[#57a4ff]/30'
+                          }`}
+                        >
+                          {formatAgeGroup(ageGroup)} (
+                          {
+                            teams.filter(
+                              (t) =>
+                                normalizeAgeGroup(t.ageGroup) ===
+                                normalizeAgeGroup(ageGroup)
+                            ).length
+                          }
+                          )
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
               {/* Decorative line */}
               <div className="h-1 w-20 bg-gradient-to-r from-[#57a4ff] to-transparent rounded-full" />
             </div>
@@ -221,11 +303,11 @@ export default function Teams() {
                 {filteredTeams.map((team) => (
                   <div
                     key={team.id}
-                    className="flex items-center gap-6 p-6 rounded-xl bg-neutral-900/50 backdrop-blur-sm border border-white/10 hover:border-[#57a4ff]/50 transition-all duration-300 group"
+                    className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 md:gap-6 p-4 sm:p-5 md:p-6 rounded-xl bg-neutral-900/50 backdrop-blur-sm border border-white/10 hover:border-[#57a4ff]/50 transition-all duration-300 group"
                   >
                     {/* Team Logo */}
-                    <div className="flex-shrink-0">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-neutral-800 to-neutral-900 flex items-center justify-center border border-white/20">
+                    <div className="flex-shrink-0 flex items-center gap-3 sm:gap-4 md:gap-6">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-neutral-800 to-neutral-900 flex items-center justify-center border border-white/20">
                         <img
                           src={
                             team.logoUrl ||
@@ -235,28 +317,43 @@ export default function Teams() {
                           className="w-full h-full rounded-full object-contain"
                         />
                       </div>
+
+                      {/* Team Info - Mobile: next to logo */}
+                      <div className="flex-1 sm:hidden">
+                        <div className="text-[#57a4ff] text-xs font-bold uppercase mb-0.5">
+                          {team.state || 'TEXAS'}
+                        </div>
+                        <div className="text-white font-bold text-base">
+                          {team.name}
+                        </div>
+                        {team.ageGroup && (
+                          <div className="text-neutral-400 text-xs mt-0.5">
+                            {formatAgeGroup(team.ageGroup)}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Team Info */}
-                    <div className="flex-1">
-                      <div className="text-[#57a4ff] text-sm font-bold uppercase mb-1">
+                    {/* Team Info - Desktop: separate column */}
+                    <div className="flex-1 hidden sm:block">
+                      <div className="text-[#57a4ff] text-xs sm:text-sm font-bold uppercase mb-1">
                         {team.state || 'TEXAS'}
                       </div>
-                      <div className="text-white font-bold text-lg">
+                      <div className="text-white font-bold text-base sm:text-lg">
                         {team.name}
                       </div>
                       {team.ageGroup && (
-                        <div className="text-neutral-400 text-sm mt-1">
-                          {team.ageGroup}
+                        <div className="text-neutral-400 text-xs sm:text-sm mt-1">
+                          {formatAgeGroup(team.ageGroup)}
                         </div>
                       )}
                     </div>
 
                     {/* View Team Button */}
-                    <div className="flex-shrink-0">
+                    <div className="flex-shrink-0 w-full sm:w-auto">
                       <Link
                         to={`/teams/${team.id}`}
-                        className="px-6 py-2 bg-[#57a4ff]/20 text-[#57a4ff] rounded-lg font-bold uppercase tracking-wider hover:bg-[#57a4ff]/30 transition-all duration-300 group-hover:scale-105 inline-block"
+                        className="w-full sm:w-auto px-4 sm:px-5 md:px-6 py-2 bg-[#57a4ff]/20 text-[#57a4ff] rounded-lg font-bold uppercase tracking-wider hover:bg-[#57a4ff]/30 transition-all duration-300 group-hover:scale-105 inline-block text-center text-xs sm:text-sm"
                       >
                         VIEW TEAM
                       </Link>

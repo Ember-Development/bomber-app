@@ -72,7 +72,7 @@ export default function TeamDetail() {
         <img
           src={
             team.logoUrl ||
-            'https://bombersfastpitch.net/wp-content/uploads/2022/04/Bombers-fastpitch-social-card-logo.jpg'
+            'https://res.cloudinary.com/duwgrvngn/image/upload/v1764621606/EFaywyfXYAAdXKd_sy0lhk.jpg'
           }
           alt={team.name}
           className="w-full h-full object-cover"
@@ -195,34 +195,45 @@ export default function TeamDetail() {
                   </div>
                 )}
 
-                {/* Assistant Coaches */}
-                {team.coaches.map((coach) => (
-                  <div
-                    key={coach.id}
-                    className="relative backdrop-blur-sm border-b md:border-r border-white/10 md:last:border-r-0 hover:border-[#57a4ff]/50 transition-all duration-300 overflow-hidden"
-                  >
-                    <div className="p-4 md:p-6 text-center">
-                      <div className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto mb-3 md:mb-4 flex items-center justify-center overflow-hidden">
-                        <img
-                          src="https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png"
-                          alt="Bombers"
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                      <div className="text-white font-bold text-base md:text-lg uppercase mb-1">
-                        {getCoachName(coach)}
-                      </div>
-                      <div className="text-[#57a4ff] text-xs md:text-sm uppercase mb-2">
-                        ASSISTANT COACH
-                      </div>
-                      {coach.user?.email && (
-                        <div className="text-neutral-400 text-xs break-all">
-                          {coach.user.email}
+                {/* Assistant Coaches - Filter out duplicates by email */}
+                {team.coaches
+                  .filter((coach) => {
+                    // Filter out assistant coaches with the same email as head coach
+                    if (team.headCoach?.user?.email && coach.user?.email) {
+                      return (
+                        coach.user.email.toLowerCase() !==
+                        team.headCoach.user.email.toLowerCase()
+                      );
+                    }
+                    return true;
+                  })
+                  .map((coach) => (
+                    <div
+                      key={coach.id}
+                      className="relative backdrop-blur-sm border-b md:border-r border-white/10 md:last:border-r-0 hover:border-[#57a4ff]/50 transition-all duration-300 overflow-hidden"
+                    >
+                      <div className="p-4 md:p-6 text-center">
+                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto mb-3 md:mb-4 flex items-center justify-center overflow-hidden">
+                          <img
+                            src="https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png"
+                            alt="Bombers"
+                            className="w-full h-full object-contain"
+                          />
                         </div>
-                      )}
+                        <div className="text-white font-bold text-base md:text-lg uppercase mb-1">
+                          {getCoachName(coach)}
+                        </div>
+                        <div className="text-[#57a4ff] text-xs md:text-sm uppercase mb-2">
+                          ASSISTANT COACH
+                        </div>
+                        {coach.user?.email && (
+                          <div className="text-neutral-400 text-xs break-all">
+                            {coach.user.email}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </section>
           )}

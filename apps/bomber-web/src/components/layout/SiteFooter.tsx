@@ -1,18 +1,37 @@
-function FooterCol({ title, items }: { title: string; items: string[] }) {
+import { Link } from 'react-router-dom';
+
+interface FooterItem {
+  label: string;
+  path: string;
+  external?: boolean;
+}
+
+function FooterCol({ title, items }: { title: string; items: FooterItem[] }) {
   return (
     <div>
       <h4 className="text-sm font-extrabold tracking-widest text-blue-400 mb-4">
         {title}
       </h4>
       <ul className="space-y-3">
-        {items.map((i) => (
-          <li key={i}>
-            <a
-              href="#"
-              className="text-neutral-300 hover:text-blue-400 transition-colors duration-200 text-sm font-medium"
-            >
-              {i}
-            </a>
+        {items.map((item) => (
+          <li key={item.label}>
+            {item.external ? (
+              <a
+                href={item.path}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-neutral-300 hover:text-blue-400 transition-colors duration-200 text-sm font-medium"
+              >
+                {item.label}
+              </a>
+            ) : (
+              <Link
+                to={item.path}
+                className="text-neutral-300 hover:text-blue-400 transition-colors duration-200 text-sm font-medium"
+              >
+                {item.label}
+              </Link>
+            )}
           </li>
         ))}
       </ul>
@@ -52,9 +71,9 @@ export default function SiteFooter() {
                 TRAINING FACILITY
               </span>
               <br />
-              5615 Bicentennial St
+              6700 I-35
               <br />
-              San Antonio, TX 78219
+              New Braunfels, TX 78130
             </p>
             <div className="flex gap-3">
               <a
@@ -87,11 +106,33 @@ export default function SiteFooter() {
           </div>
 
           {/* Navigation columns */}
-          <FooterCol title="Bombers" items={['About Us', 'Teams', 'News']} />
-          <FooterCol title="Resources" items={['Shop', 'Events', 'Media']} />
+          <FooterCol
+            title="Bombers"
+            items={[
+              { label: 'About Us', path: '/about' },
+              { label: 'Teams', path: '/teams' },
+              { label: 'News', path: '/articles' },
+            ]}
+          />
+          <FooterCol
+            title="Resources"
+            items={[
+              {
+                label: 'Shop',
+                path: 'https://www.bomberswebstore.com',
+                external: true,
+              },
+              { label: 'Events', path: '/' },
+              { label: 'Media', path: '/videos' },
+            ]}
+          />
           <FooterCol
             title="Connect"
-            items={['Contact', 'Sponsors', 'Commits']}
+            items={[
+              { label: 'Contact', path: '/contact' },
+              { label: 'Sponsors', path: '/' },
+              { label: 'Commits', path: '/commitments' },
+            ]}
           />
         </div>
 

@@ -48,8 +48,8 @@ function TimeCell({ label, value }: { label: string; value: number }) {
       {/* Glowing background effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#57a4ff]/20 to-[#57a4ff]/30 rounded-xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
 
-      <div className="relative backdrop-blur-sm bg-black/30 rounded-xl p-4 border border-white/10 hover:border-[#57a4ff]/50 transition-all duration-300 hover:scale-105">
-        <div className="text-4xl md:text-5xl font-black tabular-nums bg-gradient-to-br from-white via-[#57a4ff] to-[#3b8aff] bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(87,164,255,0.5)]">
+      <div className="relative backdrop-blur-sm bg-black/30 rounded-xl p-3 md:p-4 border border-white/10 hover:border-[#57a4ff]/50 transition-all duration-300 hover:scale-105">
+        <div className="text-2xl md:text-4xl lg:text-5xl font-black tabular-nums bg-gradient-to-br from-white via-[#57a4ff] to-[#3b8aff] bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(87,164,255,0.5)]">
           {String(value).padStart(2, '0')}
         </div>
         <div className="mt-2 text-[9px] md:text-[10px] font-black tracking-[0.2em] text-[#57a4ff]/90 uppercase">
@@ -77,8 +77,8 @@ function CountdownPill({
       <div className="absolute inset-0 bg-gradient-to-r from-[#57a4ff] via-[#3b8aff] to-[#57a4ff] rounded-2xl opacity-30 blur-2xl animate-pulse" />
 
       <div className="relative rounded-2xl bg-gradient-to-br from-black/60 to-black/40 p-1 backdrop-blur-xl">
-        <div className="rounded-xl bg-gradient-to-br from-neutral-900/90 to-black/90 px-4 py-5 md:px-6">
-          <div className="grid grid-cols-4 gap-3 md:gap-4">
+        <div className="rounded-xl bg-gradient-to-br from-neutral-900/90 to-black/90 px-2 py-4 md:px-4 md:py-5 lg:px-6">
+          <div className="grid grid-cols-4 gap-2 md:gap-3 lg:gap-4">
             <TimeCell label="DAYS" value={days} />
             <TimeCell label="HRS" value={hours} />
             <TimeCell label="MINS" value={minutes} />

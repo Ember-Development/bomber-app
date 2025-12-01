@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import MainNav from '@/components/layout/MainNav';
 import SocialSidebar from '@/components/layout/SocialSidebar';
 import { fetchCoaches } from '@/api/coach';
@@ -20,7 +21,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Scott Smith',
     role: 'CEO / President / Head Coach - 18U Gold',
     image:
-      'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Scott-Smith-scaled-landscape-e56529274e6452b73edfc3d53bbaea3e-5f90a34246c8e.jpg',
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1764622058/ScottSmith-scaled_hwsvuk.webp',
     bio: 'With over two decades of experience in elite fastpitch softball, Scott has built Bombers into a nationally recognized powerhouse. As CEO and President, he oversees strategic vision while coaching our premier 18U Gold team. His leadership has produced 1000+ college commitments and multiple national championships, embodying the Bomber commitment to excellence both on and off the field.',
   },
   {
@@ -28,7 +29,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Bo Vinton',
     role: 'Chief Operating Officer/Executive Vice President',
     image:
-      'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Bo-Vinton-scaled-landscape-3aa2faa3a59fec1219804926fbd3a33f-5f90a34246c8e.jpg',
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1764621977/Polish_20251106_115054656_pwpgpc.jpg',
     bio: 'Bo drives operational excellence across all Bombers programs nationwide. As COO and Executive Vice President, he architects our comprehensive player development curriculum and mentors our 400+ coaching staff. His systematic approach to skill development and data-driven training methodologies have become the gold standard in youth fastpitch, ensuring every Bomber receives world-class instruction.',
   },
   {
@@ -36,7 +37,7 @@ const ADMINISTRATION_TEAM = [
     name: 'David McCorkle',
     role: 'Assistant Program Director/Vice President',
     image:
-      'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/David-McCorkle-scaled-landscape-5c5db9ae467f5c088d903022b57fd88f-5f90a34246c8e.jpg',
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1764621958/APP_Headshot_David_McCorkle_m7flas.jpg',
     bio: 'David brings strategic leadership to program development. As Assistant Program Director and Vice President, he specializes in defensive systems and team tactics. His innovative approach to defensive training and game strategy has helped countless players earn Division I scholarships and develop into complete athletes.',
   },
   {
@@ -60,7 +61,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Jennifer Vinton',
     role: 'Director of Operations',
     image:
-      'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Jennifer-Vinton-scaled-landscape-078f9bfeb75e201aab6137dde8943af5-5f90a34246c8e.jpg',
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1764621975/Polish_20251106_114507579_worwcm.jpg',
     bio: "Jennifer orchestrates the day-to-day operations that keep Bombers running seamlessly. As Director of Operations, she coordinates tournament schedules, manages facilities, oversees logistics for 235 teams across 28 states, and ensures every detail supports our athletes' success. Her organizational excellence and attention to detail create the foundation for championship-level performance.",
   },
   {
@@ -68,7 +69,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Allison Honkofsky',
     role: 'Director of Recruiting',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1764621955/APP_Headshot_Allison_Honkofsky_x441v6.jpg',
     bio: "Allison is the driving force behind our players' college dreams. As Director of Recruiting, she cultivates relationships with college coaches nationwide, coordinates showcase events, and guides families through the recruiting process. Her extensive network and deep knowledge of college softball have helped hundreds of Bombers earn scholarships at every collegiate level.",
   },
   {
@@ -92,7 +93,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Jade Nottebrok',
     role: 'Media Director',
     image:
-      'https://bombersfastpitch.net/wp-content/uploads/bb-plugin/cache/Jade-Nottebrok-scaled-landscape-6d6f7a877b9ffb01e55b7fb63dd7d2d9-5f90a34246c8e.jpg',
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1764622089/dSF3v8w5fwW4BsPX5ARHi6GOr8ryHmRMekyDSFcT_eduho5.webp',
     bio: "Jade captures and shares the Bomber experience through powerful visual storytelling. As Media Director, she oversees all digital content creation, manages social media platforms, and produces highlight videos that showcase our athletes' achievements. Her creative eye and technical expertise bring the excitement of Bombers softball to families and fans worldwide.",
   },
   {
@@ -100,7 +101,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Kristi Malpass',
     role: 'Training Coordinator',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1764622470/APP_Headshot_Kristi_Malpass_pgpzvm.jpg',
     bio: 'Kristi designs and implements our comprehensive training programs. As Training Coordinator, she schedules camps, coordinates clinics, manages facility usage, and ensures our athletes have access to elite-level instruction year-round. Her meticulous planning and passion for player development create optimal training environments where Bombers can reach their full potential.',
   },
   {
@@ -108,7 +109,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Cat Osterman',
     role: 'Pitching Performance Coordinator',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://res.cloudinary.com/duwgrvngn/image/upload/v1764622531/33_yhqcco.png',
     bio: 'A USA Softball Olympic legend and one of the greatest pitchers in softball history, Cat brings world-class expertise to our pitching program. As Pitching Performance Coordinator, she develops cutting-edge pitching curriculum, mentors our pitching coaches, and works directly with elite pitchers. Her unparalleled knowledge elevates every pitcher in the Bombers organization.',
   },
   {
@@ -240,19 +241,21 @@ const CULTURE_METRICS = [
   },
   {
     id: 'metric2',
-    number: '1000+',
+    number: '1500+',
     label: 'College Commitments',
     icon: TrendingUp,
   },
   { id: 'metric3', number: '235', label: 'Teams in 28 States', icon: MapPin },
-  { id: 'metric4', number: '400+', label: 'Bomber Coaches', icon: Users },
-  { id: 'metric5', number: '1900+', label: 'Bombers Nationwide', icon: Users },
+  { id: 'metric4', number: '600+', label: 'Bomber Coaches', icon: Users },
+  { id: 'metric5', number: '2500+', label: 'Bombers Nationwide', icon: Users },
   { id: 'metric6', number: '25', label: 'Years of Excellence', icon: Award },
 ];
 
 export default function About() {
+  const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedState, setSelectedState] = useState('');
+  const [showAcademyOnly, setShowAcademyOnly] = useState(false);
   const [hoveredMember, setHoveredMember] = useState<string | null>(null);
   const [animatedMetrics, setAnimatedMetrics] = useState<
     Record<string, boolean>
@@ -273,6 +276,39 @@ export default function About() {
     });
   }, []);
 
+  // Check for academy filter in URL params on mount
+  useEffect(() => {
+    const academyParam = searchParams.get('academy');
+    if (academyParam === 'true') {
+      setShowAcademyOnly(true);
+    }
+  }, [searchParams]);
+
+  // Scroll to coaches section if hash is present
+  useEffect(() => {
+    if (window.location.hash === '#coaches') {
+      // Small delay to ensure page is rendered
+      setTimeout(() => {
+        const coachesSection = document.getElementById('coaches');
+        if (coachesSection) {
+          coachesSection.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }
+      }, 100);
+    }
+  }, []);
+
+  // Check if coach has any academy teams
+  const hasAcademyTeam = (coach: (typeof coaches)[0]) => {
+    const allTeams = [...coach.headTeams, ...coach.teams];
+    return allTeams.some((team) => team.region === 'ACADEMY');
+  };
+
+  // Count academy coaches
+  const academyCoachCount = coaches.filter(hasAcademyTeam).length;
+
   // Filter coaches
   const filteredCoaches = coaches.filter((coach) => {
     const teamName =
@@ -289,8 +325,9 @@ export default function About() {
       teamName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       coachName.includes(searchTerm.toLowerCase());
     const matchesState = !selectedState || state === selectedState;
+    const matchesAcademy = !showAcademyOnly || hasAcademyTeam(coach);
 
-    return matchesSearch && matchesState;
+    return matchesSearch && matchesState && matchesAcademy;
   });
 
   // Get unique states
@@ -314,11 +351,11 @@ export default function About() {
         {/* Background image */}
         <div className="absolute inset-0">
           <img
-            src="https://bombersfastpitch.net/wp-content/uploads/2022/03/IMG_5804.jpg"
+            src="https://res.cloudinary.com/duwgrvngn/image/upload/v1764621606/EFaywyfXYAAdXKd_sy0lhk.jpg"
             alt="Bombers Fastpitch"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/90" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/90 to-black/90" />
         </div>
 
         {/* Overlay with animated background elements */}
@@ -607,41 +644,56 @@ export default function About() {
               </span>
             </h2>
             <div className="grid md:grid-cols-2 gap-8">
-              {FACILITIES.map((facility) => (
-                <div
-                  key={facility.id}
-                  className="group relative bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden hover:border-[#57a4ff] transition-all duration-500 transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-[#57a4ff]/20"
-                >
-                  <div className="relative h-80 overflow-hidden">
-                    <img
-                      src={facility.imageUrl}
-                      alt={facility.name}
-                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-80"></div>
-                    <div className="absolute bottom-0 left-0 right-0 p-8">
-                      <h3 className="text-3xl font-black text-white mb-3 group-hover:text-[#57a4ff] transition-colors duration-300">
-                        {facility.name}
-                      </h3>
-                      <div className="flex items-center gap-2 text-neutral-300">
-                        <MapPin className="w-5 h-5 text-[#57a4ff]" />
-                        <p className="text-sm">{facility.address}</p>
+              {FACILITIES.map((facility) => {
+                // Create Google Maps URL
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(facility.address)}`;
+
+                return (
+                  <a
+                    key={facility.id}
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="md:contents group"
+                  >
+                    <div className="group relative bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden hover:border-[#57a4ff] transition-all duration-500 transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-[#57a4ff]/20 md:block cursor-pointer md:cursor-default">
+                      <div className="relative h-80 overflow-hidden">
+                        <img
+                          src={facility.imageUrl}
+                          alt={facility.name}
+                          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-80"></div>
+                        <div className="absolute bottom-0 left-0 right-0 p-8">
+                          <h3 className="text-3xl font-black text-white mb-3 group-hover:text-[#57a4ff] transition-colors duration-300">
+                            {facility.name}
+                          </h3>
+                          <div className="flex items-center gap-2 text-neutral-300">
+                            <MapPin className="w-5 h-5 text-[#57a4ff]" />
+                            <p className="text-sm">{facility.address}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-8">
+                        <p className="text-neutral-300 leading-relaxed text-lg">
+                          {facility.description}
+                        </p>
+                        {/* Mobile-only indicator */}
+                        <div className="mt-4 md:hidden flex items-center gap-2 text-[#57a4ff] text-sm font-semibold">
+                          <MapPin className="w-4 h-4" />
+                          <span>Tap to open in Maps</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="p-8">
-                    <p className="text-neutral-300 leading-relaxed text-lg">
-                      {facility.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                  </a>
+                );
+              })}
             </div>
           </div>
         </section>
 
         {/* Coaches Directory with enhanced search */}
-        <section className="px-4 md:px-6 pb-20">
+        <section id="coaches" className="px-4 md:px-6 pb-20">
           <div className="mx-auto max-w-8xl">
             <h2 className="text-6xl font-black mb-12 text-white uppercase tracking-tight">
               <span className="bg-gradient-to-r from-white to-[#57a4ff] bg-clip-text text-transparent">
@@ -650,32 +702,82 @@ export default function About() {
             </h2>
 
             {/* Search controls */}
-            <div className="flex flex-col md:flex-row gap-4 mb-8">
-              <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-500" />
-                <input
-                  type="text"
-                  placeholder="Search by team or coach name..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 rounded-xl bg-neutral-900/80 backdrop-blur-sm border border-white/10 text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#57a4ff] focus:ring-2 focus:ring-[#57a4ff]/20 transition-all duration-300"
-                />
+            <div className="flex flex-col gap-4 mb-8">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                  <input
+                    type="text"
+                    placeholder="Search by team or coach name..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 rounded-xl bg-neutral-900/80 backdrop-blur-sm border border-white/10 text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#57a4ff] focus:ring-2 focus:ring-[#57a4ff]/20 transition-all duration-300"
+                  />
+                </div>
+                <div className="relative md:w-64">
+                  <select
+                    value={selectedState}
+                    onChange={(e) => setSelectedState(e.target.value)}
+                    className="w-full appearance-none px-4 py-4 rounded-xl bg-neutral-900/80 backdrop-blur-sm border border-white/10 text-white focus:outline-none focus:border-[#57a4ff] focus:ring-2 focus:ring-[#57a4ff]/20 transition-all duration-300 cursor-pointer"
+                  >
+                    <option value="">All States</option>
+                    {states.map((state) => (
+                      <option key={state} value={state || undefined}>
+                        {state}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-500 pointer-events-none" />
+                </div>
               </div>
-              <div className="relative md:w-64">
-                <select
-                  value={selectedState}
-                  onChange={(e) => setSelectedState(e.target.value)}
-                  className="w-full appearance-none px-4 py-4 rounded-xl bg-neutral-900/80 backdrop-blur-sm border border-white/10 text-white focus:outline-none focus:border-[#57a4ff] focus:ring-2 focus:ring-[#57a4ff]/20 transition-all duration-300 cursor-pointer"
-                >
-                  <option value="">All States</option>
-                  {states.map((state) => (
-                    <option key={state} value={state || undefined}>
-                      {state}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-500 pointer-events-none" />
-              </div>
+
+              {/* Academy Filter Button */}
+              {academyCoachCount > 0 && (
+                <div>
+                  <button
+                    onClick={() => setShowAcademyOnly(!showAcademyOnly)}
+                    className={`group relative px-6 py-3 rounded-xl font-black text-sm uppercase tracking-wider transition-all duration-500 overflow-hidden ${
+                      showAcademyOnly
+                        ? 'bg-gradient-to-r from-[#57a4ff] via-[#6bb0ff] to-[#57a4ff] text-white shadow-[0_0_30px_rgba(87,164,255,0.6)]'
+                        : 'bg-gradient-to-r from-neutral-800/50 to-neutral-900/50 text-[#57a4ff] hover:from-neutral-800/70 hover:to-neutral-900/70 border border-[#57a4ff]/30'
+                    }`}
+                  >
+                    {/* Animated background glow */}
+                    {showAcademyOnly && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                    )}
+
+                    {/* Icon and text */}
+                    <span className="relative flex items-center justify-center gap-2">
+                      <svg
+                        className={`w-4 h-4 transition-transform duration-300 ${showAcademyOnly ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                        />
+                      </svg>
+                      <span>
+                        {showAcademyOnly
+                          ? 'ACADEMY ONLY'
+                          : 'SHOW ONLY ACADEMY COACHES'}
+                      </span>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full ${
+                          showAcademyOnly ? 'bg-white/20' : 'bg-[#57a4ff]/20'
+                        }`}
+                      >
+                        {academyCoachCount}
+                      </span>
+                    </span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Results count */}
