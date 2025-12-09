@@ -66,16 +66,17 @@ export default function PlayerProfile({ user, activeTab }: any) {
   }
 
   if (activeTab === 'gear') {
-    const gearItems = [
-      { label: 'Jersey Size', value: user?.player?.jerseySize ?? 'N/A' },
-      { label: 'Pant Size', value: formatPantSize(user?.player?.pantSize) },
-      { label: 'Stirrup Size', value: user?.player?.stirrupSize ?? 'N/A' },
-      { label: 'Short Size', value: user?.player?.shortSize ?? 'N/A' },
-      {
-        label: 'Practice Shirt Size',
-        value: user?.player?.practiceShortSize ?? 'N/A',
-      },
-    ];
+    const gearItems: Array<{ label: string; value: any; fullWidth?: boolean }> =
+      [
+        { label: 'Jersey Size', value: user?.player?.jerseySize ?? 'N/A' },
+        { label: 'Pant Size', value: formatPantSize(user?.player?.pantSize) },
+        { label: 'Stirrup Size', value: user?.player?.stirrupSize ?? 'N/A' },
+        { label: 'Short Size', value: user?.player?.shortSize ?? 'N/A' },
+        {
+          label: 'Practice Shirt Size',
+          value: user?.player?.practiceShortSize ?? 'N/A',
+        },
+      ];
     if (gearItems.length % 2 !== 0) {
       gearItems[gearItems.length - 1].fullWidth = true;
     }

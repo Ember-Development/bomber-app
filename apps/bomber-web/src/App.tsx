@@ -18,6 +18,17 @@ import Contact from '@/pages/Contact';
 import Login from '@/pages/Login';
 import BecomeBomber from '@/pages/BecomeBomber';
 import NotFound from '@/pages/NotFound';
+import Signup from './pages/Signup';
+import FanSignup from '@/pages/FanSignup';
+import PlayerTeamCode from '@/pages/PlayerTeamCode';
+import PlayerSignup from '@/pages/PlayerSignup';
+import CoachSignup from '@/pages/CoachSignup';
+import CoachAddress from '@/pages/CoachAddress';
+import CoachTeamCode from '@/pages/CoachTeamCode';
+import CoachPlayers from '@/pages/CoachPlayers';
+import AddPlayer from '@/pages/AddPlayer';
+import ParentSignup from '@/pages/ParentSignup';
+import ParentAddress from '@/pages/ParentAddress';
 
 const qc = new QueryClient({
   defaultOptions: {
@@ -51,6 +62,26 @@ export default function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/login" element={<Login />} />
               <Route path="/become-bomber" element={<BecomeBomber />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/signup/fan" element={<FanSignup />} />
+              <Route
+                path="/signup/player/team-code"
+                element={<PlayerTeamCode />}
+              />
+              <Route path="/signup/player" element={<PlayerSignup />} />
+              <Route path="/signup/coach" element={<CoachSignup />} />
+              <Route path="/signup/coach/address" element={<CoachAddress />} />
+              <Route
+                path="/signup/coach/team-code"
+                element={<CoachTeamCode />}
+              />
+              <Route path="/signup/coach/players" element={<CoachPlayers />} />
+              <Route path="/signup/add-player" element={<AddPlayer />} />
+              <Route
+                path="/signup/parent/address"
+                element={<ParentAddress />}
+              />
+              <Route path="/signup/parent" element={<ParentSignup />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

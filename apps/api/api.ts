@@ -31,6 +31,8 @@ import analyticsRoutes from './routes/analyticsRoutes';
 import schoolRoutes from './routes/schoolRoutes';
 import recruitmentRoutes from './routes/recruitmentRoutes';
 import contactRoutes from './routes/contactRoutes';
+import integrationRoutes from './routes/integrationRoutes';
+import emailVerificationRoutes from './routes/emailVerificationRoutes';
 
 const app = express();
 const server = http.createServer(app);
@@ -116,6 +118,8 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/schools', schoolRoutes);
 app.use('/api/recruitment', recruitmentRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/integrations', integrationRoutes);
+app.use('/api/email-verification', emailVerificationRoutes);
 
 // Error handling middleware (single instance)
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -129,6 +133,9 @@ const io = initializeSocket(server);
 
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
+  const { getLatestVersionInfo } = require('./utils/versionManager');
+  const versionInfo = getLatestVersionInfo();
+  console.log(`📱 Latest app version: ${versionInfo.version}`);
 });
 
 export { prisma, io };

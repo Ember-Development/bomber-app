@@ -58,6 +58,7 @@ export const fetchPlayers = async (): Promise<Player[]> => {
       email: p.user?.email || '',
       team: p.team?.name || '',
       isTrusted: p.isTrusted ?? false,
+      nil: p.nil ?? false,
       addressID: p.address?.id ? String(p.address.id) : '',
       address1: p.address?.address1 || '',
       address2: p.address?.address2 || '',

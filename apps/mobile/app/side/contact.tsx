@@ -132,14 +132,10 @@ export default function ContactScreen() {
             >
               <BlurView intensity={40} tint="light" style={styles.glassPanel}>
                 <View style={styles.panelInner}>
-                  <ThemedText
-                    style={[styles.sectionTitle, { color: textColor }]}
-                  >
+                  <ThemedText style={[styles.sectionTitle, { color: '#fff' }]}>
                     OFFICE ADDRESS
                   </ThemedText>
-                  <ThemedText
-                    style={[styles.addressText, { color: textColor }]}
-                  >
+                  <ThemedText style={[styles.addressText, { color: '#fff' }]}>
                     218 Trade Center Dr{'\n'}
                     New Braunfels, TX 78130
                   </ThemedText>
@@ -192,18 +188,14 @@ export default function ContactScreen() {
                         )
                       }
                     >
-                      <Ionicons
-                        name={s.icon as any}
-                        size={20}
-                        color={componentColor}
-                      />
+                      <Ionicons name={s.icon as any} size={20} color="#fff" />
                       <ThemedText
                         style={[styles.socialText, { color: textColor }]}
                       >
                         {s.label}
                       </ThemedText>
                       <ThemedText
-                        style={[styles.socialLabel, { color: componentColor }]}
+                        style={[styles.socialLabel, { color: '#fff' }]}
                       >
                         {s.tag}
                       </ThemedText>

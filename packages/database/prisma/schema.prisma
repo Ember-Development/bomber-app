@@ -193,6 +193,8 @@ model User {
     fname String
     lname String
 
+    emailVerification Boolean @default(false)
+
     primaryRole UserRole
     admin       Admin?
     coach       Coach?
@@ -248,6 +250,7 @@ model Player {
     
 
     college String?
+    nil Boolean @default(false)
     commitId String? @db.Uuid
     commit    Commit?     @relation("PlayerCommit", fields: [commitId], references: [id])
     convertedFromLead  PortalLead? @relation("PortalLeadConvertedPlayer")

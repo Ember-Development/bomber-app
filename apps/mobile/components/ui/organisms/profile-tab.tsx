@@ -1,5 +1,5 @@
-import React from 'react';
-import { ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { ScrollView, View } from 'react-native';
 import { TabBar, TabItem } from './TabBar';
 import CoachProfile from '../../../app/user/profileviews/CoachProfile';
 import RegionalCoachProfile from '../../../app/user/profileviews/RegionalCoachProfile';
@@ -9,6 +9,8 @@ import PlayerProfile from '../../../app/user/profileviews/PlayerProfile';
 import ModalManager from '../../../app/user/components/modalmanager';
 import { ProfileTab, useProfileTabs } from '../../../hooks/useProfileTabs';
 import AdminProfile from '@/app/user/profileviews/AdminProfile';
+import CustomButton from '@/components/ui/atoms/Button';
+import CollegeCommitModal from '@/app/user/components/CollegeCommitModal';
 
 // ProfileTabs.tsx
 export default function ProfileTabs() {
@@ -22,9 +24,18 @@ export default function ProfileTabs() {
     isParentView,
     activeTab,
     setActiveTab,
+    user,
   } = hook;
 
   const isAdmin = primaryRole === 'ADMIN';
+  const isPlayer =
+    !isCoach && !isFan && !isRegionalCoach && !isAdmin && !isParentView;
+
+  // College commit button state (only for players)
+  const [isCommitModalVisible, setIsCommitModalVisible] = useState(false);
+  const hasCollegeCommitment =
+    user?.player?.college && user?.player?.college.trim() !== '';
+  const playerId = user?.player?.id;
 
   const items: TabItem[] = [
     {
@@ -83,9 +94,36 @@ export default function ProfileTabs() {
           onTabPress={(key) => setActiveTab(key)}
         />
       )}
+
+      {/* Commit to College button - only for players, right below tabs */}
+      {isPlayer && !hasCollegeCommitment && playerId && (
+        <View style={{ paddingTop: 12, paddingBottom: 0, width: '100%' }}>
+          <CustomButton
+            title="🎓 Commit to College"
+            onPress={() => setIsCommitModalVisible(true)}
+            fullWidth
+          />
+        </View>
+      )}
+
       <ScrollView>
         <BodyComponent {...hook} />
       </ScrollView>
+
+      {/* College Commit Modal - only for players */}
+      {isPlayer && playerId && (
+        <CollegeCommitModal
+          isVisible={isCommitModalVisible}
+          onClose={() => setIsCommitModalVisible(false)}
+          playerId={playerId}
+          currentCollege={user?.player?.college}
+          onSuccess={() => {
+            // Force refresh by closing and reopening if needed
+            setIsCommitModalVisible(false);
+          }}
+        />
+      )}
+
       <ModalManager {...hook} />
     </>
   );

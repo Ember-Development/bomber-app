@@ -66,6 +66,7 @@ export default function TeamsScreen() {
   const [activeState, setActiveState] = useState('ALL');
   const [activeRegion, setActiveRegion] = useState('ALL');
   const [activeAge, setActiveAge] = useState<'ALL' | AgeKey>('ALL');
+  const [filtersExpanded, setFiltersExpanded] = useState(false); // New state
   const styles = createTeamsScreenStyles();
   const router = useRouter();
 
@@ -133,6 +134,9 @@ export default function TeamsScreen() {
     return parts.length ? parts.join('  •  ') : 'All teams';
   };
 
+  const hasActiveFilters =
+    activeState !== 'ALL' || activeRegion !== 'ALL' || activeAge !== 'ALL';
+
   return (
     <BackgroundWrapper>
       <SafeAreaView style={styles.safeContainer}>
@@ -155,26 +159,75 @@ export default function TeamsScreen() {
             />
           </View>
 
-          {/* Row 1: State */}
-          <FilterChips
-            selected={activeState}
-            onSelect={(label) => setActiveState(getFilterValue(label))}
-            options={stateOptions}
-          />
+          {/* Collapsible Filters */}
+          <View style={styles.filtersContainer}>
+            <TouchableOpacity
+              style={styles.filtersHeader}
+              onPress={() => setFiltersExpanded(!filtersExpanded)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.filtersHeaderLeft}>
+                <Ionicons
+                  name="filter-outline"
+                  size={18}
+                  color="rgba(255,255,255,0.9)"
+                />
+                <Text style={styles.filtersHeaderText}>Filters</Text>
+                {hasActiveFilters && (
+                  <View style={styles.activeFiltersBadge}>
+                    <Text style={styles.activeFiltersBadgeText}>
+                      {
+                        [
+                          activeState !== 'ALL' && activeState,
+                          activeRegion !== 'ALL' && activeRegion,
+                          activeAge !== 'ALL' && activeAge,
+                        ].filter(Boolean).length
+                      }
+                    </Text>
+                  </View>
+                )}
+              </View>
+              <Ionicons
+                name={filtersExpanded ? 'chevron-up' : 'chevron-down'}
+                size={20}
+                color="rgba(255,255,255,0.7)"
+              />
+            </TouchableOpacity>
 
-          {/* Row 2: Region */}
-          <FilterChips
-            selected={activeRegion}
-            onSelect={(label) => setActiveRegion(label)}
-            options={regionOptions}
-          />
+            {filtersExpanded && (
+              <View style={styles.filtersContent}>
+                {/* State Filter */}
+                <View style={styles.filterSection}>
+                  <Text style={styles.filterLabel}>State</Text>
+                  <FilterChips
+                    selected={activeState}
+                    onSelect={(label) => setActiveState(getFilterValue(label))}
+                    options={stateOptions}
+                  />
+                </View>
 
-          {/* Row 3: Age Division */}
-          <FilterChips
-            selected={activeAge}
-            onSelect={(label) => setActiveAge(label as 'ALL' | AgeKey)}
-            options={ageOptions}
-          />
+                {/* Region Filter */}
+                <View style={styles.filterSection}>
+                  <Text style={styles.filterLabel}>Region</Text>
+                  <FilterChips
+                    selected={activeRegion}
+                    onSelect={(label) => setActiveRegion(label)}
+                    options={regionOptions}
+                  />
+                </View>
+
+                {/* Age Division Filter */}
+                <View style={styles.filterSection}>
+                  <Text style={styles.filterLabel}>Age Division</Text>
+                  <FilterChips
+                    selected={activeAge}
+                    onSelect={(label) => setActiveAge(label as 'ALL' | AgeKey)}
+                    options={ageOptions}
+                  />
+                </View>
+              </View>
+            )}
+          </View>
         </View>
 
         <Text style={styles.sectionTitle}>Teams</Text>

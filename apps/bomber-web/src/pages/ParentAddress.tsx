@@ -1,0 +1,248 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import MainNav from '@/components/layout/MainNav';
+import SocialSidebar from '@/components/layout/SocialSidebar';
+import { api } from '@/api/Client';
+import { useAuth } from '@/contexts/AuthContext';
+
+const US_STATES = [
+  { label: 'Alabama', value: 'Alabama' },
+  { label: 'Alaska', value: 'Alaska' },
+  // ... (same as in other files)
+  { label: 'Wyoming', value: 'Wyoming' },
+];
+
+export default function ParentAddress() {
+  const navigate = useNavigate();
+  const { checkAuth } = useAuth();
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [zip, setZip] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    // Check if we have signup data
+    const saved = sessionStorage.getItem('parentSignupData');
+    if (!saved) {
+      navigate('/signup/parent');
+      return;
+    }
+
+    // Load saved address data if exists
+    const data = JSON.parse(saved);
+    setAddress(data.address || '');
+    setCity(data.city || '');
+    setState(data.state || '');
+    setZip(data.zip || '');
+  }, [navigate]);
+
+  const handleSubmit = async () => {
+    setError('');
+    setLoading(true);
+
+    if (!address || !city || !state || !zip) {
+      setError('All fields are required');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const signupData = JSON.parse(
+        sessionStorage.getItem('parentSignupData') || '{}'
+      );
+
+      // 1) Create Address record
+      let addressID: string | undefined;
+      const { data: newAddr } = await api.post('/users/address', {
+        address1: address,
+        city,
+        state,
+        zip,
+      });
+      addressID = newAddr.id;
+
+      // 2) Signup Parent, connecting to that address
+      const { data } = await api.post('/auth/signup', {
+        email: signupData.email,
+        password: signupData.password,
+        fname: signupData.firstName,
+        lname: signupData.lastName,
+        phone: signupData.phone,
+        role: 'PARENT',
+        parent: {
+          addressID,
+        },
+      });
+
+      // 3) Store tokens
+      localStorage.setItem('accessToken', data.access);
+      localStorage.setItem('refreshToken', data.refresh);
+
+      await checkAuth();
+      sessionStorage.removeItem('parentSignupData');
+      // Mark that we're in the add-player signup flow
+      sessionStorage.setItem('inAddPlayerSignup', 'true');
+      // Navigate to add-player flow
+      navigate('/signup/add-player');
+    } catch (err: any) {
+      console.error('Parent signup error:', err);
+      setError(
+        err.response?.data?.message ||
+          'Failed to create account. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isFormValid = !!address && !!city && !!state && !!zip;
+
+  return (
+    <div className="relative bg-neutral-950 min-h-screen overflow-x-hidden">
+      {/* Background Image Layer */}
+      <div className="fixed inset-0 z-0">
+        <img
+          src="https://linedrivemedia.com/wp-content/uploads/2024/07/Texas_Bombers_Gold_Smith_18U_AFCS_champs_2024.jpg"
+          alt="Texas Bombers Team"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/85" />
+        <div className="absolute inset-0 bg-neutral-950/60" />
+      </div>
+
+      <MainNav />
+      <SocialSidebar />
+
+      <main className="relative z-20 pt-32 pb-20 flex items-center justify-center min-h-screen">
+        <div className="w-full max-w-2xl px-4">
+          <div className="relative bg-gradient-to-br from-neutral-900/50 to-neutral-950/50 backdrop-blur-sm rounded-2xl border border-[#57a4ff]/20 p-8 shadow-2xl">
+            {/* Back Button */}
+            <button
+              onClick={() => navigate('/signup/parent')}
+              className="mb-4 flex items-center gap-2 text-[#57a4ff] hover:text-[#6bb0ff] transition-colors duration-300"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              <span className="text-sm font-semibold">Back</span>
+            </button>
+
+            {/* Header */}
+            <h2 className="text-2xl md:text-3xl font-black mb-2 text-white">
+              Parent Address Info
+            </h2>
+            <p className="text-neutral-400 text-sm mb-6">
+              Please enter your address information.
+            </p>
+
+            {/* Error */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                <p className="text-red-400 text-sm">{error}</p>
+              </div>
+            )}
+
+            {/* Form */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-white/80 mb-2 uppercase tracking-wider">
+                  Street Address
+                </label>
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="w-full px-4 py-3 bg-neutral-950/50 border border-[#57a4ff]/30 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-[#57a4ff] focus:ring-1 focus:ring-[#57a4ff] transition-all duration-300"
+                  placeholder="123 Main St"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-white/80 mb-2 uppercase tracking-wider">
+                  City
+                </label>
+                <input
+                  type="text"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="w-full px-4 py-3 bg-neutral-950/50 border border-[#57a4ff]/30 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-[#57a4ff] focus:ring-1 focus:ring-[#57a4ff] transition-all duration-300"
+                  placeholder="City"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-white/80 mb-2 uppercase tracking-wider">
+                  State
+                </label>
+                <select
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  className="w-full px-4 py-3 bg-neutral-950/50 border border-[#57a4ff]/30 rounded-lg text-white focus:outline-none focus:border-[#57a4ff] focus:ring-1 focus:ring-[#57a4ff] transition-all duration-300"
+                >
+                  <option value="">Select State</option>
+                  {US_STATES.map((s) => (
+                    <option key={s.value} value={s.value}>
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-white/80 mb-2 uppercase tracking-wider">
+                  Zip Code
+                </label>
+                <input
+                  type="text"
+                  value={zip}
+                  onChange={(e) => setZip(e.target.value)}
+                  className="w-full px-4 py-3 bg-neutral-950/50 border border-[#57a4ff]/30 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-[#57a4ff] focus:ring-1 focus:ring-[#57a4ff] transition-all duration-300"
+                  placeholder="12345"
+                />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              onClick={handleSubmit}
+              disabled={!isFormValid || loading}
+              className="w-full mt-6 px-8 py-4 bg-gradient-to-r from-[#57a4ff] via-[#6bb0ff] to-[#57a4ff] text-white font-black uppercase tracking-widest rounded-lg hover:shadow-[0_0_30px_rgba(87,164,255,0.6)] transition-all duration-300 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span className="relative z-10">
+                {loading ? 'Creating Account...' : 'Continue to Player Info'}
+              </span>
+              {isFormValid && !loading && (
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+              )}
+            </button>
+
+            {/* Terms */}
+            <p className="mt-6 text-xs text-neutral-500 text-center">
+              By signing up you accept the{' '}
+              <a href="/terms" className="text-[#57a4ff] hover:underline">
+                Terms of Service
+              </a>{' '}
+              and{' '}
+              <a href="/privacy" className="text-[#57a4ff] hover:underline">
+                Privacy Policy
+              </a>
+              .
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}

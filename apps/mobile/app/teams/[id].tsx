@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { useTeamById } from '@/hooks/teams/useTeams';
 import { US_STATES } from '@/utils/state';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { getRegionLabel } from '@/utils/region';
 import ProfileModal from '../../features/teams/components/profileModal';
 import { usePlayerById } from '@/hooks/teams/usePlayerById';
@@ -103,46 +104,154 @@ export default function TeamPage() {
           {activeTab === 'Info' && (
             <View style={styles.infoCard}>
               <Text style={styles.infoTitle}>Team Overview</Text>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Head Coach</Text>
-                <Text style={styles.infoValue}>{coachName}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Team Region</Text>
-                <Text style={styles.infoValue}>{regionLabel}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Age Group</Text>
-                <Text style={styles.infoValue}>
-                  {formatAgeGroup(team.ageGroup)}
-                </Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>State</Text>
-                <Text style={styles.infoValue}>{stateLabel}</Text>
+
+              <View style={styles.infoStack}>
+                <View style={styles.infoCardModern}>
+                  <LinearGradient
+                    colors={[
+                      'rgba(87, 164, 255, 0.1)',
+                      'rgba(87, 164, 255, 0.05)',
+                    ]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.infoCardGradient}
+                  >
+                    <View style={styles.infoCardRow}>
+                      <View style={styles.infoCardLeft}>
+                        <Ionicons
+                          name="person-outline"
+                          size={22}
+                          color="#57a4ff"
+                        />
+                        <Text style={styles.infoCardLabel}>Head Coach</Text>
+                      </View>
+                      <Text style={styles.infoCardValue}>{coachName}</Text>
+                    </View>
+                  </LinearGradient>
+                </View>
+
+                <View style={styles.infoCardModern}>
+                  <LinearGradient
+                    colors={[
+                      'rgba(87, 164, 255, 0.1)',
+                      'rgba(87, 164, 255, 0.05)',
+                    ]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.infoCardGradient}
+                  >
+                    <View style={styles.infoCardRow}>
+                      <View style={styles.infoCardLeft}>
+                        <Ionicons
+                          name="location-outline"
+                          size={22}
+                          color="#57a4ff"
+                        />
+                        <Text style={styles.infoCardLabel}>Team Region</Text>
+                      </View>
+                      <Text style={styles.infoCardValue}>{regionLabel}</Text>
+                    </View>
+                  </LinearGradient>
+                </View>
+
+                <View style={styles.infoCardModern}>
+                  <LinearGradient
+                    colors={[
+                      'rgba(87, 164, 255, 0.1)',
+                      'rgba(87, 164, 255, 0.05)',
+                    ]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.infoCardGradient}
+                  >
+                    <View style={styles.infoCardRow}>
+                      <View style={styles.infoCardLeft}>
+                        <Ionicons
+                          name="calendar-outline"
+                          size={22}
+                          color="#57a4ff"
+                        />
+                        <Text style={styles.infoCardLabel}>Age Group</Text>
+                      </View>
+                      <Text style={styles.infoCardValue}>
+                        {formatAgeGroup(team.ageGroup)}
+                      </Text>
+                    </View>
+                  </LinearGradient>
+                </View>
+
+                <View style={styles.infoCardModern}>
+                  <LinearGradient
+                    colors={[
+                      'rgba(87, 164, 255, 0.1)',
+                      'rgba(87, 164, 255, 0.05)',
+                    ]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.infoCardGradient}
+                  >
+                    <View style={styles.infoCardRow}>
+                      <View style={styles.infoCardLeft}>
+                        <Ionicons
+                          name="map-outline"
+                          size={22}
+                          color="#57a4ff"
+                        />
+                        <Text style={styles.infoCardLabel}>State</Text>
+                      </View>
+                      <Text style={styles.infoCardValue}>{stateLabel}</Text>
+                    </View>
+                  </LinearGradient>
+                </View>
               </View>
 
-              <Text style={[styles.infoTitle, { marginTop: 24 }]}>
+              <Text style={[styles.infoTitle, { marginTop: 32 }]}>
                 Trophy Case
               </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.trophyScrollContainer}
+              >
                 {team.trophyCase.length > 0 ? (
-                  team.trophyCase.map((trophy) => (
-                    <BlurView
-                      key={trophy.id}
-                      intensity={50}
-                      tint="dark"
-                      style={styles.trophyCard}
-                    >
-                      <Image
-                        source={{ uri: trophy.imageURL }}
-                        style={styles.trophyImage}
-                      />
-                      <Text style={styles.trophyText}>{trophy.title}</Text>
-                    </BlurView>
+                  [...team.trophyCase].reverse().map((trophy) => (
+                    <View key={trophy.id} style={styles.trophyCard}>
+                      <View style={styles.trophyImageContainer}>
+                        <Image
+                          source={{ uri: trophy.imageURL }}
+                          style={styles.trophyImage}
+                          resizeMode="cover"
+                        />
+                        <LinearGradient
+                          colors={['transparent', 'rgba(0,0,0,0.6)']}
+                          style={styles.trophyOverlay}
+                        />
+                      </View>
+                      <View style={styles.trophyContent}>
+                        <Ionicons
+                          name="trophy"
+                          size={16}
+                          color="#FFD700"
+                          style={styles.trophyIcon}
+                        />
+                        <Text style={styles.trophyText} numberOfLines={2}>
+                          {trophy.title}
+                        </Text>
+                      </View>
+                    </View>
                   ))
                 ) : (
-                  <Text style={styles.empty}>No trophies yet.</Text>
+                  <View style={styles.emptyTrophyContainer}>
+                    <Ionicons
+                      name="trophy-outline"
+                      size={48}
+                      color="rgba(255,255,255,0.3)"
+                    />
+                    <Text style={styles.emptyTrophyText}>No trophies yet.</Text>
+                    <Text style={styles.emptyTrophySubtext}>
+                      Check back soon for achievements!
+                    </Text>
+                  </View>
                 )}
               </ScrollView>
             </View>
@@ -274,7 +383,48 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: 16,
+  },
+  infoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  infoCardItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    flex: 1,
+    minWidth: '47%',
+    gap: 12,
+  },
+  infoCardIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(87, 164, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  infoCardContent: {
+    flex: 1,
+    gap: 4,
+  },
+  infoCardLabel: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 12,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  infoCardValue: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
   },
   infoRow: {
     flexDirection: 'row',
@@ -293,25 +443,80 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
   },
+  trophyScrollContainer: {
+    paddingVertical: 8,
+    paddingRight: 20,
+  },
   trophyCard: {
-    width: 120,
-    height: 140,
-    marginRight: 12,
-    borderRadius: 14,
-    padding: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 160,
+    marginRight: 16,
+    borderRadius: 16,
+    overflow: 'hidden',
     backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
+  },
+  trophyImageContainer: {
+    width: '100%',
+    height: 140,
+    position: 'relative',
+    backgroundColor: 'rgba(0,0,0,0.2)',
   },
   trophyImage: {
-    width: 80,
+    width: '100%',
+    height: '100%',
+  },
+  trophyOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     height: 80,
-    borderRadius: 8,
-    marginBottom: 6,
+  },
+  trophyContent: {
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  trophyIcon: {
+    marginRight: 4,
   },
   trophyText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: '600',
+    flex: 1,
+    lineHeight: 18,
+  },
+  emptyTrophyContainer: {
+    width: width - 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+    paddingHorizontal: 24,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    borderStyle: 'dashed',
+  },
+  emptyTrophyText: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 16,
+    fontWeight: '500',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  emptyTrophySubtext: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 13,
+    marginTop: 6,
     textAlign: 'center',
   },
   playerCard: {
@@ -367,5 +572,29 @@ const styles = StyleSheet.create({
   avatarImg: {
     width: '100%',
     height: '100%',
+  },
+  infoStack: {
+    gap: 12,
+  },
+  infoCardModern: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(87, 164, 255, 0.2)',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  infoCardGradient: {
+    padding: 16,
+  },
+  infoCardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  infoCardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
   },
 });

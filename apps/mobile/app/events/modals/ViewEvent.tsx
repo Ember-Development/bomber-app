@@ -413,83 +413,91 @@ export default function ViewEvent({ eventId }: ViewEventProps) {
           </>
         ) : null}
 
-        {/* RSVP Actions */}
-        <Divider />
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          <CustomButton
-            title="Going"
-            onPress={() => rsvpMutation.mutate('ATTENDING')}
-          />
-          <CustomButton
-            title="Maybe"
-            variant="secondary"
-            onPress={() => rsvpMutation.mutate('MAYBE')}
-          />
-          <CustomButton
-            title="Decline"
-            variant="danger"
-            onPress={() => rsvpMutation.mutate('DECLINED')}
-          />
-          <CustomButton
-            title="Remove My RSVP"
-            variant="text"
-            onPress={() => unRsvpMutation.mutate()}
-          />
-        </View>
-
-        {/* Attendees */}
-        <Divider />
-        <ThemedText style={styles.sectionTitle}>Attendees</ThemedText>
-        <View
-          style={{
-            flexDirection: 'row',
-            gap: 10,
-            flexWrap: 'wrap',
-            marginBottom: 8,
-          }}
-        >
-          {Object.entries(grouped).map(([status, count]) => (
-            <View
-              key={status}
-              style={[
-                styles.statusPill,
-                { borderColor: STATUS_COLOR[status] ?? '#888' },
-              ]}
-            >
-              <Text
-                style={{
-                  color: STATUS_COLOR[status] ?? '#888',
-                  fontWeight: '700',
-                }}
-              >
-                {status}: {count}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-          {allAttendees.map((a) => (
-            <View key={a.user.id} style={styles.attendee}>
-              <InitialsAvatar
-                fname={a.user.fname}
-                lname={a.user.lname}
-                uri={a.user.avatarUrl || undefined}
+        {/* RSVP Actions - Only show for non-global events */}
+        {data.eventType !== EventType.GLOBAL && (
+          <>
+            <Divider />
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              <CustomButton
+                title="Going"
+                onPress={() => rsvpMutation.mutate('ATTENDING')}
               />
-              <ThemedText style={styles.attendeeName}>
-                {(a.user.fname ?? '').trim()} {(a.user.lname ?? '').trim()}
-              </ThemedText>
-              <ThemedText
-                style={[
-                  styles.attendeeStatus,
-                  { color: STATUS_COLOR[a.status] ?? '#aaa' },
-                ]}
-              >
-                {a.status}
-              </ThemedText>
+              <CustomButton
+                title="Maybe"
+                variant="secondary"
+                onPress={() => rsvpMutation.mutate('MAYBE')}
+              />
+              <CustomButton
+                title="Decline"
+                variant="danger"
+                onPress={() => rsvpMutation.mutate('DECLINED')}
+              />
+              <CustomButton
+                title="Remove My RSVP"
+                variant="text"
+                onPress={() => unRsvpMutation.mutate()}
+              />
             </View>
-          ))}
-        </View>
+          </>
+        )}
+
+        {/* Attendees - Only show for non-global events */}
+        {data.eventType !== EventType.GLOBAL && (
+          <>
+            <Divider />
+            <ThemedText style={styles.sectionTitle}>Attendees</ThemedText>
+            <View
+              style={{
+                flexDirection: 'row',
+                gap: 10,
+                flexWrap: 'wrap',
+                marginBottom: 8,
+              }}
+            >
+              {Object.entries(grouped).map(([status, count]) => (
+                <View
+                  key={status}
+                  style={[
+                    styles.statusPill,
+                    { borderColor: STATUS_COLOR[status] ?? '#888' },
+                  ]}
+                >
+                  <Text
+                    style={{
+                      color: STATUS_COLOR[status] ?? '#888',
+                      fontWeight: '700',
+                    }}
+                  >
+                    {status}: {count}
+                  </Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+              {allAttendees.map((a) => (
+                <View key={a.user.id} style={styles.attendee}>
+                  <InitialsAvatar
+                    fname={a.user.fname}
+                    lname={a.user.lname}
+                    uri={a.user.avatarUrl || undefined}
+                  />
+                  <ThemedText style={styles.attendeeName}>
+                    {(a.user.fname ?? '').trim()} {(a.user.lname ?? '').trim()}
+                  </ThemedText>
+                  <ThemedText
+                    style={[
+                      styles.attendeeStatus,
+                      { color: STATUS_COLOR[a.status] ?? '#aaa' },
+                    ]}
+                  >
+                    {a.status}
+                  </ThemedText>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
       </ScrollView>
 
       {/* Update modal */}
