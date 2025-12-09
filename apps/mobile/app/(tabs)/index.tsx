@@ -47,12 +47,24 @@ import Reanimated, {
 } from 'react-native-reanimated';
 import { useAllArticles } from '@/hooks/media/useArticle';
 import BecomeBomberModal from '../component/bomberModal';
+import EmailVerificationModal from '@/components/ui/organisms/EmailVerificationModal';
 
 export default function HomeScreen() {
   const { user } = useUserContext();
   const router = useRouter();
   const styles = createHomeStyles();
   const [leadOpen, setLeadOpen] = useState(false);
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const dismissedRef = useRef(false); // Track if dismissed this session
+
+  // Check if email verification is needed (only on initial load or after user data refresh)
+  useEffect(() => {
+    if (user && !user.emailVerification && !dismissedRef.current) {
+      setShowEmailVerification(true);
+    } else {
+      setShowEmailVerification(false);
+    }
+  }, [user]);
 
   const scrollY = useRef(new RNAnimated.Value(0)).current;
   const headerHeight = scrollY.interpolate({
@@ -503,6 +515,17 @@ export default function HomeScreen() {
           )}
         </RNAnimated.ScrollView>
 
+        <EmailVerificationModal
+          visible={showEmailVerification}
+          userEmail={user?.email || ''}
+          onVerified={() => {
+            setShowEmailVerification(false);
+          }}
+          onDismiss={() => {
+            dismissedRef.current = true; // Mark as dismissed for this session
+            setShowEmailVerification(false);
+          }}
+        />
         <BecomeBomberModal
           visible={leadOpen}
           onClose={() => setLeadOpen(false)}

@@ -101,3 +101,46 @@ export async function sendPasswordResetEmail(opts: {
     text,
   });
 }
+
+export async function sendEmailVerificationEmail(opts: {
+  to: string;
+  email: string;
+  token: string;
+}) {
+  const deepLink = `bomber://verify-email?token=${encodeURIComponent(opts.token)}&email=${encodeURIComponent(opts.email)}`;
+
+  console.log('[email] verification link', {
+    email: opts.email,
+    tokenPreview: opts.token.slice(0, 10) + '...',
+  });
+
+  const html = `
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#0a0f1c;padding:24px">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" role="presentation" style="background:#111a2e;border-radius:16px;padding:24px;color:#fff;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial">
+        <tr><td align="center" style="font-size:20px;font-weight:700;padding-bottom:8px">Verify your Bomber email</td></tr>
+        <tr><td align="center" style="font-size:14px;color:#bcd;line-height:1.5;padding-bottom:20px">
+          Tap the button below to verify your email address and enjoy all the features the Bomber App has to offer.
+        </td></tr>
+        <tr><td align="center" style="padding-bottom:24px">
+          <a href="${deepLink}" style="display:inline-block;background:#6366f1;color:#fff;text-decoration:none;padding:12px 18px;border-radius:12px;font-weight:600">
+            Verify Email
+          </a>
+        </td></tr>
+        <tr><td style="font-size:12px;color:#9ab;line-height:1.5">
+          If the button doesn't work, copy and paste this link into your browser:<br/>
+          <span style="word-break:break-all;color:#cde">${deepLink}</span>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>`.trim();
+
+  const text = `Verify your email: ${deepLink}`;
+
+  return sendEmail({
+    to: opts.to,
+    subject: 'Verify your Bomber email',
+    html,
+    text,
+  });
+}

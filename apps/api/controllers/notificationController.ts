@@ -28,11 +28,63 @@ export async function createNotification(
 
 export async function sendNow(req: Request, res: Response) {
   const { id } = req.params;
-  await prisma.notification.update({
+
+  // First, check the current status (idempotence check)
+  const notification = await prisma.notification.findUnique({
     where: { id },
+    select: { id: true, status: true, sentAt: true },
+  });
+
+  if (!notification) {
+    return res.status(404).json({ error: 'Notification not found' });
+  }
+
+  // If already sent, return success (idempotent - same result as if we sent it)
+  if (notification.status === 'sent') {
+    return res.json({
+      ok: true,
+      message: 'Notification already sent',
+      alreadySent: true,
+    });
+  }
+
+  // If already queued, return success (idempotent)
+  if (notification.status === 'queued') {
+    return res.json({
+      ok: true,
+      message: 'Notification already queued',
+      alreadyQueued: true,
+    });
+  }
+
+  // Only proceed if status is 'draft'
+  if (notification.status !== 'draft') {
+    return res.status(400).json({
+      error: `Cannot send notification with status: ${notification.status}`,
+    });
+  }
+
+  // Update status to 'queued' atomically (only if still 'draft')
+  const updated = await prisma.notification.updateMany({
+    where: {
+      id,
+      status: 'draft', // Only update if still draft (prevents race conditions)
+    },
     data: { status: 'queued' },
   });
+
+  // If no rows updated, another request already queued it
+  if (updated.count === 0) {
+    return res.json({
+      ok: true,
+      message: 'Notification already queued by another request',
+      alreadyQueued: true,
+    });
+  }
+
+  // Now send it
   await sendNotificationRecord(id);
+
   res.json({ ok: true });
 }
 

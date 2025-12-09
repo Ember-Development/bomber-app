@@ -70,6 +70,91 @@ function normalize(str: string) {
 /* Component                                                           */
 /* ------------------------------------------------------------------ */
 
+function NotificationPreview({
+  title,
+  body,
+  imageUrl,
+  deepLink,
+}: {
+  title: string;
+  body: string;
+  imageUrl?: string;
+  deepLink?: string;
+}) {
+  if (!title.trim() && !body.trim()) {
+    return (
+      <div className="text-sm text-white/50 italic">
+        Preview will appear here as you type...
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
+      <div className="text-xs font-semibold text-white/60 uppercase tracking-wide">
+        Preview
+      </div>
+      <div className="space-y-2">
+        {title.trim() && (
+          <div className="text-base font-semibold text-white truncate">
+            {title}
+          </div>
+        )}
+        <p className="text-sm text-white/85 whitespace-pre-wrap break-words">
+          {body || <span className="text-white/40 italic">No body text</span>}
+        </p>
+        {imageUrl && (
+          <div className="mt-2 space-y-2">
+            <div className="rounded-lg overflow-hidden border border-white/10">
+              <img
+                src={imageUrl}
+                alt="Preview"
+                className="w-full h-48 object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+                onLoad={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  const width = img.naturalWidth;
+                  const height = img.naturalHeight;
+                  const aspectRatio = (width / height).toFixed(2);
+                  // Store dimensions in data attribute for display
+                  img.setAttribute(
+                    'data-dimensions',
+                    `${width}×${height}px (${aspectRatio}:1)`
+                  );
+                }}
+              />
+            </div>
+            <p className="text-xs text-white/40">
+              Images display at full width with 120px height in feed. 16:9 or
+              square ratios work best.
+            </p>
+          </div>
+        )}
+        {deepLink && (
+          <div className="flex items-center gap-2 text-xs text-white/60">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 7l5 5m0 0l-5 5m5-5H6"
+              />
+            </svg>
+            <span className="truncate">{deepLink}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Notifications() {
   const navigate = useNavigate();
   const { addToast } = useToast();
@@ -125,6 +210,9 @@ export default function Notifications() {
   // --- Edit Mode (reuses main form) ---
   const [editingNotifId, setEditingNotifId] = useState<string | null>(null);
 
+  // Add this state near the top with other state declarations
+  const [sendingIds, setSendingIds] = useState<Set<string>>(new Set());
+
   /* ----------------------------- bootstrap ---------------------------- */
 
   // load banners + feed + drafts
@@ -165,6 +253,8 @@ export default function Notifications() {
   async function loadFeed() {
     try {
       setLoadingFeed(true);
+      // Add a small delay to ensure backend has processed
+      await new Promise((resolve) => setTimeout(resolve, 500));
       const items = await fetchNotificationFeed();
       items.sort(
         (a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
@@ -369,14 +459,84 @@ export default function Notifications() {
   }
 
   async function onSendNow(id: string) {
+    // Prevent multiple clicks
+    if (sendingIds.has(id)) return;
+
+    // Check if notification is already sent/queued (idempotence check)
+    const draft = drafts.find((d) => d.id === id);
+    if (!draft) {
+      addToast('Notification not found', 'error');
+      return;
+    }
+
+    if (draft.status === 'sent' || draft.status === 'queued') {
+      addToast(
+        draft.status === 'sent'
+          ? 'This notification has already been sent'
+          : 'This notification is already queued to send',
+        'info'
+      );
+      return;
+    }
+
+    setSendingIds((prev) => new Set(prev).add(id));
+
     try {
-      await sendNotificationNow(id);
-      addToast('Queued to send', 'success');
+      const success = await sendNotificationNow(id);
+
+      if (!success) {
+        addToast('Failed to send notification', 'error');
+        setSendingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+        return;
+      }
+
+      addToast('Notification queued to send', 'success');
+
+      // Optimistically remove from drafts (it should move to sent/queued status)
       setDrafts((d) => d.filter((x) => x.id !== id));
-      await loadFeed();
+
+      // Refresh both drafts and feed after sending
+      const refreshData = async () => {
+        try {
+          // Wait a bit for backend to process
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
+          // Refresh both in parallel
+          const [updatedDrafts, updatedFeed] = await Promise.all([
+            fetchDrafts(),
+            fetchNotificationFeed(),
+          ]);
+
+          setDrafts(updatedDrafts);
+          updatedFeed.sort(
+            (a, b) =>
+              new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
+          );
+          setFeed(updatedFeed);
+        } catch (e) {
+          console.error('Failed to refresh data', e);
+        } finally {
+          setSendingIds((prev) => {
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+          });
+        }
+      };
+
+      refreshData();
     } catch (e: any) {
       console.error(e);
       addToast('Failed to send notification', 'error');
+      setSendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   }
 
@@ -628,13 +788,38 @@ export default function Notifications() {
                         className="w-full px-4 py-2 bg-white/10 placeholder-white/70 rounded-lg focus:outline-none h-28 resize-vertical"
                       />
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <input
-                          type="url"
-                          placeholder="Image URL (optional)"
-                          value={imageUrl}
-                          onChange={(e) => setImageUrl(e.target.value)}
-                          className="w-full px-4 py-2 bg-white/10 rounded-lg focus:outline-none"
-                        />
+                        <div className="space-y-1">
+                          <input
+                            type="url"
+                            placeholder="Image URL (optional)"
+                            value={imageUrl}
+                            onChange={(e) => setImageUrl(e.target.value)}
+                            className="w-full px-4 py-2 bg-white/10 placeholder-white/70 rounded-lg focus:outline-none"
+                          />
+                          <details className="text-xs text-white/50 cursor-pointer group">
+                            <summary className="select-none hover:text-white/70">
+                              📐 Image recommendations
+                            </summary>
+                            <div className="mt-2 space-y-1 pl-2 border-l-2 border-white/20">
+                              <div>
+                                • <strong>Banner style:</strong> 16:9 ratio
+                                (1200×675px, 1600×900px)
+                              </div>
+                              <div>
+                                • <strong>Square:</strong> 1:1 ratio (512×512px,
+                                1024×1024px)
+                              </div>
+                              <div>
+                                • <strong>File size:</strong> Under 1MB for fast
+                                loading
+                              </div>
+                              <div>
+                                • <strong>Display:</strong> Full width, 120px
+                                height in mobile feed
+                              </div>
+                            </div>
+                          </details>
+                        </div>
                         <input
                           type="text"
                           placeholder="Deep link (bomber:// or https://)"
@@ -682,6 +867,16 @@ export default function Notifications() {
                             Cancel
                           </button>
                         )}
+                      </div>
+
+                      {/* Add Preview Section Here */}
+                      <div className="mt-4">
+                        <NotificationPreview
+                          title={title}
+                          body={body}
+                          imageUrl={imageUrl || undefined}
+                          deepLink={deepLink || undefined}
+                        />
                       </div>
                     </div>
 
@@ -939,10 +1134,29 @@ export default function Notifications() {
                             </button>
                             <button
                               onClick={() => onSendNow(d.id)}
-                              className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/90 hover:bg-emerald-500 rounded-lg text-sm font-semibold"
+                              disabled={
+                                sendingIds.has(d.id) ||
+                                d.status === 'sent' ||
+                                d.status === 'queued'
+                              }
+                              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition
+                                ${
+                                  sendingIds.has(d.id)
+                                    ? 'bg-gray-500/50 cursor-not-allowed opacity-60'
+                                    : d.status === 'sent' ||
+                                        d.status === 'queued'
+                                      ? 'bg-gray-500/50 cursor-not-allowed opacity-60'
+                                      : 'bg-emerald-500/90 hover:bg-emerald-500'
+                                }`}
                             >
                               <PaperAirplaneIcon className="w-4 h-4 rotate-90" />
-                              Send now
+                              {sendingIds.has(d.id)
+                                ? 'Sending...'
+                                : d.status === 'sent'
+                                  ? 'Already sent'
+                                  : d.status === 'queued'
+                                    ? 'Queued'
+                                    : 'Send now'}
                             </button>
                           </div>
                         </div>

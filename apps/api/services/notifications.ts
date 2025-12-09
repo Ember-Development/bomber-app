@@ -28,6 +28,14 @@ export async function sendNotificationRecord(id: string) {
   const n = await prisma.notification.findUnique({ where: { id } });
   if (!n) throw new Error('Notification not found');
 
+  // Check if already sent (idempotence)
+  if (n.status === 'sent' && n.sentAt) {
+    console.log(
+      `[Send Notification] Notification ${id} already sent, skipping`
+    );
+    return;
+  }
+
   const targetUserIds = await resolveAudience(n.audience as any);
 
   console.log(`[Send Notification] Notification ${id}:`, {
@@ -163,11 +171,14 @@ export async function sendNotificationRecord(id: string) {
     }
   }
 
-  // Mark the notification as sent
+  // After all device sends complete (or fail), mark as sent
   await prisma.notification.update({
-    where: { id: n.id },
-    data: { status: 'sent', sentAt: new Date() },
+    where: { id },
+    data: {
+      status: 'sent',
+      sentAt: new Date(),
+    },
   });
 
-  console.log(`[Send Notification] 🎯 Notification ${id} fully processed`);
+  console.log(`[Send Notification] ✅ Marked notification ${id} as sent`);
 }

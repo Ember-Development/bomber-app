@@ -60,11 +60,22 @@ export default function UserAvatar({
         accessibilityRole="button"
         accessibilityLabel={`open menu for ${firstName} ${lastName}`}
         onPress={() => setMenuVisible(true)}
-        style={styles.avatar}
+        style={({ pressed }) => [
+          styles.avatar,
+          pressed && styles.avatarPressed,
+        ]}
+        android_ripple={{
+          color: 'rgba(255,255,255,0.2)',
+          borderless: false,
+        }}
       >
         <Text style={[styles.avatarText, { color: textColor }]}>
           {initials}
         </Text>
+        {/* Small visual indicator dot */}
+        <View style={styles.clickIndicator}>
+          <View style={styles.dot} />
+        </View>
       </Pressable>
 
       <Modal
@@ -418,10 +429,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.3)',
+    position: 'relative',
+    // Add elevation/shadow to make it look more interactive
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  avatarPressed: {
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    transform: [{ scale: 0.95 }],
   },
   avatarText: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  menuIndicator: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    borderRadius: 8,
+    padding: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  clickIndicator: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    borderRadius: 8,
+    padding: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'white',
   },
   modalContainer: {
     flex: 1,

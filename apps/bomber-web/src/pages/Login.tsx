@@ -231,13 +231,35 @@ export default function Login() {
               </form>
 
               {/* Footer */}
-              <div className="mt-6 text-center">
-                <a
-                  href="#"
-                  className="text-sm text-[#57a4ff] hover:text-[#6bb0ff] transition-colors duration-300"
+              <div className="mt-6 space-y-3">
+                <div className="text-center">
+                  <a
+                    href="#"
+                    className="text-sm text-[#57a4ff] hover:text-[#6bb0ff] transition-colors duration-300"
+                  >
+                    Forgot password?
+                  </a>
+                </div>
+
+                {/* Divider */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-white/10"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-gradient-to-br from-neutral-900/50 to-neutral-950/50 px-2 text-neutral-400">
+                      Don't have an account?
+                    </span>
+                  </div>
+                </div>
+
+                {/* Signup Button */}
+                <button
+                  onClick={() => navigate('/signup')}
+                  className="w-full px-8 py-3 bg-transparent border-2 border-[#57a4ff]/50 text-[#57a4ff] font-bold uppercase tracking-widest rounded-lg hover:bg-[#57a4ff]/10 hover:border-[#57a4ff] transition-all duration-300"
                 >
-                  Forgot password?
-                </a>
+                  Sign Up
+                </button>
               </div>
             </div>
           </div>

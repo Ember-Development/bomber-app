@@ -6,6 +6,12 @@ interface User {
   email: string;
   fname: string;
   lname: string;
+  parent?: {
+    id: string;
+    address?: {
+      id: string;
+    };
+  };
 }
 
 interface AuthContextType {

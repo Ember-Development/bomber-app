@@ -28,6 +28,11 @@ export const versionFeatures: Record<string, string[]> = {
     'Fixed Bug that didnt allow notifications to disappear',
     'New Update Prompt',
   ],
+  '1.0.14': [
+    'Fixed Bug that didnt allow notifications to disappear',
+    'UI Improvements for Profile and Teams',
+    'Bug fixes and stability improvements',
+  ],
 };
 
 export const defaultFeatures = [

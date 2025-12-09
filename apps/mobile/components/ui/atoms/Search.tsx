@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { TextInput, View, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeColor } from '@/hooks/useThemeColor';
 
 interface SearchFieldProps {
   placeholder?: string;
@@ -14,17 +13,13 @@ export default function SearchField({
   value,
   onChangeText,
 }: SearchFieldProps) {
-  const textColor = useThemeColor({}, 'text');
-  const iconColor = useThemeColor({}, 'component');
-  const placeholderColor = useThemeColor({}, 'component');
-
   return (
     <View style={styles.container}>
-      <Ionicons name="search" size={20} color={iconColor} style={styles.icon} />
+      <Ionicons name="search" size={20} color="#fff" style={styles.icon} />
       <TextInput
-        style={[styles.input, { color: textColor }]}
+        style={styles.input}
         placeholder={placeholder}
-        placeholderTextColor={placeholderColor}
+        placeholderTextColor="rgba(255,255,255,0.6)"
         value={value}
         onChangeText={onChangeText}
       />
@@ -51,5 +46,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
+    color: '#fff',
   },
 });

@@ -73,6 +73,7 @@ type Player = {
   commitId?: string;
   college?: string;
   isTrusted: boolean;
+  nil: boolean;
   addressID?: string;
   address1?: string;
   address2?: string;
@@ -255,6 +256,7 @@ export default function Players() {
             commitId: p.commitId,
             college: p.college,
             isTrusted: !!p.isTrusted,
+            nil: !!p.nil,
             addressID: p.addressID,
             address1: p.address1,
             address2: p.address2,
@@ -414,6 +416,7 @@ export default function Players() {
     practiceShortSize: p.practiceShortSize as any,
     college: p.college || '',
     isTrusted: !!p.isTrusted,
+    nil: !!p.nil,
     addressID: p.address?.id as any,
     address1: p.address?.address1 || '',
     address2: p.address?.address2 || '',
@@ -478,6 +481,7 @@ export default function Players() {
           (p.practiceShortSize as any).value)
         : (p.practiceShortSize as string),
     Trusted: p.isTrusted ? 'YES' : 'NO',
+    NIL: p.nil ? 'YES' : 'NO',
     Address: [p.address1, p.city, p.state, p.zip].filter(Boolean).join(', '),
   }));
 
@@ -513,6 +517,7 @@ export default function Players() {
           : (p.practiceShortSize as string),
     },
     { header: 'Trusted', accessor: (p) => (p.isTrusted ? 'YES' : 'NO') },
+    { header: 'NIL', accessor: (p) => (p.nil ? 'YES' : 'NO') },
     {
       header: 'Address',
       accessor: (p) =>
@@ -578,6 +583,25 @@ export default function Players() {
       addToast('Parent removed', 'success');
     } catch (e: any) {
       addToast(e?.message || 'Failed to remove parent', 'error');
+    }
+  };
+
+  const [togglingNilFor, setTogglingNilFor] = useState<string | null>(null);
+
+  const onToggleNil = async (playerId: string, currentNil: boolean) => {
+    try {
+      setTogglingNilFor(playerId);
+      const updated = await updatePlayer(playerId, { nil: !currentNil });
+      if (updated) {
+        setPlayers((ps) =>
+          ps.map((p) => (p.id === playerId ? { ...p, nil: !currentNil } : p))
+        );
+        addToast(`NIL ${!currentNil ? 'enabled' : 'disabled'}`, 'success');
+      }
+    } catch (e: any) {
+      addToast(e?.message || 'Failed to update NIL status', 'error');
+    } finally {
+      setTogglingNilFor(null);
     }
   };
 
@@ -907,38 +931,58 @@ export default function Players() {
                           <td className="px-4 py-3">{p.gradYear}</td>
                           <td className="px-4 py-3">{p.state}</td>
                           <td className="px-4 py-3">{p.jerseyNum}</td>
-                          <td className="px-4 py-3 text-right space-x-2">
-                            <button
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                await openEdit(p);
-                              }}
-                              className="p-2 bg-white/10 rounded-lg hover:bg-[#5AA5FF]"
-                            >
-                              <PencilSquareIcon className="w-5 h-5 text-white" />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openDelete(p);
-                              }}
-                              className="p-2 bg-white/10 rounded-lg hover:bg-red-600"
-                            >
-                              <TrashIcon className="w-5 h-5 text-white" />
-                            </button>
-                            <button
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                await toggleExpand(p.id);
-                              }}
-                              className={`p-2 rounded-lg transition ${
-                                expanded === p.id
-                                  ? 'bg-[#5AA5FF] text-white'
-                                  : 'bg-white/10 hover:bg-[#5AA5FF]/70 text-white'
-                              }`}
-                            >
-                              <EyeIcon className="w-5 h-5" />
-                            </button>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  await openEdit(p);
+                                }}
+                                className="p-2 bg-white/10 rounded-lg hover:bg-[#5AA5FF]"
+                              >
+                                <PencilSquareIcon className="w-5 h-5 text-white" />
+                              </button>
+
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openDelete(p);
+                                }}
+                                className="p-2 bg-white/10 rounded-lg hover:bg-red-600"
+                              >
+                                <TrashIcon className="w-5 h-5 text-white" />
+                              </button>
+
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  await toggleExpand(p.id);
+                                }}
+                                className={`p-2 rounded-lg transition ${
+                                  expanded === p.id
+                                    ? 'bg-[#5AA5FF] text-white'
+                                    : 'bg-white/10 hover:bg-[#5AA5FF]/70 text-white'
+                                }`}
+                              >
+                                <EyeIcon className="w-5 h-5" />
+                              </button>
+
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  await onToggleNil(p.id, p.nil);
+                                }}
+                                disabled={togglingNilFor === p.id}
+                                className={`p-2 rounded-lg transition text-xs font-medium flex items-center justify-center ${
+                                  p.nil
+                                    ? 'bg-[#5AA5FF] hover:bg-[#5AA5FF]/70 text-white'
+                                    : 'bg-white/10 hover:bg-white/20 text-white/70'
+                                } disabled:opacity-50`}
+                                title={p.nil ? 'NIL: Enabled' : 'NIL: Disabled'}
+                              >
+                                {togglingNilFor === p.id ? '...' : 'NIL'}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                         {expanded === p.id && (
@@ -1016,6 +1060,27 @@ export default function Players() {
                                     >
                                       {p.isTrusted ? 'YES' : 'NO'}
                                     </span>
+                                  </div>
+                                  <div className="mt-2">
+                                    <span className="font-semibold">NIL:</span>
+                                    <button
+                                      onClick={async (e) => {
+                                        e.stopPropagation();
+                                        await onToggleNil(p.id, p.nil);
+                                      }}
+                                      disabled={togglingNilFor === p.id}
+                                      className={`ml-2 inline-flex items-center justify-center px-2 py-0.5 h-8 rounded-full text-xs font-medium transition ${
+                                        p.nil
+                                          ? 'bg-green-200 text-green-700 hover:bg-green-300'
+                                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                      } disabled:opacity-50`}
+                                    >
+                                      {togglingNilFor === p.id
+                                        ? '...'
+                                        : p.nil
+                                          ? 'YES'
+                                          : 'NO'}
+                                    </button>
                                   </div>
                                   {p.email && (
                                     <div className="mt-2">
@@ -1229,6 +1294,21 @@ export default function Players() {
                       >
                         <EyeIcon className="w-5 h-5" />
                       </button>
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          await onToggleNil(p.id, p.nil);
+                        }}
+                        disabled={togglingNilFor === p.id}
+                        className={`px-2.5 py-2 h-8 rounded-lg transition text-xs font-medium flex items-center justify-center ${
+                          p.nil
+                            ? 'bg-green-600 hover:bg-green-700 text-white'
+                            : 'bg-white/10 hover:bg-white/20 text-white/70'
+                        } disabled:opacity-50`}
+                        title={p.nil ? 'NIL: Enabled' : 'NIL: Disabled'}
+                      >
+                        {togglingNilFor === p.id ? '...' : 'NIL'}
+                      </button>
                     </div>
                   </div>
                   {expanded === p.id && (
@@ -1283,6 +1363,27 @@ export default function Players() {
                         >
                           {p.isTrusted ? 'YES' : 'NO'}
                         </span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="font-semibold">NIL:</span>
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            await onToggleNil(p.id, p.nil);
+                          }}
+                          disabled={togglingNilFor === p.id}
+                          className={`ml-2 inline-flex items-center justify-center px-2 py-0.5 h-8 rounded-full text-xs font-medium transition ${
+                            p.nil
+                              ? 'bg-green-200 text-green-700 hover:bg-green-300'
+                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          } disabled:opacity-50`}
+                        >
+                          {togglingNilFor === p.id
+                            ? '...'
+                            : p.nil
+                              ? 'YES'
+                              : 'NO'}
+                        </button>
                       </div>
 
                       {/* Parents panel (MOBILE) */}

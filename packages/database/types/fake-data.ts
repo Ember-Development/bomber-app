@@ -22,6 +22,7 @@ export function fakeUserComplete() {
     pass: faker.lorem.words(5),
     fname: faker.lorem.words(5),
     lname: faker.lorem.words(5),
+    emailVerification: false,
     primaryRole: faker.helpers.arrayElement([UserRole.ADMIN, UserRole.COACH, UserRole.REGIONAL_COACH, UserRole.PLAYER, UserRole.PARENT, UserRole.FAN] as const),
     isDeleted: false,
   };
@@ -60,6 +61,7 @@ export function fakePlayerComplete() {
     isTrusted: undefined,
     addressID: undefined,
     college: undefined,
+    nil: false,
     commitId: undefined,
   };
 }

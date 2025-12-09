@@ -30,6 +30,7 @@ import { useNotificationsFeed } from '@/hooks/notifications/useNotifications';
 import FullScreenModal from '@/components/ui/organisms/FullSheetModal';
 import ViewEvent from '@/app/events/modals/ViewEvent';
 import * as Notifications from 'expo-notifications';
+import { blue } from 'react-native-reanimated/lib/typescript/Colors';
 
 type FeedItem = {
   id: string;
@@ -105,12 +106,13 @@ export default function NotificationCard() {
   const borderColor = useThemeColor({}, 'border');
 
   // Use React Query hook for notifications - only fetch if user is logged in
+  // Fetch ALL notifications (not just unread) so they persist after being read
   const {
     data: notifications = [],
     isLoading,
     error,
     refetch,
-  } = useNotificationsFeed(true, !!user);
+  } = useNotificationsFeed(false, !!user);
 
   // hydrate local dismissal state on mount
   useEffect(() => {
@@ -124,13 +126,20 @@ export default function NotificationCard() {
 
   // Apply dismissals to notifications
   const filteredNotifications = useMemo(() => {
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+
     return notifications.filter((n) => {
       const sentAtMs = new Date(n.sentAt).getTime();
-      if (clearedUntil && sentAtMs <= clearedUntil) return false;
-      if (dismissedIds[n.id]) return false;
+
+      // Only show notifications from the last 30 days
+      if (sentAtMs < thirtyDaysAgo) return false;
+
+      // Don't filter by clearedUntil or dismissedIds anymore
+      // Notifications should stay visible after being read
+
       return true;
     });
-  }, [notifications, clearedUntil, dismissedIds]);
+  }, [notifications]);
 
   // Calculate unread count
   const unreadCount = useMemo(() => {
@@ -182,7 +191,7 @@ export default function NotificationCard() {
     return eventMatch ? eventMatch[1] : null;
   };
 
-  // --- Mark single item as opened (persist locally so it stays hidden)
+  // --- Mark single item as opened (only mark as read, don't dismiss)
   const onTapItem = useCallback(
     async (id: string, deepLink?: string | null) => {
       try {
@@ -206,12 +215,11 @@ export default function NotificationCard() {
         await api
           .post('/api/notifications/receipt/open', { notificationId: id })
           .catch(() => {});
-        // persist dismissal
-        await addDismissedId(id);
-        setDismissedIds((prev) => ({ ...prev, [id]: true }));
-        // Mark as read
+
+        // Only mark as read, don't dismiss
         await addReadId(id);
         setReadIds((prev) => ({ ...prev, [id]: true }));
+
         // Best-effort clear badge if nothing remains unread
         const nextUnread = unreadCount - 1;
         if (nextUnread <= 0) {
@@ -224,26 +232,33 @@ export default function NotificationCard() {
     [unreadCount]
   );
 
-  // --- Mark all as read (persist cutoff so older items never show again)
+  // --- Mark all as read (only mark as read, don't dismiss or hide)
   const clearAll = useCallback(async () => {
     try {
       // best-effort server call (ok if it's a no-op)
       await api.post('/api/notifications/readAll', {}).catch(() => {});
-      const now = Date.now();
-      await setClearedUntil(now);
-      await clearDismissedIds();
-      await clearReadIds();
-      setClearedUntilState(now);
-      setDismissedIds({});
-      setReadIds({});
+
+      // Mark all current notifications as read
+      const allReadIds: Record<string, true> = {};
+      filteredNotifications.forEach((n) => {
+        allReadIds[n.id] = true;
+      });
+
+      // Save all read IDs to AsyncStorage
+      await AsyncStorage.setItem(KEY_READ_IDS, JSON.stringify(allReadIds));
+
+      // Update state
+      setReadIds(allReadIds);
+
       // Clear app icon badge
       Notifications.setBadgeCountAsync(0).catch(() => {});
+
       // Refetch to get updated data
       refetch();
     } catch (e) {
-      console.error('Failed to clear all notifications', e);
+      console.error('Failed to mark all as read', e);
     }
-  }, [refetch]);
+  }, [refetch, filteredNotifications]);
 
   return (
     <View>
@@ -297,7 +312,7 @@ export default function NotificationCard() {
                 accessibilityRole="button"
                 accessibilityLabel="Expand notifications"
               >
-                <Ionicons name="expand-outline" size={20} color={iconColor} />
+                <Ionicons name="expand-outline" size={20} color="#57a4ff" />
               </Pressable>
             </View>
 
@@ -380,66 +395,79 @@ export default function NotificationCard() {
               <FlatList
                 data={filteredNotifications}
                 keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                  <Pressable onPress={() => onTapItem(item.id, item.deepLink)}>
-                    <View
-                      style={[
-                        styles.notificationItem,
-                        { borderBottomColor: borderColor },
-                      ]}
+                renderItem={({ item }) => {
+                  const isUnread = !readIds[item.id];
+                  return (
+                    <Pressable
+                      onPress={() => onTapItem(item.id, item.deepLink)}
                     >
-                      <View style={styles.notificationRow}>
-                        <View style={{ flex: 1, gap: 6 }}>
-                          <View
-                            style={{
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              gap: 6,
-                            }}
-                          >
-                            <ThemedText
+                      <View
+                        style={[
+                          styles.notificationItem,
+                          { borderBottomColor: borderColor },
+                          isUnread && styles.unreadNotificationItem,
+                        ]}
+                      >
+                        <View style={styles.notificationRow}>
+                          <View style={{ flex: 1, gap: 6 }}>
+                            <View
                               style={{
-                                color: textColor,
-                                fontWeight: '600',
-                                flex: 1,
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                gap: 6,
                               }}
                             >
-                              {item.title}
+                              {isUnread && <View style={styles.newDot} />}
+                              <ThemedText
+                                style={[
+                                  {
+                                    color: textColor,
+                                    fontWeight: '600',
+                                    flex: 1,
+                                  },
+                                  isUnread && { fontWeight: '700' },
+                                ]}
+                              >
+                                {item.title}
+                              </ThemedText>
+                              {!!item.deepLink && (
+                                <Ionicons
+                                  name="arrow-forward-circle"
+                                  size={20}
+                                  color={iconColor}
+                                  opacity={0.7}
+                                />
+                              )}
+                            </View>
+                            <ThemedText
+                              style={[
+                                { color: textColor, opacity: 0.9 },
+                                !isUnread && { opacity: 0.6 },
+                              ]}
+                            >
+                              {item.body}
                             </ThemedText>
-                            {!!item.deepLink && (
-                              <Ionicons
-                                name="arrow-forward-circle"
-                                size={20}
-                                color={iconColor}
-                                opacity={0.7}
+                            {!!item.imageUrl && (
+                              <Image
+                                source={{ uri: item.imageUrl }}
+                                style={{
+                                  width: '100%',
+                                  height: 120,
+                                  borderRadius: 10,
+                                  marginTop: 6,
+                                }}
+                                resizeMode="cover"
                               />
                             )}
                           </View>
-                          <ThemedText
-                            style={{ color: textColor, opacity: 0.9 }}
-                          >
-                            {item.body}
-                          </ThemedText>
-                          {!!item.imageUrl && (
-                            <Image
-                              source={{ uri: item.imageUrl }}
-                              style={{
-                                width: '100%',
-                                height: 120,
-                                borderRadius: 10,
-                                marginTop: 6,
-                              }}
-                              resizeMode="cover"
-                            />
-                          )}
                         </View>
+                        <ThemedText style={styles.timeAgo}>
+                          {timeAgo(item.sentAt)}
+                        </ThemedText>
                       </View>
-                      <ThemedText style={styles.timeAgo}>
-                        {timeAgo(item.sentAt)}
-                      </ThemedText>
-                    </View>
-                  </Pressable>
-                )}
+                    </Pressable>
+                  );
+                }}
               />
             ) : (
               <View style={styles.emptyNotifications}>
@@ -594,6 +622,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingVertical: 14,
     paddingHorizontal: 4,
+  },
+  unreadNotificationItem: {
+    backgroundColor: 'rgba(87, 164, 255, 0.08)', // Light blue tint for unread
   },
   emptyNotifications: {
     flex: 1,

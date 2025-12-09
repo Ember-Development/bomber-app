@@ -27,6 +27,7 @@ import '../features/notifications/foreground';
 import { ensureAndroidChannel } from '../features/notifications/foreground';
 import { usePush } from '../features/notifications/usePush';
 import UpdatePrompt from '@/components/ui/molecules/UpdatePrompt';
+import * as Linking from 'expo-linking';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -70,6 +71,7 @@ function RootNavigator() {
   const { user, isLoading } = useUserContext();
   const router = useRouter();
   const pathname = usePathname();
+  const qc = useQueryClient();
 
   // Register push token + tap listener once the user is signed in
   usePush({ userId: user?.id });
@@ -99,6 +101,42 @@ function RootNavigator() {
     if (inSignup || inOnboarding) return;
     if (atRoot || atAuth) safeReplace('/(tabs)');
   }, [isLoading, user, pathname]);
+
+  // Handle deep links for email verification
+  useEffect(() => {
+    const handleInitialURL = async () => {
+      const initialUrl = await Linking.getInitialURL();
+      if (initialUrl) {
+        handleDeepLink(initialUrl);
+      }
+    };
+
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      handleDeepLink(url);
+    });
+
+    handleInitialURL();
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  const handleDeepLink = (url: string) => {
+    if (url.includes('verify-email')) {
+      const urlObj = new URL(url);
+      const token = urlObj.searchParams.get('token');
+      const email = urlObj.searchParams.get('email');
+
+      if (token && email) {
+        // Handle email verification
+        router.push({
+          pathname: '/verify-email',
+          params: { token, email },
+        } as any);
+      }
+    }
+  };
 
   if (isLoading) {
     return (

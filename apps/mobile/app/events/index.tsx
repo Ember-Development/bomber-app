@@ -235,6 +235,109 @@ export default function EventsScreen() {
       const minutes = dayjs(event.end).diff(event.start, 'minute');
       const compact = minutes < MAX_READABLE_EVENT_MINUTES;
 
+      // Detect if event spans multiple days
+      const daysDiff = dayjs(event.end).diff(dayjs(event.start), 'day');
+      const isMultiDay = daysDiff >= 1;
+
+      // For multi-day events, render as a compact top bar on ALL days
+      if (isMultiDay) {
+        // Extract the library's style array
+        const libraryStyles = Array.isArray(touchableProps.style)
+          ? touchableProps.style
+          : [touchableProps.style];
+
+        // Aggressively filter out ALL height and positioning properties
+        const filteredStyles = libraryStyles.map((style: any) => {
+          if (style && typeof style === 'object') {
+            // Destructure to remove all height/position related properties
+            const {
+              height,
+              maxHeight,
+              minHeight,
+              top,
+              bottom,
+              marginTop,
+              marginBottom,
+              paddingTop,
+              paddingBottom,
+              flex,
+              flexGrow,
+              flexShrink,
+              ...rest
+            } = style;
+            return rest;
+          }
+          return style;
+        });
+
+        // Extract touchableProps without style to avoid conflicts
+        const { style: _, ...restTouchableProps } = touchableProps;
+
+        return (
+          <TouchableOpacity
+            {...restTouchableProps}
+            activeOpacity={0.9}
+            key={touchableProps.key}
+            onPress={() => setSelected(event)}
+            style={[
+              ...filteredStyles,
+              {
+                // Force absolute positioning at top
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                // Force fixed height - no exceptions
+                height: 28,
+                maxHeight: 28,
+                minHeight: 28,
+                // Override any flex properties
+                flex: 0,
+                flexGrow: 0,
+                flexShrink: 0,
+                // Visual styling
+                borderWidth: 1,
+                borderColor: event.color,
+                backgroundColor: isDark
+                  ? `${event.color}40`
+                  : `${event.color}25`,
+                borderRadius: 6,
+                paddingHorizontal: 6,
+                paddingVertical: 4,
+                justifyContent: 'center',
+                opacity: 0.85,
+                zIndex: 10, // Higher z-index to ensure it's on top
+                overflow: 'hidden', // Prevent content from overflowing
+              },
+            ]}
+          >
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+            >
+              <View
+                style={{
+                  width: 3,
+                  height: 3,
+                  borderRadius: 1.5,
+                  backgroundColor: event.color,
+                }}
+              />
+              <Text
+                style={{
+                  fontSize: 10,
+                  fontWeight: '600',
+                  color: Colors[theme].text,
+                }}
+                numberOfLines={1}
+              >
+                {ICON_FOR_TYPE[event.type]} {event.title}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        );
+      }
+
+      // Regular single-day event rendering (existing code)
       return (
         <TouchableOpacity
           {...touchableProps}
