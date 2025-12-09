@@ -13,8 +13,7 @@ interface TeamData {
 
 export default function PlayerTeamCode() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const role = searchParams.get('role') || 'PLAYER';
+  const [_searchParams] = useSearchParams();
 
   const [teamCode, setTeamCode] = useState('');
   const [teamData, setTeamData] = useState<TeamData | null>(null);

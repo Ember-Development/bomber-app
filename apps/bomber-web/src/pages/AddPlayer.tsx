@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainNav from '@/components/layout/MainNav';
 import SocialSidebar from '@/components/layout/SocialSidebar';
@@ -184,7 +184,7 @@ export default function AddPlayer() {
   const [teamError, setTeamError] = useState('');
 
   // Get parent ID from user context or fetch directly
-  const [parentId, setParentId] = useState<string | undefined>(undefined);
+  const [, setParentId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     // Wait for auth to finish loading before checking parentId

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import MainNav from '@/components/layout/MainNav';
 import SocialSidebar from '@/components/layout/SocialSidebar';
