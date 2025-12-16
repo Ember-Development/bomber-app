@@ -39,7 +39,7 @@ jobs:
         env:
           VITE_API_URL: 'https://api.bomberadmin.net'
 
-      - name: Deploy dist via rsync over SSH
+      - name: Upload dist to staging + sudo sync to web root
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           WEB_HOST: ${{ secrets.WEB_HOST }}
@@ -49,13 +49,22 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ssh_key
           chmod 600 ssh_key
 
+          # Create staging dir (owned by ubuntu)
           ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" \
-            "sudo mkdir -p /var/www/html && sudo chown -R ubuntu:ubuntu /var/www/html"
+            "rm -rf /home/ubuntu/web_dist_tmp && mkdir -p /home/ubuntu/web_dist_tmp"
 
+          # Upload to staging
           rsync -avz --delete --inplace \
             --exclude='.htaccess' \
             -e "ssh -i ssh_key -o StrictHostKeyChecking=no" \
-            apps/web/dist/ ubuntu@"$WEB_HOST":/var/www/html/
+            apps/web/dist/ ubuntu@"$WEB_HOST":/home/ubuntu/web_dist_tmp/
+
+          # Copy into web root using sudo (root writes, avoids ubuntu limits)
+          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" << 'ENDSSH'
+            set -euo pipefail
+            sudo mkdir -p /var/www/html
+            sudo rsync -av --delete --inplace --exclude='.htaccess' /home/ubuntu/web_dist_tmp/ /var/www/html/
+          ENDSSH
 
           rm -f ssh_key
 
