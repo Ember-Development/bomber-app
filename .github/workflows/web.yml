@@ -4,7 +4,6 @@ on:
   push:
     branches: [main, ci-cd-rushed]
     paths:
-      - '*'
       - '.github/workflows/web.yml'
       - 'packages/**'
       - 'apps/web/**'
@@ -17,26 +16,54 @@ jobs:
     environment: prod
 
     steps:
+      # ─────────────────────────────────────────────
+      # Checkout
+      # ─────────────────────────────────────────────
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
+      # ─────────────────────────────────────────────
+      # Node / PNPM
+      # ─────────────────────────────────────────────
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: '20.11'
+          cache: 'pnpm'
 
+      - name: Install PNPM
+        run: npm install -g pnpm
+
+      # ─────────────────────────────────────────────
+      # Disk sanity (runner)
+      # ─────────────────────────────────────────────
+      - name: Disk usage before install
+        run: df -h
+
+      # ─────────────────────────────────────────────
+      # Install deps (monorepo)
+      # ─────────────────────────────────────────────
       - name: Install dependencies
-        run: |
-          npm install -g pnpm
-          pnpm install --no-frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
+      - name: Disk usage after install
+        run: df -h
+
+      # ─────────────────────────────────────────────
+      # Build frontend
+      # ─────────────────────────────────────────────
       - name: Build frontend
         working-directory: apps/web
         run: pnpm run dumb
         env:
           VITE_API_URL: 'https://api.bomberadmin.net'
 
-      # 🚀 Deploy ONLY the built static files
+      - name: Disk usage after build
+        run: df -h
+
+      # ─────────────────────────────────────────────
+      # Deploy (rsync via ssh-deploy)
+      # ─────────────────────────────────────────────
       - name: Deploy dist to web root
         uses: easingthemes/ssh-deploy@main
         with:
@@ -46,9 +73,19 @@ jobs:
           REMOTE_PORT: 22
           SOURCE: 'apps/web/dist/'
           TARGET: '/var/www/html/'
-          ARGS: '-avz --delete --exclude=.htaccess'
+          ARGS: >
+            -avz --delete
+            --exclude=.htaccess
+            --exclude=.git
+            --exclude=node_modules
+            --exclude=.next
+            --exclude=.next/cache
+            --exclude=.npm
+            --exclude=.cache
 
-      # ✅ Optional: sanity check after deploy
+      # ─────────────────────────────────────────────
+      # Verify
+      # ─────────────────────────────────────────────
       - name: Verify site is live
         run: |
           sleep 3
