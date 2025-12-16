@@ -8,14 +8,17 @@ on:
       - '.github/workflows/web.yml'
       - 'packages/**'
       - 'apps/web/**'
+
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: prod
+
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repo
+        uses: actions/checkout@v2
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
@@ -23,42 +26,30 @@ jobs:
           node-version: '20.11'
 
       - name: Install dependencies
-        run: npm install -g pnpm && pnpm install --no-frozen-lockfile
-        working-directory: ./
+        run: |
+          npm install -g pnpm
+          pnpm install --no-frozen-lockfile
 
       - name: Build frontend
-        run: pnpm run dumb
         working-directory: apps/web
+        run: pnpm run dumb
         env:
           VITE_API_URL: 'https://api.bomberadmin.net'
 
-      - name: Deploy to Server
+      # 🚀 Deploy ONLY the built static files
+      - name: Deploy dist to web root
         uses: easingthemes/ssh-deploy@main
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           REMOTE_HOST: ${{ secrets.WEB_HOST }}
           REMOTE_USER: ubuntu
-          SOURCE: './'
-          TARGET: '~/deploy'
-          EXCLUDE: |
-            .git/
-            **/.git/**
-            **/node_modules/**
-            apps/web/node_modules/
-            apps/web/dist/        # optional: you can exclude or include; dist is small so either way is fine
-            **/.next/**
-            **/dist/**
-            **/build/**
-            **/.cache/**
-            **/.turbo/**
-            **/.pnpm-store/**
-            **/.DS_Store
+          REMOTE_PORT: 22
+          SOURCE: 'apps/web/dist/'
+          TARGET: '/var/www/html/'
+          ARGS: '-avz --delete --exclude=.htaccess'
 
-      - name: Move build to /var/www/html
+      # ✅ Optional: sanity check after deploy
+      - name: Verify site is live
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key
-          chmod 600 ssh_key
-          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.WEB_HOST }} << 'ENDSSH'
-            rsync -av --delete --exclude='.htaccess' /home/ubuntu/deploy/apps/web/dist/ /var/www/html/
-          ENDSSH
-          rm -f ssh_key
+          sleep 3
+          curl -f https://bomberadmin.net || exit 1
