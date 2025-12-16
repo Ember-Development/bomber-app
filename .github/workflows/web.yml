@@ -7,6 +7,7 @@ on:
       - '.github/workflows/web.yml'
       - 'packages/**'
       - 'apps/web/**'
+
   workflow_dispatch:
 
 jobs:
@@ -40,7 +41,7 @@ jobs:
           VITE_API_URL: 'https://api.bomberadmin.net'
 
       # ─────────────────────────────────────────────
-      # SSH setup (key + known_hosts)
+      # SSH setup
       # ─────────────────────────────────────────────
       - name: Configure SSH
         run: |
@@ -50,19 +51,33 @@ jobs:
           ssh-keyscan -H "${{ secrets.WEB_HOST }}" >> ~/.ssh/known_hosts
 
       # ─────────────────────────────────────────────
-      # Rsync (manual, reliable)
+      # Debug: prove what host we're actually hitting
       # ─────────────────────────────────────────────
-      - name: Deploy dist to web root (rsync)
+      - name: Identify remote host (debug)
+        run: |
+          ssh "ubuntu@${{ secrets.WEB_HOST }}" \
+            "echo '--- REMOTE HOST DEBUG ---'; \
+             hostname; \
+             curl -s ifconfig.me; echo; \
+             df -h /; \
+             df -h /var/www/html; \
+             sudo du -sh /var/www/html || true; \
+             echo '--------------------------'"
+
+      # ─────────────────────────────────────────────
+      # Deploy: stage then promote (bulletproof)
+      # ─────────────────────────────────────────────
+      - name: Deploy dist to staging (rsync)
         run: |
           rsync -avz --delete \
             --exclude ".htaccess" \
-            --exclude ".git" \
-            --exclude "node_modules" \
-            --exclude ".next" \
-            --exclude ".next/cache" \
-            --exclude ".npm" \
-            --exclude ".cache" \
-            "apps/web/dist/" "ubuntu@${{ secrets.WEB_HOST }}:/var/www/html/"
+            "apps/web/dist/" \
+            "ubuntu@${{ secrets.WEB_HOST }}:/home/ubuntu/web-dist/"
+
+      - name: Promote staging to web root (sudo rsync)
+        run: |
+          ssh "ubuntu@${{ secrets.WEB_HOST }}" \
+            "sudo rsync -av --delete /home/ubuntu/web-dist/ /var/www/html/"
 
       - name: Verify site is live
         run: |
