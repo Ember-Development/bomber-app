@@ -40,9 +40,7 @@ jobs:
         env:
           VITE_API_URL: 'https://api.bomberadmin.net'
 
-      # IMPORTANT: avoids /tmp and /home staging completely.
-      # Creates a root-owned staging dir, then chowns it to ubuntu so rsync can write into it.
-      - name: Deploy dist via /root staging + sudo sync to web root
+      - name: Deploy dist directly to /var/www/html
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           WEB_HOST: ${{ secrets.WEB_HOST }}
@@ -52,25 +50,22 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ssh_key
           chmod 600 ssh_key
 
-          echo "Using root staging dir: /root/web_dist_tmp"
+          # 0) Prove sudo works non-interactively (if this fails, we stop here)
+          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" "sudo -n true"
 
-          # 1) Create root staging dir (root can always mkdir), then allow ubuntu to write for rsync
+          # 1) Make sure /var/www/html exists and ubuntu can write to it for rsync
           ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" \
-            "sudo rm -rf /root/web_dist_tmp && sudo mkdir -p /root/web_dist_tmp && sudo chown ubuntu:ubuntu /root/web_dist_tmp"
+            "sudo mkdir -p /var/www/html && sudo chown -R ubuntu:ubuntu /var/www/html"
 
-          # 2) Upload built dist into /root staging (owned by ubuntu after chown)
+          # 2) Rsync dist directly into web root
           rsync -avz --delete --inplace \
             --exclude='.htaccess' \
             -e "ssh -i ssh_key -o StrictHostKeyChecking=no" \
-            apps/web/dist/ ubuntu@"$WEB_HOST":/root/web_dist_tmp/
+            apps/web/dist/ ubuntu@"$WEB_HOST":/var/www/html/
 
-          # 3) Sync into web root as root
+          # 3) Optional: lock permissions back down
           ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" \
-            "sudo mkdir -p /var/www/html && sudo rsync -av --delete --inplace --exclude='.htaccess' /root/web_dist_tmp/ /var/www/html/"
-
-          # 4) Optional cleanup (keeps root tidy)
-          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" \
-            "sudo rm -rf /root/web_dist_tmp"
+            "sudo chown -R root:root /var/www/html || true"
 
           rm -f ssh_key
 
