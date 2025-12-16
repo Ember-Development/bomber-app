@@ -19,6 +19,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      # Uses the pnpm version declared in package.json "packageManager"
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -39,7 +40,9 @@ jobs:
         env:
           VITE_API_URL: 'https://api.bomberadmin.net'
 
-      - name: Upload dist to /tmp + sudo sync to /var/www/html
+      # IMPORTANT: avoids /tmp and /home staging completely.
+      # Creates a root-owned staging dir, then chowns it to ubuntu so rsync can write into it.
+      - name: Deploy dist via /root staging + sudo sync to web root
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           WEB_HOST: ${{ secrets.WEB_HOST }}
@@ -49,24 +52,25 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ssh_key
           chmod 600 ssh_key
 
-          echo "Using staging dir: /tmp/web_dist_tmp"
+          echo "Using root staging dir: /root/web_dist_tmp"
 
-          # 1) Create staging dir in /tmp (avoids /home space issues)
+          # 1) Create root staging dir (root can always mkdir), then allow ubuntu to write for rsync
           ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" \
-            "rm -rf /tmp/web_dist_tmp && mkdir -p /tmp/web_dist_tmp"
+            "sudo rm -rf /root/web_dist_tmp && sudo mkdir -p /root/web_dist_tmp && sudo chown ubuntu:ubuntu /root/web_dist_tmp"
 
-          # 2) Upload built dist to staging
+          # 2) Upload built dist into /root staging (owned by ubuntu after chown)
           rsync -avz --delete --inplace \
             --exclude='.htaccess' \
             -e "ssh -i ssh_key -o StrictHostKeyChecking=no" \
-            apps/web/dist/ ubuntu@"$WEB_HOST":/tmp/web_dist_tmp/
+            apps/web/dist/ ubuntu@"$WEB_HOST":/root/web_dist_tmp/
 
-          # 3) Copy into web root using sudo (root owns /var/www/html)
-          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" << 'ENDSSH'
-            set -euo pipefail
-            sudo mkdir -p /var/www/html
-            sudo rsync -av --delete --inplace --exclude='.htaccess' /tmp/web_dist_tmp/ /var/www/html/
-          ENDSSH
+          # 3) Sync into web root as root
+          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" \
+            "sudo mkdir -p /var/www/html && sudo rsync -av --delete --inplace --exclude='.htaccess' /root/web_dist_tmp/ /var/www/html/"
+
+          # 4) Optional cleanup (keeps root tidy)
+          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" \
+            "sudo rm -rf /root/web_dist_tmp"
 
           rm -f ssh_key
 
