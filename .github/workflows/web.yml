@@ -19,11 +19,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # Install pnpm first (so it's on PATH)
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          run_install: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -50,11 +49,17 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ssh_key
           chmod 600 ssh_key
 
-          # Ensure destination exists + ubuntu can write there
           ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" \
             "sudo mkdir -p /var/www/html && sudo chown -R ubuntu:ubuntu /var/www/html"
 
           rsync -avz --delete --inplace \
             --exclude='.htaccess' \
             -e "ssh -i ssh_key -o StrictHostKeyChecking=no" \
-            apps/web/dist/ ubuntu@"$WEB
+            apps/web/dist/ ubuntu@"$WEB_HOST":/var/www/html/
+
+          rm -f ssh_key
+
+      - name: Verify site is live
+        run: |
+          sleep 2
+          curl -f https://bomberadmin.net >/dev/null
