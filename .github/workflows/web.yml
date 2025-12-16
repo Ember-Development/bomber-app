@@ -8,7 +8,6 @@ on:
       - '.github/workflows/web.yml'
       - 'packages/**'
       - 'apps/web/**'
-
   workflow_dispatch:
 
 jobs:
@@ -20,14 +19,17 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      # Install pnpm first (so it's on PATH)
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
         with:
-          node-version: '20.11'
-          cache: 'pnpm'
+          version: 9
 
-      - name: Install pnpm
-        run: npm install -g pnpm
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.1'
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
@@ -48,18 +50,11 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ssh_key
           chmod 600 ssh_key
 
-          # Ensure destination exists
-          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" "sudo mkdir -p /var/www/html && sudo chown -R ubuntu:ubuntu /var/www/html"
+          # Ensure destination exists + ubuntu can write there
+          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" \
+            "sudo mkdir -p /var/www/html && sudo chown -R ubuntu:ubuntu /var/www/html"
 
-          # Deploy
           rsync -avz --delete --inplace \
             --exclude='.htaccess' \
             -e "ssh -i ssh_key -o StrictHostKeyChecking=no" \
-            apps/web/dist/ ubuntu@"$WEB_HOST":/var/www/html/
-
-          rm -f ssh_key
-
-      - name: Verify site is live
-        run: |
-          sleep 2
-          curl -f https://bomberadmin.net >/dev/null
+            apps/web/dist/ ubuntu@"$WEB
