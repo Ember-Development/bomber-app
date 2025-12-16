@@ -36,7 +36,6 @@ jobs:
         env:
           VITE_API_URL: 'https://api.bomberadmin.net'
 
-      # 🚀 Deploy ONLY the built static files
       - name: Deploy dist to web root
         uses: easingthemes/ssh-deploy@main
         with:
@@ -46,10 +45,10 @@ jobs:
           REMOTE_PORT: 22
           SOURCE: 'apps/web/dist/'
           TARGET: '/var/www/html/'
-          ARGS: '-avz --delete --exclude=.htaccess'
+          ARGS: '-avz --delete --inplace --exclude=.htaccess'
 
-      # ✅ Optional: sanity check after deploy
+      # Optional: quick health check (change URL to your actual domain)
       - name: Verify site is live
         run: |
-          sleep 3
-          curl -f https://bomberadmin.net || exit 1
+          sleep 2
+          curl -f https://bomberadmin.net >/dev/null
