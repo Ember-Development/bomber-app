@@ -4,11 +4,10 @@ on:
   push:
     branches: [main, ci-cd-rushed]
     paths:
-      - '*' # root files
-      - '.github/workflows/web.yml' # this ci/cd stuff
-      - 'packages/**' # supporting files i.e. db types
-      - 'apps/web/**' # web app specifics
-
+      - '*'
+      - '.github/workflows/web.yml'
+      - 'packages/**'
+      - 'apps/web/**'
   workflow_dispatch:
 
 jobs:
@@ -17,19 +16,22 @@ jobs:
     environment: prod
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '20.11'
+
       - name: Install dependencies
-        # needs the frozen option for some reason... ughh
         run: npm install -g pnpm && pnpm install --no-frozen-lockfile
         working-directory: ./
+
       - name: Build frontend
-        run: pnpm run dumb # dumb version of build that throws away the whole type system for no reason... masterful gambit sir
+        run: pnpm run dumb
         working-directory: apps/web
         env:
           VITE_API_URL: 'https://api.bomberadmin.net'
+
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
         with:
@@ -37,16 +39,26 @@ jobs:
           REMOTE_HOST: ${{ secrets.WEB_HOST }}
           REMOTE_USER: ubuntu
           SOURCE: './'
-          TARGET: ~/deploy
-          EXCLUDE: ./frontend/node_modules/
-          INCLUDE: 'frontend/ backend/'
+          TARGET: '~/deploy'
+          EXCLUDE: |
+            .git/
+            **/.git/**
+            **/node_modules/**
+            apps/web/node_modules/
+            apps/web/dist/        # optional: you can exclude or include; dist is small so either way is fine
+            **/.next/**
+            **/dist/**
+            **/build/**
+            **/.cache/**
+            **/.turbo/**
+            **/.pnpm-store/**
+            **/.DS_Store
 
       - name: Move build to /var/www/html
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key
           chmod 600 ssh_key
           ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.WEB_HOST }} << 'ENDSSH'
-          rsync -av --delete --exclude='.htaccess' /home/ubuntu/deploy/apps/web/dist/ /var/www/html/
-
+            rsync -av --delete --exclude='.htaccess' /home/ubuntu/deploy/apps/web/dist/ /var/www/html/
           ENDSSH
           rm -f ssh_key
