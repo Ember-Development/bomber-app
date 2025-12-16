@@ -20,6 +20,7 @@ import Coaches from './pages/Coaches';
 import Portal from './pages/Portal';
 import ResetPassword from './components/forgot/reset-password';
 import ResetSuccess from './components/forgot/reset-success';
+import VerifyEmail from './components/verify-email/verify-email';
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/reset-success" element={<ResetSuccess />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route element={<RequireAdmin />}>
               <Route path="/" element={<Layout />}>
                 <Route index element={<Dashboard />} />

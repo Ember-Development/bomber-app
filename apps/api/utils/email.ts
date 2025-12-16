@@ -107,11 +107,13 @@ export async function sendEmailVerificationEmail(opts: {
   email: string;
   token: string;
 }) {
-  const deepLink = `bomber://verify-email?token=${encodeURIComponent(opts.token)}&email=${encodeURIComponent(opts.email)}`;
+  // Use web URL that works in all browsers, then redirects to app
+  const webLink = `${process.env.EMAIL_VERIFY_LINK_BASE_WEB}?token=${encodeURIComponent(opts.token)}&email=${encodeURIComponent(opts.email)}`;
 
   console.log('[email] verification link', {
     email: opts.email,
     tokenPreview: opts.token.slice(0, 10) + '...',
+    urlPreview: `${process.env.EMAIL_VERIFY_LINK_BASE_WEB}?token=[token]&email=${opts.email}`,
   });
 
   const html = `
@@ -123,19 +125,19 @@ export async function sendEmailVerificationEmail(opts: {
           Tap the button below to verify your email address and enjoy all the features the Bomber App has to offer.
         </td></tr>
         <tr><td align="center" style="padding-bottom:24px">
-          <a href="${deepLink}" style="display:inline-block;background:#6366f1;color:#fff;text-decoration:none;padding:12px 18px;border-radius:12px;font-weight:600">
+          <a href="${webLink}" style="display:inline-block;background:#6366f1;color:#fff;text-decoration:none;padding:12px 18px;border-radius:12px;font-weight:600">
             Verify Email
           </a>
         </td></tr>
         <tr><td style="font-size:12px;color:#9ab;line-height:1.5">
           If the button doesn't work, copy and paste this link into your browser:<br/>
-          <span style="word-break:break-all;color:#cde">${deepLink}</span>
+          <span style="word-break:break-all;color:#cde">${webLink}</span>
         </td></tr>
       </table>
     </td></tr>
   </table>`.trim();
 
-  const text = `Verify your email: ${deepLink}`;
+  const text = `Verify your email: ${webLink}`;
 
   return sendEmail({
     to: opts.to,
