@@ -4,10 +4,10 @@ on:
   push:
     branches: [main, ci-cd-rushed]
     paths:
-      - '*' # root files
-      - '.github/workflows/web.yml' # this ci/cd stuff
-      - 'packages/**' # supporting files i.e. db types
-      - 'apps/web/**' # web app specifics
+      - '*'
+      - '.github/workflows/web.yml'
+      - 'packages/**'
+      - 'apps/web/**'
 
   workflow_dispatch:
 
@@ -15,8 +15,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: prod
+
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repo
+        uses: actions/checkout@v2
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
@@ -24,30 +26,30 @@ jobs:
           node-version: '20.11'
 
       - name: Install dependencies
-        run: npm install -g pnpm && pnpm install --no-frozen-lockfile
-        working-directory: ./
+        run: |
+          npm install -g pnpm
+          pnpm install --no-frozen-lockfile
 
       - name: Build frontend
-        run: pnpm run dumb
         working-directory: apps/web
+        run: pnpm run dumb
         env:
           VITE_API_URL: 'https://api.bomberadmin.net'
 
-      - name: Deploy to Server
+      # 🚀 Deploy ONLY the built static files
+      - name: Deploy dist to web root
         uses: easingthemes/ssh-deploy@main
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           REMOTE_HOST: ${{ secrets.WEB_HOST }}
           REMOTE_USER: ubuntu
+          REMOTE_PORT: 22
           SOURCE: 'apps/web/dist/'
-          TARGET: ~/web-dist
-          EXCLUDE: ''
+          TARGET: '/var/www/html/'
+          ARGS: '-avz --delete --exclude=.htaccess'
 
-      - name: Move build to /var/www/html
+      # ✅ Optional: sanity check after deploy
+      - name: Verify site is live
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key
-          chmod 600 ssh_key
-          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.WEB_HOST }} << 'ENDSSH'
-          rsync -av --delete --exclude='.htaccess' /home/ubuntu/web-dist/ /var/www/html/
-          ENDSSH
-          rm -f ssh_key
+          sleep 3
+          curl -f https://bomberadmin.net || exit 1
