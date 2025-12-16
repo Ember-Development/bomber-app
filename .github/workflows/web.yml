@@ -16,10 +16,15 @@ jobs:
     environment: prod
 
     steps:
+      # ─────────────────────────────────────────────
+      # Checkout
+      # ─────────────────────────────────────────────
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # Uses the pnpm version from package.json "packageManager"
+      # ─────────────────────────────────────────────
+      # PNPM (uses version from package.json packageManager)
+      # ─────────────────────────────────────────────
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
@@ -29,15 +34,24 @@ jobs:
           node-version: '20.11'
           cache: 'pnpm'
 
+      # ─────────────────────────────────────────────
+      # Disk sanity (runner)
+      # ─────────────────────────────────────────────
       - name: Disk usage before install
         run: df -h
 
+      # ─────────────────────────────────────────────
+      # Install deps
+      # ─────────────────────────────────────────────
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
       - name: Disk usage after install
         run: df -h
 
+      # ─────────────────────────────────────────────
+      # Build frontend
+      # ─────────────────────────────────────────────
       - name: Build frontend
         working-directory: apps/web
         run: pnpm run dumb
@@ -47,6 +61,9 @@ jobs:
       - name: Disk usage after build
         run: df -h
 
+      # ─────────────────────────────────────────────
+      # Deploy (rsync via ssh-deploy)
+      # ─────────────────────────────────────────────
       - name: Deploy dist to web root
         uses: easingthemes/ssh-deploy@main
         with:
@@ -56,16 +73,11 @@ jobs:
           REMOTE_PORT: 22
           SOURCE: 'apps/web/dist/'
           TARGET: '/var/www/html/'
-          ARGS: >
-            -avz --delete
-            --exclude=.htaccess
-            --exclude=.git
-            --exclude=node_modules
-            --exclude=.next
-            --exclude=.next/cache
-            --exclude=.npm
-            --exclude=.cache
+          ARGS: '-avz --delete --exclude=.htaccess --exclude=.git --exclude=node_modules --exclude=.next --exclude=.next/cache --exclude=.npm --exclude=.cache'
 
+      # ─────────────────────────────────────────────
+      # Verify
+      # ─────────────────────────────────────────────
       - name: Verify site is live
         run: |
           sleep 3
