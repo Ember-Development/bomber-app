@@ -24,7 +24,7 @@ export default function VerifyEmail() {
 
   async function verifyEmail() {
     try {
-      const response = await api.get('/api/email-verification/verify', {
+      const response = await api.get('/email-verification/verify', {
         params: { token, email },
       });
 
