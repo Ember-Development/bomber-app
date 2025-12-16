@@ -18,17 +18,19 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: '20.11'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
 
       - name: Install dependencies
-        run: |
-          npm install -g pnpm
-          pnpm install --no-frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build frontend
         working-directory: apps/web
@@ -36,18 +38,27 @@ jobs:
         env:
           VITE_API_URL: 'https://api.bomberadmin.net'
 
-      - name: Deploy dist to web root
-        uses: easingthemes/ssh-deploy@main
-        with:
+      - name: Deploy dist via rsync over SSH
+        env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.WEB_HOST }}
-          REMOTE_USER: ubuntu
-          REMOTE_PORT: 22
-          SOURCE: 'apps/web/dist/'
-          TARGET: '/var/www/html/'
-          ARGS: '-avz --delete --inplace --exclude=.htaccess'
+          WEB_HOST: ${{ secrets.WEB_HOST }}
+        run: |
+          set -euo pipefail
 
-      # Optional: quick health check (change URL to your actual domain)
+          echo "$SSH_PRIVATE_KEY" > ssh_key
+          chmod 600 ssh_key
+
+          # Ensure destination exists
+          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" "sudo mkdir -p /var/www/html && sudo chown -R ubuntu:ubuntu /var/www/html"
+
+          # Deploy
+          rsync -avz --delete --inplace \
+            --exclude='.htaccess' \
+            -e "ssh -i ssh_key -o StrictHostKeyChecking=no" \
+            apps/web/dist/ ubuntu@"$WEB_HOST":/var/www/html/
+
+          rm -f ssh_key
+
       - name: Verify site is live
         run: |
           sleep 2
