@@ -4,72 +4,49 @@ on:
   push:
     branches: [main, ci-cd-rushed]
     paths:
-      - '*'
-      - '.github/workflows/web.yml'
-      - 'packages/**'
-      - 'apps/web/**'
+      - '*' # root files
+      - '.github/workflows/web.yml' # this ci/cd stuff
+      - 'packages/**' # supporting files i.e. db types
+      - 'apps/web/**' # web app specifics
+
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: prod
-
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      # Uses the pnpm version declared in package.json "packageManager"
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
+      - uses: actions/checkout@v2
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v2
         with:
-          node-version: '20.11.1'
-          cache: 'pnpm'
-
+          node-version: '20.11'
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
+        # needs the frozen option for some reason... ughh
+        run: npm install -g pnpm && pnpm install --no-frozen-lockfile
+        working-directory: ./
       - name: Build frontend
+        run: pnpm run dumb # dumb version of build that throws away the whole type system for no reason... masterful gambit sir
         working-directory: apps/web
-        run: pnpm run dumb
         env:
           VITE_API_URL: 'https://api.bomberadmin.net'
-
-      - name: Deploy dist directly to /var/www/html
-        env:
+      - name: Deploy to Server
+        uses: easingthemes/ssh-deploy@main
+        with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          WEB_HOST: ${{ secrets.WEB_HOST }}
-        run: |
-          set -euo pipefail
+          REMOTE_HOST: ${{ secrets.WEB_HOST }}
+          REMOTE_USER: ubuntu
+          SOURCE: './'
+          TARGET: ~/deploy
+          EXCLUDE: ./frontend/node_modules/
+          INCLUDE: 'frontend/ backend/'
 
-          echo "$SSH_PRIVATE_KEY" > ssh_key
+      - name: Move build to /var/www/html
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key
           chmod 600 ssh_key
+          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.WEB_HOST }} << 'ENDSSH'
+          rsync -av --delete --exclude='.htaccess' /home/ubuntu/deploy/apps/web/dist/ /var/www/html/
 
-          # 0) Prove sudo works non-interactively (if this fails, we stop here)
-          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" "sudo -n true"
-
-          # 1) Make sure /var/www/html exists and ubuntu can write to it for rsync
-          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" \
-            "sudo mkdir -p /var/www/html && sudo chown -R ubuntu:ubuntu /var/www/html"
-
-          # 2) Rsync dist directly into web root
-          rsync -avz --delete --inplace \
-            --exclude='.htaccess' \
-            -e "ssh -i ssh_key -o StrictHostKeyChecking=no" \
-            apps/web/dist/ ubuntu@"$WEB_HOST":/var/www/html/
-
-          # 3) Optional: lock permissions back down
-          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" \
-            "sudo chown -R root:root /var/www/html || true"
-
+          ENDSSH
           rm -f ssh_key
-
-      - name: Verify site is live
-        run: |
-          sleep 2
-          curl -f https://bomberadmin.net >/dev/null
