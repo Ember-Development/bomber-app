@@ -7,7 +7,6 @@ on:
       - '.github/workflows/web.yml'
       - 'packages/**'
       - 'apps/web/**'
-
   workflow_dispatch:
 
 jobs:
@@ -16,15 +15,9 @@ jobs:
     environment: prod
 
     steps:
-      # ─────────────────────────────────────────────
-      # Checkout
-      # ─────────────────────────────────────────────
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # ─────────────────────────────────────────────
-      # PNPM (uses version from package.json packageManager)
-      # ─────────────────────────────────────────────
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
@@ -34,50 +27,43 @@ jobs:
           node-version: '20.11'
           cache: 'pnpm'
 
-      # ─────────────────────────────────────────────
-      # Disk sanity (runner)
-      # ─────────────────────────────────────────────
       - name: Disk usage before install
         run: df -h
 
-      # ─────────────────────────────────────────────
-      # Install deps
-      # ─────────────────────────────────────────────
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Disk usage after install
-        run: df -h
-
-      # ─────────────────────────────────────────────
-      # Build frontend
-      # ─────────────────────────────────────────────
       - name: Build frontend
         working-directory: apps/web
         run: pnpm run dumb
         env:
           VITE_API_URL: 'https://api.bomberadmin.net'
 
-      - name: Disk usage after build
-        run: df -h
+      # ─────────────────────────────────────────────
+      # SSH setup (key + known_hosts)
+      # ─────────────────────────────────────────────
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.WEB_HOST }}" >> ~/.ssh/known_hosts
 
       # ─────────────────────────────────────────────
-      # Deploy (rsync via ssh-deploy)
+      # Rsync (manual, reliable)
       # ─────────────────────────────────────────────
-      - name: Deploy dist to web root
-        uses: easingthemes/ssh-deploy@main
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.WEB_HOST }}
-          REMOTE_USER: ubuntu
-          REMOTE_PORT: 22
-          SOURCE: 'apps/web/dist/'
-          TARGET: '/var/www/html/'
-          ARGS: '-avz --delete --exclude=.htaccess --exclude=.git --exclude=node_modules --exclude=.next --exclude=.next/cache --exclude=.npm --exclude=.cache'
+      - name: Deploy dist to web root (rsync)
+        run: |
+          rsync -avz --delete \
+            --exclude ".htaccess" \
+            --exclude ".git" \
+            --exclude "node_modules" \
+            --exclude ".next" \
+            --exclude ".next/cache" \
+            --exclude ".npm" \
+            --exclude ".cache" \
+            "apps/web/dist/" "ubuntu@${{ secrets.WEB_HOST }}:/var/www/html/"
 
-      # ─────────────────────────────────────────────
-      # Verify
-      # ─────────────────────────────────────────────
       - name: Verify site is live
         run: |
           sleep 3
