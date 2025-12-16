@@ -19,11 +19,9 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # Install pnpm first (so setup-node caching doesn't explode)
+      # Uses the pnpm version from package.json "packageManager"
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
