@@ -39,7 +39,7 @@ jobs:
         env:
           VITE_API_URL: 'https://api.bomberadmin.net'
 
-      - name: Upload dist to staging + sudo sync to web root
+      - name: Upload dist to /tmp + sudo sync to /var/www/html
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           WEB_HOST: ${{ secrets.WEB_HOST }}
@@ -49,21 +49,23 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ssh_key
           chmod 600 ssh_key
 
-          # Create staging dir (owned by ubuntu)
-          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" \
-            "rm -rf /home/ubuntu/web_dist_tmp && mkdir -p /home/ubuntu/web_dist_tmp"
+          echo "Using staging dir: /tmp/web_dist_tmp"
 
-          # Upload to staging
+          # 1) Create staging dir in /tmp (avoids /home space issues)
+          ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" \
+            "rm -rf /tmp/web_dist_tmp && mkdir -p /tmp/web_dist_tmp"
+
+          # 2) Upload built dist to staging
           rsync -avz --delete --inplace \
             --exclude='.htaccess' \
             -e "ssh -i ssh_key -o StrictHostKeyChecking=no" \
-            apps/web/dist/ ubuntu@"$WEB_HOST":/home/ubuntu/web_dist_tmp/
+            apps/web/dist/ ubuntu@"$WEB_HOST":/tmp/web_dist_tmp/
 
-          # Copy into web root using sudo (root writes, avoids ubuntu limits)
+          # 3) Copy into web root using sudo (root owns /var/www/html)
           ssh -i ssh_key -o StrictHostKeyChecking=no ubuntu@"$WEB_HOST" << 'ENDSSH'
             set -euo pipefail
             sudo mkdir -p /var/www/html
-            sudo rsync -av --delete --inplace --exclude='.htaccess' /home/ubuntu/web_dist_tmp/ /var/www/html/
+            sudo rsync -av --delete --inplace --exclude='.htaccess' /tmp/web_dist_tmp/ /var/www/html/
           ENDSSH
 
           rm -f ssh_key

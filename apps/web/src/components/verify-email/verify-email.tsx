@@ -1,28 +1,25 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '@/api/api';
 
 export default function VerifyEmail() {
-  const [sp] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
-  const token = useMemo(() => sp.get('token') ?? '', [sp]);
-  const email = useMemo(() => sp.get('email') ?? '', [sp]);
+  const token = searchParams.get('token') ?? '';
+  const email = searchParams.get('email') ?? '';
 
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>(
     'verifying'
   );
   const [errorMessage, setErrorMessage] = useState('');
 
-  useEffect(() => {
-    if (token && email) {
-      verifyEmail();
-    } else {
+  const doVerify = useCallback(async () => {
+    if (!token || !email) {
       setStatus('error');
       setErrorMessage('Missing verification token or email.');
+      return;
     }
-  }, [token, email]);
 
-  async function verifyEmail() {
     try {
       const response = await api.get('/email-verification/verify', {
         params: { token, email },
@@ -30,12 +27,12 @@ export default function VerifyEmail() {
 
       if (response.data.success) {
         setStatus('success');
-        // Try to open the app after a brief delay
-        setTimeout(() => {
-          tryOpenApp();
-        }, 1500);
+      } else {
+        setStatus('error');
+        setErrorMessage('Verification failed. Please try again.');
       }
     } catch (err: any) {
+      console.error('Verification error:', err);
       setStatus('error');
       const msg =
         err?.response?.data?.error ||
@@ -43,12 +40,15 @@ export default function VerifyEmail() {
         'Failed to verify email. The link may be invalid or expired.';
       setErrorMessage(String(msg));
     }
-  }
+  }, [token, email]);
+
+  useEffect(() => {
+    doVerify();
+  }, [doVerify]);
 
   function tryOpenApp() {
     // Try to open the mobile app
-    const deepLink = 'bomber://home';
-    window.location.href = deepLink;
+    window.location.href = 'bomber://home';
   }
 
   return (
