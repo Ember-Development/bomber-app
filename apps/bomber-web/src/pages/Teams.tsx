@@ -98,7 +98,7 @@ export default function Teams() {
           {/* Image overlay */}
           <div className="absolute inset-0">
             <img
-              src="https://res.cloudinary.com/duwgrvngn/image/upload/v1764604173/Bombers-3-1-e1755562625610_q5dj4i.jpg"
+              src="https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2FBombers-3-1-e1755562625610_q5dj4i.jpg?alt=media&token=a5e59335-c0e6-471f-b16c-5886cba06b33"
               alt=""
               className="h-full w-full object-cover object-top opacity-20"
             />
@@ -284,7 +284,8 @@ export default function Teams() {
                 </h3>
                 {filteredTeams.length > 0 && (
                   <span className="text-sm text-neutral-400">
-                    {filteredTeams.length} {filteredTeams.length === 1 ? 'team' : 'teams'}
+                    {filteredTeams.length}{' '}
+                    {filteredTeams.length === 1 ? 'team' : 'teams'}
                   </span>
                 )}
               </div>
@@ -323,64 +324,64 @@ export default function Teams() {
               <>
                 <div className="space-y-3">
                   {paginatedTeams.map((team) => (
-                  <div
-                    key={team.id}
-                    className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 md:gap-6 p-4 sm:p-5 md:p-6 rounded-xl bg-neutral-900/50 backdrop-blur-sm border border-white/10 hover:border-[#57a4ff]/50 transition-all duration-300 group"
-                  >
-                    {/* Team Logo */}
-                    <div className="flex-shrink-0 flex items-center gap-3 sm:gap-4 md:gap-6">
-                      <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-neutral-800 to-neutral-900 flex items-center justify-center border border-white/20">
-                        <img
-                          src={
-                            team.logoUrl ||
-                            'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068366/bomber-black-removebg-preview_tkvf3d.png'
-                          }
-                          alt={team.name}
-                          className="w-full h-full rounded-full object-contain"
-                        />
+                    <div
+                      key={team.id}
+                      className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 md:gap-6 p-4 sm:p-5 md:p-6 rounded-xl bg-neutral-900/50 backdrop-blur-sm border border-white/10 hover:border-[#57a4ff]/50 transition-all duration-300 group"
+                    >
+                      {/* Team Logo */}
+                      <div className="flex-shrink-0 flex items-center gap-3 sm:gap-4 md:gap-6">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-neutral-800 to-neutral-900 flex items-center justify-center border border-white/20">
+                          <img
+                            src={
+                              team.logoUrl ||
+                              'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2Fbomber-black-removebg-preview_tkvf3d.png?alt=media&token=4306b239-298b-4387-9d18-e7deec6845c8'
+                            }
+                            alt={team.name}
+                            className="w-full h-full rounded-full object-contain"
+                          />
+                        </div>
+
+                        {/* Team Info - Mobile: next to logo */}
+                        <div className="flex-1 sm:hidden">
+                          <div className="text-[#57a4ff] text-xs font-bold uppercase mb-0.5">
+                            {team.state || 'TEXAS'}
+                          </div>
+                          <div className="text-white font-bold text-base">
+                            {team.name}
+                          </div>
+                          {team.ageGroup && (
+                            <div className="text-neutral-400 text-xs mt-0.5">
+                              {formatAgeGroup(team.ageGroup)}
+                            </div>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Team Info - Mobile: next to logo */}
-                      <div className="flex-1 sm:hidden">
-                        <div className="text-[#57a4ff] text-xs font-bold uppercase mb-0.5">
+                      {/* Team Info - Desktop: separate column */}
+                      <div className="flex-1 hidden sm:block">
+                        <div className="text-[#57a4ff] text-xs sm:text-sm font-bold uppercase mb-1">
                           {team.state || 'TEXAS'}
                         </div>
-                        <div className="text-white font-bold text-base">
+                        <div className="text-white font-bold text-base sm:text-lg">
                           {team.name}
                         </div>
                         {team.ageGroup && (
-                          <div className="text-neutral-400 text-xs mt-0.5">
+                          <div className="text-neutral-400 text-xs sm:text-sm mt-1">
                             {formatAgeGroup(team.ageGroup)}
                           </div>
                         )}
                       </div>
-                    </div>
 
-                    {/* Team Info - Desktop: separate column */}
-                    <div className="flex-1 hidden sm:block">
-                      <div className="text-[#57a4ff] text-xs sm:text-sm font-bold uppercase mb-1">
-                        {team.state || 'TEXAS'}
+                      {/* View Team Button */}
+                      <div className="flex-shrink-0 w-full sm:w-auto">
+                        <Link
+                          to={`/teams/${team.id}`}
+                          className="w-full sm:w-auto px-4 sm:px-5 md:px-6 py-2 bg-[#57a4ff]/20 text-[#57a4ff] rounded-lg font-bold uppercase tracking-wider hover:bg-[#57a4ff]/30 transition-all duration-300 group-hover:scale-105 inline-block text-center text-xs sm:text-sm"
+                        >
+                          VIEW TEAM
+                        </Link>
                       </div>
-                      <div className="text-white font-bold text-base sm:text-lg">
-                        {team.name}
-                      </div>
-                      {team.ageGroup && (
-                        <div className="text-neutral-400 text-xs sm:text-sm mt-1">
-                          {formatAgeGroup(team.ageGroup)}
-                        </div>
-                      )}
                     </div>
-
-                    {/* View Team Button */}
-                    <div className="flex-shrink-0 w-full sm:w-auto">
-                      <Link
-                        to={`/teams/${team.id}`}
-                        className="w-full sm:w-auto px-4 sm:px-5 md:px-6 py-2 bg-[#57a4ff]/20 text-[#57a4ff] rounded-lg font-bold uppercase tracking-wider hover:bg-[#57a4ff]/30 transition-all duration-300 group-hover:scale-105 inline-block text-center text-xs sm:text-sm"
-                      >
-                        VIEW TEAM
-                      </Link>
-                    </div>
-                  </div>
                   ))}
                 </div>
 
@@ -394,7 +395,9 @@ export default function Teams() {
                     </div>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.max(1, prev - 1))
+                        }
                         disabled={currentPage === 1}
                         className="px-4 py-2 rounded-lg bg-neutral-900/50 border border-white/10 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#57a4ff]/50 transition-all duration-300 font-bold text-sm uppercase tracking-wider"
                         aria-label="Previous page"
@@ -417,9 +420,14 @@ export default function Teams() {
                             const showEllipsisBefore =
                               index > 0 && array[index - 1] !== page - 1;
                             return (
-                              <div key={page} className="flex items-center gap-1">
+                              <div
+                                key={page}
+                                className="flex items-center gap-1"
+                              >
                                 {showEllipsisBefore && (
-                                  <span className="text-neutral-500 px-2">...</span>
+                                  <span className="text-neutral-500 px-2">
+                                    ...
+                                  </span>
                                 )}
                                 <button
                                   onClick={() => setCurrentPage(page)}
@@ -429,7 +437,9 @@ export default function Teams() {
                                       : 'bg-neutral-900/50 border border-white/10 text-white hover:border-[#57a4ff]/50'
                                   }`}
                                   aria-label={`Go to page ${page}`}
-                                  aria-current={currentPage === page ? 'page' : undefined}
+                                  aria-current={
+                                    currentPage === page ? 'page' : undefined
+                                  }
                                 >
                                   {page}
                                 </button>
@@ -440,7 +450,9 @@ export default function Teams() {
 
                       <button
                         onClick={() =>
-                          setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                          setCurrentPage((prev) =>
+                            Math.min(totalPages, prev + 1)
+                          )
                         }
                         disabled={currentPage === totalPages}
                         className="px-4 py-2 rounded-lg bg-neutral-900/50 border border-white/10 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#57a4ff]/50 transition-all duration-300 font-bold text-sm uppercase tracking-wider"

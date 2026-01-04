@@ -21,7 +21,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Scott Smith',
     role: 'CEO / President / Head Coach - 18U Gold',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1764622058/ScottSmith-scaled_hwsvuk.webp',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2FScottSmith-scaled_hwsvuk.webp?alt=media&token=83ec2ebd-02dd-4371-8e1c-c2d4dd93b51a',
     bio: 'With over two decades of experience in elite fastpitch softball, Scott has built Bombers into a nationally recognized powerhouse. As CEO and President, he oversees strategic vision while coaching our premier 18U Gold team. His leadership has produced 1000+ college commitments and multiple national championships, embodying the Bomber commitment to excellence both on and off the field.',
   },
   {
@@ -29,7 +29,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Bo Vinton',
     role: 'Chief Operating Officer/Executive Vice President',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1764621977/Polish_20251106_115054656_pwpgpc.jpg',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2FPolish_20251106_115054656_pwpgpc.jpg?alt=media&token=005cfec9-17f1-42e3-85bb-bc6087706cb2',
     bio: 'Bo drives operational excellence across all Bombers programs nationwide. As COO and Executive Vice President, he architects our comprehensive player development curriculum and mentors our 400+ coaching staff. His systematic approach to skill development and data-driven training methodologies have become the gold standard in youth fastpitch, ensuring every Bomber receives world-class instruction.',
   },
   {
@@ -37,7 +37,7 @@ const ADMINISTRATION_TEAM = [
     name: 'David McCorkle',
     role: 'Assistant Program Director/Vice President',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1764621958/APP_Headshot_David_McCorkle_m7flas.jpg',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2FAPP_Headshot_David_McCorkle_m7flas.jpg?alt=media&token=08a4cbf2-7cf1-4195-8e01-f00e53f3470f',
     bio: 'David brings strategic leadership to program development. As Assistant Program Director and Vice President, he specializes in defensive systems and team tactics. His innovative approach to defensive training and game strategy has helped countless players earn Division I scholarships and develop into complete athletes.',
   },
   {
@@ -61,7 +61,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Jennifer Vinton',
     role: 'Director of Operations',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1764621975/Polish_20251106_114507579_worwcm.jpg',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2FPolish_20251106_114507579_worwcm.jpg?alt=media&token=e81a5bf1-8651-4336-a3df-ad5cc3436606',
     bio: "Jennifer orchestrates the day-to-day operations that keep Bombers running seamlessly. As Director of Operations, she coordinates tournament schedules, manages facilities, oversees logistics for 235 teams across 28 states, and ensures every detail supports our athletes' success. Her organizational excellence and attention to detail create the foundation for championship-level performance.",
   },
   {
@@ -69,7 +69,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Allison Honkofsky',
     role: 'Director of Recruiting',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1764621955/APP_Headshot_Allison_Honkofsky_x441v6.jpg',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2FAPP_Headshot_Allison_Honkofsky_x441v6.jpg?alt=media&token=a214bd16-0c5a-42d0-b4a4-c67c9c516319',
     bio: "Allison is the driving force behind our players' college dreams. As Director of Recruiting, she cultivates relationships with college coaches nationwide, coordinates showcase events, and guides families through the recruiting process. Her extensive network and deep knowledge of college softball have helped hundreds of Bombers earn scholarships at every collegiate level.",
   },
   {
@@ -93,7 +93,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Jade Nottebrok',
     role: 'Media Director',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1764622089/dSF3v8w5fwW4BsPX5ARHi6GOr8ryHmRMekyDSFcT_eduho5.webp',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2FdSF3v8w5fwW4BsPX5ARHi6GOr8ryHmRMekyDSFcT_eduho5.webp?alt=media&token=801cd2f7-c2dd-41fb-b041-193499dccb54',
     bio: "Jade captures and shares the Bomber experience through powerful visual storytelling. As Media Director, she oversees all digital content creation, manages social media platforms, and produces highlight videos that showcase our athletes' achievements. Her creative eye and technical expertise bring the excitement of Bombers softball to families and fans worldwide.",
   },
   {
@@ -101,7 +101,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Kristi Malpass',
     role: 'Training Coordinator',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1764622470/APP_Headshot_Kristi_Malpass_pgpzvm.jpg',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2F20251008-L86A3932-Edit_Original_anqofr.jpg?alt=media&token=21bebb51-dc4d-4dfd-95cb-9b14b1c6828d',
     bio: 'Kristi designs and implements our comprehensive training programs. As Training Coordinator, she schedules camps, coordinates clinics, manages facility usage, and ensures our athletes have access to elite-level instruction year-round. Her meticulous planning and passion for player development create optimal training environments where Bombers can reach their full potential.',
   },
   {
@@ -109,7 +109,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Cat Osterman',
     role: 'Pitching Performance Coordinator',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1764622531/33_yhqcco.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2F33_yhqcco.png?alt=media&token=38cbfa1f-cab5-4ff4-87aa-d157db088b88',
     bio: 'A USA Softball Olympic legend and one of the greatest pitchers in softball history, Cat brings world-class expertise to our pitching program. As Pitching Performance Coordinator, she develops cutting-edge pitching curriculum, mentors our pitching coaches, and works directly with elite pitchers. Her unparalleled knowledge elevates every pitcher in the Bombers organization.',
   },
   {

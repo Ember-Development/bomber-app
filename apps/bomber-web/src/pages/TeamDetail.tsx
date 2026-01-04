@@ -72,7 +72,7 @@ export default function TeamDetail() {
         <img
           src={
             team.logoUrl ||
-            'https://res.cloudinary.com/duwgrvngn/image/upload/v1764621606/EFaywyfXYAAdXKd_sy0lhk.jpg'
+            'https://playncs.blob.core.windows.net/documents/images/Teams/56071-texas-bombers-ctx-10u.jpg'
           }
           alt={team.name}
           className="w-full h-full object-cover"
@@ -134,7 +134,7 @@ export default function TeamDetail() {
                         <img
                           src={
                             player.commit?.imageUrl ||
-                            'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png'
+                            'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2Fcropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png?alt=media&token=fabfa030-33fe-4178-a24b-fbe70f213675'
                           }
                           alt={player.commit?.name || 'Bombers'}
                           className="w-32 h-32 md:w-40 md:h-40 object-contain"
@@ -175,7 +175,7 @@ export default function TeamDetail() {
                     <div className="p-4 md:p-6 text-center">
                       <div className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto mb-3 md:mb-4 flex items-center justify-center overflow-hidden">
                         <img
-                          src="https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png"
+                          src="https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2Fcropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png?alt=media&token=fabfa030-33fe-4178-a24b-fbe70f213675"
                           alt="Bombers"
                           className="w-full h-full object-contain"
                         />
@@ -215,7 +215,7 @@ export default function TeamDetail() {
                       <div className="p-4 md:p-6 text-center">
                         <div className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto mb-3 md:mb-4 flex items-center justify-center overflow-hidden">
                           <img
-                            src="https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png"
+                            src="https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2Fcropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png?alt=media&token=fabfa030-33fe-4178-a24b-fbe70f213675"
                             alt="Bombers"
                             className="w-full h-full object-contain"
                           />

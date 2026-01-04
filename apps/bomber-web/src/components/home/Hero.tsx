@@ -16,7 +16,7 @@ export default function Hero() {
     >
       {/* background video */}
       <video
-        src="https://res.cloudinary.com/duwgrvngn/video/upload/v1763009174/DD_Hype_Video_1_1_1_y846h0.mp4"
+        src="https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2FWebsite%20Montage%202025%20(1).mp4?alt=media&token=34692d34-2411-416f-8626-ece85ab4c068"
         className="absolute inset-0 h-full w-full object-cover"
         autoPlay
         loop

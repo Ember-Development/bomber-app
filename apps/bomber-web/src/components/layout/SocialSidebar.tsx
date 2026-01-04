@@ -2,7 +2,7 @@ import {
   FacebookIcon,
   InstagramIcon,
   YouTubeIcon,
-  TikTokIcon,
+  XIcon,
 } from '@/components/ui/icons';
 
 export default function SocialSidebar() {
@@ -10,26 +10,26 @@ export default function SocialSidebar() {
     {
       key: 'facebook',
       icon: FacebookIcon,
-      href: 'https://facebook.com/texasbombers',
+      href: 'https://www.facebook.com/Bombersinc',
       label: 'Follow us on Facebook',
     },
     {
       key: 'instagram',
       icon: InstagramIcon,
-      href: 'https://instagram.com/texasbombers',
+      href: 'https://www.instagram.com/bombersfastpitch/?next=%2F',
       label: 'Follow us on Instagram',
     },
     {
       key: 'youtube',
       icon: YouTubeIcon,
-      href: 'https://youtube.com/@texasbombers',
+      href: 'https://www.youtube.com/@bombersfastpitch',
       label: 'Subscribe on YouTube',
     },
     {
-      key: 'tiktok',
-      icon: TikTokIcon,
-      href: 'https://tiktok.com/@texasbombers',
-      label: 'Follow us on TikTok',
+      key: 'x',
+      icon: XIcon,
+      href: 'https://x.com/bombers_fp',
+      label: 'Follow us on X',
     },
   ];
 
