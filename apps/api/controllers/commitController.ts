@@ -55,4 +55,17 @@ export const commitController = {
       return res.status(404).json({ error: 'Commit not found' });
     }
   },
+
+  syncWithSchools: async (_req: Request, res: Response) => {
+    try {
+      const result = await commitService.syncWithSchoolsJson();
+      return res.json(result);
+    } catch (error: any) {
+      console.error('Error syncing commits:', error);
+      return res.status(500).json({
+        error: 'Failed to sync commits',
+        message: error.message,
+      });
+    }
+  },
 };

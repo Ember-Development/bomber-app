@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "16799052757",
+    "project_id": "bomber-app-5880d",
+    "storage_bucket": "bomber-app-5880d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:16799052757:android:a36651a5aafb1ae523c35c",
+        "android_client_info": {
+          "package_name": "com.emberdevco.bomberapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDj__NUfzB4abeG5F5flNYXhZFZx8AbDyw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -53,7 +53,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Noe Saucedo',
     role: 'Chief Legal Officer',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2Funnamed.jpg?alt=media&token=518f38b7-6b79-4469-891f-1e3595624d8c',
     bio: 'Noe protects the organization and our families through comprehensive legal oversight. As Chief Legal Officer, he handles contracts, compliance, risk management, and ensures all operations meet regulatory standards. His expertise in sports law and youth athletics provides peace of mind to our families and creates a secure environment for our athletes to thrive.',
   },
   {
@@ -85,7 +85,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Christy Connor',
     role: 'Director of Brand Development',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2Fchristy.jpg?alt=media&token=918dec4b-c125-4124-839d-62de0298c9b2',
     bio: "Christy shapes the Bombers brand and tells our athletes' stories to the world. As Director of Brand Development, she leads marketing strategy, creates compelling content, and builds partnerships that elevate our program's visibility. Her creative vision and strategic marketing initiatives have established Bombers as one of the most recognized brands in fastpitch softball.",
   },
   {
@@ -101,7 +101,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Kristi Malpass',
     role: 'Training Coordinator',
     image:
-      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2F20251008-L86A3932-Edit_Original_anqofr.jpg?alt=media&token=21bebb51-dc4d-4dfd-95cb-9b14b1c6828d',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2Fmalpass.png?alt=media&token=ae99061d-b8b3-4827-ab0d-f936b7145229',
     bio: 'Kristi designs and implements our comprehensive training programs. As Training Coordinator, she schedules camps, coordinates clinics, manages facility usage, and ensures our athletes have access to elite-level instruction year-round. Her meticulous planning and passion for player development create optimal training environments where Bombers can reach their full potential.',
   },
   {
@@ -117,7 +117,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Frank Lopez',
     role: 'Youth Coordinator',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2FAPP%20Headshot%20Frank%20Lopez.jpg?alt=media&token=8330b111-701a-4454-89c8-30d3753f3323',
     bio: 'Frank builds the foundation for future Bombers through our youth programs. As Youth Coordinator, he oversees development for our youngest athletes, coordinates youth camps and clinics, and ensures age-appropriate training that instills fundamentals and love for the game. His focus on youth development creates a pipeline of skilled, passionate players ready for elite competition.',
   },
 ];
@@ -128,7 +128,7 @@ const DIRECTORS_TEAM = [
     name: 'Tony Knight',
     role: 'Southeast Regional Director',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2FTK%20Headshot.jpg?alt=media&token=8a0ec473-9226-418c-a134-6ba084ceaf6e',
     bio: 'Tony oversees the Southeast region of the program.',
   },
   {
@@ -152,15 +152,15 @@ const DIRECTORS_TEAM = [
     name: 'Mandi Corbin',
     role: 'Southeast Houston Area Director',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2F20251008-L86A3932-Edit_Original.jpeg?alt=media&token=bee2834b-c323-415e-98e9-b2fa3a762e39',
     bio: 'Mandi oversees the southeast Houston area of the program.',
   },
   {
     id: 'kelly',
-    name: 'Kelly Jacoby',
+    name: 'Kelli Jacoby',
     role: 'Southwest Houston Area Director',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2FAPP_Headshot_Kelli_Jacoby_vhqot3.png?alt=media&token=27d993c1-a387-42dd-a0cd-50fd6d424251',
     bio: 'Kelly oversees the southwest Houston area of the program.',
   },
   {
@@ -176,7 +176,7 @@ const DIRECTORS_TEAM = [
     name: 'Slade Maloney',
     role: 'North Texas/Oklahoma Area Director',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2FAPP_Headshot_Slade_kppntr.png?alt=media&token=dadc1255-88f8-44f9-baab-8040f846d7c0',
     bio: 'Slade oversees the north Texas / Oklahoma area of the program.',
   },
   {
@@ -184,7 +184,7 @@ const DIRECTORS_TEAM = [
     name: 'Jeff Dunning',
     role: 'Colorado State Director',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2FAPP%20Headshot%20Jeff%20Dunning.jpg?alt=media&token=b34bfe3a-275b-4536-972b-eff3b568ca86',
     bio: 'Jeff oversees the Colorado area of the program.',
   },
   {

@@ -28,10 +28,10 @@ export default function Teams() {
     queryFn: fetchTeams,
   });
 
-  // Extract unique states/regions from teams
+  // Extract unique states/regions from teams and sort alphabetically
   const states = Array.from(
     new Set(teams.map((t) => t.state).filter(Boolean) as string[])
-  );
+  ).sort();
 
   // Extract unique age groups from teams and sort them
   const ageGroups = Array.from(

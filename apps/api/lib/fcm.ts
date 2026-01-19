@@ -13,9 +13,13 @@ async function getAccessToken() {
   const key = Buffer.from(FIREBASE_PRIVATE_KEY_BASE64, 'base64').toString(
     'utf8'
   );
+
+  // Fix escaped newlines - Firebase JSON has \n as string literals
+  const formattedKey = key.replace(/\\n/g, '\n');
+
   const jwt = new google.auth.JWT({
     email: FIREBASE_CLIENT_EMAIL,
-    key,
+    key: formattedKey,
     scopes: ['https://www.googleapis.com/auth/firebase.messaging'],
   });
   const { access_token } = await jwt.authorize();
