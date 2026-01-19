@@ -3,7 +3,7 @@ require('dotenv/config');
 
 module.exports = {
   expo: {
-    name: 'bomber-app',
+    name: 'bomber-mobile',
     slug: 'bomber-app',
     owner: 'emberdevco',
     version: '1.0.14',
@@ -28,14 +28,11 @@ module.exports = {
 
     android: {
       package: 'com.emberdevco.bomberapp',
-      targetSdkVersion: 35,
       versionCode: 8,
       adaptiveIcon: {
         foregroundImage: './assets/images/bombericonios.png',
         backgroundColor: '#ffffff',
       },
-      googleServicesFile: './android/app/google-services.json',
-      useNextNotificationsApi: true,
     },
 
     web: {

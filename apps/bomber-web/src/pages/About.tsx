@@ -45,7 +45,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Kevin Mills',
     role: 'Chief Financial Officer',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2FtempFileForShare_20260119-120759.jpg?alt=media&token=1750c03a-5e30-496c-97d1-c115e8256e15',
     bio: 'Kevin ensures financial stability and sustainable growth across the Bombers organization. As CFO, he manages budgets, oversees facility investments, and creates financial strategies that allow us to expand our reach while maintaining exceptional program quality. His fiscal stewardship enables us to invest in cutting-edge training equipment and top-tier coaching talent.',
   },
   {
@@ -77,7 +77,7 @@ const ADMINISTRATION_TEAM = [
     name: 'Brian Repole',
     role: 'Assistant Director of Recruiting',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2Fcropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png?alt=media&token=fabfa030-33fe-4178-a24b-fbe70f213675',
     bio: 'Brian supports our recruiting mission by connecting athletes with college opportunities. As Assistant Director of Recruiting, he manages player profiles, coordinates college coach communications, and helps families navigate the complex recruiting landscape. His dedication to matching players with the right programs has made college dreams a reality for countless Bombers.',
   },
   {
@@ -136,7 +136,7 @@ const DIRECTORS_TEAM = [
     name: 'Nate Rodriguez',
     role: 'Central and South Texas Area Director',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2Fcropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png?alt=media&token=fabfa030-33fe-4178-a24b-fbe70f213675',
     bio: 'Nate oversees the central and south Texas area of the program.',
   },
   {
@@ -144,7 +144,7 @@ const DIRECTORS_TEAM = [
     name: 'Chuck Peters',
     role: 'North Houston Area Director',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2Fcropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png?alt=media&token=fabfa030-33fe-4178-a24b-fbe70f213675',
     bio: 'Chuck oversees the north Houston area of the program.',
   },
   {
@@ -168,7 +168,7 @@ const DIRECTORS_TEAM = [
     name: 'Thad Bryant',
     role: 'West Texas Area Director',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2Fcropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png?alt=media&token=fabfa030-33fe-4178-a24b-fbe70f213675',
     bio: 'Thad oversees the west Texas area of the program.',
   },
   {
@@ -176,7 +176,7 @@ const DIRECTORS_TEAM = [
     name: 'Slade Maloney',
     role: 'North Texas/Oklahoma Area Director',
     image:
-      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2FAPP_Headshot_Slade_kppntr.png?alt=media&token=dadc1255-88f8-44f9-baab-8040f846d7c0',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2Fcropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png?alt=media&token=fabfa030-33fe-4178-a24b-fbe70f213675',
     bio: 'Slade oversees the north Texas / Oklahoma area of the program.',
   },
   {
@@ -192,7 +192,7 @@ const DIRECTORS_TEAM = [
     name: 'Bill Roth',
     role: 'Missouri State Director',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2Fcropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png?alt=media&token=fabfa030-33fe-4178-a24b-fbe70f213675',
     bio: 'Bill oversees the Missouri area of the program.',
   },
   {
@@ -200,7 +200,7 @@ const DIRECTORS_TEAM = [
     name: 'Bobby Lehman',
     role: 'Mississippi State Director',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2Fcropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png?alt=media&token=fabfa030-33fe-4178-a24b-fbe70f213675',
     bio: 'Bobby oversees the Mississippi area of the program.',
   },
   {
@@ -208,7 +208,7 @@ const DIRECTORS_TEAM = [
     name: 'John Skyes',
     role: 'Tennessee State Director',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2Fcropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png?alt=media&token=fabfa030-33fe-4178-a24b-fbe70f213675',
     bio: 'John oversees the Tennessee area of the program.',
   },
   {
@@ -216,7 +216,7 @@ const DIRECTORS_TEAM = [
     name: 'Steve Conyers',
     role: 'Virginia State Director',
     image:
-      'https://res.cloudinary.com/duwgrvngn/image/upload/v1763068799/cropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png',
+      'https://firebasestorage.googleapis.com/v0/b/goatnet-4a76f.firebasestorage.app/o/Software%2Fcropped-Bombers-Fastpitch-New-Blue-1-1_brkgva.png?alt=media&token=fabfa030-33fe-4178-a24b-fbe70f213675',
     bio: 'Steve oversees the Virginia area of the program.',
   },
 ];
